@@ -1,0 +1,1384 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import {
+  Search,
+  Monitor,
+  Cpu,
+  Save,
+  Share2,
+  Zap,
+  HardDrive,
+  Fan,
+  MousePointer2,
+  ChevronDown,
+  AlertCircle,
+  CheckCircle2,
+  X,
+  MessageSquare,
+  ThumbsUp,
+  ArrowRight,
+  RefreshCw,
+  HelpCircle,
+  Send,
+  CreditCard,
+  Keyboard,
+  Cable,
+  Box,
+  Wind,
+  LayoutGrid,
+  User,
+  Copy,
+  Flame,
+  Clock,
+  Filter,
+  Trophy,
+  Crown,
+  Users,
+  Tag
+} from 'lucide-react';
+
+/**
+ * ==============================================================================
+ * 类型定义与 Mock 数据库 (Data Schema & Mock DB)
+ * ==============================================================================
+ */
+type Category = 'cpu' | 'mainboard' | 'gpu' | 'ram' | 'disk' | 'power' | 'cooling' | 'fan' | 'case' | 'monitor' | 'mouse' | 'keyboard' | 'accessory';
+
+interface HardwareSpecs {
+  socket?: string;
+  memoryType?: string;
+  wattage?: number;
+  formFactor?: string;
+}
+
+interface HardwareItem {
+  id: string;
+  category: Category;
+  brand: string;
+  model: string;
+  price: number;
+  specs: HardwareSpecs;
+  image?: string;
+}
+
+interface BuildEntry {
+  id: string;
+  category: Category;
+  item: HardwareItem | null;
+  quantity: number;
+  customPrice?: number;
+  customName?: string;
+  isLockedQty?: boolean;
+}
+
+interface ConfigTemplate {
+  id: string;
+  title: string;
+  author: string;
+  avatarColor: string;
+  type: 'official' | 'streamer' | 'user' | 'help';
+  tags: { type: 'appearance' | 'usage'; label: string }[];
+  price: number;
+  items: Partial<Record<Category, string>>;
+  likes: number;
+  views: number;
+  comments: number;
+  date: string;
+  isLiked?: boolean;
+}
+
+// 标签定义
+const TAGS_APPEARANCE = ['实用', '颜值', '小钢炮', '海景房'];
+const TAGS_USAGE = ['网游', '3A', '轻办公', '剪辑', '直播'];
+// 聚合所有场景标签
+const ALL_SCENARIO_TAGS = [...TAGS_APPEARANCE, ...TAGS_USAGE];
+
+// 模拟数据库
+const HARDWARE_DB: HardwareItem[] = [
+  // CPU
+  { id: 'c1', category: 'cpu', brand: 'Intel', model: 'i5-13600KF', price: 1899, specs: { socket: 'LGA1700', wattage: 125, memoryType: 'DDR5' } },
+  { id: 'c2', category: 'cpu', brand: 'Intel', model: 'i5-12400F', price: 849, specs: { socket: 'LGA1700', wattage: 65, memoryType: 'DDR4' } },
+  { id: 'c3', category: 'cpu', brand: 'AMD', model: 'R5 7500F', price: 1099, specs: { socket: 'AM5', wattage: 65, memoryType: 'DDR5' } },
+  { id: 'c4', category: 'cpu', brand: 'AMD', model: 'R7 7800X3D', price: 2699, specs: { socket: 'AM5', wattage: 120, memoryType: 'DDR5' } },
+  // 主板
+  { id: 'm1', category: 'mainboard', brand: 'MSI', model: 'B760M 迫击炮 II', price: 1299, specs: { socket: 'LGA1700', memoryType: 'DDR5', formFactor: 'MATX' } },
+  { id: 'm2', category: 'mainboard', brand: 'ASUS', model: 'H610M-A', price: 599, specs: { socket: 'LGA1700', memoryType: 'DDR4', formFactor: 'MATX' } },
+  { id: 'm3', category: 'mainboard', brand: 'Gigabyte', model: 'B650M 小雕', price: 999, specs: { socket: 'AM5', memoryType: 'DDR5', formFactor: 'MATX' } },
+  // 显卡
+  { id: 'g1', category: 'gpu', brand: 'Colorful', model: 'RTX 4060 战斧', price: 2399, specs: { wattage: 115 } },
+  { id: 'g2', category: 'gpu', brand: 'ASUS', model: 'RTX 4070 Ti Super', price: 6499, specs: { wattage: 285 } },
+  { id: 'g3', category: 'gpu', brand: 'Sapphire', model: 'RX 7800 XT', price: 3899, specs: { wattage: 260 } },
+  // 内存
+  { id: 'r1', category: 'ram', brand: 'Kingston', model: 'Fury 16G DDR4 3200', price: 259, specs: { memoryType: 'DDR4' } },
+  { id: 'r2', category: 'ram', brand: 'Corsair', model: 'Vengeance 32G(16*2) DDR5 6000', price: 799, specs: { memoryType: 'DDR5' } },
+  // 硬盘
+  { id: 'd1', category: 'disk', brand: 'Samsung', model: '990 PRO 1TB', price: 699, specs: {} },
+  { id: 'd2', category: 'disk', brand: 'WD', model: 'SN770 1TB', price: 459, specs: {} },
+  // 电源
+  { id: 'p1', category: 'power', brand: 'GreatWall', model: 'G7 750W 金牌', price: 499, specs: { wattage: 750 } },
+  // 散热
+  { id: 'cl1', category: 'cooling', brand: 'Valkyrie', model: 'A360 水冷', price: 399, specs: {} },
+  { id: 'cl2', category: 'cooling', brand: 'DeepCool', model: 'AK620 风冷', price: 299, specs: {} },
+  // 风扇
+  { id: 'f1', category: 'fan', brand: 'LianLi', model: '积木一代 12cm', price: 179, specs: {} },
+  { id: 'f2', category: 'fan', brand: 'Phanteks', model: 'T30 12cm', price: 199, specs: {} },
+  // 机箱
+  { id: 'ca1', category: 'case', brand: 'LianLi', model: '包豪斯海景房', price: 899, specs: { formFactor: 'ATX' } },
+  // 鼠标
+  { id: 'mo1', category: 'mouse', brand: 'Logitech', model: 'G Pro X Superlight', price: 899, specs: {} },
+  { id: 'mo2', category: 'mouse', brand: 'Razer', model: 'Viper V3 Pro', price: 1099, specs: {} },
+  // 键盘
+  { id: 'kb1', category: 'keyboard', brand: 'VGN', model: 'V98 Pro', price: 399, specs: {} },
+];
+
+const CONFIG_SQUARE_DB: ConfigTemplate[] = [
+  {
+    id: 'cfg1', title: '13600K 纯白海景房', author: '小鱼官方', avatarColor: 'bg-zinc-900', type: 'official',
+    tags: [{ type: 'appearance', label: '颜值' }, { type: 'appearance', label: '海景房' }, { type: 'usage', label: '剪辑' }],
+    price: 9800, likes: 1204, views: 5000, comments: 45, date: '2023-10-01',
+    items: { cpu: 'c1', mainboard: 'm1', gpu: 'g1', ram: 'r2', disk: 'd1', power: 'p1', cooling: 'cl1', case: 'ca1', fan: 'f1' }
+  },
+  {
+    id: 'cfg2', title: '4060Ti 网游性价比', author: '隔壁老王', avatarColor: 'bg-blue-500', type: 'user',
+    tags: [{ type: 'appearance', label: '实用' }, { type: 'usage', label: '网游' }],
+    price: 5200, likes: 89, views: 1200, comments: 12, date: '2023-10-05',
+    items: { cpu: 'c2', mainboard: 'm2', gpu: 'g1', ram: 'r1', disk: 'd2', power: 'p1', case: 'ca1' }
+  },
+  {
+    id: 'cfg3', title: '7800X3D 游戏神机', author: 'AMD YES', avatarColor: 'bg-purple-600', type: 'streamer',
+    tags: [{ type: 'usage', label: '3A' }, { type: 'appearance', label: '小钢炮' }],
+    price: 12000, likes: 562, views: 3400, comments: 88, date: '2023-10-03',
+    items: { cpu: 'c4', mainboard: 'm3', gpu: 'g2', ram: 'r2', disk: 'd1', power: 'p1', cooling: 'cl1', case: 'ca1' }
+  },
+  {
+    id: 'cfg4', title: '求助！5000元预算怎么配？', author: '装机小白', avatarColor: 'bg-amber-500', type: 'help',
+    tags: [{ type: 'usage', label: '网游' }, { type: 'appearance', label: '实用' }],
+    price: 5000, likes: 12, views: 340, comments: 5, date: '2023-10-06',
+    items: { cpu: 'c2', mainboard: 'm2' }
+  },
+];
+
+const CATEGORY_MAP: Record<Category, string> = {
+  cpu: 'CPU',
+  mainboard: '主板',
+  gpu: '显卡',
+  ram: '内存',
+  disk: '硬盘',
+  power: '电源',
+  cooling: '散热',
+  fan: '风扇',
+  case: '机箱',
+  monitor: '显示',
+  mouse: '鼠标',
+  keyboard: '键盘',
+  accessory: '配件',
+};
+
+const DEFAULT_BUILD_TEMPLATE: BuildEntry[] = [
+  { id: 'row-cpu', category: 'cpu', item: null, quantity: 1, isLockedQty: true },
+  { id: 'row-mb', category: 'mainboard', item: null, quantity: 1, isLockedQty: true },
+  { id: 'row-gpu', category: 'gpu', item: null, quantity: 1, isLockedQty: true },
+  { id: 'row-ram', category: 'ram', item: null, quantity: 1, isLockedQty: false },
+  { id: 'row-disk', category: 'disk', item: null, quantity: 1, isLockedQty: false },
+  { id: 'row-cool', category: 'cooling', item: null, quantity: 1, isLockedQty: true },
+  { id: 'row-fan', category: 'fan', item: null, quantity: 1, isLockedQty: false },
+  { id: 'row-power', category: 'power', item: null, quantity: 1, isLockedQty: true },
+  { id: 'row-case', category: 'case', item: null, quantity: 1, isLockedQty: true },
+  { id: 'row-monitor', category: 'monitor', item: null, quantity: 1, isLockedQty: true },
+  { id: 'row-mouse', category: 'mouse', item: null, quantity: 1, isLockedQty: true },
+  { id: 'row-keyboard', category: 'keyboard', item: null, quantity: 1, isLockedQty: true },
+  { id: 'row-accessory', category: 'accessory', item: null, quantity: 1, isLockedQty: false },
+];
+
+const PROFIT_MARGIN = 0.06;
+const DISCOUNT_OPTIONS = [
+  { label: '标准价格', value: 1.0 },
+  { label: '粉丝专享 (99折)', value: 0.99 },
+  { label: '老铁特惠 (98折)', value: 0.98 },
+  { label: '老板骨折 (95折)', value: 0.95 },
+];
+
+const QUICK_COMMENTS = ["这个配置不错👍", "学习了", "带带弟弟", "性价比很高", "显卡能换A卡吗？", "求作业链接"];
+
+/**
+ * ==============================================================================
+ * 核心组件 (Core Components)
+ * ==============================================================================
+ */
+export default function XiaoyuPCBuilder() {
+  const [viewMode, setViewMode] = useState<'streamer' | 'visual' | 'square'>('square');
+  const [buildList, setBuildList] = useState<BuildEntry[]>(DEFAULT_BUILD_TEMPLATE);
+  const [configList, setConfigList] = useState<ConfigTemplate[]>(CONFIG_SQUARE_DB);
+  const [discountRate, setDiscountRate] = useState(1.0);
+  const [isSharing, setIsSharing] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showLibraryModal, setShowLibraryModal] = useState(false);
+  const [toast, setToast] = useState<{ show: boolean; msg: string }>({ show: false, msg: '' });
+  const [remark, setRemark] = useState('');
+
+  const [isStreamerAuth, setIsStreamerAuth] = useState(false);
+
+  // 价格计算引擎
+  const pricing = useMemo(() => {
+    const hardwareTotal = buildList.reduce((sum, entry) => {
+      const unitPrice = entry.customPrice ?? entry.item?.price ?? 0;
+      return sum + (unitPrice * entry.quantity);
+    }, 0);
+    const standardPrice = hardwareTotal * (1 + PROFIT_MARGIN);
+    const finalPrice = Math.floor(standardPrice * discountRate);
+    const savedAmount = Math.floor(standardPrice - finalPrice);
+    return { hardwareTotal, standardPrice, finalPrice, savedAmount };
+  }, [buildList, discountRate]);
+
+  // 健康度检查
+  const healthCheck = useMemo(() => {
+    const issues: string[] = [];
+    const cpu = buildList.find(e => e.category === 'cpu')?.item;
+    const mb = buildList.find(e => e.category === 'mainboard')?.item;
+    const ram = buildList.find(e => e.category === 'ram')?.item;
+    const psu = buildList.find(e => e.category === 'power')?.item;
+    const gpu = buildList.find(e => e.category === 'gpu')?.item;
+
+    if (cpu && mb && cpu.specs.socket !== mb.specs.socket) {
+      issues.push(`接口不兼容: CPU是 ${cpu.specs.socket}，主板是 ${mb.specs.socket}`);
+    }
+    if (ram && mb && ram.specs.memoryType !== mb.specs.memoryType) {
+      issues.push(`内存不兼容: 内存是 ${ram.specs.memoryType}，主板仅支持 ${mb.specs.memoryType}`);
+    }
+    if (psu && psu.specs.wattage) {
+      const estimatedLoad = (cpu?.specs.wattage || 0) + (gpu?.specs.wattage || 0) + 150;
+      if (psu.specs.wattage < estimatedLoad) {
+        issues.push(`电源功率可能不足: 预估功耗 ${estimatedLoad}W，当前电源 ${psu.specs.wattage}W`);
+      }
+    }
+    return { status: issues.length === 0 ? 'perfect' : 'warning', issues };
+  }, [buildList]);
+
+  const clearBuild = () => {
+    setBuildList(DEFAULT_BUILD_TEMPLATE.map(i => ({ ...i, item: null, customPrice: undefined, customName: undefined })));
+    setRemark('');
+  };
+
+  const updateEntry = (id: string, updates: Partial<BuildEntry>) => setBuildList(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
+
+  const loadConfigFromSquare = (config: ConfigTemplate) => {
+    const newList = DEFAULT_BUILD_TEMPLATE.map(entry => {
+      // @ts-ignore
+      const itemId = config.items[entry.category];
+      if (itemId) {
+        const item = HARDWARE_DB.find(h => h.id === itemId);
+        return { ...entry, item: item || null, customPrice: undefined, quantity: 1 };
+      }
+      return { ...entry, item: null, quantity: 1 };
+    });
+    setBuildList(newList);
+    if (viewMode === 'square') {
+      setViewMode('visual');
+    }
+    setShowLibraryModal(false);
+    showToast(`✅ 已载入配置：${config.title}`);
+  };
+
+  const showToast = (msg: string) => {
+    setToast({ show: true, msg });
+    setTimeout(() => setToast({ show: false, msg: '' }), 3000);
+  };
+
+  const handleSave = () => {
+    setShowSaveModal(true);
+  };
+
+  const handleShareTrigger = () => {
+    if (pricing.finalPrice === 0) {
+      showToast("❌ 配置单为空，无法分享");
+      return;
+    }
+    setShowShareModal(true);
+  };
+
+  // 核心功能：处理点赞切换
+  const handleToggleLike = (id: string) => {
+    setConfigList(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, likes: item.isLiked ? item.likes - 1 : item.likes + 1, isLiked: !item.isLiked };
+      }
+      return item;
+    }));
+  };
+
+  // 处理发布到广场
+  const handlePublishToSquare = (data: { title: string, tags: string[], desc: string }) => {
+    const newConfig: ConfigTemplate = {
+      id: `user-cfg-${Date.now()}`,
+      title: data.title,
+      author: isStreamerAuth && viewMode === 'streamer' ? '小鱼主播' : '我',
+      avatarColor: isStreamerAuth && viewMode === 'streamer' ? 'bg-purple-600' : 'bg-indigo-500',
+      type: isStreamerAuth && viewMode === 'streamer' ? 'streamer' : 'user',
+      tags: data.tags.map(t => ({
+        type: TAGS_APPEARANCE.includes(t) ? 'appearance' : 'usage',
+        label: t
+      })),
+      price: pricing.finalPrice,
+      items: buildList.reduce((acc, curr) => {
+        if (curr.item) {
+          acc[curr.category] = curr.item.id;
+        }
+        return acc;
+      }, {} as Record<Category, string>),
+      likes: 0,
+      views: 0,
+      comments: 0,
+      date: '刚刚',
+      isLiked: false
+    };
+
+    setConfigList(prev => [newConfig, ...prev]);
+    setShowShareModal(false);
+    showToast(`✅ ${newConfig.type === 'streamer' ? '主播推荐' : '配置'}已发布到广场！`);
+    
+    // 发布后自动跳转到广场
+    setViewMode('square');
+    
+    // 清空当前构建
+    clearBuild();
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800">
+      {/* 顶部导航 */}
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-100 shadow-sm transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200">
+              <Monitor className="text-white" size={20} />
+            </div>
+            <span className="text-xl font-extrabold text-slate-900 tracking-tight">小鱼装机 <span className="text-indigo-600 text-xs bg-indigo-50 px-1.5 py-0.5 rounded ml-1 align-middle border border-indigo-100">PRO</span></span>
+          </div>
+
+          <div className="flex bg-slate-100/80 p-1.5 rounded-full border border-slate-200/60 backdrop-blur-md">
+            <TabButton active={viewMode === 'streamer'} onClick={() => setViewMode('streamer')} icon={<Zap size={15} />} label="主播中心" />
+            <TabButton active={viewMode === 'visual'} onClick={() => setViewMode('visual')} icon={<LayoutGrid size={15} />} label="DIY工作台" />
+            <TabButton active={viewMode === 'square'} onClick={() => setViewMode('square')} icon={<Share2 size={15} />} label="配置广场" />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button className="hidden md:flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold text-sm transition-colors bg-white border border-slate-200 px-4 py-2 rounded-full shadow-sm hover:shadow-md">
+              <User size={16} />
+              <span>登录</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 pb-32">
+        {viewMode === 'streamer' && (
+          isStreamerAuth ? (
+            <StreamerWorkbench
+              buildList={buildList}
+              onUpdate={updateEntry}
+              pricing={pricing}
+              discountRate={discountRate}
+              setDiscountRate={setDiscountRate}
+              isSharing={isSharing}
+              handleShareTrigger={handleShareTrigger}
+              handleSave={handleSave}
+              clearBuild={clearBuild}
+            />
+          ) : (
+            <StreamerLogin onLogin={() => setIsStreamerAuth(true)} />
+          )
+        )}
+
+        {viewMode === 'visual' && (
+          <VisualBuilder
+            buildList={buildList}
+            onUpdate={updateEntry}
+            health={healthCheck}
+            onOpenLibrary={() => setShowLibraryModal(true)}
+            remark={remark}
+            setRemark={setRemark}
+            pricing={pricing}
+          />
+        )}
+
+        {viewMode === 'square' && (
+          <ConfigSquare
+            configList={configList}
+            onLoadConfig={loadConfigFromSquare}
+            showToast={showToast}
+            onToggleLike={handleToggleLike}
+          />
+        )}
+      </main>
+
+      {/* 弹窗层 */}
+      {showShareModal && (
+        <ShareFormModal
+          onClose={() => setShowShareModal(false)}
+          onPublish={handlePublishToSquare}
+        />
+      )}
+      {showSaveModal && (
+        <SavePreviewModal
+          buildList={buildList}
+          pricing={pricing}
+          onClose={() => setShowSaveModal(false)}
+          onCopy={(text) => {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "0";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+              const successful = document.execCommand('copy');
+              if (successful) {
+                showToast("✅ 配置单已复制到剪贴板");
+                setShowSaveModal(false);
+              } else {
+                showToast("❌ 复制失败，请手动选择文本");
+              }
+            } catch (err) {
+              console.error('Copy failed:', err);
+              showToast("❌ 复制失败，请手动选择文本");
+            }
+            document.body.removeChild(textArea);
+          }}
+        />
+      )}
+      {showLibraryModal && (
+        <ConfigLibraryModal
+          configList={configList}
+          onClose={() => setShowLibraryModal(false)}
+          onSelectConfig={loadConfigFromSquare}
+        />
+      )}
+
+      {toast.show && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] animate-bounce">
+          <div className="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 border border-slate-800/50 backdrop-blur-lg">
+            <span>{toast.msg}</span>
+          </div>
+        </div>
+      )}
+
+      {/* 底部悬浮结算栏 */}
+      {viewMode === 'visual' && (
+        <footer className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+          <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-start md:items-end gap-1 md:gap-6 flex-1">
+              <div className="flex items-center gap-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm text-slate-400 line-through">¥{Math.floor(pricing.standardPrice)}</span>
+                    <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-bold border border-emerald-100">已省 ¥{pricing.savedAmount}</span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold text-slate-900">¥</span>
+                    <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-600 font-mono tracking-tight">{pricing.finalPrice}</span>
+                  </div>
+                </div>
+                <div className="relative group hidden md:block">
+                  <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="appearance-none bg-slate-100 border border-slate-200 hover:border-indigo-300 text-slate-700 text-sm font-medium py-2 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer">
+                    {DISCOUNT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-2.5 text-slate-400 pointer-events-none" size={16} />
+                </div>
+              </div>
+
+              {/* 中间提示语 - 绝对定位居中 */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden lg:block">
+                <span className="text-sm font-medium text-slate-400 bg-slate-50/80 px-4 py-1.5 rounded-full border border-slate-100">
+                  标准价格含 6% 装机售后服务费
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button onClick={clearBuild} className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="清空"><RefreshCw size={20} /></button>
+              {/* 恢复：按钮显示为保存，icon 为 Save */}
+              <button onClick={handleSave} className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl shadow-sm hover:shadow-md transition-all active:scale-95">
+                <Save size={18} /><span>保存</span>
+              </button>
+              <button onClick={handleShareTrigger} disabled={isSharing} className="flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-black disabled:bg-slate-700 text-white font-bold rounded-xl shadow-lg shadow-slate-200 transition-all active:scale-95 min-w-[160px] justify-center">
+                {isSharing ? <RefreshCw size={18} className="animate-spin" /> : <Share2 size={18} />}<span>{isSharing ? '生成中...' : '分享'}</span>
+              </button>
+            </div>
+          </div>
+        </footer>
+      )}
+    </div>
+  );
+}
+
+// 主播登录组件
+function StreamerLogin({ onLogin }: { onLogin: () => void }) {
+  const [pwd, setPwd] = useState('');
+  const [error, setError] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwd === 'xiaoyu') {
+      onLogin();
+    } else {
+      setError(true);
+      setPwd('');
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className={`max-w-md w-full p-8 bg-white/80 backdrop-blur-xl rounded-[24px] shadow-2xl border border-white/50 text-center transition-transform ${error ? 'animate-[shake_0.5s_ease-in-out]' : ''}`}>
+        <div className="mb-6 inline-flex p-4 bg-indigo-50 rounded-full text-indigo-600">
+          <Zap size={32} />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">主播工作台锁定</h2>
+        <p className="text-slate-500 mb-8">请输入访问密码以进入键盘流录入模式</p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="password"
+            value={pwd}
+            onChange={(e) => { setPwd(e.target.value); setError(false); }}
+            className={`w-full px-4 py-3 rounded-xl border ${error ? 'border-red-300 focus:ring-red-200' : 'border-slate-200 focus:ring-indigo-200'} bg-slate-50 focus:outline-none focus:ring-4 transition-all text-center text-lg tracking-widest`}
+            placeholder="请输入密码"
+            autoFocus
+          />
+          {error && <p className="text-red-500 text-xs font-medium">密码错误，请重试</p>}
+          <button type="submit" className="w-full py-3 bg-slate-900 hover:bg-indigo-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-slate-200 active:scale-95">
+            解锁进入
+          </button>
+        </form>
+      </div>
+      <style>{`
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+  `}</style>
+    </div>
+  );
+}
+
+// 主播工作台
+function StreamerWorkbench({
+  buildList,
+  onUpdate,
+  pricing,
+  discountRate,
+  setDiscountRate,
+  isSharing,
+  handleShareTrigger,
+  handleSave,
+  clearBuild
+}: {
+  buildList: BuildEntry[],
+  onUpdate: (id: string, data: Partial<BuildEntry>) => void,
+  pricing: any,
+  discountRate: number,
+  setDiscountRate: (rate: number) => void,
+  isSharing: boolean,
+  handleShareTrigger: () => void,
+  handleSave: () => void,
+  clearBuild: () => void
+}) {
+  const rowInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleNextFocus = (currentIndex: number) => {
+    const nextInput = rowInputRefs.current[currentIndex + 1];
+    if (nextInput) {
+      nextInput.focus();
+      nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-[32px] shadow-xl border border-slate-200/60 overflow-hidden">
+      <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <Zap className="text-indigo-600" />
+          极速录入模式
+        </h2>
+        <div className="text-xs font-medium text-slate-500 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full border border-indigo-100">
+          按 Enter 自动跳转下一行
+        </div>
+      </div>
+
+      <div className="grid grid-cols-[80px_1fr_100px_120px_50px] gap-4 px-6 py-3 bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-wider">
+        <div>类型</div>
+        <div>硬件型号 (支持联想搜索/自定义录入)</div>
+        <div className="text-center">数量</div>
+        <div className="text-right">单价</div>
+        <div></div>
+      </div>
+
+      <div className="divide-y divide-slate-100">
+        {buildList.map((entry, index) => (
+          <StreamerRow key={entry.id} index={index} entry={entry} onUpdate={onUpdate} inputRef={(el) => (rowInputRefs.current[index] = el)} onEnter={() => handleNextFocus(index)} />
+        ))}
+      </div>
+
+      {/* 内嵌底部：价格与操作栏 */}
+      <div className="bg-white/90 border-t border-slate-100 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-end gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm text-slate-400 line-through">¥{Math.floor(pricing.standardPrice)}</span>
+                <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">已省 ¥{pricing.savedAmount}</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-slate-900">¥</span>
+                <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 font-mono tracking-tight">{pricing.finalPrice}</span>
+              </div>
+            </div>
+            <div className="relative group">
+              <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="appearance-none bg-slate-100 border border-slate-200 hover:border-indigo-300 text-slate-700 text-sm font-medium py-2 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer">
+                {DISCOUNT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              </select>
+              <ChevronDown className="absolute right-3 top-2.5 text-slate-400 pointer-events-none" size={16} />
+            </div>
+          </div>
+          {/* 主播模式的底部文案 - 修正样式 */}
+          <div className="text-xs text-slate-500 mt-1 font-medium bg-slate-50 inline-block px-2 py-0.5 rounded-md self-start">标准价格含 6% 装机售后服务费</div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button onClick={clearBuild} className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" title="清空"><RefreshCw size={20} /></button>
+          {/* 恢复：按钮显示为保存，icon 为 Save，点击后仍为弹窗复制逻辑 */}
+          <button onClick={handleSave} className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white font-medium rounded-xl shadow-lg shadow-slate-200 transition-all active:scale-95">
+            <Save size={18} /><span>保存</span>
+          </button>
+          <button onClick={handleShareTrigger} disabled={isSharing} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-95 min-w-[160px] justify-center">
+            {isSharing ? <RefreshCw size={18} className="animate-spin" /> : <Share2 size={18} />}<span>{isSharing ? '生成中...' : '分享'}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StreamerRow({ entry, index, onUpdate, inputRef, onEnter }: { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, inputRef: React.LegacyRef<HTMLInputElement>, onEnter: () => void }) {
+  const [query, setQuery] = useState(entry.customName || entry.item?.model || '');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState(0);
+
+  const suggestions = useMemo(() => {
+    if (!query) return [];
+    return HARDWARE_DB.filter(item => item.category === entry.category && (item.model.toLowerCase().includes(query.toLowerCase()) || item.brand.toLowerCase().includes(query.toLowerCase())));
+  }, [query, entry.category]);
+
+  useEffect(() => {
+    if (entry.item) setQuery(`${entry.item.brand} ${entry.item.model}`);
+    else if (entry.customName) setQuery(entry.customName);
+    else setQuery('');
+  }, [entry.item, entry.customName]);
+
+  const selectItem = (item: HardwareItem) => {
+    onUpdate(entry.id, { item, customPrice: undefined, customName: undefined });
+    setQuery(`${item.brand} ${item.model}`);
+    setShowSuggestions(false);
+    onEnter();
+  };
+
+  const handleCustomInput = (val: string) => {
+    setQuery(val);
+    onUpdate(entry.id, { customName: val, item: null });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlightIndex(prev => Math.min(prev + 1, suggestions.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlightIndex(prev => Math.max(prev - 1, 0)); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (showSuggestions && suggestions.length > 0) selectItem(suggestions[highlightIndex]); else onEnter(); }
+  };
+
+  const handlePriceChange = (newPrice: string) => {
+    const num = parseInt(newPrice);
+    if (!isNaN(num)) onUpdate(entry.id, { customPrice: num });
+    else onUpdate(entry.id, { customPrice: 0 });
+  };
+
+  const displayPrice = entry.customPrice ?? entry.item?.price ?? 0;
+
+  // 核心修改：图标颜色强化逻辑
+  const isCpu = entry.category === 'cpu';
+  const isGpu = entry.category === 'gpu';
+
+  return (
+    <div className={`grid grid-cols-[80px_1fr_100px_120px_50px] gap-4 px-6 py-4 items-center group transition-colors ${entry.item ? 'bg-indigo-50/30' : 'hover:bg-slate-50'}`}>
+      
+      {/* 强化图标显示 */}
+      <div className={`flex items-center gap-2 font-medium text-sm transition-all ${
+        isCpu ? 'text-indigo-700' : isGpu ? 'text-purple-700' : 'text-slate-500'
+      }`}>
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+          isCpu ? 'bg-indigo-100 text-indigo-600' :
+          isGpu ? 'bg-purple-100 text-purple-600' :
+          'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:shadow-sm'
+        }`}>
+          {getIconByCategory(entry.category)}
+        </div>
+        <span className={isCpu || isGpu ? 'font-bold' : ''}>{CATEGORY_MAP[entry.category]}</span>
+      </div>
+
+      <div className="relative">
+        <input ref={inputRef} type="text" className="w-full bg-transparent border-none p-0 text-slate-800 font-medium placeholder-slate-300 focus:ring-0 focus:outline-none" placeholder={entry.category === 'accessory' ? "输入配件名称…" : `输入/搜索${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-xl border border-slate-100 z-50 mt-2 overflow-hidden">
+            {suggestions.map((item, idx) => (
+              <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`} onMouseDown={() => selectItem(item)}>
+                <span>{item.brand} {item.model}</span>
+                <span className="font-bold">¥{item.price}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-center">
+        {entry.category === 'accessory' ? null : (
+          entry.isLockedQty ? <span className="text-slate-400 text-sm">× 1</span> : (
+            <div className="flex items-center bg-white rounded border border-slate-200">
+              <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="text-slate-400 hover:text-indigo-600 transition-colors px-1">-</button>
+              <span className="w-8 text-center text-sm">{entry.quantity}</span>
+              <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="text-slate-400 hover:text-indigo-600 transition-colors px-1">+</button>
+            </div>
+          )
+        )}
+      </div>
+
+      <div className="flex items-center gap-1 justify-end">
+        <span className="text-slate-300 text-sm">¥</span>
+        <input type="text" className={`w-16 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none transition-colors ${entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700'}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} />
+      </div>
+
+      <div className="flex justify-end">
+        <button onClick={() => onUpdate(entry.id, { item: null, customPrice: undefined, customName: '' })} className="text-slate-300 hover:text-red-500 transition-colors">
+          <X size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// VisualBuilder - 恢复为白底
+function VisualBuilder({
+  buildList,
+  onUpdate,
+  health,
+  onOpenLibrary,
+  remark,
+  setRemark,
+  pricing
+}: {
+  buildList: BuildEntry[],
+  onUpdate: (id: string, d: Partial<BuildEntry>) => void,
+  health: { status: string, issues: string[] },
+  onOpenLibrary: () => void,
+  remark: string,
+  setRemark: (s: string) => void,
+  pricing: any
+}) {
+  const [modalCategory, setModalCategory] = useState<Category | null>(null);
+  const [modalEntryId, setModalEntryId] = useState<string | null>(null);
+  const [modalSearch, setModalSearch] = useState('');
+  const [modalBrand, setModalBrand] = useState('all');
+
+  const openSelector = (entry: BuildEntry) => {
+    setModalCategory(entry.category);
+    setModalEntryId(entry.id);
+    setModalSearch('');
+    setModalBrand('all');
+  };
+
+  const handleSelect = (item: HardwareItem) => { if (modalEntryId) { onUpdate(modalEntryId, { item, customPrice: undefined, customName: undefined }); setModalCategory(null); setModalEntryId(null); } };
+
+  const filteredItems = useMemo(() => {
+    if (!modalCategory) return [];
+    return HARDWARE_DB.filter(i =>
+      i.category === modalCategory &&
+      (modalBrand === 'all' || i.brand === modalBrand) &&
+      (i.model.toLowerCase().includes(modalSearch.toLowerCase()) || i.brand.toLowerCase().includes(modalSearch.toLowerCase()))
+    );
+  }, [modalCategory, modalBrand, modalSearch]);
+
+  const availableBrands = useMemo(() => {
+    if (!modalCategory) return [];
+    const brands = new Set(HARDWARE_DB.filter(i => i.category === modalCategory).map(i => i.brand));
+    return ['all', ...Array.from(brands)];
+  }, [modalCategory]);
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-8">
+      {/* 左侧：垂直列表 */}
+      <div className="flex-1 space-y-3 pb-20">
+        {buildList.map((entry) => (
+          <div
+            key={entry.id}
+            onClick={() => openSelector(entry)}
+            className={`relative rounded-2xl p-4 border transition-all cursor-pointer group flex items-center gap-6 ${entry.item || entry.customName
+              ? 'bg-white border-white/60 shadow-sm hover:shadow-lg hover:border-indigo-200'
+              : 'bg-slate-50 border-dashed border-slate-300 hover:bg-white hover:border-indigo-300'
+              }`}
+          >
+            {/* 1. 左侧：图标与分类 */}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 transition-colors ${entry.item ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-200 text-slate-400'}`}>
+              {getIconByCategory(entry.category)}
+            </div>
+            <div className={`text-sm font-bold w-12 ${entry.item ? 'text-indigo-900' : 'text-slate-500'}`}>{CATEGORY_MAP[entry.category]}</div>
+
+            {/* 2. 中间：详细信息 (自适应宽度) */}
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+              {entry.category === 'accessory' ? (
+                <input
+                  type="text"
+                  className="w-full bg-transparent border-none p-0 text-slate-800 font-bold placeholder-slate-400 focus:ring-0 truncate"
+                  placeholder="输入配件名称..."
+                  value={entry.customName || ''}
+                  onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : entry.item ? (
+                <div>
+                  <div className="font-bold text-slate-800 truncate text-base">{entry.item.brand} {entry.item.model}</div>
+                </div>
+              ) : (
+                <div className="text-slate-400 font-medium">点击选择{CATEGORY_MAP[entry.category]}</div>
+              )}
+            </div>
+            {/* 3. 右侧：数量与价格 (固定宽度对齐) */}
+            <div className="flex items-center gap-8 w-48 justify-end shrink-0">
+              {/* 数量 */}
+              <div className="w-20 flex justify-center" onClick={e => e.stopPropagation()}>
+                {entry.category === 'accessory' ? null : (
+                  !entry.isLockedQty ? (
+                    <div className="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200">
+                      <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded text-slate-500 font-bold transition-all">-</button>
+                      <span className="w-6 text-center text-xs font-bold text-slate-700">{entry.quantity}</span>
+                      <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded text-slate-500 font-bold transition-all">+</button>
+                    </div>
+                  ) : (
+                    (entry.item || entry.customName) && <span className="text-xs text-slate-300 font-medium">x 1</span>
+                  )
+                )}
+              </div>
+              {/* 价格 */}
+              <div className="w-16 text-right font-bold text-slate-800 text-lg">
+                {entry.item || entry.customName ? `¥${entry.customPrice ?? entry.item?.price ?? 0}` : '-'}
+              </div>
+            </div>
+            {/* 移除按钮 (绝对定位到右上角) */}
+            {(entry.item || (entry.category === 'accessory' && entry.customName)) && (
+              <button
+                className="absolute top-2 right-2 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                onClick={(e) => { e.stopPropagation(); onUpdate(entry.id, { item: null, customName: '', customPrice: undefined, quantity: 1 }); }}
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+      {/* 右侧：固定悬浮面板 HUD */}
+      <div className="w-full lg:w-80 shrink-0 space-y-6">
+        {/* 快速入口 */}
+        <div onClick={onOpenLibrary} className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[24px] p-6 text-white shadow-xl shadow-indigo-200 cursor-pointer group hover:scale-[1.02] transition-transform">
+          <div className="flex justify-between items-start"><h3 className="font-bold text-lg mb-2">配置库</h3><ArrowRight className="opacity-50 group-hover:opacity-100 transition-opacity" /></div>
+          <p className="text-indigo-100 text-sm mb-4">浏览大神方案，一键复用到当前清单。</p>
+        </div>
+        {/* 价格结算卡片 - 优化显示 */}
+        <div className="bg-white/80 backdrop-blur rounded-[24px] p-6 border border-slate-100 shadow-lg">
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><CreditCard size={18} /> 价格详情</h3>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between text-slate-600"><span>配置总价 (含服务费)</span><span className="font-bold text-slate-800">¥{Math.floor(pricing.standardPrice)}</span></div>
+            {pricing.savedAmount > 0 && (<div className="flex justify-between text-emerald-600 font-medium"><span>优惠立减</span><span>- ¥{pricing.savedAmount}</span></div>)}
+            <div className="h-px bg-slate-100 my-2"></div>
+            <div className="flex justify-between items-end"><span className="text-slate-800 font-bold">预估到手</span><span className="text-3xl font-extrabold text-indigo-600">¥{pricing.finalPrice}</span></div>
+          </div>
+        </div>
+        {/* 整机备注 */}
+        <div className="bg-white/80 backdrop-blur rounded-[24px] p-6 border border-slate-100 shadow-lg">
+          <h3 className="font-bold text-slate-800 mb-3 flex items-center gap-2"><FileText size={18} /> 整机备注</h3>
+          <textarea value={remark} onChange={(e) => setRemark(e.target.value)} className="w-full h-24 bg-slate-50 border border-slate-100 rounded-xl p-3 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none" placeholder="例如：显卡需要不拆封、发顺丰到付..." />
+        </div>
+        {/* 健康度卡片 */}
+        <div className={`bg-white/80 backdrop-blur rounded-[24px] p-6 border ${health.status === 'perfect' ? 'border-emerald-100 shadow-emerald-50' : 'border-amber-100 shadow-amber-50'} shadow-lg`}>
+          <div className="flex items-center justify-between mb-4"><h3 className="font-bold text-slate-800">系统健康度</h3>{health.status === 'perfect' ? <CheckCircle2 className="text-emerald-500" /> : <AlertCircle className="text-amber-500" />}</div>
+          {health.status === 'perfect' ? <div className="text-sm text-slate-500 bg-emerald-50 p-3 rounded-xl border border-emerald-100">配置完美兼容，未发现硬件冲突。</div> : <div className="space-y-2">{health.issues.map((issue, idx) => <div key={idx} className="text-xs text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-100 flex gap-2"><div className="shrink-0 mt-0.5">•</div><div>{issue}</div></div>)}</div>}
+        </div>
+      </div>
+      {/* 选件弹窗 - 美化版 - 恢复为白底 */}
+      {modalCategory && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
+          <div className="bg-white rounded-[32px] w-full max-w-3xl h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-scale-up">
+            <div className="p-5 border-b border-slate-100 flex flex-col gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+              <div className="flex justify-between items-center"><h2 className="text-xl font-bold text-slate-800">选择 {CATEGORY_MAP[modalCategory]}</h2><button onClick={() => setModalCategory(null)} className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors text-slate-500"><X size={20} /></button></div>
+              <div className="flex gap-3">
+                <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} /><input type="text" value={modalSearch} onChange={(e) => setModalSearch(e.target.value)} placeholder={`搜索 ${CATEGORY_MAP[modalCategory]} 型号...`} className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 transition-all" /></div>
+                <div className="flex gap-2 overflow-x-auto no-scrollbar items-center">{availableBrands.map(brand => (<button key={brand} onClick={() => setModalBrand(brand)} className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${modalBrand === brand ? 'bg-slate-800 text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>{brand === 'all' ? '全部' : brand}</button>))}</div>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 bg-slate-50/50">
+              <div className="grid gap-3">
+                {filteredItems.map(item => (
+                  <div key={item.id} onClick={() => handleSelect(item)} className="bg-white p-4 rounded-2xl border border-slate-100 hover:border-indigo-500 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer flex justify-between items-center group transition-all duration-200">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-indigo-500 group-hover:bg-indigo-50 transition-colors">{getIconByCategory(modalCategory)}</div>
+                      <div><div className="font-bold text-slate-800 text-lg group-hover:text-indigo-600 transition-colors">{item.model}</div><div className="text-xs text-slate-400 mt-1 font-medium flex items-center gap-2"><span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">{item.brand}</span>{Object.entries(item.specs).map(([key, val]) => (<span key={key} className="hidden sm:inline opacity-75">• {val}</span>))}</div></div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1"><div className="text-xl font-bold text-slate-900">¥{item.price}</div><button className="text-xs font-bold text-white bg-slate-900 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg shadow-indigo-200/50">选择</button></div>
+                  </div>
+                ))}
+                {filteredItems.length === 0 && <div className="flex flex-col items-center justify-center py-20 text-slate-400"><Search size={48} className="mb-4 opacity-20" /><p>未找到相关硬件，换个关键词试试？</p></div>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 优化后的保存预览弹窗：格式美化 - 恢复为白底
+function SavePreviewModal({ buildList, pricing, onClose, onCopy }: { buildList: BuildEntry[], pricing: any, onClose: () => void, onCopy: (text: string) => void }) {
+  // 修复：确保所有配件都被包含
+  const generateText = () => {
+    const today = new Date().toLocaleDateString();
+    // 1. 过滤出有内容的项 (有硬件 OR 有自定义名称)
+    const validItems = buildList.filter(e => e.item || (e.category === 'accessory' && e.customName));
+    // 2. 生成文本列表
+    const itemsText = validItems.map(e => {
+      const name = e.item ? `${e.item.brand} ${e.item.model}` : e.customName;
+      return `[${CATEGORY_MAP[e.category]}] ${name} x${e.quantity}`;
+    }).join('\n');
+    return `📋 小鱼装机单 (${today})\n--------------------------\n${itemsText}\n--------------------------\n💰 总价：¥${pricing.finalPrice}`;
+  };
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+      <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl animate-scale-up">
+        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><Save size={20} /> 保存配置单</h3>
+        <div className="bg-slate-50 p-4 rounded-xl text-xs font-mono text-slate-600 mb-6 whitespace-pre-wrap border border-slate-200 max-h-[60vh] overflow-y-auto">
+          {generateText()}
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">取消</button>
+          <button onClick={() => onCopy(generateText())} className="flex-1 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
+            <Copy size={16} /> 一键复制
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConfigLibraryModal({ configList, onClose, onSelectConfig }: { configList: ConfigTemplate[], onClose: () => void, onSelectConfig: (cfg: ConfigTemplate) => void }) {
+  const [filterTag, setFilterTag] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredConfigs = useMemo(() => {
+    return configList.filter(cfg => {
+      if (searchQuery && !cfg.title.toLowerCase().includes(searchQuery.toLowerCase()) && !cfg.author.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (filterTag !== 'all' && !cfg.tags.some(t => t.label === filterTag)) return false;
+      return true;
+    });
+  }, [filterTag, searchQuery, configList]);
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+      <div className="bg-white w-full max-w-4xl h-[80vh] rounded-[32px] shadow-2xl overflow-hidden flex flex-col animate-scale-up">
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white z-10">
+          <h2 className="text-2xl font-bold text-slate-800">快速装机配置库</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={24} /></button>
+        </div>
+        <div className="p-4 bg-slate-50 flex gap-3 flex-wrap border-b border-slate-100">
+          <div className="relative flex-1 min-w-[200px]"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} /><input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索配置单..." className="w-full bg-slate-50 border-none rounded-xl py-3 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 transition-all" /></div>
+          {['all', ...ALL_SCENARIO_TAGS].map((tag) => (<button key={tag} onClick={() => setFilterTag(tag)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${filterTag === tag ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>{tag === 'all' ? '全部场景' : tag}</button>))}
+        </div>
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredConfigs.map(cfg => (
+            <div key={cfg.id} className="bg-white rounded-[24px] p-5 border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col" onClick={() => onSelectConfig(cfg)}>
+              <div className="flex justify-between items-start mb-2">
+                <span className={`text-[10px] font-bold px-2 py-1 rounded ${cfg.type === 'official' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>{cfg.type === 'official' ? 'OFFICIAL' : 'USER'}</span>
+                <span className="font-bold text-indigo-600">¥{cfg.price}</span>
+              </div>
+              <h3 className="font-bold text-slate-800 mb-2 truncate">{cfg.title}</h3>
+              <div className="flex gap-1 mb-4 flex-wrap">{cfg.tags.map(t => <span key={t.label} className="text-[10px] bg-slate-50 text-slate-500 px-1.5 py-0.5 rounded">{t.label}</span>)}</div>
+              <div className="mt-auto pt-3 border-t border-slate-50 flex justify-between items-center">
+                <div className="flex items-center gap-2"><div className={`w-5 h-5 rounded-full ${cfg.avatarColor}`}></div><span className="text-xs text-slate-500">{cfg.author}</span></div>
+                <button className="text-xs font-bold text-white bg-slate-900 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">载入</button>
+              </div>
+            </div>
+          ))}
+          {filteredConfigs.length === 0 && <div className="col-span-full py-20 text-center text-slate-400">未找到相关配置</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ==============================================================================
+ * 组件: 分享发布弹窗 (ShareFormModal) - 保持不变
+ * ==============================================================================
+ */
+function ShareFormModal({ onClose, onPublish }: { onClose: () => void, onPublish: (data: { title: string, tags: string[], desc: string }) => void }) {
+  const [title, setTitle] = useState('');
+  const [desc, setDesc] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+      <div className="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl animate-scale-up">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-slate-800">分享配置单</h2>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={20} /></button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">标题 *</label>
+            <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none" placeholder="例如：13600K 白色海景房作业" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">外观风格 (多选)</label>
+            <div className="flex flex-wrap gap-2">
+              {TAGS_APPEARANCE.map(tag => (<button key={tag} onClick={() => toggleTag(tag)} className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${selectedTags.includes(tag) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'}`}>{tag}</button>))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">主要用途 (多选)</label>
+            <div className="flex flex-wrap gap-2">
+              {TAGS_USAGE.map(tag => (<button key={tag} onClick={() => toggleTag(tag)} className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${selectedTags.includes(tag) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'}`}>{tag}</button>))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">描述 (可选)</label>
+            <textarea value={desc} onChange={e => setDesc(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none h-24 resize-none" placeholder="分享一下你的装机心得或配置亮点..." />
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <button onClick={() => onPublish({ title, tags: selectedTags, desc })} disabled={!title.trim()} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2">
+            <Share2 size={18} /> 发布到配置广场
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ==============================================================================
+ * 模块 C: 配置广场 (Config Square) - 筛选与卡片UI重构
+ * ==============================================================================
+ */
+function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike }: { configList: ConfigTemplate[], onLoadConfig: (cfg: ConfigTemplate) => void, showToast: (msg: string) => void, onToggleLike: (id: string) => void }) {
+  // 单一过滤器状态：可以是 'all'、Tag名称、或者 Source 类型
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'hot' | 'new'>('hot');
+  const [selectedConfig, setSelectedConfig] = useState<ConfigTemplate | null>(null);
+
+  // 构建统一的过滤器选项列表
+  const FILTER_OPTIONS = [
+    { id: 'all', label: '全部' },
+    // 来源类型
+    { id: 'official', label: '官方', type: 'source' },
+    { id: 'streamer', label: '主播', type: 'source' },
+    { id: 'user', label: '用户', type: 'source' },
+    { id: 'help', label: '求助', type: 'source' },
+    // 外观标签
+    ...TAGS_APPEARANCE.map(tag => ({ id: tag, label: tag, type: 'appearance' })),
+    // 用途标签
+    ...TAGS_USAGE.map(tag => ({ id: tag, label: tag, type: 'usage' }))
+  ];
+
+  const handleFilterClick = (filterId: string) => {
+    setActiveFilter(filterId);
+  };
+
+  const filteredConfigs = useMemo(() => {
+    return configList.filter(cfg => {
+      // 1. 关键词搜索
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (!cfg.title.toLowerCase().includes(query) && !cfg.author.toLowerCase().includes(query)) return false;
+      }
+
+      // 2. 统一筛选逻辑
+      if (activeFilter === 'all') return true;
+
+      const selectedOption = FILTER_OPTIONS.find(opt => opt.id === activeFilter);
+      if (!selectedOption) return true;
+
+      if (selectedOption.type === 'source') {
+        // 如果是来源类型（official/streamer等），匹配 config.type
+        return cfg.type === activeFilter;
+      } else {
+        // 如果是标签（外观或用途），匹配 config.tags
+        return cfg.tags.some(t => t.label === activeFilter);
+      }
+    });
+  }, [searchQuery, activeFilter, configList]);
+
+  const sortedConfigs = useMemo(() => {
+    return [...filteredConfigs].sort((a, b) => {
+      if (sortBy === 'hot') {
+        const scoreA = a.views + (a.likes * 2) + (a.comments * 5);
+        const scoreB = b.views + (b.likes * 2) + (b.comments * 5);
+        return scoreB - scoreA;
+      } else {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+    });
+  }, [filteredConfigs, sortBy]);
+
+  const getCoreSpecs = (cfg: ConfigTemplate) => {
+    const cpu = HARDWARE_DB.find(i => i.id === cfg.items.cpu)?.model || 'CPU';
+    const gpu = HARDWARE_DB.find(i => i.id === cfg.items.gpu)?.model || '集显';
+    return { cpu, gpu };
+  };
+
+  // 定义不同类型的颜色主题配置 - 官方黑，主播紫，用户蓝，求助黄
+  const getTypeTheme = (type: ConfigTemplate['type']) => {
+    switch (type) {
+      case 'official': // 官方 - 黑色主题
+        return {
+          border: 'border-slate-800', // 边框深色
+          badge: 'bg-slate-900 text-white', // 徽章深色
+          text: 'text-slate-900', // 价格深色
+          bg: 'bg-slate-50', // 浅色背景，避免太暗
+          label: 'OFFICIAL',
+          iconColor: 'text-slate-800'
+        };
+      case 'streamer': // 主播 - 紫色主题
+        return {
+          border: 'border-purple-200',
+          badge: 'bg-purple-600 text-white',
+          text: 'text-purple-700',
+          bg: 'bg-purple-50/50',
+          label: 'STREAMER',
+          iconColor: 'text-purple-600'
+        };
+      case 'user': // 用户 - 蓝色主题
+        return {
+          border: 'border-blue-200',
+          badge: 'bg-blue-500 text-white',
+          text: 'text-blue-700',
+          bg: 'bg-blue-50/50',
+          label: 'USER',
+          iconColor: 'text-blue-600'
+        };
+      case 'help': // 求助 - 黄色主题
+        return {
+          border: 'border-amber-200',
+          badge: 'bg-amber-400 text-white',
+          text: 'text-amber-700',
+          bg: 'bg-amber-50/50',
+          label: 'HELP',
+          iconColor: 'text-amber-600'
+        };
+      default:
+        return {
+          border: 'border-slate-200',
+          badge: 'bg-slate-500 text-white',
+          text: 'text-slate-600',
+          bg: 'bg-slate-50',
+          label: 'UNKNOWN',
+          iconColor: 'text-slate-500'
+        };
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* 筛选区域 - 统一单行列表样式 */}
+      <div className="bg-white rounded-[24px] p-8 border border-slate-100 shadow-lg shadow-slate-100/50 space-y-8">
+        
+        {/* 顶部工具栏：标题 + 搜索 + 排序 */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-100 pb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-slate-900 text-white rounded-lg"><Trophy size={20} /></div>
+            <h2 className="text-xl font-extrabold text-slate-800 tracking-tight">配置广场</h2>
+          </div>
+
+          <div className="flex-1 w-full md:w-auto flex justify-end gap-4">
+             <div className="relative w-full max-w-xs group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="搜索配置单..."
+                  className="w-full bg-slate-50 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-400"
+                />
+             </div>
+             <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
+                <button onClick={() => setSortBy('hot')} className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${sortBy === 'hot' ? 'bg-white text-orange-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                  <Flame size={14} /> 热度
+                </button>
+                <button onClick={() => setSortBy('new')} className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${sortBy === 'new' ? 'bg-white text-indigo-500 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                  <Clock size={14} /> 最新
+                </button>
+             </div>
+          </div>
+        </div>
+
+        {/* 统一筛选器列表 */}
+        <div>
+          <div className="flex flex-wrap gap-3">
+            {FILTER_OPTIONS.map(opt => {
+              const isActive = activeFilter === opt.id;
+              
+              // 基础样式
+              let activeClass = 'bg-slate-800 text-white border-slate-800 shadow-md transform scale-105';
+              let inactiveClass = 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700 hover:shadow-sm';
+
+              // 为不同类型赋予特定颜色（选中时） - 官方感配色
+              if (isActive) {
+                 if (opt.type === 'source') {
+                    if (opt.id === 'official') activeClass = 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-slate-900/20';
+                    if (opt.id === 'streamer') activeClass = 'bg-purple-600 text-white border-purple-600 shadow-md shadow-purple-200 ring-2 ring-purple-500/20';
+                    if (opt.id === 'user') activeClass = 'bg-blue-500 text-white border-blue-500 shadow-md shadow-blue-200 ring-2 ring-blue-500/20';
+                    if (opt.id === 'help') activeClass = 'bg-amber-400 text-white border-amber-400 shadow-md shadow-amber-200 ring-2 ring-amber-400/20';
+                 }
+              }
+
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => handleFilterClick(opt.id)}
+                  className={`px-5 py-2 rounded-full text-xs font-bold transition-all border ${isActive ? activeClass : inactiveClass}`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 卡片列表 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {sortedConfigs.map((cfg) => {
+          const specs = getCoreSpecs(cfg);
+          const theme = getTypeTheme(cfg.type);
+
+          return (
+            <div
+              key={cfg.id}
+              onClick={() => setSelectedConfig(cfg)}
+              className={`group bg-white rounded-[24px] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col cursor-pointer border-t-4 ${theme.border} border-l border-r border-b border-slate-100`}
+            >
+              {/* 顶部区域：硬件展示 + 标签 */}
+              <div className={`h-36 relative flex flex-col items-center justify-center p-6 text-center ${theme.bg}`}>
+                {/* 左上角标签 */}
+                <div className={`absolute top-4 left-4 ${theme.badge} text-[10px] font-extrabold px-2.5 py-1 rounded-md shadow-sm tracking-wider uppercase flex items-center gap-1`}>
+                  {cfg.type === 'official' && <Crown size={10} />}
+                  {cfg.type === 'streamer' && <Zap size={10} />}
+                  {cfg.type === 'user' && <User size={10} />}
+                  {cfg.type === 'help' && <HelpCircle size={10} />}
+                  {theme.label}
+                </div>
+
+                <div className="space-y-2 z-10 w-full">
+                  <div className="font-extrabold text-slate-800 text-base line-clamp-1">{specs.cpu}</div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">+</div>
+                  <div className="font-extrabold text-slate-800 text-base line-clamp-1">{specs.gpu}</div>
+                </div>
+              </div>
+
+              {/* 内容区域 */}
+              <div className="p-5 flex-1 flex flex-col bg-white">
+                <div className="font-bold text-slate-900 mb-3 line-clamp-1 text-lg">{cfg.title}</div>
+
+                <div className="flex gap-2 mb-5 flex-wrap">
+                  {cfg.tags.slice(0, 3).map(t => (
+                    <span key={t.label} className="text-[10px] px-2 py-1 bg-slate-50 text-slate-500 border border-slate-100 rounded-md font-bold">
+                      {t.label}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="mt-auto flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-8 h-8 rounded-full ${cfg.avatarColor} border-2 border-white shadow-sm`}></div>
+                    <span className="text-xs font-bold text-slate-600 truncate max-w-[80px]">{cfg.author}</span>
+                  </div>
+                  <div className={`font-extrabold text-xl ${theme.text}`}>¥{cfg.price}</div>
+                </div>
+
+                <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-50 text-xs text-slate-400 font-medium">
+                  <span className={`flex items-center gap-1.5 transition-colors ${cfg.isLiked ? 'text-pink-500' : 'group-hover:text-slate-600'}`}>
+                    <ThumbsUp size={14} className={cfg.isLiked ? 'fill-current' : ''} /> {cfg.likes}
+                  </span>
+                  <span className="flex items-center gap-1.5 group-hover:text-slate-600 transition-colors">
+                    <MessageSquare size={14} /> {cfg.comments}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {selectedConfig && (
+        <ConfigDetailModal
+          config={selectedConfig}
+          onClose={() => setSelectedConfig(null)}
+          onLoad={() => { onLoadConfig(selectedConfig); setSelectedConfig(null); }}
+          showToast={showToast}
+          onToggleLike={onToggleLike}
+        />
+      )}
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// 辅助组件定义 - 放在文件底部以保持主逻辑清晰
+// ----------------------------------------------------------------------
+
+function TabButton({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) {
+  return (
+    <button onClick={onClick} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${active ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
+      {icon}{label}
+    </button>
+  );
+}
+
+function FileText({ size }: { size?: number }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><line x1="10" x2="8" y1="9" y2="9" /></svg>
+  );
+}
+
+function getIconByCategory(category: Category) {
+  switch (category) {
+    case 'cpu': return <Cpu size={20} />;
+    case 'mainboard': return <Box size={20} />;
+    case 'gpu': return <Zap size={20} />;
+    case 'ram': return <CreditCard size={20} className="rotate-90" />;
+    case 'disk': return <HardDrive size={20} />;
+    case 'power': return <Zap size={20} className="text-amber-500" />;
+    case 'cooling': return <Wind size={20} />;
+    case 'fan': return <Fan size={20} />;
+    case 'case': return <Box size={20} />;
+    case 'monitor': return <Monitor size={20} />;
+    case 'mouse': return <MousePointer2 size={20} />;
+    case 'keyboard': return <Keyboard size={20} />;
+    case 'accessory': return <Cable size={20} />;
+    default: return <Box size={20} />;
+  }
+}
