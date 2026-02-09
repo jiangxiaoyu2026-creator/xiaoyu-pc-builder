@@ -9,6 +9,7 @@ class User(SQLModel, table=True):
     __tablename__ = "users"
     id: str = Field(primary_key=True)
     username: str = Field(unique=True, index=True)
+    mobile: Optional[str] = Field(default=None, unique=True, index=True)
     password: str
     role: str = Field(default="user")
     status: str = Field(default="active")
@@ -109,3 +110,11 @@ class Order(SQLModel, table=True):
     payMethod: str # 'wechat', 'alipay'
     createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     paidAt: Optional[str] = None
+
+class SMSVerification(SQLModel, table=True):
+    __tablename__ = "sms_verifications"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    mobile: str = Field(index=True)
+    code: str
+    expiresAt: datetime
+    createdAt: datetime = Field(default_factory=datetime.utcnow)

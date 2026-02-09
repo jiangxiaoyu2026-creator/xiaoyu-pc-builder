@@ -5,6 +5,7 @@ from typing import List, Optional
 from ..db import get_session
 from ..models import User
 from ..utils.auth import get_password_hash, verify_password, create_access_token, decode_access_token
+from ..services.sms_service import SMSService
 import uuid
 from datetime import datetime
 
@@ -65,6 +66,41 @@ async def register(user_data: dict, session: Session = Depends(get_session)):
     
     return {"message": "User created successfully", "userId": new_user.id}
 
+@router.post("/register-sms")
+async def register_sms(data: dict, session: Session = Depends(get_session)):
+    mobile = data.get("mobile")
+    code = data.get("code")
+    username = data.get("username")
+    password = data.get("password")
+    
+    if not all([mobile, code, username, password]):
+        raise HTTPException(status_code=400, detail="Missing required fields")
+    
+    # Verify SMS
+    if not SMSService.verify_code(mobile, code, session):
+        raise HTTPException(status_code=400, detail="Invalid or expired verification code")
+    
+    # Check if mobile already exists
+    if session.exec(select(User).where(User.mobile == mobile)).first():
+        raise HTTPException(status_code=400, detail="Mobile number already registered")
+    
+    # Check if username exists
+    if session.exec(select(User).where(User.username == username)).first():
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    # Create user
+    new_user = User(
+        id=str(uuid.uuid4()),
+        username=username,
+        mobile=mobile,
+        password=get_password_hash(password),
+        role="user",
+        status="active"
+    )
+    session.add(new_user)
+    session.commit()
+    return {"message": "User registered successfully", "userId": new_user.id}
+
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
     statement = select(User).where(User.username == form_data.username)
@@ -90,6 +126,41 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Sessi
             "id": user.id,
             "username": user.username,
             "role": user.role
+        }
+    }
+
+@router.post("/login-sms")
+async def login_sms(data: dict, session: Session = Depends(get_session)):
+    mobile = data.get("mobile")
+    code = data.get("code")
+    
+    if not mobile or not code:
+        raise HTTPException(status_code=400, detail="Mobile and verification code are required")
+        
+    # Verify SMS
+    if not SMSService.verify_code(mobile, code, session):
+        raise HTTPException(status_code=400, detail="Invalid or expired verification code")
+        
+    # Find user by mobile
+    user = session.exec(select(User).where(User.mobile == mobile)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="No account found with this mobile number. Please register first.")
+        
+    # Update last login
+    user.lastLogin = datetime.utcnow().isoformat()
+    session.add(user)
+    session.commit()
+    
+    # Generate access token
+    access_token = create_access_token(data={"sub": user.username})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "role": user.role,
+            "mobile": user.mobile
         }
     }
 

@@ -1,41 +1,37 @@
-# Build Stage
-FROM node:18-alpine AS builder
-
+# Stage 1: Build Frontend
+FROM node:18-alpine AS frontend-builder
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
-
-# Install all dependencies (including devDependencies for build)
 RUN npm install
-
-# Copy project files
 COPY . .
-
-# Build frontend
 RUN npm run build
 
-# Production Stage
-FROM node:18-alpine
-
+# Stage 2: Build Backend & Final Image
+FROM python:3.9-slim
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install only production dependencies
-RUN npm install --production
+# Copy requirements and install
+COPY server_py/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy built assets from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/server ./server
+# Copy frontend build from stage 1
+COPY --from=frontend-builder /app/dist ./dist
+
+# Copy backend code
+COPY server_py/ ./server_py/
+COPY .env ./
 
 # Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3001
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8000
 
 # Expose port
-EXPOSE 3001
+EXPOSE 8000
 
-# Start server using tsx (since we're keeping files as .ts for simplicity)
-CMD ["npx", "tsx", "server/index.ts"]
+# Start server
+CMD ["python", "-m", "uvicorn", "server_py.main:app", "--host", "0.0.0.0", "--port", "8000"]
