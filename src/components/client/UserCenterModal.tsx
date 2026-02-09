@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Heart, FileText, Calendar, LogOut, Edit3, Gift, Copy, Crown, Share2 } from 'lucide-react';
+import { X, User, Heart, FileText, Calendar, LogOut, Edit3, Gift, Copy, Crown, Share2, ShoppingBag } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { UserItem, ConfigTemplate } from '../../types/clientTypes';
 
@@ -128,9 +128,10 @@ export function UserCenterModal({
     showToast,
     onToggleLike: _onToggleLike // Rename to avoid unused warning if not used here, but we'll use it in Modal below
 }: UserCenterModalProps) {
-    const [activeTab, setActiveTab] = useState<'profile' | 'my-configs' | 'favorites'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'my-configs' | 'favorites' | 'my-used'>('profile');
     const [myConfigs, setMyConfigs] = useState<ConfigTemplate[]>([]);
     const [favorites, setFavorites] = useState<ConfigTemplate[]>([]);
+    const [myUsedItems, setMyUsedItems] = useState<import('../../types/adminTypes').UsedItem[]>([]);
     const [selectedConfig, setSelectedConfig] = useState<ConfigTemplate | null>(null);
 
     useEffect(() => {
@@ -161,6 +162,18 @@ export function UserCenterModal({
 
         setMyConfigs(mappedAll.filter(c => c.userId === user.id || c.author === user.username));
         setFavorites(mappedAll.filter(c => userLikes.includes(c.id)));
+
+        // Load personal used items
+        const loadUsedItems = () => {
+            const allUsed = storage.getUsedItems();
+            setMyUsedItems(allUsed.filter(item => item.sellerId === user.id));
+        };
+        loadUsedItems();
+
+        window.addEventListener('xiaoyu-used-items-update', loadUsedItems);
+        return () => {
+            window.removeEventListener('xiaoyu-used-items-update', loadUsedItems);
+        };
 
     }, [user.id, user.username, activeTab]);
 
@@ -199,6 +212,13 @@ export function UserCenterModal({
                         >
                             <Heart size={18} /> 我的收藏
                             <span className="ml-auto bg-slate-100 text-slate-400 text-xs px-1.5 py-0.5 rounded-full">{favorites.length}</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('my-used')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${activeTab === 'my-used' ? 'bg-white shadow-sm text-amber-600 font-bold' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
+                        >
+                            <ShoppingBag size={18} /> 我的发布
+                            <span className="ml-auto bg-slate-100 text-slate-400 text-xs px-1.5 py-0.5 rounded-full">{myUsedItems.length}</span>
                         </button>
                     </div>
 
@@ -319,6 +339,75 @@ export function UserCenterModal({
                             </div>
                         )}
 
+                        {activeTab === 'my-used' && (
+                            <div className="animate-fade-in h-full flex flex-col">
+                                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">我的闲置发布 <span className="text-slate-400 text-sm font-normal">({myUsedItems.length})</span></h3>
+                                {myUsedItems.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+                                        {myUsedItems.map(item => (
+                                            <div key={item.id} className="bg-white rounded-2xl border border-slate-100 overflow-hidden group hover:shadow-xl transition-all flex flex-col">
+                                                <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
+                                                    {item.images[0] ? (
+                                                        <img src={item.images[0]} alt={item.model} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                                            <ShoppingBag size={32} />
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute top-3 right-3 flex flex-col gap-2 scale-90 origin-top-right">
+                                                        {item.status === 'published' && <span className="px-2 py-1 bg-emerald-500 text-white text-[10px] font-bold rounded-lg shadow-lg">已发布</span>}
+                                                        {item.status === 'pending' && <span className="px-2 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-lg shadow-lg">待审核</span>}
+                                                        {item.status === 'sold' && <span className="px-2 py-1 bg-slate-500 text-white text-[10px] font-bold rounded-lg shadow-lg">已售出</span>}
+                                                        {item.status === 'rejected' && <span className="px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded-lg shadow-lg">未通过</span>}
+                                                    </div>
+                                                </div>
+                                                <div className="p-4 flex-1 flex flex-col">
+                                                    <h4 className="font-bold text-slate-900 truncate mb-1">{item.brand} {item.model}</h4>
+                                                    <div className="text-red-500 font-bold text-sm mb-4">¥{item.price}</div>
+
+                                                    <div className="mt-auto space-y-2">
+                                                        {item.status === 'published' && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (confirm('确定要将该商品标记为已售吗？')) {
+                                                                        storage.markUsedItemAsSold(item.id);
+                                                                        showToast('已标记为已售！');
+                                                                    }
+                                                                }}
+                                                                className="w-full py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                                                            >
+                                                                <ShoppingBag size={14} /> 标记已售
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (confirm('确定要删除这条发布吗？')) {
+                                                                    storage.deleteUsedItem(item.id);
+                                                                    showToast('已删除发布');
+                                                                }
+                                                            }}
+                                                            className="w-full py-2 bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                                                        >
+                                                            <Edit3 size={14} /> 删除发布
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex-1 flex flex-col items-center justify-center text-slate-400 min-h-[300px]">
+                                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                                            <ShoppingBag size={32} className="opacity-20" />
+                                        </div>
+                                        <p>暂无发布的闲置硬件</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {activeTab === 'my-configs' && (
                             <div className="animate-fade-in h-full flex flex-col">
                                 <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">我的方案 <span className="text-slate-400 text-sm font-normal">({myConfigs.length})</span></h3>
@@ -422,6 +511,7 @@ export function UserCenterModal({
                         { id: 'profile' as const, icon: User, label: '资料' },
                         { id: 'my-configs' as const, icon: FileText, label: '配置' },
                         { id: 'favorites' as const, icon: Heart, label: '收藏' },
+                        { id: 'my-used' as const, icon: ShoppingBag, label: '闲置' },
                     ].map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
