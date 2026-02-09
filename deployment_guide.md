@@ -46,10 +46,30 @@
 ### 方案 B：云平台 (最简单，自动化)
 - **前端**：可以使用 [Vercel](https://vercel.com) 或 [Netlify](https://netlify.com)，只需关联 GitHub 仓库即可自动构建部署。
 - **全栈**：可以使用 [Railway](https://railway.app) 或 [Zeabur](https://zeabur.com)，支持一键部署前端 + 后端应用。
+### 方案 C：Docker 部署 (推荐，环境隔离)
+
+项目提供了 `Dockerfile` 和 `docker-compose.yml`，支持一键容器化部署。
+
+1. **安装环境**：确保服务器已安装 Docker 和 Docker Compose。
+2. **构建并启动**：
+   ```bash
+   docker-compose up -d --build
+   ```
+   - 此命令会自动完成前端构建，并启动一个 Node.js 容器。
+   - 容器会暴露 `3001` 端口，同时服务静态前端和 API 接口。
+3. **域名与 Nginx**：
+   - 建议在 Docker 容器前挂一个 Nginx 作为反向代理，处理 HTTPS 和 80 端口转发。
 
 ---
 
-## 4. 备份与存档 (打包)
+## 4. 权限与安全性逻辑
+
+- **AI 智能功能**：已加固权限校验。仅登录且拥有 VIP (SVIP) 身份的用户可使用。
+- **配置保存与分享**：已增加登录检查，确保用户资产安全。
+
+---
+
+## 5. 备份与存档 (打包)
 
 如果您只是想把整个项目存起来或发送给他人：
 1. **排除无关文件**：确保不要打包 `node_modules` 文件夹（它非常大且可以随时重新下载）。

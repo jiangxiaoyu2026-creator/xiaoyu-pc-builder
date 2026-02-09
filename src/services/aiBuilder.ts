@@ -116,10 +116,10 @@ export const aiBuilder = {
         const personaLabel = persona === 'toxic' ? '毒舌' : persona === 'professional' ? '专业' : persona === 'enthusiastic' ? '热心' : '稳重';
         const strategyLabel = strategy === 'performance' ? '性能至上' : strategy === 'aesthetic' ? '颜值巅峰' : strategy === 'budget' ? '极致性价比' : '均衡之道';
 
-        addLog('analysis', '算法预热', `正在加载 [${personaLabel}] 性格模板与 [${strategyLabel}] 装机策略...`);
+        addLog('analysis', '算法预热', `[SYSTEM] Booting AI hardware engine v2.4.0... 加载 [${personaLabel}] 认知模组与 [${strategyLabel}] 启发式算法策略。`);
 
         // --- Learning Phase: Reference Community Configs ---
-        addLog('search', '社区学习', `正在扫描“官方推荐”与“主播精选”方案...`);
+        addLog('search', '特征向量提取', `[CRITICAL] 正在检索全局分布式存储 [官方推荐/主播精选] 方案簇，提取硬件特征向量...`);
         const relevantConfigs = communityConfigs
             .filter(c => {
                 // Must be recommended by Official or Streamer
@@ -139,12 +139,12 @@ export const aiBuilder = {
         let communityReference: ConfigItem | null = null;
         if (relevantConfigs.length > 0) {
             communityReference = relevantConfigs[0];
-            addLog('match', '经验参考', `发现优质社区方案《${communityReference.title}》(👍${communityReference.likes})，已将其作为硬件基准。`);
+            addLog('match', '神经网络加权', `[CORE] 命中高关联性参考方案 《${communityReference.title}》 (Like: ${communityReference.likes})，已将其注入硬件偏差层。`);
         } else {
-            addLog('analysis', '冷启动', `未发现高契合度社区方案，正在通过核心权重算法独立计算...`);
+            addLog('analysis', '冷启动路径', `[WARN] 未发现高置信度外部模型，正在激活自注意力机制进行独立硬件组合演算...`);
         }
 
-        addLog('analysis', '需求解构', `预算锁定 ¥${req.budget} | 场景: ${usageLabel} | 风格: ${req.appearance === 'white' ? '纯白海景' : '经典配色'}`);
+        addLog('analysis', '环境参数解析', `[ENV] 预算边界: ¥${req.budget} | 应用拓扑: ${usageLabel} | 视觉约束: ${req.appearance === 'white' ? '纯白海景' : '经典方案'}`);
 
         // --- Strategy: Dynamic Ratios ---
         let baseRatio = { ...RATIOS[req.usage] };

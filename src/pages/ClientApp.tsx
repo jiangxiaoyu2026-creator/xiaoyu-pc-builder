@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw } from 'lucide-react';
+import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight } from 'lucide-react';
 import { BuildEntry, ConfigTemplate, Category, UserItem } from '../types/clientTypes';
 import { DEFAULT_BUILD_TEMPLATE } from '../data/clientData';
 import { storage } from '../services/storage';
@@ -199,6 +199,11 @@ export default function ClientApp() {
     };
 
     const handleSave = () => {
+        if (!currentUser) {
+            showToast("🔒 请先登录后再保存配置");
+            setShowLoginModal(true);
+            return;
+        }
         setShowSaveModal(true);
     };
 
@@ -427,58 +432,42 @@ export default function ClientApp() {
                         <TabButton active={viewMode === 'about'} onClick={() => setViewMode('about')} icon={<Info size={16} />} label="关于我们" />
                     </div>
 
-                    {/* Mobile Menu Button - Visible only on mobile */}
-                    <button
-                        className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 transition-colors"
-                        onClick={() => setShowMobileMenu(!showMobileMenu)}
-                    >
-                        {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
-                    </button>
-
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         {currentUser ? (
-                            <div className={`group relative flex items-center gap-3 border pl-1.5 pr-4 py-1.5 rounded-2xl shadow-lg transition-all cursor-pointer hover:shadow-xl hover:scale-105 duration-300 ${['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())
-                                ? 'bg-gradient-to-br from-black via-slate-900 to-black border-amber-500/60 shadow-amber-500/20'
-                                : 'bg-white border-slate-300/80 hover:border-indigo-400'
+                            <div className={`flex items-center gap-2 border p-1 rounded-2xl shadow-sm transition-all cursor-pointer hover:shadow-md active:scale-95 duration-300 ${['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())
+                                ? 'bg-slate-900 border-amber-500/40'
+                                : 'bg-white border-slate-200'
                                 } `}
                                 onClick={() => setShowUserCenter(true)}
                             >
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold border-2 shadow-md ${['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())
-                                    ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-black border-amber-300 shadow-amber-500/30'
-                                    : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-indigo-300'
+                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm ${['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())
+                                    ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-black'
+                                    : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white'
                                     } `}>
                                     {currentUser.username ? currentUser.username[0].toUpperCase() : '?'}
                                 </div>
-                                <div className="flex flex-col">
-                                    <div className="flex items-center gap-1.5">
-                                        <span className={`text-sm font-bold truncate max-w-[80px] ${['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())
-                                            ? 'text-amber-100'
-                                            : 'text-slate-700'
-                                            } `} title={currentUser.username}>{currentUser.username}</span>
-                                        {(['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())) ? (
-                                            <img src="https://api.iconify.design/noto:crown.svg" className="w-4 h-4 drop-shadow-[0_0_8px_rgba(245,158,11,0.9)]" alt="VIP" />
-                                        ) : null}
-                                    </div>
-                                    {(['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())) ? (
-                                        <span className="text-[10px] font-black text-black bg-gradient-to-r from-amber-300 to-amber-500 px-2 py-0.5 rounded-full w-fit shadow-sm">
-                                            SVIP
-                                        </span>
-                                    ) : (
-                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full w-fit group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                            个人中心
-                                        </span>
-                                    )}
+                                <div className="hidden sm:flex flex-col pr-2">
+                                    <span className={`text-xs font-bold truncate max-w-[60px] ${['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())
+                                        ? 'text-amber-100'
+                                        : 'text-slate-700'
+                                        } `}>{currentUser.username}</span>
                                 </div>
                             </div>
                         ) : (
                             <button
                                 onClick={() => setShowLoginModal(true)}
-                                className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold text-sm transition-colors bg-white border border-slate-200 p-2 md:px-4 md:py-2 rounded-xl md:rounded-full shadow-sm hover:shadow-md"
+                                className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 transition-colors"
                             >
-                                <User size={20} className="md:w-4 md:h-4" />
-                                <span className="hidden md:inline">登录 / 注册</span>
+                                <User size={20} />
                             </button>
                         )}
+
+                        <button
+                            className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 text-white shadow-lg shadow-slate-200 active:scale-90 transition-all"
+                            onClick={() => setShowMobileMenu(!showMobileMenu)}
+                        >
+                            {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
+                        </button>
                     </div>
                 </div>
             </header>
@@ -498,76 +487,94 @@ export default function ClientApp() {
                                         setShowLoginModal(true);
                                         setShowMobileMenu(false);
                                     }}
-                                    className="w-full flex items-center gap-4 p-4 rounded-xl mb-4 bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-lg transform active:scale-95 transition-all"
+                                    className="w-full flex items-center gap-5 p-5 rounded-[24px] mb-6 bg-slate-900 text-white shadow-2xl shadow-slate-200 group active:scale-[0.98] transition-all"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
-                                        <User size={24} />
+                                    <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/10 group-hover:bg-white/20 transition-colors">
+                                        <User size={28} className="text-white/90" />
                                     </div>
                                     <div className="text-left flex-1">
-                                        <div className="font-bold text-lg">点击登录/注册</div>
-                                        <div className="text-xs text-slate-400">同步您的配置方案与收藏</div>
+                                        <div className="font-bold text-xl tracking-tight">点击登录/注册</div>
+                                        <div className="text-[11px] text-slate-400 mt-0.5">同步您的配置方案与收藏</div>
                                     </div>
-                                    <ArrowRight size={20} className="text-slate-500" />
+                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                        <ArrowRight size={18} className="text-slate-400" />
+                                    </div>
                                 </button>
                             )}
 
-                            {/* Mobile Menu Tools Grid */}
-                            <div className="grid grid-cols-2 gap-3 mb-6">
-                                <button
-                                    onClick={() => {
-                                        setViewMode('visual');
-                                        setTriggerAiModal(true);
-                                        setShowMobileMenu(false);
-                                    }}
-                                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-purple-50 text-purple-700 active:bg-purple-100 transition-colors border border-purple-100"
-                                >
-                                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mb-1">
-                                        <Sparkles size={20} />
-                                    </div>
-                                    <span className="font-bold text-sm">AI 智能装机</span>
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowLibraryModal(true);
-                                        setShowMobileMenu(false);
-                                    }}
-                                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-blue-50 text-blue-700 active:bg-blue-100 transition-colors border border-blue-100"
-                                >
-                                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-1">
-                                        <BookOpen size={20} />
-                                    </div>
-                                    <span className="font-bold text-sm">快速载入配置</span>
-                                </button>
-                            </div>
-
-                            {[
-                                { id: 'visual' as const, icon: LayoutGrid, label: 'AI装机台', desc: '智能配置推荐' },
-                                { id: 'square' as const, icon: Share2, label: '配置广场', desc: '热门配置分享' },
-                                { id: 'used' as const, icon: ShoppingBag, label: '严选二手', desc: '性价比之选' },
-                                { id: 'about' as const, icon: Info, label: '关于我们', desc: '品牌故事' },
-                            ].map((item) => {
-                                const Icon = item.icon;
-                                const isActive = viewMode === item.id;
-                                return (
-                                    <button
-                                        key={item.id}
-                                        onClick={() => {
-                                            setViewMode(item.id);
+                            {/* Unified Mobile Menu Items */}
+                            <div className="space-y-3">
+                                {[
+                                    {
+                                        id: 'ai',
+                                        icon: Sparkles,
+                                        label: 'AI 智能装机',
+                                        desc: '智能算法推荐最佳配置方案',
+                                        onClick: () => {
+                                            if (!handleAiPermission()) return;
+                                            setViewMode('visual');
+                                            setTriggerAiModal(true);
                                             setShowMobileMenu(false);
-                                        }}
-                                        className={`w - full flex items - center gap - 4 p - 4 rounded - xl transition - all ${isActive
-                                            ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg'
-                                            : 'bg-slate-50 hover:bg-slate-100 text-slate-700'
-                                            } `}
-                                    >
-                                        <Icon size={22} />
-                                        <div className="text-left">
-                                            <div className="font-semibold">{item.label}</div>
-                                            <div className={`text - xs ${isActive ? 'text-white/70' : 'text-slate-400'} `}>{item.desc}</div>
-                                        </div>
-                                    </button>
-                                );
-                            })}
+                                        },
+                                        customBg: 'bg-indigo-50 border-indigo-100/50 text-indigo-700',
+                                        iconBg: 'bg-white',
+                                        iconColor: 'text-indigo-600',
+                                        chevronBg: 'bg-indigo-100/30'
+                                    },
+                                    {
+                                        id: 'library',
+                                        icon: BookOpen,
+                                        label: '快速载入配置',
+                                        desc: '立即载入已保存或推荐方案',
+                                        onClick: () => {
+                                            setShowLibraryModal(true);
+                                            setShowMobileMenu(false);
+                                        },
+                                        customBg: 'bg-slate-50 border-slate-200/50 text-slate-700',
+                                        iconBg: 'bg-white',
+                                        iconColor: 'text-slate-900',
+                                        chevronBg: 'bg-slate-200/50'
+                                    },
+                                    { id: 'square' as const, icon: Share2, label: '配置广场', desc: '热门配置分享' },
+                                    { id: 'used' as const, icon: ShoppingBag, label: '严选二手', desc: '性价比之选' },
+                                    { id: 'about' as const, icon: Info, label: '关于我们', desc: '品牌故事' },
+                                ].map((item) => {
+                                    const Icon = item.icon;
+                                    const isActive = viewMode === item.id;
+                                    const clickHandler = 'onClick' in item ? item.onClick : () => {
+                                        setViewMode(item.id as any);
+                                        setShowMobileMenu(false);
+                                    };
+
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            onClick={clickHandler}
+                                            className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 border ${isActive
+                                                ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white border-slate-800 shadow-lg shadow-slate-200 active:scale-[0.98]'
+                                                : item.customBg || 'bg-white hover:bg-slate-50 text-slate-700 border-slate-100 active:scale-[0.99]'
+                                                }`}
+                                        >
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isActive
+                                                ? 'bg-white/10 text-white'
+                                                : item.iconBg || 'bg-slate-100 text-slate-500'
+                                                }`}>
+                                                <Icon size={20} className={!isActive ? item.iconColor : ''} />
+                                            </div>
+                                            <div className="text-left flex-1">
+                                                <div className="font-bold text-sm tracking-tight">{item.label}</div>
+                                                <div className={`text-[10px] ${isActive ? 'text-slate-400' : 'text-slate-400'}`}>{item.desc}</div>
+                                            </div>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isActive
+                                                ? 'bg-white/10 text-white'
+                                                : item.chevronBg || 'bg-slate-100/50 text-slate-400'
+                                                }`}>
+                                                <ChevronRight size={16} />
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -591,6 +598,7 @@ export default function ClientApp() {
                         }}
                         hasPermission={hasStreamerPermission}
                         onApply={() => window.open('https://chat.xiaoyu.com', '_blank')}
+                        onAiCheck={handleAiPermission}
                     />
                 )}
 
@@ -844,7 +852,7 @@ export default function ClientApp() {
             )}
 
             {/* Sheet */}
-            <div className={`fixed inset - x - 0 bottom - 0 z - 50 bg - white rounded - t - 2xl p - 6 shadow - [0_ - 10px_40px_rgba(0, 0, 0, 0.1)] transition - transform duration - 300 ease - out transform ${showDiscountSheet ? 'translate-y-0' : 'translate-y-full'} md: hidden`}>
+            <div className={`fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-out transform ${showDiscountSheet ? 'translate-y-0' : 'translate-y-full'} md:hidden`}>
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold text-slate-900">选择优惠方案</h3>
                     <button onClick={() => setShowDiscountSheet(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:text-slate-800">
@@ -859,14 +867,14 @@ export default function ClientApp() {
                                 setDiscountRate(tier.multiplier);
                                 setShowDiscountSheet(false);
                             }}
-                            className={`flex items - center justify - between p - 4 rounded - xl border - 2 cursor - pointer transition - all active: scale - [0.98] ${discountRate === tier.multiplier ? 'border-indigo-600 bg-indigo-50/50' : 'border-slate-100 bg-white'} `}
+                            className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all active:scale-[0.98] ${discountRate === tier.multiplier ? 'border-indigo-600 bg-indigo-50/50' : 'border-slate-100 bg-white'} `}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={`w - 5 h - 5 rounded - full border - 2 flex items - center justify - center ${discountRate === tier.multiplier ? 'border-indigo-600' : 'border-slate-300'} `}>
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${discountRate === tier.multiplier ? 'border-indigo-600' : 'border-slate-300'} `}>
                                     {discountRate === tier.multiplier && <div className="w-2.5 h-2.5 rounded-full bg-indigo-600" />}
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className={`text - sm font - bold ${discountRate === tier.multiplier ? 'text-indigo-900' : 'text-slate-700'} `}>{tier.name}</span>
+                                    <span className={`text-sm font-bold ${discountRate === tier.multiplier ? 'text-indigo-900' : 'text-slate-700'} `}>{tier.name}</span>
                                     <span className="text-xs text-slate-400">{(tier.multiplier * 100).toFixed(0)}% 折扣</span>
                                 </div>
                             </div>

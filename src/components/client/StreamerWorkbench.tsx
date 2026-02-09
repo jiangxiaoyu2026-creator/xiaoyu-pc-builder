@@ -288,7 +288,8 @@ export default function StreamerWorkbench({
     handleSave,
     clearBuild,
     hasPermission,
-    onApply
+    onApply,
+    onAiCheck
 }: {
     buildList: BuildEntry[],
     onUpdate: (id: string, data: Partial<BuildEntry>) => void,
@@ -301,6 +302,7 @@ export default function StreamerWorkbench({
     clearBuild: () => void,
     hasPermission: boolean,
     onApply: () => void,
+    onAiCheck?: () => boolean
 
 }) {
     const [settings, setSettings] = useState(storage.getSettings());
@@ -517,7 +519,10 @@ export default function StreamerWorkbench({
                         <button onClick={() => setShowChatSettings(true)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors mr-2" title="咨询设置">
                             <Settings size={18} />
                         </button>
-                        <button onClick={() => setShowAiModal(true)} className="flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-full shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0">
+                        <button onClick={() => {
+                            if (onAiCheck && !onAiCheck()) return;
+                            setShowAiModal(true);
+                        }} className="flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-full shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0">
                             <Sparkles size={14} /> AI 帮我写
                         </button>
                         <div className="text-xs font-medium text-slate-500 bg-white text-indigo-700 px-3 py-1.5 rounded-full border border-indigo-100 shadow-sm">
