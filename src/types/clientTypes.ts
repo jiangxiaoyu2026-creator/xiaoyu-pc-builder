@@ -69,4 +69,5 @@ export interface ConfigTemplate {
     serialNumber?: string; // e.g. 2026-000001
     description?: string;
     userId?: string; // Author ID for checking roles/VIP
+    isVip?: boolean; // Pre-calculated VIP status
 }

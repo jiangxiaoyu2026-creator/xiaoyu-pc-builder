@@ -1,5 +1,5 @@
 import { HardwareItem, ConfigItem, PricingStrategy, UserItem, UsedItem, RecycleRequest, SMSSettings, SystemStats, DailyStat, AboutUsConfig } from '../types/adminTypes';
-import { MOCK_HARDWARE, MOCK_CONFIGS, DEFAULT_AI_CONTENT } from '../data/adminData';
+import { DEFAULT_AI_CONTENT } from '../data/adminData';
 import { ApiService } from './api';
 
 // ... (existing imports)
@@ -152,22 +152,6 @@ class StorageService {
         window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 
-    private generateSerialNumber(configs: ConfigItem[]): string {
-        const currentYear = new Date().getFullYear();
-        const thisYearConfigs = configs.filter(c => c.serialNumber && c.serialNumber.startsWith(`${currentYear}-`));
-
-        let maxSeq = 0;
-        thisYearConfigs.forEach(c => {
-            const parts = c.serialNumber!.split('-');
-            if (parts.length === 2) {
-                const seq = parseInt(parts[1], 10);
-                if (!isNaN(seq) && seq > maxSeq) maxSeq = seq;
-            }
-        });
-
-        const nextSeq = maxSeq + 1;
-        return `${currentYear}-${nextSeq.toString().padStart(6, '0')}`;
-    }
 
     async saveConfig(config: ConfigItem) {
         await ApiService.post('/configs', config);
@@ -175,7 +159,7 @@ class StorageService {
     }
 
     // --- Settings ---
-    async getSettings(): Promise<PricingStrategy> {
+    async getPricingStrategy(): Promise<PricingStrategy> {
         try {
             const data = await ApiService.get('/settings');
             return data.pricingStrategy || DEFAULT_STRATEGY;
@@ -184,7 +168,7 @@ class StorageService {
         }
     }
 
-    async saveSettings(settings: PricingStrategy) {
+    async savePricingStrategy(settings: PricingStrategy) {
         await ApiService.post('/settings', { pricingStrategy: settings });
     }
 
@@ -206,15 +190,30 @@ class StorageService {
     // --- SMS Settings ---
     async getSMSSettings(): Promise<import('../types/adminTypes').SMSSettings> {
         try {
-            const data = await ApiService.get('/settings');
-            return data.smsSettings || DEFAULT_SMS_SETTINGS;
+            const data = await ApiService.get('/sms/config');
+            if (data.success) {
+                return {
+                    provider: 'aliyun',
+                    accessKeyId: data.config.accessKeyId,
+                    accessKeySecret: '', // Don't return secret
+                    signName: data.config.signName,
+                    templateCode: data.config.templateCode,
+                    enabled: data.config.isConfigured
+                };
+            }
+            return DEFAULT_SMS_SETTINGS;
         } catch (e) {
             return DEFAULT_SMS_SETTINGS;
         }
     }
 
     async saveSMSSettings(settings: import('../types/adminTypes').SMSSettings) {
-        await ApiService.post('/settings', { smsSettings: settings });
+        await ApiService.post('/sms/config', {
+            accessKeyId: settings.accessKeyId,
+            accessKeySecret: settings.accessKeySecret,
+            signName: settings.signName,
+            templateCode: settings.templateCode
+        });
     }
 
     // --- Users ---
@@ -397,19 +396,19 @@ class StorageService {
     }
 
     // --- User Likes ---
-    getUserLikes(userId: string): string[] {
+    async getUserLikes(userId: string): Promise<string[]> {
         try {
             const data = localStorage.getItem(`xiaoyu_likes_${userId}`);
             return data ? JSON.parse(data) : [];
         } catch (e) { return []; }
     }
 
-    saveUserLikes(userId: string, likes: string[]) {
+    async saveUserLikes(userId: string, likes: string[]) {
         safeSetItem(`xiaoyu_likes_${userId}`, JSON.stringify(likes));
     }
 
-    toggleUserLike(userId: string, configId: string): boolean {
-        const likes = this.getUserLikes(userId);
+    async toggleUserLike(userId: string, configId: string): Promise<boolean> {
+        const likes = await this.getUserLikes(userId);
         const idx = likes.indexOf(configId);
         let isLiked = false;
 
@@ -421,7 +420,7 @@ class StorageService {
             isLiked = true;
         }
 
-        this.saveUserLikes(userId, likes);
+        await this.saveUserLikes(userId, likes);
         return isLiked;
     }
 
@@ -459,7 +458,7 @@ class StorageService {
     }
 
     // --- Comments ---
-    getComments(configId?: string): import('../types/adminTypes').CommentItem[] {
+    async getComments(configId?: string): Promise<import('../types/adminTypes').CommentItem[]> {
         try {
             const data = localStorage.getItem('xiaoyu_comments');
             const allComments: import('../types/adminTypes').CommentItem[] = data ? JSON.parse(data) : [];
@@ -472,7 +471,7 @@ class StorageService {
         }
     }
 
-    saveComment(comment: import('../types/adminTypes').CommentItem) {
+    async saveComment(comment: import('../types/adminTypes').CommentItem) {
         let all: import('../types/adminTypes').CommentItem[] = [];
         try {
             const data = localStorage.getItem('xiaoyu_comments');
@@ -487,7 +486,7 @@ class StorageService {
         window.dispatchEvent(new Event('xiaoyu-comment-update'));
     }
 
-    deleteComment(id: string) {
+    async deleteComment(id: string) {
         try {
             const data = localStorage.getItem('xiaoyu_comments');
             let all: import('../types/adminTypes').CommentItem[] = data ? JSON.parse(data) : [];
@@ -549,7 +548,7 @@ class StorageService {
 
     // --- Enhanced Chat System ---
 
-    getChatSettings(): import('../types/adminTypes').ChatSettings {
+    async getChatSettings(): Promise<import('../types/adminTypes').ChatSettings> {
         try {
             const data = localStorage.getItem('xiaoyu_chat_settings');
             return data ? JSON.parse(data) : {
@@ -561,24 +560,25 @@ class StorageService {
         }
     }
 
-    saveChatSettings(settings: import('../types/adminTypes').ChatSettings) {
+    async saveChatSettings(settings: import('../types/adminTypes').ChatSettings) {
         localStorage.setItem('xiaoyu_chat_settings', JSON.stringify(settings));
     }
 
     // Sessions
-    getChatSessions(): import('../types/adminTypes').ChatSession[] {
+    async getChatSessions(): Promise<import('../types/adminTypes').ChatSession[]> {
         try {
             const data = localStorage.getItem('xiaoyu_chat_sessions');
             return data ? JSON.parse(data) : [];
         } catch (e) { return []; }
     }
 
-    getChatSession(sessionId: string): import('../types/adminTypes').ChatSession | undefined {
-        return this.getChatSessions().find(s => s.id === sessionId);
+    async getChatSession(sessionId: string): Promise<import('../types/adminTypes').ChatSession | undefined> {
+        const sessions = await this.getChatSessions();
+        return sessions.find(s => s.id === sessionId);
     }
 
-    saveChatSession(session: import('../types/adminTypes').ChatSession) {
-        let sessions = this.getChatSessions();
+    async saveChatSession(session: import('../types/adminTypes').ChatSession) {
+        let sessions = await this.getChatSessions();
         const idx = sessions.findIndex(s => s.id === session.id);
         if (idx >= 0) {
             sessions[idx] = session;
@@ -592,14 +592,14 @@ class StorageService {
     }
 
     // Messages
-    getChatMessages(sessionId: string): import('../types/adminTypes').ChatMessage[] {
+    async getChatMessages(sessionId: string): Promise<import('../types/adminTypes').ChatMessage[]> {
         try {
             const data = localStorage.getItem(`xiaoyu_chat_msgs_${sessionId}`);
             return data ? JSON.parse(data) : [];
         } catch (e) { return []; }
     }
 
-    addChatMessage(sessionId: string, message: Omit<import('../types/adminTypes').ChatMessage, 'id' | 'sessionId' | 'timestamp' | 'isRead'>) {
+    async addChatMessage(sessionId: string, message: Omit<import('../types/adminTypes').ChatMessage, 'id' | 'sessionId' | 'timestamp' | 'isRead'>) {
         const fullMsg: import('../types/adminTypes').ChatMessage = {
             id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             sessionId,
@@ -609,26 +609,26 @@ class StorageService {
         };
 
         // 1. Save Message
-        const msgs = this.getChatMessages(sessionId);
+        const msgs = await this.getChatMessages(sessionId);
         msgs.push(fullMsg);
         localStorage.setItem(`xiaoyu_chat_msgs_${sessionId}`, JSON.stringify(msgs));
 
         // 2. Update Session
-        const session = this.getChatSession(sessionId);
+        const session = await this.getChatSession(sessionId);
         if (session) {
             session.lastMessage = fullMsg;
             session.updatedAt = Date.now();
             if (message.sender === 'user') {
                 session.unreadCount += 1; // Admin sees unread
             }
-            this.saveChatSession(session);
+            await this.saveChatSession(session);
         }
 
         window.dispatchEvent(new CustomEvent('xiaoyu-chat-message-update', { detail: { sessionId } }));
 
         // --- Auto Reply Logic ---
         if (message.sender === 'user') {
-            const settings = this.getChatSettings();
+            const settings = await this.getChatSettings();
             if (settings.autoReplyEnabled && settings.autoReplyContent) {
                 // Check if last message was already this auto-reply (prevent spam)
                 const lastAdminMsg = msgs.slice().reverse().find(m => m.sender === 'admin' || m.sender === 'system');
@@ -652,7 +652,7 @@ class StorageService {
                     if (session) {
                         session.lastMessage = autoMsg;
                         session.updatedAt = Date.now() + 100;
-                        this.saveChatSession(session);
+                        await this.saveChatSession(session);
                     }
                     // Dispatch update again
                     setTimeout(() => {
@@ -665,22 +665,22 @@ class StorageService {
         return fullMsg;
     }
 
-    markSessionRead(sessionId: string) {
-        const session = this.getChatSession(sessionId);
+    async markSessionRead(sessionId: string) {
+        const session = await this.getChatSession(sessionId);
         if (session && session.unreadCount > 0) {
             session.unreadCount = 0;
-            this.saveChatSession(session);
+            await this.saveChatSession(session);
         }
     }
 
     // Helper to start/get session for current user
-    getOrCreateCurrentUserSession(user: { id?: string, username?: string } | null): import('../types/adminTypes').ChatSession {
+    async getOrCreateCurrentUserSession(user: { id?: string, username?: string } | null): Promise<import('../types/adminTypes').ChatSession> {
         const userId = user?.id || localStorage.getItem('xiaoyu_guest_id') || `guest-${Math.random().toString(36).substr(2, 9)}`;
         if (!user?.id && !localStorage.getItem('xiaoyu_guest_id')) {
             localStorage.setItem('xiaoyu_guest_id', userId);
         }
 
-        const sessions = this.getChatSessions();
+        const sessions = await this.getChatSessions();
         let session = sessions.find(s => s.userId === userId && s.status === 'active');
 
         if (!session) {
@@ -693,11 +693,11 @@ class StorageService {
                 updatedAt: Date.now(),
                 status: 'active'
             };
-            this.saveChatSession(session);
+            await this.saveChatSession(session);
 
             // Add initial welcome message
-            const settings = this.getChatSettings();
-            this.addChatMessage(session.id, {
+            const settings = await this.getChatSettings();
+            await this.addChatMessage(session.id, {
                 sender: 'system',
                 content: settings.welcomeMessage
             });
@@ -706,7 +706,7 @@ class StorageService {
     }
 
     // --- System Statistics ---
-    getSystemStats(): SystemStats {
+    async getSystemStats(): Promise<SystemStats> {
         try {
             const data = localStorage.getItem(KEYS.SYSTEM_STATS);
             return data ? JSON.parse(data) : { totalAiGenerations: 0, dailyStats: [] };
@@ -715,7 +715,7 @@ class StorageService {
         }
     }
 
-    saveSystemStats(stats: SystemStats) {
+    async saveSystemStats(stats: SystemStats) {
         localStorage.setItem(KEYS.SYSTEM_STATS, JSON.stringify(stats));
         window.dispatchEvent(new Event('xiaoyu-stats-update'));
     }
@@ -733,36 +733,36 @@ class StorageService {
         return daily;
     }
 
-    logAiGeneration() {
-        const stats = this.getSystemStats();
+    async logAiGeneration() {
+        const stats = await this.getSystemStats();
         const today = new Date().toISOString().split('T')[0];
         const daily = this.getOrCreateDailyStat(today, stats);
 
         stats.totalAiGenerations += 1;
         daily.aiGenerations += 1;
-        this.saveSystemStats(stats);
+        await this.saveSystemStats(stats);
     }
 
-    logNewConfig() {
-        const stats = this.getSystemStats();
+    async logNewConfig() {
+        const stats = await this.getSystemStats();
         const today = new Date().toISOString().split('T')[0];
         const daily = this.getOrCreateDailyStat(today, stats);
 
         daily.newConfigs += 1;
-        this.saveSystemStats(stats);
+        await this.saveSystemStats(stats);
     }
 
-    logNewUser() {
-        const stats = this.getSystemStats();
+    async logNewUser() {
+        const stats = await this.getSystemStats();
         const today = new Date().toISOString().split('T')[0];
         const daily = this.getOrCreateDailyStat(today, stats);
 
         daily.newUsers += 1;
-        this.saveSystemStats(stats);
+        await this.saveSystemStats(stats);
     }
 
     // --- About Us Configuration ---
-    getAboutUsConfig(): AboutUsConfig {
+    async getAboutUsConfig(): Promise<AboutUsConfig> {
         try {
             const data = localStorage.getItem(KEYS.ABOUT_US_CONFIG);
             if (data) return JSON.parse(data);
@@ -782,7 +782,7 @@ class StorageService {
         };
     }
 
-    saveAboutUsConfig(config: AboutUsConfig) {
+    async saveAboutUsConfig(config: AboutUsConfig) {
         localStorage.setItem(KEYS.ABOUT_US_CONFIG, JSON.stringify(config));
         window.dispatchEvent(new Event('xiaoyu-aboutus-update'));
     }

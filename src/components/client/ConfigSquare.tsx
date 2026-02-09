@@ -3,7 +3,6 @@ import { Search, Sparkles, Cpu, Monitor, Crown } from 'lucide-react';
 import { ConfigTemplate } from '../../types/clientTypes';
 import { TAGS_APPEARANCE, TAGS_USAGE, HARDWARE_DB } from '../../data/clientData';
 import { ConfigDetailModal } from './ConfigDetailModal';
-import { storage } from '../../services/storage';
 
 import { UserItem } from '../../types/adminTypes';
 
@@ -73,14 +72,9 @@ function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, curre
         }
     };
 
-    // 检查作者是否是VIP
-    const isUserVip = (userId?: string): boolean => {
-        if (!userId) return false;
-        const users = storage.getUsers();
-        const user = users.find(u => u.id === userId);
-        if (!user) return false;
-        // 管理员、主播永久VIP，或有未过期的VIP
-        return ['admin', 'streamer', 'sub_admin'].includes(user.role) || !!(user.vipExpireAt && user.vipExpireAt > Date.now());
+    // Check if author is VIP (now using pre-calculated flag from template)
+    const isUserVip = (cfg: ConfigTemplate): boolean => {
+        return !!cfg.isVip;
     };
 
     return (
@@ -194,7 +188,7 @@ function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, curre
 
                             {/* Serial Number + VIP Badge (Top Right) */}
                             <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5">
-                                {isUserVip(cfg.userId) && (
+                                {isUserVip(cfg) && (
                                     <span className="flex items-center gap-0.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">
                                         <Crown size={10} />
                                         VIP

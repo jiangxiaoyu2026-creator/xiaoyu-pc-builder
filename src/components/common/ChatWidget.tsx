@@ -34,39 +34,44 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
     };
 
     useEffect(() => {
-        // Init Session
-        const currentSession = storage.getOrCreateCurrentUserSession(storage.getCurrentUser());
-        setSession(currentSession);
-        setMessages(storage.getChatMessages(currentSession.id));
+        const initChat = async () => {
+            const user = storage.getCurrentUser();
+            const currentSession = await storage.getOrCreateCurrentUserSession(user);
+            setSession(currentSession);
+            const msgs = await storage.getChatMessages(currentSession.id);
+            setMessages(msgs);
 
-        // Listen for updates (Same Tab)
-        const handleMsgUpdate = (e: any) => {
-            if (e.detail?.sessionId === currentSession.id) {
-                const freshMsgs = storage.getChatMessages(currentSession.id);
-                setMessages(freshMsgs);
-            }
+            // Listen for updates (Same Tab)
+            const handleMsgUpdate = async (e: any) => {
+                if (e.detail?.sessionId === currentSession.id) {
+                    const freshMsgs = await storage.getChatMessages(currentSession.id);
+                    setMessages(freshMsgs);
+                }
+            };
+
+            // Listen for updates (Cross Tab)
+            const handleStorageUpdate = async (e: StorageEvent) => {
+                if (e.key === `xiaoyu_chat_msgs_${currentSession.id}`) {
+                    const freshMsgs = await storage.getChatMessages(currentSession.id);
+                    setMessages(freshMsgs);
+                }
+            };
+
+            window.addEventListener('xiaoyu-chat-message-update', handleMsgUpdate as EventListener);
+            window.addEventListener('storage', handleStorageUpdate);
+
+            return () => {
+                window.removeEventListener('xiaoyu-chat-message-update', handleMsgUpdate as EventListener);
+                window.removeEventListener('storage', handleStorageUpdate);
+            };
         };
-
-        // Listen for updates (Cross Tab)
-        const handleStorageUpdate = (e: StorageEvent) => {
-            if (e.key === `xiaoyu_chat_msgs_${currentSession.id}`) {
-                const freshMsgs = storage.getChatMessages(currentSession.id);
-                setMessages(freshMsgs);
-            }
-        };
-
-        window.addEventListener('xiaoyu-chat-message-update', handleMsgUpdate as EventListener);
-        window.addEventListener('storage', handleStorageUpdate);
-
-        return () => {
-            window.removeEventListener('xiaoyu-chat-message-update', handleMsgUpdate as EventListener);
-            window.removeEventListener('storage', handleStorageUpdate);
-        };
+        initChat();
     }, []);
 
     // Handle initial message when chat opens
     useEffect(() => {
         if (isOpen && initialMessage && session && !initialMessageSentRef.current) {
+            // Send the initial message
             // Send the initial message
             storage.addChatMessage(session.id, {
                 sender: 'user',

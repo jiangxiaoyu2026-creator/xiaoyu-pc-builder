@@ -31,11 +31,21 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
     const [selectedCategory, setSelectedCategory] = useState<UsedCategory | 'all'>('all');
     const [selectedType, setSelectedType] = useState<'all' | 'official' | 'personal'>('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [items, setItems] = useState<UsedItem[]>(storage.getUsedItems());
+    const [items, setItems] = useState<UsedItem[]>([]);
+
+    // Load data
+    const loadData = async () => {
+        try {
+            const data = await storage.getUsedItems();
+            setItems(data);
+        } catch (error) {
+            console.error('Failed to load used items:', error);
+        }
+    };
 
     // Listen for storage updates
     useEffect(() => {
-        const loadData = () => setItems(storage.getUsedItems());
+        loadData();
         window.addEventListener('storage', loadData);
         window.addEventListener('xiaoyu-storage-update', loadData);
         return () => {

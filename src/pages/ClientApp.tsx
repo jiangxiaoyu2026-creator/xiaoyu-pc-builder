@@ -29,8 +29,11 @@ export default function ClientApp() {
         DEFAULT_BUILD_TEMPLATE.map(i => ({ ...i, item: null, customPrice: undefined, quantity: 1 }))
     );
     const [configList, setConfigList] = useState<ConfigTemplate[]>([]);
-    const [currentUser, setCurrentUser] = useState<UserItem | null>(() => storage.getCurrentUser());
-    const [settings, setSettings] = useState(storage.getSettings());
+    const [currentUser, setCurrentUser] = useState<UserItem | null>(null);
+    const [settings, setSettings] = useState<import('../types/adminTypes').PricingStrategy>({
+        serviceFeeRate: 0.06,
+        discountTiers: []
+    });
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [showUserCenter, setShowUserCenter] = useState(false);
@@ -43,39 +46,57 @@ export default function ClientApp() {
         return currentUser.role === 'streamer' || currentUser.role === 'admin';
     }, [currentUser]);
 
-    const loadData = () => {
-        setCurrentUser(storage.getCurrentUser());
-        setSettings(storage.getSettings());
+    const loadData = async () => {
+        try {
+            const [user, s, configs, allUsers] = await Promise.all([
+                storage.getCurrentUser(),
+                storage.getPricingStrategy(),
+                storage.getConfigs(),
+                storage.getUsers()
+            ]);
 
-        // Load config list
-        const configs = storage.getConfigs();
-        const visibleConfigs = configs.filter(c => c.status === 'published');
-        // Map admin configs to client template
-        const mappedList: ConfigTemplate[] = visibleConfigs.map(c => {
-            let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
-            if (c.authorName.includes('官方')) type = 'official';
-            if (c.authorName.includes('主播')) type = 'streamer';
-            if (c.tags.includes('求助')) type = 'help';
-            return {
-                id: c.id,
-                userId: c.userId, // Pass userId
-                title: c.title,
-                author: c.authorName,
-                avatarColor: 'bg-zinc-500',
-                type: type,
-                tags: c.tags.map(t => ({ type: 'usage' as const, label: t })),
-                price: c.totalPrice,
-                items: c.items,
-                likes: c.likes,
-                views: c.views,
-                comments: 0,
-                date: c.createdAt,
-                isLiked: false, // Default
-                serialNumber: c.serialNumber, // Use serial
-                description: c.description
-            };
-        });
-        setConfigList(mappedList);
+            setCurrentUser(user);
+            setSettings(s);
+
+            const visibleConfigs = configs.filter(c => c.status === 'published');
+            // Map admin configs to client template
+            const mappedList: ConfigTemplate[] = visibleConfigs.map(c => {
+                let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
+                if (c.authorName.includes('官方')) type = 'official';
+                if (c.authorName.includes('主播')) type = 'streamer';
+                if (c.tags.includes('求助')) type = 'help';
+
+                // Check VIP status
+                const author = allUsers.find(u => u.id === c.userId);
+                const isVip = author ? (
+                    ['admin', 'streamer', 'sub_admin'].includes(author.role) ||
+                    !!(author.vipExpireAt && author.vipExpireAt > Date.now())
+                ) : false;
+
+                return {
+                    id: c.id,
+                    userId: c.userId,
+                    title: c.title,
+                    author: c.authorName,
+                    avatarColor: 'bg-zinc-500',
+                    type: type,
+                    tags: c.tags.map(t => ({ type: 'usage' as const, label: t })),
+                    price: c.totalPrice,
+                    items: c.items,
+                    likes: c.likes,
+                    views: c.views,
+                    comments: 0,
+                    date: c.createdAt,
+                    isLiked: false,
+                    serialNumber: c.serialNumber,
+                    description: c.description,
+                    isVip: isVip // Added VIP flag
+                };
+            });
+            setConfigList(mappedList);
+        } catch (error) {
+            console.error('Failed to load client data:', error);
+        }
     };
 
     useEffect(() => {
@@ -225,7 +246,7 @@ export default function ClientApp() {
     // ... existing loadData ...
 
     // Toggle Like
-    const handleToggleLike = (id: string) => {
+    const handleToggleLike = async (id: string) => {
         if (!currentUser) {
             showToast("请先登录后收藏");
             setShowLoginModal(true);
@@ -234,7 +255,7 @@ export default function ClientApp() {
 
         const target = configList.find(c => c.id === id);
         if (target) {
-            const isLiked = storage.toggleUserLike(currentUser.id, id);
+            const isLiked = await storage.toggleUserLike(currentUser.id, id);
 
             // Update local state
             setConfigList(prev => prev.map(item => {
@@ -245,18 +266,18 @@ export default function ClientApp() {
             }));
 
             // Update admin config storage (count only)
-            const allConfigs = storage.getConfigs();
+            const allConfigs = await storage.getConfigs();
             const adminConfig = allConfigs.find(c => c.id === id);
             if (adminConfig) {
                 adminConfig.likes = isLiked ? adminConfig.likes + 1 : adminConfig.likes - 1;
-                storage.saveConfig(adminConfig);
+                await storage.saveConfig(adminConfig);
             }
         }
     };
 
-    const handleFork = (config: ConfigTemplate) => {
+    const handleFork = async (config: ConfigTemplate) => {
         // ... implementation of handleFork
-        const allProducts = storage.getProducts();
+        const allProducts = await storage.getProducts();
         const newList = DEFAULT_BUILD_TEMPLATE.map(entry => {
             // @ts-ignore
             const itemId = config.items?.[entry.category] || config.items?.[entry.id]; // Try both
@@ -285,7 +306,7 @@ export default function ClientApp() {
         showToast(`✅ 已载入配置：${config.title} `);
     };
 
-    const handlePublishToSquare = (data: { title: string, tags: string[], desc: string }) => {
+    const handlePublishToSquare = async (data: { title: string, tags: string[], desc: string }) => {
         try {
             // Create Client Template (for local optimistic UI)
             const newTemplate: ConfigTemplate = {
@@ -330,13 +351,13 @@ export default function ClientApp() {
                 // serialNumber will be auto-generated by storage service
                 description: data.desc // Save description
             };
-            storage.saveConfig(adminConfig);
+            await storage.saveConfig(adminConfig);
 
             // Reload data to reflect changes
             // Instead of complex mapping here, we can trigger the loadData effect
             // But to be sure, let's manually fetch fresh data like before to update the list immediately
 
-            const freshConfigs = storage.getConfigs();
+            const freshConfigs = await storage.getConfigs();
             const visibleConfigs = freshConfigs.filter(c => c.status === 'published');
             const newConfigList = visibleConfigs.map(c => {
                 let type: 'official' | 'streamer' | 'user' | 'help' = 'user';

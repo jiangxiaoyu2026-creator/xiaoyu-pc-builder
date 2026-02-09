@@ -50,39 +50,50 @@ export default function AdminApp() {
 
     // Load initial data
     useEffect(() => {
-        const loadData = () => {
-            setProducts(storage.getProducts());
-            setConfigs(storage.getConfigs());
-            setPricingStrategy(storage.getSettings());
-            setUsedItems(storage.getUsedItems());
-            setRecycleRequests(storage.getRecycleRequests());
+        const loadData = async () => {
+            try {
+                const [p, c, s, u, r] = await Promise.all([
+                    storage.getProducts(),
+                    storage.getConfigs(),
+                    storage.getPricingStrategy(),
+                    storage.getUsedItems(),
+                    storage.getRecycleRequests()
+                ]);
+                setProducts(p);
+                setConfigs(c);
+                setPricingStrategy(s);
+                setUsedItems(u);
+                setRecycleRequests(r);
+            } catch (error) {
+                console.error('Failed to load initial data:', error);
+            }
         };
         loadData();
 
         window.addEventListener('storage', loadData);
-        window.addEventListener('xiaoyu-storage-update', loadData);
-        window.addEventListener('xiaoyu-recycle-requests-update', loadData);
+        window.addEventListener('xiaoyu-storage-update', () => loadData());
+        window.addEventListener('xiaoyu-recycle-requests-update', () => loadData());
         return () => {
             window.removeEventListener('storage', loadData);
-            window.removeEventListener('xiaoyu-storage-update', loadData);
-            window.removeEventListener('xiaoyu-recycle-requests-update', loadData);
+            window.removeEventListener('xiaoyu-storage-update', () => loadData());
+            window.removeEventListener('xiaoyu-recycle-requests-update', () => loadData());
         };
     }, []);
 
     // Handlers for data updates
-    const handleUpdateProducts = (newProducts: HardwareItem[]) => {
+    const handleUpdateProducts = async (newProducts: HardwareItem[]) => {
         setProducts(newProducts);
-        storage.saveProducts(newProducts);
+        await storage.saveProducts(newProducts);
     };
 
-    const handleUpdateConfigs = (newConfigs: ConfigItem[]) => {
+    const handleUpdateConfigs = async (newConfigs: ConfigItem[]) => {
         setConfigs(newConfigs);
-        storage.saveConfigs(newConfigs);
+        await storage.saveConfigs(newConfigs);
     };
 
-    const handleUpdateSettings = (newStrategy: PricingStrategy) => {
+    const handleUpdateSettings = async (newStrategy: PricingStrategy) => {
         setPricingStrategy(newStrategy);
-        storage.saveSettings(newStrategy);
+        await storage.savePricingStrategy(newStrategy);
     };
 
     // --- Login Guard ---

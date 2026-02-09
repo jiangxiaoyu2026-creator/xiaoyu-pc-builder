@@ -1,25 +1,20 @@
 import { useState, useEffect } from 'react';
 import { X, Key, FileText, CheckCircle2, AlertCircle, Loader2, MessageSquare } from 'lucide-react';
+import { storage } from '../../services/storage';
+import { SMSSettings } from '../../types/adminTypes';
 
 interface SmsSettingsModalProps {
     onClose: () => void;
 }
 
-interface SmsConfig {
-    accessKeyId: string;
-    accessKeySecret: string;
-    signName: string;
-    templateCode: string;
-    isConfigured: boolean;
-}
-
 export default function SmsSettingsModal({ onClose }: SmsSettingsModalProps) {
-    const [config, setConfig] = useState<SmsConfig>({
+    const [config, setConfig] = useState<SMSSettings>({
+        provider: 'aliyun',
         accessKeyId: '',
         accessKeySecret: '',
         signName: '',
         templateCode: '',
-        isConfigured: false
+        enabled: false
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -29,19 +24,10 @@ export default function SmsSettingsModal({ onClose }: SmsSettingsModalProps) {
     useEffect(() => {
         const loadConfig = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/sms/config');
-                const result = await response.json();
-                if (result.success) {
-                    setConfig({
-                        accessKeyId: result.config.accessKeyId || '',
-                        accessKeySecret: '',
-                        signName: result.config.signName || '',
-                        templateCode: result.config.templateCode || '',
-                        isConfigured: result.config.isConfigured
-                    });
-                }
+                const settings = await storage.getSMSSettings();
+                setConfig(settings);
             } catch (err) {
-                setMessage({ type: 'error', text: '无法连接后端服务，请确保已启动 npm run server' });
+                setMessage({ type: 'error', text: '无法获取配置信息' });
             } finally {
                 setLoading(false);
             }
@@ -50,8 +36,8 @@ export default function SmsSettingsModal({ onClose }: SmsSettingsModalProps) {
     }, []);
 
     const handleSave = async () => {
-        if (!config.accessKeyId || !config.accessKeySecret || !config.signName || !config.templateCode) {
-            setMessage({ type: 'error', text: '请填写所有字段' });
+        if (!config.accessKeyId || !config.signName || !config.templateCode) {
+            setMessage({ type: 'error', text: '请填写必要字段' });
             return;
         }
 
@@ -59,26 +45,11 @@ export default function SmsSettingsModal({ onClose }: SmsSettingsModalProps) {
         setMessage(null);
 
         try {
-            const response = await fetch('http://localhost:3001/api/sms/config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    accessKeyId: config.accessKeyId,
-                    accessKeySecret: config.accessKeySecret,
-                    signName: config.signName,
-                    templateCode: config.templateCode
-                })
-            });
-            const result = await response.json();
-
-            if (result.success) {
-                setMessage({ type: 'success', text: '配置已保存成功！' });
-                setConfig(prev => ({ ...prev, isConfigured: true }));
-            } else {
-                setMessage({ type: 'error', text: result.message || '保存失败' });
-            }
+            await storage.saveSMSSettings(config);
+            setMessage({ type: 'success', text: '配置已保存成功！' });
+            setConfig(prev => ({ ...prev, enabled: true }));
         } catch (err) {
-            setMessage({ type: 'error', text: '无法连接后端服务' });
+            setMessage({ type: 'error', text: '保存失败，请检查后端状态' });
         } finally {
             setSaving(false);
         }
@@ -112,7 +83,7 @@ export default function SmsSettingsModal({ onClose }: SmsSettingsModalProps) {
                     ) : (
                         <>
                             {/* 状态提示 */}
-                            {config.isConfigured && !message && (
+                            {config.enabled && !message && (
                                 <div className="flex items-center gap-2 p-3 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium">
                                     <CheckCircle2 size={18} />
                                     <span>短信服务已配置</span>
@@ -153,7 +124,7 @@ export default function SmsSettingsModal({ onClose }: SmsSettingsModalProps) {
                                     value={config.accessKeySecret}
                                     onChange={e => setConfig(prev => ({ ...prev, accessKeySecret: e.target.value }))}
                                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono text-sm"
-                                    placeholder={config.isConfigured ? '••••••••（已配置，留空则不修改）' : '输入密钥...'}
+                                    placeholder={config.enabled ? '••••••••（已配置，留空则不修改）' : '输入密钥...'}
                                 />
                             </div>
 

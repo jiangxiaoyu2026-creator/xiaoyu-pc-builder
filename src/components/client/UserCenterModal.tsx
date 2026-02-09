@@ -12,17 +12,20 @@ function InviteCard({ userId, showToast }: { userId: string; showToast: (msg: st
     const [inviteVipDays, setInviteVipDays] = React.useState(0);
 
     React.useEffect(() => {
-        // 确保用户有邀请码
-        const code = storage.ensureUserInviteCode(userId);
-        setInviteCode(code);
+        const loadInviteData = async () => {
+            // Ensure user has invite code
+            const code = await storage.ensureUserInviteCode(userId);
+            setInviteCode(code);
 
-        // 获取邀请统计
-        const users = storage.getUsers();
-        const user = users.find(u => u.id === userId);
-        if (user) {
-            setInviteCount(user.inviteCount || 0);
-            setInviteVipDays(user.inviteVipDays || 0);
-        }
+            // Get invite stats
+            const users = await storage.getUsers();
+            const user = users.find(u => u.id === userId || (u as any)._id === userId);
+            if (user) {
+                setInviteCount(user.inviteCount || 0);
+                setInviteVipDays(user.inviteVipDays || 0);
+            }
+        };
+        loadInviteData();
     }, [userId]);
 
     const DAYS_PER_INVITE = 7;
@@ -135,44 +138,54 @@ export function UserCenterModal({
     const [selectedConfig, setSelectedConfig] = useState<ConfigTemplate | null>(null);
 
     useEffect(() => {
-        const allConfigs = storage.getConfigs().filter(c => c.status === 'published');
-        const userLikes = storage.getUserLikes(user.id);
+        const loadData = async () => {
+            try {
+                const [all, likes, used] = await Promise.all([
+                    storage.getConfigs(),
+                    storage.getUserLikes(user.id),
+                    storage.getUsedItems()
+                ]);
 
-        // Map to client template format (simplified reuse of logic from ClientApp)
-        const mapConfig = (c: any): ConfigTemplate => ({
-            id: c.id,
-            userId: c.userId,
-            title: c.title,
-            author: c.authorName,
-            avatarColor: 'bg-zinc-500', // Default, maybe enhance later
-            type: c.authorName.includes('官方') ? 'official' : (c.authorName.includes('主播') ? 'streamer' : (c.tags.includes('求助') ? 'help' : 'user')),
-            tags: c.tags.map((t: string) => ({ type: 'usage', label: t })),
-            price: c.totalPrice,
-            items: c.items,
-            likes: c.likes,
-            views: c.views,
-            comments: 0,
-            date: c.createdAt,
-            isLiked: userLikes.includes(c.id),
-            serialNumber: c.serialNumber,
-            description: c.description
-        });
+                const userLikes = likes;
+                const publishedConfigs = all.filter(c => c.status === 'published');
 
-        const mappedAll = allConfigs.map(mapConfig);
+                // Map to client template format (simplified reuse of logic from ClientApp)
+                const mapConfig = (c: any): ConfigTemplate => ({
+                    id: c.id,
+                    userId: c.userId,
+                    title: c.title,
+                    author: c.authorName,
+                    avatarColor: 'bg-zinc-500', // Default, maybe enhance later
+                    type: c.authorName.includes('官方') ? 'official' : (c.authorName.includes('主播') ? 'streamer' : (c.tags.includes('求助') ? 'help' : 'user')),
+                    tags: c.tags.map((t: string) => ({ type: 'usage', label: t })),
+                    price: c.totalPrice,
+                    items: c.items,
+                    likes: c.likes,
+                    views: c.views,
+                    comments: 0,
+                    date: c.createdAt,
+                    isLiked: userLikes.includes(c.id),
+                    serialNumber: c.serialNumber,
+                    description: c.description
+                });
 
-        setMyConfigs(mappedAll.filter(c => c.userId === user.id || c.author === user.username));
-        setFavorites(mappedAll.filter(c => userLikes.includes(c.id)));
+                const mappedAll = publishedConfigs.map(mapConfig);
 
-        // Load personal used items
-        const loadUsedItems = () => {
-            const allUsed = storage.getUsedItems();
-            setMyUsedItems(allUsed.filter(item => item.sellerId === user.id));
+                setMyConfigs(mappedAll.filter(c => c.userId === user.id || c.author === user.username));
+                setFavorites(mappedAll.filter(c => userLikes.includes(c.id)));
+                setMyUsedItems(used.filter(item => item.sellerId === user.id));
+            } catch (error) {
+                console.error('Failed to load user center data:', error);
+            }
         };
-        loadUsedItems();
 
-        window.addEventListener('xiaoyu-used-items-update', loadUsedItems);
+        loadData();
+
+        window.addEventListener('xiaoyu-used-items-update', loadData);
+        window.addEventListener('xiaoyu-storage-update', loadData);
         return () => {
-            window.removeEventListener('xiaoyu-used-items-update', loadUsedItems);
+            window.removeEventListener('xiaoyu-used-items-update', loadData);
+            window.removeEventListener('xiaoyu-storage-update', loadData);
         };
 
     }, [user.id, user.username, activeTab]);
@@ -371,8 +384,9 @@ export function UserCenterModal({
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     if (confirm('确定要将该商品标记为已售吗？')) {
-                                                                        storage.markUsedItemAsSold(item.id);
-                                                                        showToast('已标记为已售！');
+                                                                        storage.markUsedItemAsSold(item.id).then(() => {
+                                                                            showToast('已标记为已售！');
+                                                                        });
                                                                     }
                                                                 }}
                                                                 className="w-full py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
@@ -384,8 +398,9 @@ export function UserCenterModal({
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 if (confirm('确定要删除这条发布吗？')) {
-                                                                    storage.deleteUsedItem(item.id);
-                                                                    showToast('已删除发布');
+                                                                    storage.deleteUsedItem(item.id).then(() => {
+                                                                        showToast('已删除发布');
+                                                                    });
                                                                 }
                                                             }}
                                                             className="w-full py-2 bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"

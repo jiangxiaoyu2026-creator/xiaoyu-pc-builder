@@ -1,17 +1,49 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bot, Save, Play } from 'lucide-react';
 import { storage } from '../../services/storage';
+import { AISettings } from '../../types/adminTypes';
 
 export default function AiManager() {
-    const [aiConfig, setAiConfig] = useState(storage.getAISettings());
+    const [aiConfig, setAiConfig] = useState<AISettings>({
+        provider: 'deepseek',
+        apiKey: '',
+        baseUrl: '',
+        model: '',
+        enabled: false,
+        persona: 'balanced',
+        strategy: 'balanced'
+    });
+    const [loading, setLoading] = useState(true);
     const [isTesting, setIsTesting] = useState(false);
     const [testResult, setTestResult] = useState<{ success: boolean, msg: string } | null>(null);
 
-    const handleSave = () => {
-        storage.saveAISettings(aiConfig);
-        alert('AI 配置已保存');
-        setTestResult(null);
+    useEffect(() => {
+        const loadSettings = async () => {
+            setLoading(true);
+            try {
+                const settings = await storage.getAISettings();
+                if (settings) {
+                    setAiConfig(settings);
+                }
+            } catch (error) {
+                console.error('Failed to load AI settings:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadSettings();
+    }, []);
+
+    const handleSave = async () => {
+        try {
+            await storage.saveAISettings(aiConfig);
+            alert('AI 配置已保存');
+            setTestResult(null);
+        } catch (error) {
+            console.error('Failed to save AI settings:', error);
+            alert('保存失败，请检查网络连接');
+        }
     };
 
     const handleTest = async () => {
@@ -31,6 +63,14 @@ export default function AiManager() {
             setIsTesting(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64 text-slate-400">
+                加载设置中...
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">

@@ -102,7 +102,15 @@ function VisualBuilder({
     };
 
     // Fetch hardware list from storage
-    const hardwareList = useMemo(() => storage.getProducts(), []);
+    const [hardwareList, setHardwareList] = useState<HardwareItem[]>([]);
+
+    useEffect(() => {
+        const loadHardware = async () => {
+            const list = await storage.getProducts();
+            setHardwareList(list);
+        };
+        loadHardware();
+    }, []);
 
     const openSelector = (entry: BuildEntry) => {
         setModalCategory(entry.category);
