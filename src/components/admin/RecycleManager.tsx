@@ -9,24 +9,34 @@ export default function RecycleManager({ requests, setRequests }: { requests: Re
     const [statusFilter, setStatusFilter] = useState<'all' | 'unread' | 'read'>('all');
 
     // 标记为已读
-    const handleMarkAsRead = (id: string) => {
-        storage.markRecycleRequestAsRead(id);
-        if (setRequests) {
-            setRequests(storage.getRecycleRequests());
-        }
-        if (selectedRequest?.id === id) {
-            setSelectedRequest(prev => prev ? { ...prev, isRead: true } : null);
+    const handleMarkAsRead = async (id: string) => {
+        try {
+            await storage.markRecycleRequestAsRead(id);
+            if (setRequests) {
+                const updatedRequests = await storage.getRecycleRequests();
+                setRequests(updatedRequests);
+            }
+            if (selectedRequest && (selectedRequest.id === id || (selectedRequest as any)._id === id)) {
+                setSelectedRequest(prev => prev ? { ...prev, isRead: true } : null);
+            }
+        } catch (error) {
+            console.error('Failed to mark as read:', error);
         }
     };
 
     // 删除申请
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (!window.confirm('确定要删除这条回收申请吗？')) return;
-        storage.deleteRecycleRequest(id);
-        if (setRequests) {
-            setRequests(storage.getRecycleRequests());
+        try {
+            await storage.deleteRecycleRequest(id);
+            if (setRequests) {
+                const updatedRequests = await storage.getRecycleRequests();
+                setRequests(updatedRequests);
+            }
+            setSelectedRequest(null);
+        } catch (error) {
+            console.error('Failed to delete request:', error);
         }
-        setSelectedRequest(null);
     };
 
     // Filter & Sort
@@ -114,96 +124,99 @@ export default function RecycleManager({ requests, setRequests }: { requests: Re
                     </div>
                 ) : (
                     <div className="divide-y divide-slate-100">
-                        {filteredRequests.map(req => (
-                            <div key={req.id} className={`p-5 hover:bg-slate-50/50 transition-colors relative group ${!req.isRead ? 'bg-blue-50/30' : ''}`}>
-                                {!req.isRead && (
-                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />
-                                )}
+                        {filteredRequests.map(req => {
+                            const reqId = req.id || (req as any)._id;
+                            return (
+                                <div key={reqId} className={`p-5 hover:bg-slate-50/50 transition-colors relative group ${!req.isRead ? 'bg-blue-50/30' : ''}`}>
+                                    {!req.isRead && (
+                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />
+                                    )}
 
-                                <div className="flex gap-4">
-                                    {/* Image */}
-                                    <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
-                                        {req.image ? (
-                                            <img
-                                                src={req.image}
-                                                alt="回收图片"
-                                                className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                                                onClick={() => {
-                                                    setSelectedRequest(req);
-                                                    if (!req.isRead) handleMarkAsRead(req.id);
-                                                }}
-                                            />
-                                        ) : (
-                                            <Image size={24} className="text-slate-300" />
-                                        )}
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            {!req.isRead && (
-                                                <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+                                    <div className="flex gap-4">
+                                        {/* Image */}
+                                        <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                                            {req.image ? (
+                                                <img
+                                                    src={req.image}
+                                                    alt="回收图片"
+                                                    className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                                    onClick={() => {
+                                                        setSelectedRequest(req);
+                                                        if (!req.isRead) handleMarkAsRead(reqId);
+                                                    }}
+                                                />
+                                            ) : (
+                                                <Image size={24} className="text-slate-300" />
                                             )}
-                                            <p className="text-slate-800 text-sm font-medium leading-relaxed line-clamp-1">
-                                                {req.description || '无描述'}
-                                            </p>
                                         </div>
 
-                                        {/* Meta */}
-                                        <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-500">
-                                            <div className="flex items-center gap-1.5">
-                                                <User size={12} />
-                                                <span>{req.userName}</span>
+                                        {/* Content */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {!req.isRead && (
+                                                    <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+                                                )}
+                                                <p className="text-slate-800 text-sm font-medium leading-relaxed line-clamp-1">
+                                                    {req.description || '无描述'}
+                                                </p>
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-emerald-600 font-medium">
-                                                <MessageCircle size={12} />
-                                                <span>{req.wechat}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <Clock size={12} />
-                                                <span>{new Date(req.createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+
+                                            {/* Meta */}
+                                            <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-500">
+                                                <div className="flex items-center gap-1.5">
+                                                    <User size={12} />
+                                                    <span>{req.userName}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-emerald-600 font-medium">
+                                                    <MessageCircle size={12} />
+                                                    <span>{req.wechat}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <Clock size={12} />
+                                                    <span>{new Date(req.createdAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Actions */}
-                                    <div className="flex gap-2">
-                                        {!req.isRead && (
+                                        {/* Actions */}
+                                        <div className="flex gap-2">
+                                            {!req.isRead && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleMarkAsRead(reqId);
+                                                    }}
+                                                    className="p-2 text-blue-500 hover:bg-blue-100 rounded-lg transition-colors"
+                                                    title="设为已读"
+                                                >
+                                                    <CheckCheck size={18} />
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleMarkAsRead(req.id);
+                                                    handleDelete(reqId);
                                                 }}
-                                                className="p-2 text-blue-500 hover:bg-blue-100 rounded-lg transition-colors"
-                                                title="设为已读"
+                                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="删除"
                                             >
-                                                <CheckCheck size={18} />
+                                                <Trash2 size={18} />
                                             </button>
-                                        )}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete(req.id);
-                                            }}
-                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="删除"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setSelectedRequest(req);
-                                                if (!req.isRead) handleMarkAsRead(req.id);
-                                            }}
-                                            className="px-3 py-1.5 h-fit bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
-                                        >
-                                            <Eye size={14} />
-                                            详情
-                                        </button>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedRequest(req);
+                                                    if (!req.isRead) handleMarkAsRead(reqId);
+                                                }}
+                                                className="px-3 py-1.5 h-fit bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-sm"
+                                            >
+                                                <Eye size={14} />
+                                                详情
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
@@ -263,7 +276,7 @@ export default function RecycleManager({ requests, setRequests }: { requests: Re
                                             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">用户信息</h3>
                                             <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl">
                                                 <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold shrink-0">
-                                                    {selectedRequest.userName.charAt(0)}
+                                                    {selectedRequest.userName?.charAt(0) || 'U'}
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-bold text-slate-900 truncate">{selectedRequest.userName}</p>
@@ -276,7 +289,7 @@ export default function RecycleManager({ requests, setRequests }: { requests: Re
 
                                 <div className="flex gap-3 pt-6 border-t border-slate-100">
                                     <button
-                                        onClick={() => handleDelete(selectedRequest.id)}
+                                        onClick={() => handleDelete(selectedRequest.id || (selectedRequest as any)._id)}
                                         className="flex-1 py-3 bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
                                     >
                                         <Trash2 size={18} />

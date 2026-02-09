@@ -21,27 +21,37 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
     const filteredItems = useMemo(() => {
         return usedItems.filter(item => {
             const matchStatus = filterStatus === 'all' || item.status === filterStatus;
-            const matchSearch = item.model.toLowerCase().includes(search.toLowerCase()) ||
-                item.brand.toLowerCase().includes(search.toLowerCase()) ||
-                item.sellerName.toLowerCase().includes(search.toLowerCase());
+            const matchSearch = (item.model || '').toLowerCase().includes(search.toLowerCase()) ||
+                (item.brand || '').toLowerCase().includes(search.toLowerCase()) ||
+                (item.sellerName || '').toLowerCase().includes(search.toLowerCase());
             return matchStatus && matchSearch;
         });
     }, [usedItems, filterStatus, search]);
 
     // Actions
-    const handleStatusChange = (id: string, newStatus: UsedItem['status']) => {
-        const item = usedItems.find(i => i.id === id);
+    const handleStatusChange = async (id: string, newStatus: UsedItem['status']) => {
+        const item = usedItems.find(i => i.id === id || (i as any)._id === id);
         if (item) {
-            const updatedItem = { ...item, status: newStatus };
-            storage.updateUsedItem(updatedItem);
-            setUsedItems(usedItems.map(i => i.id === id ? updatedItem : i));
+            try {
+                const updatedItem = { ...item, status: newStatus };
+                await storage.updateUsedItem(updatedItem);
+                const latestItems = await storage.getUsedItems();
+                setUsedItems(latestItems);
+            } catch (error) {
+                console.error('Failed to change status:', error);
+            }
         }
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (window.confirm('确定要删除这个商品吗？操作不可恢复。')) {
-            storage.deleteUsedItem(id);
-            setUsedItems(usedItems.filter(i => i.id !== id));
+            try {
+                await storage.deleteUsedItem(id);
+                const latestItems = await storage.getUsedItems();
+                setUsedItems(latestItems);
+            } catch (error) {
+                console.error('Failed to delete item:', error);
+            }
         }
     };
 
@@ -97,69 +107,72 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                        {filteredItems.map(item => (
-                            <tr key={item.id} className="hover:bg-slate-50/50">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
-                                            {item.images[0] ? (
-                                                <img src={item.images[0]} alt={item.model} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <FileText size={20} className="text-slate-400" />
+                        {filteredItems.map(item => {
+                            const itemId = item.id || (item as any)._id;
+                            return (
+                                <tr key={itemId} className="hover:bg-slate-50/50">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                                                {item.images[0] ? (
+                                                    <img src={item.images[0]} alt={item.model} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <FileText size={20} className="text-slate-400" />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-slate-900">{item.brand} {item.model}</div>
+                                                <div className="text-xs text-slate-500">{item.category}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2 text-slate-600">
+                                            <User size={14} />
+                                            <span>{item.sellerName}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 font-bold text-indigo-600">¥{item.price}</td>
+                                    <td className="px-6 py-4">
+                                        <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs">{item.condition}</span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <StatusBadge status={item.status} />
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-500 text-xs">
+                                        {new Date(item.createdAt).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            {item.status === 'pending' && (
+                                                <button
+                                                    onClick={() => openReviewModal(item)}
+                                                    className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
+                                                >
+                                                    审核
+                                                </button>
                                             )}
-                                        </div>
-                                        <div>
-                                            <div className="font-bold text-slate-900">{item.brand} {item.model}</div>
-                                            <div className="text-xs text-slate-500">{item.category}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2 text-slate-600">
-                                        <User size={14} />
-                                        <span>{item.sellerName}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 font-bold text-indigo-600">¥{item.price}</td>
-                                <td className="px-6 py-4">
-                                    <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs">{item.condition}</span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <StatusBadge status={item.status} />
-                                </td>
-                                <td className="px-6 py-4 text-slate-500 text-xs">
-                                    {new Date(item.createdAt).toLocaleDateString()}
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex justify-end gap-2">
-                                        {item.status === 'pending' && (
+                                            {item.status !== 'pending' && (
+                                                <button
+                                                    onClick={() => openReviewModal(item)}
+                                                    className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                                                    title="查看详情"
+                                                >
+                                                    <Eye size={18} />
+                                                </button>
+                                            )}
                                             <button
-                                                onClick={() => openReviewModal(item)}
-                                                className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
+                                                onClick={() => handleDelete(itemId)}
+                                                className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                                                title="删除"
                                             >
-                                                审核
+                                                <Trash2 size={18} />
                                             </button>
-                                        )}
-                                        {item.status !== 'pending' && (
-                                            <button
-                                                onClick={() => openReviewModal(item)}
-                                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors"
-                                                title="查看详情"
-                                            >
-                                                <Eye size={18} />
-                                            </button>
-                                        )}
-                                        <button
-                                            onClick={() => handleDelete(item.id)}
-                                            className="p-2 text-slate-400 hover:text-red-600 transition-colors"
-                                            title="删除"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                         {filteredItems.length === 0 && (
                             <tr>
                                 <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
@@ -249,9 +262,9 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                             {selectedItem.status === 'pending' ? (
                                 <>
                                     <button
-                                        onClick={() => {
+                                        onClick={async () => {
                                             if (window.confirm('确认拒绝该商品的发布申请吗？')) {
-                                                handleStatusChange(selectedItem.id, 'rejected');
+                                                await handleStatusChange(selectedItem.id || (selectedItem as any)._id, 'rejected');
                                                 setIsReviewModalOpen(false);
                                             }
                                         }}
@@ -260,8 +273,8 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                                         拒绝发布
                                     </button>
                                     <button
-                                        onClick={() => {
-                                            handleStatusChange(selectedItem.id, 'published');
+                                        onClick={async () => {
+                                            await handleStatusChange(selectedItem.id || (selectedItem as any)._id, 'published');
                                             setIsReviewModalOpen(false);
                                         }}
                                         className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-200"
@@ -279,9 +292,9 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                                     </button>
                                     {selectedItem.status === 'published' && (
                                         <button
-                                            onClick={() => {
+                                            onClick={async () => {
                                                 if (window.confirm('确认下架该商品吗？')) {
-                                                    handleStatusChange(selectedItem.id, 'rejected');
+                                                    await handleStatusChange(selectedItem.id || (selectedItem as any)._id, 'rejected');
                                                     setIsReviewModalOpen(false);
                                                 }
                                             }}
@@ -301,8 +314,9 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
             {isOfficialPublishModalOpen && (
                 <OfficialPublishModal
                     onClose={() => setIsOfficialPublishModalOpen(false)}
-                    onSuccess={(newItem) => {
-                        setUsedItems([...usedItems, newItem]);
+                    onSuccess={async (newItem) => {
+                        const latestItems = await storage.getUsedItems();
+                        setUsedItems(latestItems);
                         setIsOfficialPublishModalOpen(false);
                     }}
                 />
@@ -355,7 +369,7 @@ function OfficialPublishModal({ onClose, onSuccess }: { onClose: () => void; onS
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
@@ -365,29 +379,30 @@ function OfficialPublishModal({ onClose, onSuccess }: { onClose: () => void; onS
             return;
         }
 
-        const newItem: UsedItem = {
-            id: `used_official_${Date.now()}`,
+        const newItem: any = {
             type: 'official',
             sellerId: 'admin',
             sellerName: '小鱼官方',
-            category: formData.category as UsedItem['category'],
+            category: formData.category,
             brand: formData.brand,
             model: formData.model,
             price: Number(formData.price),
             originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
-            condition: formData.condition as string,
+            condition: formData.condition,
             images: formData.images || [],
             description: formData.description,
-            status: 'published', // 官方直接上架
-            createdAt: Date.now(),
-            inspectionReport: formData.inspectionReport as UsedItem['inspectionReport'],
+            status: 'published',
+            inspectionReport: formData.inspectionReport,
         };
 
-        storage.addUsedItem(newItem);
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            await storage.addUsedItem(newItem);
             onSuccess(newItem);
-        }, 500);
+        } catch (error) {
+            alert('发布失败');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

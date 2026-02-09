@@ -12,3 +12,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
+    volumes:
+      - ./data:/app/data
+  # SQLite doesn't need a separate service as it's a file in the persistence volume
+  # The server container should mount a volume to persist the .db file

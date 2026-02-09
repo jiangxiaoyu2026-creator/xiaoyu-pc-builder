@@ -5,9 +5,20 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import smsRoutes from './routes/sms';
 import paymentRoutes from './routes/payment';
+import authRoutes from './routes/auth';
+import hardwareRoutes from './routes/hardware';
+import configRoutes from './routes/config';
+import usedRoutes from './routes/used';
+import settingsRoutes from './routes/settings';
+import recycleRouter from './routes/recycle';
+
+import { connectDB } from './db';
 
 // 加载环境变量
 dotenv.config();
+
+// 连接数据库
+connectDB();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +40,12 @@ app.use(express.static(distPath));
 // API 路由
 app.use('/api/sms', smsRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/products', hardwareRoutes);
+app.use('/api/configs', configRoutes);
+app.use('/api/used', usedRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/recycle', recycleRouter);
 
 // 健康检查
 app.get('/api/health', (_req: express.Request, res: express.Response) => {

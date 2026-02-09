@@ -1,13 +1,16 @@
 
+import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import ClientApp from './pages/ClientApp';
-import AdminApp from './pages/AdminApp'; // Will be implemented next
+import AdminApp from './pages/AdminApp';
+import { storage } from './services/storage';
 
-/*
- * Simple Layout wrapper to allow switching between User App and Admin App
- * In a real app, these might be on different subdomains or completely separate builds.
- */
 function App() {
+    useEffect(() => {
+        // Trigger one-time migration and initialization
+        storage.init();
+    }, []);
+
     return (
         <Routes>
             <Route path="/" element={<ClientApp />} />

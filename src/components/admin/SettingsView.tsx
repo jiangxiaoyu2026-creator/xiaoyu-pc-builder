@@ -2,30 +2,30 @@
 import { useState } from 'react';
 import { Calculator, Tag, Trash2, Plus, Download, Upload, ShieldCheck } from 'lucide-react';
 import { PricingStrategy, DiscountTier } from '../../types/adminTypes';
-
 import { storage } from '../../services/storage';
 
 export default function SettingsView({ strategy, setStrategy }: { strategy: PricingStrategy, setStrategy: any }) {
     const [newTier, setNewTier] = useState<Partial<DiscountTier>>({ name: '', multiplier: 0.95, description: '', sortOrder: 99 });
+    const [loading, setLoading] = useState(false);
 
-
-
-
-    const updateTier = (id: string, field: keyof DiscountTier, val: any) => {
+    const updateTier = async (id: string, field: keyof DiscountTier, val: any) => {
         const newTiers = strategy.discountTiers.map(t => t.id === id ? { ...t, [field]: val } : t);
-        // 更新后自动排序
         newTiers.sort((a, b) => a.sortOrder - b.sortOrder);
-        setStrategy({ ...strategy, discountTiers: newTiers });
+        const updatedStrategy = { ...strategy, discountTiers: newTiers };
+        setStrategy(updatedStrategy);
+        await storage.savePricingStrategy(updatedStrategy);
     };
 
-    const deleteTier = (id: string) => {
+    const deleteTier = async (id: string) => {
         if (confirm('确定删除该折扣方案吗？')) {
             const newTiers = strategy.discountTiers.filter(t => t.id !== id);
-            setStrategy({ ...strategy, discountTiers: newTiers });
+            const updatedStrategy = { ...strategy, discountTiers: newTiers };
+            setStrategy(updatedStrategy);
+            await storage.savePricingStrategy(updatedStrategy);
         }
     };
 
-    const addTier = () => {
+    const addTier = async () => {
         if (!newTier.name) return alert('请输入方案名称');
         const tier: DiscountTier = {
             id: `dt-${Date.now()}`,
@@ -35,13 +35,96 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
             sortOrder: Number(newTier.sortOrder) || 99
         };
         const newTiers = [...strategy.discountTiers, tier].sort((a, b) => a.sortOrder - b.sortOrder);
-        setStrategy({ ...strategy, discountTiers: newTiers });
+        const updatedStrategy = { ...strategy, discountTiers: newTiers };
+        setStrategy(updatedStrategy);
+        await storage.savePricingStrategy(updatedStrategy);
         setNewTier({ name: '', multiplier: 0.95, description: '', sortOrder: 99 });
     };
 
-    const handleResetSystem = () => {
+    const handleResetSystem = async () => {
         if (confirm('⚠️ 警告：这将清空所有数据（配置单、用户、设置）并重置为初始状态！\n\n确定要继续吗？')) {
-            storage.resetData();
+            await storage.resetData();
+        }
+    };
+
+    const handleGenerateMockData = async () => {
+        if (!confirm('确定要生成 200 条测试数据吗？（质量更好，且默认上架）')) return;
+        setLoading(true);
+        try {
+            const MOCKS: Record<string, { brands: string[], models: string[] }> = {
+                cpu: {
+                    brands: ['Intel', 'AMD'],
+                    models: ['Core i9-14900K', 'Core i7-14700K', 'Core i5-13600K', 'Ryzen 9 7950X', 'Ryzen 7 7800X3D', 'Ryzen 5 7600X']
+                },
+                gpu: {
+                    brands: ['ASUS', 'MSI', 'Gigabyte', 'Colorful', 'Zotac', 'Sapphire'],
+                    models: ['RTX 4090 D', 'RTX 4080 Super', 'RTX 4070 Ti Super', 'RTX 4060 Ti', 'RX 7900 XTX', 'RX 7800 XT']
+                },
+                mainboard: {
+                    brands: ['ASUS', 'MSI', 'Gigabyte', 'ASRock'],
+                    models: ['Z790 Hero', 'B760M Bomber', 'X670E Taichi', 'B650M Mortar', 'Z790 Formula', 'B760-G Strix']
+                },
+                ram: {
+                    brands: ['G.Skill', 'Corsair', 'Kingston', 'ADATA'],
+                    models: ['Trident Z5 32GB', 'Vengeance 16GB', 'Fury Beast 16GB', 'Lancer RGB 32GB']
+                },
+                disk: {
+                    brands: ['Samsung', 'WD', 'Crucial', 'Lexar'],
+                    models: ['990 Pro 2TB', 'SN850X 1TB', 'P3 Plus 1TB', 'NM800 Pro 2TB']
+                },
+                power: {
+                    brands: ['Corsair', 'Seasonic', 'ASUS', 'MSI'],
+                    models: ['RM1000e', 'Focus GX-850', 'Thor 1200W', 'A1000G']
+                },
+                case: {
+                    brands: ['LianLi', 'NZXT', 'Corsair', 'Phanteks'],
+                    models: ['O11 Ultra', 'H9 Flow', '4000D Airflow', 'NV7']
+                },
+                cooling: {
+                    brands: ['Valkyrie', 'DeepCool', 'NZXT', 'Corsair'],
+                    models: ['GL360', 'E360', 'Kraken 360', 'H150i']
+                },
+                monitor: {
+                    brands: ['LG', 'Samsung', 'ASUS', 'AOC'],
+                    models: ['27GP950', 'G9 Neo', 'PG27AQDM', 'Q27G2S']
+                }
+            };
+
+            const GENERIC_BRANDS = ['Generic', 'Other'];
+            const GENERIC_MODELS = ['Standard Edition', 'Pro Version'];
+            const CATEGORIES = ['cpu', 'mainboard', 'gpu', 'ram', 'disk', 'power', 'case', 'cooling', 'monitor', 'keyboard', 'mouse', 'fan'];
+
+            const newProducts = [];
+            for (let i = 0; i < 200; i++) {
+                const cat = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+                const config = MOCKS[cat] || { brands: GENERIC_BRANDS, models: GENERIC_MODELS };
+
+                const brand = config.brands[Math.floor(Math.random() * config.brands.length)];
+                const modelBase = config.models[Math.floor(Math.random() * config.models.length)];
+                const price = Math.floor(Math.random() * 8000) + 100;
+
+                newProducts.push({
+                    category: cat,
+                    brand: brand,
+                    model: `${modelBase} (Test-${i})`,
+                    price: price,
+                    status: 'active',
+                    sortOrder: 100,
+                    specs: {
+                        socket: cat === 'cpu' || cat === 'mainboard' ? (modelBase.includes('Ryzen') || modelBase.includes('X670') || modelBase.includes('B650') ? 'AM5' : 'LGA1700') : undefined,
+                        memoryType: cat === 'ram' || cat === 'mainboard' ? 'DDR5' : undefined,
+                        wattage: cat === 'power' ? [750, 850, 1000, 1200][Math.floor(Math.random() * 4)] : undefined
+                    },
+                    imageUrl: ''
+                });
+            }
+
+            await storage.saveProducts(newProducts as any);
+            alert(`⚡️ 成功生成 ${newProducts.length} 条测试数据并存入数据库！`);
+        } catch (error) {
+            alert('生成失败');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -66,7 +149,12 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
                                 type="number"
                                 step="0.01"
                                 value={strategy.serviceFeeRate}
-                                onChange={e => setStrategy({ ...strategy, serviceFeeRate: parseFloat(e.target.value) })}
+                                onChange={async (e) => {
+                                    const val = parseFloat(e.target.value);
+                                    const updated = { ...strategy, serviceFeeRate: val };
+                                    setStrategy(updated);
+                                    await storage.savePricingStrategy(updated);
+                                }}
                                 className="w-24 border border-slate-300 rounded-lg p-2 text-center font-bold text-indigo-600 focus:ring-2 focus:ring-indigo-500 outline-none"
                             />
                             <span className="text-slate-500">= {Math.round(strategy.serviceFeeRate * 100)}% 利润</span>
@@ -149,7 +237,7 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
                         <Download size={20} className="text-emerald-500" /> 数据导出与备份
                     </h3>
                     <p className="text-sm text-slate-500 mb-6 font-medium">
-                        为了防止浏览器清理缓存导致数据丢失，建议定期导出本站所有数据（包含硬件库、配置单、用户信息及统计指标）。
+                        目前导出功能主要备份本地设置及缓存。服务端数据建议定期通过后端数据库工具备份。
                     </p>
                     <button
                         onClick={() => storage.exportData()}
@@ -204,91 +292,13 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
                     <p className="text-xs text-slate-500 mb-3">生成 200 条随机硬件数据以测试性能和前端选择功能。</p>
                     <button
                         onClick={handleGenerateMockData}
-                        className="px-6 py-2 bg-white border border-indigo-200 text-indigo-600 font-bold rounded-lg hover:bg-indigo-600 hover:text-white transition-colors shadow-sm"
+                        disabled={loading}
+                        className="px-6 py-2 bg-white border border-indigo-200 text-indigo-600 font-bold rounded-lg hover:bg-indigo-600 hover:text-white transition-colors shadow-sm disabled:opacity-50"
                     >
-                        ⚡️ 生成 200 条测试硬件
+                        {loading ? '生成中...' : '⚡️ 生成 200 条测试硬件'}
                     </button>
                 </div>
             </div>
         </div>
-    )
+    );
 }
-
-const handleGenerateMockData = () => {
-    if (!confirm('确定要生成 200 条测试数据吗？（质量更好，且默认上架）')) return;
-
-    const MOCKS: Record<string, { brands: string[], models: string[] }> = {
-        cpu: {
-            brands: ['Intel', 'AMD'],
-            models: ['Core i9-14900K', 'Core i7-14700K', 'Core i5-13600K', 'Ryzen 9 7950X', 'Ryzen 7 7800X3D', 'Ryzen 5 7600X']
-        },
-        gpu: {
-            brands: ['ASUS', 'MSI', 'Gigabyte', 'Colorful', 'Zotac', 'Sapphire'],
-            models: ['RTX 4090 D', 'RTX 4080 Super', 'RTX 4070 Ti Super', 'RTX 4060 Ti', 'RX 7900 XTX', 'RX 7800 XT']
-        },
-        mainboard: {
-            brands: ['ASUS', 'MSI', 'Gigabyte', 'ASRock'],
-            models: ['Z790 Hero', 'B760M Bomber', 'X670E Taichi', 'B650M Mortar', 'Z790 Formula', 'B760-G Strix']
-        },
-        ram: {
-            brands: ['G.Skill', 'Corsair', 'Kingston', 'ADATA'],
-            models: ['Trident Z5 32GB', 'Vengeance 16GB', 'Fury Beast 16GB', 'Lancer RGB 32GB']
-        },
-        disk: {
-            brands: ['Samsung', 'WD', 'Crucial', 'Lexar'],
-            models: ['990 Pro 2TB', 'SN850X 1TB', 'P3 Plus 1TB', 'NM800 Pro 2TB']
-        },
-        power: {
-            brands: ['Corsair', 'Seasonic', 'ASUS', 'MSI'],
-            models: ['RM1000e', 'Focus GX-850', 'Thor 1200W', 'A1000G']
-        },
-        case: {
-            brands: ['LianLi', 'NZXT', 'Corsair', 'Phanteks'],
-            models: ['O11 Ultra', 'H9 Flow', '4000D Airflow', 'NV7']
-        },
-        cooling: {
-            brands: ['Valkyrie', 'DeepCool', 'NZXT', 'Corsair'],
-            models: ['GL360', 'E360', 'Kraken 360', 'H150i']
-        },
-        monitor: {
-            brands: ['LG', 'Samsung', 'ASUS', 'AOC'],
-            models: ['27GP950', 'G9 Neo', 'PG27AQDM', 'Q27G2S']
-        }
-        // Others use generic
-    };
-
-    const GENERIC_BRANDS = ['Generic', 'Other'];
-    const GENERIC_MODELS = ['Standard Edition', 'Pro Version'];
-    const CATEGORIES = ['cpu', 'mainboard', 'gpu', 'ram', 'disk', 'power', 'case', 'cooling', 'monitor', 'keyboard', 'mouse', 'fan'];
-
-    const newProducts = [];
-    for (let i = 0; i < 200; i++) {
-        const cat = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
-        const config = MOCKS[cat] || { brands: GENERIC_BRANDS, models: GENERIC_MODELS };
-
-        const brand = config.brands[Math.floor(Math.random() * config.brands.length)];
-        const modelBase = config.models[Math.floor(Math.random() * config.models.length)];
-        const price = Math.floor(Math.random() * 8000) + 100;
-
-        newProducts.push({
-            id: `mock-${Date.now()}-${i}`,
-            category: cat,
-            brand: brand,
-            model: `${modelBase} (Test-${i})`,
-            price: price,
-            status: 'active', // Default to active
-            sortOrder: 100,
-            specs: {
-                socket: cat === 'cpu' || cat === 'mainboard' ? (modelBase.includes('Ryzen') || modelBase.includes('X670') || modelBase.includes('B650') ? 'AM5' : 'LGA1700') : undefined,
-                memoryType: cat === 'ram' || cat === 'mainboard' ? 'DDR5' : undefined,
-                wattage: cat === 'power' ? [750, 850, 1000, 1200][Math.floor(Math.random() * 4)] : undefined
-            },
-            imageUrl: ''
-        });
-    }
-
-    const current = storage.getProducts();
-    // @ts-ignore
-    storage.saveProducts([...current, ...newProducts]);
-    alert(`⚡️ 质量升级！成功生成 ${newProducts.length} 条有效且相关的测试数据。`);
-};

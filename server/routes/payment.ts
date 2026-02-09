@@ -10,8 +10,8 @@ import path from 'path';
 
 const router = express.Router();
 
-// 配置文件路径
-const CONFIG_FILE = path.join(__dirname, '../../payment-config.json');
+// 配置文件路径 (使用项目根目录)
+const CONFIG_FILE = path.join(process.cwd(), 'payment-config.json');
 
 // 读取配置
 function getConfig(): { wechat?: WechatPayConfig; alipay?: AlipayConfig } {
@@ -125,60 +125,65 @@ router.post('/settings', (req, res) => {
  * 创建微信支付订单
  */
 router.post('/wechat/create', async (req, res) => {
-    const config = getConfig();
-    if (!config.wechat?.appId || !config.wechat?.mchId || !config.wechat?.apiKey) {
-        return res.status(400).json({ success: false, error: '微信支付未配置' });
-    }
+    try {
+        const config = getConfig();
+        if (!config.wechat?.appId || !config.wechat?.mchId || !config.wechat?.apiKey) {
+            return res.status(400).json({ success: false, error: '微信支付未配置' });
+        }
 
-    const { userId, planId, planName, amount, openId } = req.body;
-    if (!userId || !planId || !amount) {
-        return res.status(400).json({ success: false, error: '参数不完整' });
-    }
+        const { userId, planId, planName, amount, openId } = req.body;
+        if (!userId || !planId || !amount) {
+            return res.status(400).json({ success: false, error: '参数不完整' });
+        }
 
-    const orderId = `WX${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+        const orderId = `WX${Date.now()}${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
-    // 存储订单
-    orders.set(orderId, {
-        orderId,
-        userId,
-        planId,
-        amount: Math.round(amount * 100), // 转为分
-        status: 'pending',
-        payMethod: 'wechat',
-        createdAt: new Date().toISOString()
-    });
-
-    const wechatPay = new WechatPayService(config.wechat);
-
-    // 如果有openId，使用JSAPI；否则使用Native (二维码)
-    if (openId) {
-        const result = await wechatPay.createJSAPIOrder({
+        // 存储订单
+        orders.set(orderId, {
             orderId,
-            description: planName || 'VIP会员',
-            amount: Math.round(amount * 100),
-            openId,
-            attach: JSON.stringify({ userId, planId })
+            userId,
+            planId,
+            amount: Math.round(amount * 100), // 转为分
+            status: 'pending',
+            payMethod: 'wechat',
+            createdAt: new Date().toISOString()
         });
 
-        if (result.success) {
-            res.json({ success: true, orderId, payParams: result.data });
-        } else {
-            res.status(400).json({ success: false, error: result.error });
-        }
-    } else {
-        // Native支付 (二维码)
-        const result = await wechatPay.createNativeOrder({
-            orderId,
-            description: planName || 'VIP会员',
-            amount: Math.round(amount * 100),
-            attach: JSON.stringify({ userId, planId })
-        });
+        const wechatPay = new WechatPayService(config.wechat);
 
-        if (result.success) {
-            res.json({ success: true, orderId, codeUrl: result.data.codeUrl });
+        // 如果有openId，使用JSAPI；否则使用Native (二维码)
+        if (openId) {
+            const result = await wechatPay.createJSAPIOrder({
+                orderId,
+                description: planName || 'VIP会员',
+                amount: Math.round(amount * 100),
+                openId,
+                attach: JSON.stringify({ userId, planId })
+            });
+
+            if (result.success) {
+                res.json({ success: true, orderId, payParams: result.data });
+            } else {
+                res.status(400).json({ success: false, error: result.error });
+            }
         } else {
-            res.status(400).json({ success: false, error: result.error });
+            // Native支付 (二维码)
+            const result = await wechatPay.createNativeOrder({
+                orderId,
+                description: planName || 'VIP会员',
+                amount: Math.round(amount * 100),
+                attach: JSON.stringify({ userId, planId })
+            });
+
+            if (result.success) {
+                res.json({ success: true, orderId, codeUrl: result.data.codeUrl });
+            } else {
+                res.status(400).json({ success: false, error: result.error });
+            }
         }
+    } catch (e) {
+        console.error('创建微信支付订单失败:', e);
+        res.status(500).json({ success: false, error: '创建订单失败' });
     }
 });
 
@@ -241,7 +246,7 @@ router.post('/alipay/create', (req, res) => {
         return res.status(400).json({ success: false, error: '参数不完整' });
     }
 
-    const orderId = `ALI${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+    const orderId = `ALI${Date.now()}${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     // 存储订单
     orders.set(orderId, {
@@ -310,45 +315,50 @@ router.post('/alipay/notify', express.urlencoded({ extended: true }), (req, res)
  * 查询订单状态
  */
 router.get('/order/:orderId', async (req, res) => {
-    const { orderId } = req.params;
-    const order = orders.get(orderId);
+    try {
+        const { orderId } = req.params;
+        const order = orders.get(orderId);
 
-    if (!order) {
-        return res.status(404).json({ success: false, error: '订单不存在' });
-    }
+        if (!order) {
+            return res.status(404).json({ success: false, error: '订单不存在' });
+        }
 
-    // 如果订单未支付，尝试从支付平台查询最新状态
-    if (order.status === 'pending') {
-        const config = getConfig();
+        // 如果订单未支付，尝试从支付平台查询最新状态
+        if (order.status === 'pending') {
+            const config = getConfig();
 
-        if (order.payMethod === 'wechat' && config.wechat) {
-            const wechatPay = new WechatPayService(config.wechat);
-            const result = await wechatPay.queryOrder(orderId);
-            if (result.success && result.data.tradeState === 'SUCCESS') {
-                order.status = 'paid';
-                order.paidAt = new Date().toISOString();
-            }
-        } else if (order.payMethod === 'alipay' && config.alipay) {
-            const alipay = new AlipayService(config.alipay);
-            const result = await alipay.queryOrder(orderId);
-            if (result.success && result.data.tradeStatus === 'TRADE_SUCCESS') {
-                order.status = 'paid';
-                order.paidAt = new Date().toISOString();
+            if (order.payMethod === 'wechat' && config.wechat) {
+                const wechatPay = new WechatPayService(config.wechat);
+                const result = await wechatPay.queryOrder(orderId);
+                if (result.success && result.data.tradeState === 'SUCCESS') {
+                    order.status = 'paid';
+                    order.paidAt = new Date().toISOString();
+                }
+            } else if (order.payMethod === 'alipay' && config.alipay) {
+                const alipay = new AlipayService(config.alipay);
+                const result = await alipay.queryOrder(orderId);
+                if (result.success && result.data.tradeStatus === 'TRADE_SUCCESS') {
+                    order.status = 'paid';
+                    order.paidAt = new Date().toISOString();
+                }
             }
         }
-    }
 
-    res.json({
-        success: true,
-        order: {
-            orderId: order.orderId,
-            status: order.status,
-            amount: order.amount / 100,
-            payMethod: order.payMethod,
-            createdAt: order.createdAt,
-            paidAt: order.paidAt
-        }
-    });
+        res.json({
+            success: true,
+            order: {
+                orderId: order.orderId,
+                status: order.status,
+                amount: order.amount / 100,
+                payMethod: order.payMethod,
+                createdAt: order.createdAt,
+                paidAt: order.paidAt
+            }
+        });
+    } catch (e) {
+        console.error('查询订单失败:', e);
+        res.status(500).json({ success: false, error: '查询订单失败' });
+    }
 });
 
 export default router;

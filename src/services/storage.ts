@@ -1,5 +1,6 @@
 import { HardwareItem, ConfigItem, PricingStrategy, UserItem, UsedItem, RecycleRequest, SMSSettings, SystemStats, DailyStat, AboutUsConfig } from '../types/adminTypes';
 import { MOCK_HARDWARE, MOCK_CONFIGS, DEFAULT_AI_CONTENT } from '../data/adminData';
+import { ApiService } from './api';
 
 // ... (existing imports)
 
@@ -54,286 +55,99 @@ const DEFAULT_SMS_SETTINGS: SMSSettings = {
 
 class StorageService {
     constructor() {
-        this.init();
+        // Migration will be called externally or via a specific trigger
     }
 
-    private init() {
+    async init() {
         try {
-            const currentFlag = localStorage.getItem('xiaoyu_init_flag');
-            const REQUIRED_FLAG = KEYS.INIT_FLAG;
+            const initDone = localStorage.getItem('xiaoyu_db_migration_done_v1');
+            if (initDone) return;
 
-            if (currentFlag !== REQUIRED_FLAG) {
-                console.log('UseStorage: Initializing/Migrating data...');
+            console.log('UseStorage: Migrating data to MongoDB...');
 
-                // Force update MOCK_CONFIGS to ensure new mock data appears
-                const existingConfigsStr = localStorage.getItem(KEYS.CONFIGS);
-                let existingConfigs: ConfigItem[] = [];
-                try {
-                    existingConfigs = existingConfigsStr ? JSON.parse(existingConfigsStr) : [];
-                } catch (e) {
-                    console.error('Data corrupted, resetting configs');
-                    existingConfigs = [];
-                }
-
-                // Merge logic: Add mock configs if they don't exist by ID
-                if (MOCK_CONFIGS && Array.isArray(MOCK_CONFIGS)) {
-                    MOCK_CONFIGS.forEach(mockCfg => {
-                        if (!existingConfigs.some(e => e.id === mockCfg.id)) {
-                            existingConfigs.push(mockCfg);
-                        } else {
-                            const idx = existingConfigs.findIndex(e => e.id === mockCfg.id);
-                            if (idx !== -1) {
-                                existingConfigs[idx] = { ...existingConfigs[idx], ...mockCfg };
-                            }
-                        }
-                    });
-                }
-
-                this.saveConfigs(existingConfigs);
-
-                // Ensure products are seeded
-                if (!localStorage.getItem(KEYS.PRODUCTS)) {
-                    this.saveProducts(MOCK_HARDWARE);
-                }
-                // Ensure settings
-                if (!localStorage.getItem(KEYS.SETTINGS)) {
-                    this.saveSettings(DEFAULT_STRATEGY);
-                }
-                // Ensure SMS settings
-                if (!localStorage.getItem('xiaoyu_sms_settings')) { // Using literal key as KEYS.SMSSettings is not defined
-                    this.saveSMSSettings(DEFAULT_SMS_SETTINGS);
-                }
-
-                if (!localStorage.getItem(KEYS.USED_ITEMS)) {
-                    // 添加示例二手商品
-                    const sampleUsedItems: UsedItem[] = [
-                        {
-                            id: 'used_official_1',
-                            type: 'official',
-                            sellerId: 'admin',
-                            sellerName: '小鱼官方',
-                            category: 'gpu',
-                            brand: 'ASUS 华硕',
-                            model: 'RTX 3070 TUF GAMING OC',
-                            price: 2299,
-                            originalPrice: 4599,
-                            condition: '95新',
-                            images: ['https://images.unsplash.com/photo-1591488320449-011701bb6704?w=400'],
-                            description: '自用一年，性能完好，无任何问题，全程正常使用未超频。送原装盒子和配件。',
-                            status: 'published',
-                            createdAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
-                            inspectionReport: {
-                                inspectedAt: new Date().toISOString(),
-                                grade: 'A',
-                                score: 92,
-                                stressTest: true,
-                                functionTest: true,
-                                appearance: '外观完好',
-                                summary: '高分通过压力测试，性能稳定',
-                                notes: ''
-                            }
-                        },
-                        {
-                            id: 'used_official_2',
-                            type: 'official',
-                            sellerId: 'admin',
-                            sellerName: '小鱼官方',
-                            category: 'gpu',
-                            brand: '七彩虹',
-                            model: 'RTX 4060 Ultra W OC',
-                            price: 2199,
-                            originalPrice: 2699,
-                            condition: '99新',
-                            images: ['https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=400'],
-                            description: '全新拆封仅测试，保修期内，送三年质保。',
-                            status: 'published',
-                            createdAt: Date.now() - 1000 * 60 * 60 * 24,
-                            inspectionReport: {
-                                inspectedAt: new Date().toISOString(),
-                                grade: 'A',
-                                score: 98,
-                                stressTest: true,
-                                functionTest: true,
-                                appearance: '全新状态',
-                                summary: '近乎全新，性能满分',
-                                notes: ''
-                            }
-                        },
-                        {
-                            id: 'used_official_3',
-                            type: 'official',
-                            sellerId: 'admin',
-                            sellerName: '小鱼官方',
-                            category: 'host',
-                            brand: '小鱼定制',
-                            model: 'i5-12400F + RTX 3060 游戏整机',
-                            price: 3599,
-                            originalPrice: 5299,
-                            condition: '9成新',
-                            images: ['https://images.unsplash.com/photo-1587831990711-23ca6441447b?w=400'],
-                            description: '直播间退货机，功能完好，包含显示器键鼠全套。',
-                            status: 'published',
-                            createdAt: Date.now() - 1000 * 60 * 60 * 12,
-                            inspectionReport: {
-                                inspectedAt: new Date().toISOString(),
-                                grade: 'B',
-                                score: 85,
-                                stressTest: true,
-                                functionTest: true,
-                                appearance: '轻微使用痕迹',
-                                summary: '整机性能正常，外观有轻微划痕',
-                                notes: '机箱侧板有一处细小划痕'
-                            }
-                        },
-                        {
-                            id: 'used_personal_1',
-                            type: 'personal',
-                            sellerId: 'user1',
-                            sellerName: '装机小白',
-                            category: 'gpu',
-                            brand: '影驰',
-                            model: 'RTX 2060 SUPER',
-                            price: 899,
-                            originalPrice: 2999,
-                            condition: '8成新',
-                            images: ['https://images.unsplash.com/photo-1623820919239-0d0ff10797a1?w=400'],
-                            description: '升级换下来的显卡，正常使用无问题，可小刀。',
-                            status: 'published',
-                            createdAt: Date.now() - 1000 * 60 * 60 * 48,
-                            xianyuLink: '【闲鱼】https://m.tb.cn/xxx 点击链接直接打开'
-                        },
-                        {
-                            id: 'used_personal_2',
-                            type: 'personal',
-                            sellerId: 'user2',
-                            sellerName: '硬件达人',
-                            category: 'accessory',
-                            brand: '酷冷至尊',
-                            model: 'V850 SFX Gold 金牌全模组电源',
-                            price: 599,
-                            originalPrice: 899,
-                            condition: '95新',
-                            images: ['https://images.unsplash.com/photo-1562976540-1502c2145186?w=400'],
-                            description: 'ITX机箱换下来的SFX电源，几乎全新，带全套模组线。',
-                            status: 'published',
-                            createdAt: Date.now() - 1000 * 60 * 60 * 36,
-                            xianyuLink: '【闲鱼】https://m.tb.cn/yyy 点击链接直接打开'
-                        },
-                        {
-                            id: 'used_personal_3',
-                            type: 'personal',
-                            sellerId: 'user3',
-                            sellerName: '游戏玩家',
-                            category: 'accessory',
-                            brand: '芝奇',
-                            model: 'DDR4 3200MHz 16G*2 幻光戟',
-                            price: 399,
-                            originalPrice: 799,
-                            condition: '99新',
-                            images: ['https://images.unsplash.com/photo-1541029071515-84cc54f84dc5?w=400'],
-                            description: '升级DDR5换下来的，RGB灯效正常，原盒发货。',
-                            status: 'published',
-                            createdAt: Date.now() - 1000 * 60 * 60 * 24 * 3,
-                            xianyuLink: '【闲鱼】https://m.tb.cn/zzz 点击链接直接打开'
-                        }
-                    ];
-                    localStorage.setItem(KEYS.USED_ITEMS, JSON.stringify(sampleUsedItems));
-                }
-
-                if (!localStorage.getItem(KEYS.RECYCLE_REQUESTS)) {
-                    localStorage.setItem(KEYS.RECYCLE_REQUESTS, JSON.stringify([]));
-                }
-                // Ensure users and add streamer if missing
-                const usersStr = localStorage.getItem(KEYS.USERS);
-                let users: UserItem[] = usersStr ? JSON.parse(usersStr) : [];
-
-                const defaultUsers: UserItem[] = [
-                    { id: 'u1', username: 'DIYXX', password: 'jiangxiaoyu119', role: 'admin', status: 'active', lastLogin: '', vipExpireAt: 0 },
-                    { id: 'u2', username: 'user', password: 'user123', role: 'user', status: 'active', lastLogin: '', vipExpireAt: 0 },
-                    { id: 'u3', username: 'streamer', password: 'streamer123', role: 'streamer', status: 'active', lastLogin: '', vipExpireAt: 0 },
-                    { id: 'u4', username: 'manager', password: 'manager123', role: 'sub_admin', status: 'active', lastLogin: '', vipExpireAt: 0 }
-                ];
-
-                // 1. Remove old 'admin' if it exists and is NOT u1 (to prevent duplicates)
-                users = users.filter(u => u.username !== 'admin' || u.id === 'u1');
-
-                // 2. Force update/insert default users
-                defaultUsers.forEach(defUser => {
-                    const existingIdx = users.findIndex(u => u.id === defUser.id);
-                    if (existingIdx !== -1) {
-                        // Update existing (e.g. u1)
-                        console.log(`Updating existing user: ${defUser.username}`);
-                        users[existingIdx] = { ...users[existingIdx], ...defUser };
-                    } else {
-                        // Check if username exists under different ID
-                        const nameIdx = users.findIndex(u => u.username === defUser.username);
-                        if (nameIdx !== -1) {
-                            // Update credentials but keep ID if needed, or just overwrite
-                            console.log(`Overwriting user by name: ${defUser.username}`);
-                            users[nameIdx] = { ...users[nameIdx], ...defUser, id: users[nameIdx].id };
-                        } else {
-                            console.log(`Adding new default user: ${defUser.username}`);
-                            users.push(defUser);
-                        }
-                    }
-                });
-
-                console.log('Saving users to storage:', users);
-                this.saveUsers(users);
-
-                safeSetItem('xiaoyu_init_flag', REQUIRED_FLAG);
+            // 1. Migrate Products
+            const localProductsData = localStorage.getItem(KEYS.PRODUCTS);
+            if (localProductsData) {
+                const products = JSON.parse(localProductsData);
+                for (const p of products) await ApiService.post('/products', p);
             }
+
+            // 2. Migrate Configs
+            const localConfigsData = localStorage.getItem(KEYS.CONFIGS);
+            if (localConfigsData) {
+                const configs = JSON.parse(localConfigsData);
+                for (const c of configs) await ApiService.post('/configs', c);
+            }
+
+            // 3. Migrate Settings
+            const localSettingsData = localStorage.getItem(KEYS.SETTINGS);
+            if (localSettingsData) {
+                const settings = JSON.parse(localSettingsData);
+                await ApiService.post('/settings', { pricingStrategy: settings });
+            }
+
+            // 4. Migrate Used Items
+            const localUsedData = localStorage.getItem(KEYS.USED_ITEMS);
+            if (localUsedData) {
+                const items = JSON.parse(localUsedData);
+                for (const i of items) await ApiService.post('/used', i);
+            }
+
+            // 5. Migrate Users
+            const localUsersData = localStorage.getItem(KEYS.USERS);
+            if (localUsersData) {
+                const users = JSON.parse(localUsersData);
+                for (const u of users) await ApiService.post('/auth/register', u);
+            }
+
+            localStorage.setItem('xiaoyu_db_migration_done_v1', 'true');
+            console.log('UseStorage: Migration complete.');
         } catch (err) {
-            console.error('Storage Init Failed:', err);
-            // Fallback: don't crash the app, but data might be missing
+            console.error('Migration failed:', err);
         }
     }
 
     // --- Products ---
-    getProducts(): HardwareItem[] {
+    async getProducts(): Promise<HardwareItem[]> {
         try {
-            const data = localStorage.getItem(KEYS.PRODUCTS);
-            return data ? JSON.parse(data) : [];
+            return await ApiService.get('/products');
         } catch (e) {
             console.error('Failed to load products', e);
             return [];
         }
     }
 
-    saveProducts(products: HardwareItem[]) {
-        safeSetItem(KEYS.PRODUCTS, JSON.stringify(products));
+    async saveProducts(products: HardwareItem[]) {
+        for (const p of products) {
+            await ApiService.post('/products', p);
+        }
         window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 
-    saveProduct(product: HardwareItem) {
-        const products = this.getProducts();
-        const index = products.findIndex(p => p.id === product.id);
-        if (index >= 0) {
-            products[index] = product;
-        } else {
-            products.push(product);
-        }
-        this.saveProducts(products);
+    async saveProduct(product: HardwareItem) {
+        await ApiService.post('/products', product);
+        window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 
-    deleteProduct(id: string) {
-        const products = this.getProducts().filter(p => p.id !== id);
-        this.saveProducts(products);
+    async deleteProduct(id: string) {
+        await ApiService.delete(`/products/${id}`);
+        window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 
     // --- Configs ---
-    getConfigs(): ConfigItem[] {
+    async getConfigs(): Promise<ConfigItem[]> {
         try {
-            const data = localStorage.getItem(KEYS.CONFIGS);
-            return data ? JSON.parse(data) : [];
+            return await ApiService.get('/configs');
         } catch (e) {
             console.error('Failed to load configs', e);
             return [];
         }
     }
 
-    saveConfigs(configs: ConfigItem[]) {
-        safeSetItem(KEYS.CONFIGS, JSON.stringify(configs));
+    async saveConfigs(configs: ConfigItem[]) {
+        for (const c of configs) {
+            await ApiService.post('/configs', c);
+        }
         this.logNewConfig();
         window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
@@ -355,151 +169,84 @@ class StorageService {
         return `${currentYear}-${nextSeq.toString().padStart(6, '0')}`;
     }
 
-    saveConfig(config: ConfigItem) {
-        const configs = this.getConfigs();
-        const index = configs.findIndex(c => c.id === config.id);
-
-        if (index >= 0) {
-            // Update existing
-            configs[index] = config;
-        } else {
-            // Create new
-            if (!config.serialNumber) {
-                config.serialNumber = this.generateSerialNumber(configs);
-            }
-            configs.push(config);
-        }
-        this.saveConfigs(configs);
+    async saveConfig(config: ConfigItem) {
+        await ApiService.post('/configs', config);
+        window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 
     // --- Settings ---
-    getSettings(): PricingStrategy {
+    async getSettings(): Promise<PricingStrategy> {
         try {
-            const data = localStorage.getItem(KEYS.SETTINGS);
-            return data ? JSON.parse(data) : DEFAULT_STRATEGY;
+            const data = await ApiService.get('/settings');
+            return data.pricingStrategy || DEFAULT_STRATEGY;
         } catch (e) {
-            console.error('Failed to load settings', e);
             return DEFAULT_STRATEGY;
         }
     }
 
-    saveSettings(settings: PricingStrategy) {
-        localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
+    async saveSettings(settings: PricingStrategy) {
+        await ApiService.post('/settings', { pricingStrategy: settings });
     }
 
     // --- AI Settings ---
     // --- AI Settings ---
-    getAISettings(): import('../types/adminTypes').AISettings {
+    async getAISettings(): Promise<import('../types/adminTypes').AISettings> {
         try {
-            const data = localStorage.getItem('xiaoyu_ai_settings');
-            const stored = data ? JSON.parse(data) : {};
-
-            // Merge stored settings with defaults (for new fields)
-            return {
-                provider: stored.provider || 'deepseek',
-                apiKey: stored.apiKey || '',
-                baseUrl: stored.baseUrl || 'https://api.deepseek.com/v1',
-                model: stored.model || 'deepseek-chat',
-                enabled: stored.enabled || false,
-                persona: stored.persona || 'toxic',
-                strategy: stored.strategy || 'balanced',
-                intros: stored.intros || DEFAULT_AI_CONTENT.intros,
-                lowBudgetIntros: stored.lowBudgetIntros || DEFAULT_AI_CONTENT.lowBudgetIntros,
-                severeBudgetIntros: stored.severeBudgetIntros || DEFAULT_AI_CONTENT.severeBudgetIntros,
-                verdicts: stored.verdicts || DEFAULT_AI_CONTENT.verdicts,
-                ctas: stored.ctas || DEFAULT_AI_CONTENT.ctas
-            };
+            const data = await ApiService.get('/settings');
+            return data.aiSettings || DEFAULT_AI_CONTENT;
         } catch (e) {
-            return {
-                provider: 'deepseek',
-                apiKey: '',
-                baseUrl: 'https://api.deepseek.com/v1',
-                model: 'deepseek-chat',
-                enabled: false,
-                persona: 'toxic',
-                strategy: 'balanced',
-                ...DEFAULT_AI_CONTENT
-            };
+            return DEFAULT_AI_CONTENT as any;
         }
     }
 
-    saveAISettings(settings: import('../types/adminTypes').AISettings) {
-        localStorage.setItem('xiaoyu_ai_settings', JSON.stringify(settings));
+    async saveAISettings(settings: import('../types/adminTypes').AISettings) {
+        await ApiService.post('/settings', { aiSettings: settings });
     }
 
     // --- SMS Settings ---
-    getSMSSettings(): import('../types/adminTypes').SMSSettings {
+    async getSMSSettings(): Promise<import('../types/adminTypes').SMSSettings> {
         try {
-            const data = localStorage.getItem('xiaoyu_sms_settings');
-            const stored = data ? JSON.parse(data) : {};
-            return {
-                provider: stored.provider || 'mock',
-                accessKeyId: stored.accessKeyId || '',
-                accessKeySecret: stored.accessKeySecret || '',
-                signName: stored.signName || '小鱼装机',
-                templateCode: stored.templateCode || 'SMS_123456789',
-                enabled: stored.enabled || false
-            };
+            const data = await ApiService.get('/settings');
+            return data.smsSettings || DEFAULT_SMS_SETTINGS;
         } catch (e) {
-            return {
-                provider: 'mock',
-                accessKeyId: '',
-                accessKeySecret: '',
-                signName: '小鱼装机',
-                templateCode: 'SMS_123456789',
-                enabled: false
-            };
+            return DEFAULT_SMS_SETTINGS;
         }
     }
 
-    saveSMSSettings(settings: import('../types/adminTypes').SMSSettings) {
-        localStorage.setItem('xiaoyu_sms_settings', JSON.stringify(settings));
+    async saveSMSSettings(settings: import('../types/adminTypes').SMSSettings) {
+        await ApiService.post('/settings', { smsSettings: settings });
     }
 
     // --- Users ---
-    getUsers(): UserItem[] {
+    async getUsers(): Promise<UserItem[]> {
         try {
-            const data = localStorage.getItem(KEYS.USERS);
-            return data ? JSON.parse(data) : [];
+            return await ApiService.get('/auth/users'); // I need to add this route or similar
         } catch (e) {
-            console.error('Failed to load users', e);
             return [];
         }
     }
 
-    saveUsers(users: UserItem[]) {
-        safeSetItem(KEYS.USERS, JSON.stringify(users));
-    }
-
-    saveUser(user: UserItem) {
-        const users = this.getUsers();
-        const index = users.findIndex(u => u.id === user.id);
-        if (index >= 0) {
-            users[index] = user;
-        } else {
-            users.push(user);
-            this.logNewUser();
-        }
-        this.saveUsers(users);
+    async saveUser(user: UserItem) {
+        await ApiService.post('/auth/user', user); // Need to add this route
 
         // Update current user if it matches
         const currentUser = this.getCurrentUser();
-        if (currentUser && currentUser.id === user.id) {
+        if (currentUser && (currentUser.id === user.id || currentUser.id === (user as any)._id)) {
             localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(user));
-            window.dispatchEvent(new Event('xiaoyu-login')); // Trigger update
+            window.dispatchEvent(new Event('xiaoyu-login'));
         }
     }
 
-    updateUserVIP(userId: string, durationDays: number) {
-        const users = this.getUsers();
-        const user = users.find(u => u.id === userId);
+    async updateUserVIP(userId: string, durationDays: number) {
+        const users = await this.getUsers();
+        const user = users.find(u => u.id === userId || (u as any)._id === userId);
         if (user) {
             const now = Date.now();
-            const currentExpire = user.vipExpireAt || 0;
+            const currentExpire = user.vipExpireAt ? new Date(user.vipExpireAt).getTime() : 0;
             // If already VIP and not expired, extend. Otherwise start from now.
             const startTime = currentExpire > now ? currentExpire : now;
             user.vipExpireAt = startTime + durationDays * 24 * 60 * 60 * 1000;
-            this.saveUser(user);
+            await this.saveUser(user);
         }
     }
 
@@ -513,9 +260,9 @@ class StorageService {
         return code;
     }
 
-    ensureUserInviteCode(userId: string): string {
-        const users = this.getUsers();
-        const user = users.find(u => u.id === userId);
+    async ensureUserInviteCode(userId: string): Promise<string> {
+        const users = await this.getUsers();
+        const user = users.find(u => u.id === userId || (u as any)._id === userId);
         if (!user) return '';
 
         if (!user.inviteCode) {
@@ -527,23 +274,23 @@ class StorageService {
             user.inviteCode = code;
             user.inviteCount = user.inviteCount || 0;
             user.inviteVipDays = user.inviteVipDays || 0;
-            this.saveUser(user);
+            await this.saveUser(user);
         }
         return user.inviteCode;
     }
 
-    findUserByInviteCode(code: string): UserItem | null {
+    async findUserByInviteCode(code: string): Promise<UserItem | null> {
         if (!code || code.length !== 6) return null;
-        const users = this.getUsers();
+        const users = await this.getUsers();
         return users.find(u => u.inviteCode?.toUpperCase() === code.toUpperCase()) || null;
     }
 
-    processReferral(inviterUserId: string): { success: boolean; message: string } {
+    async processReferral(inviterUserId: string): Promise<{ success: boolean; message: string }> {
         const MAX_INVITE_VIP_DAYS = 30;
         const DAYS_PER_INVITE = 7; // 每邀请一人获得7天VIP
 
-        const users = this.getUsers();
-        const inviter = users.find(u => u.id === inviterUserId);
+        const users = await this.getUsers();
+        const inviter = users.find(u => u.id === inviterUserId || (u as any)._id === inviterUserId);
 
         if (!inviter) {
             return { success: false, message: '邀请人不存在' };
@@ -564,10 +311,10 @@ class StorageService {
 
         // 更新 VIP 到期时间
         const now = Date.now();
-        const currentExpire = inviter.vipExpireAt && inviter.vipExpireAt > now ? inviter.vipExpireAt : now;
+        const currentExpire = inviter.vipExpireAt && (inviter.vipExpireAt as any) > now ? (inviter.vipExpireAt as any) : now;
         inviter.vipExpireAt = currentExpire + actualDays * 24 * 60 * 60 * 1000;
 
-        this.saveUser(inviter);
+        await this.saveUser(inviter);
 
         return {
             success: true,
@@ -576,12 +323,10 @@ class StorageService {
     }
 
     // --- Used Items ---
-    getUsedItems(): UsedItem[] {
+    async getUsedItems(): Promise<UsedItem[]> {
         try {
-            const data = localStorage.getItem(KEYS.USED_ITEMS);
-            return data ? JSON.parse(data) : [];
+            return await ApiService.get('/used');
         } catch (e) {
-            console.error('Failed to load used items', e);
             return [];
         }
     }
@@ -591,85 +336,64 @@ class StorageService {
         window.dispatchEvent(new Event('xiaoyu-used-items-update'));
     }
 
-    addUsedItem(item: UsedItem) {
-        const items = this.getUsedItems();
-        items.unshift(item); // Add new item to start
-        this.saveUsedItems(items);
+    async addUsedItem(item: UsedItem) {
+        await ApiService.post('/used', item);
+        window.dispatchEvent(new Event('xiaoyu-used-items-update'));
     }
 
-    updateUsedItem(item: UsedItem) {
-        const items = this.getUsedItems();
-        const index = items.findIndex(i => i.id === item.id);
-        if (index > -1) {
-            items[index] = item;
-            this.saveUsedItems(items);
-        }
+    async updateUsedItem(item: UsedItem) {
+        await ApiService.post('/used', item);
+        window.dispatchEvent(new Event('xiaoyu-used-items-update'));
     }
 
-    deleteUsedItem(id: string) {
-        const items = this.getUsedItems();
-        const newItems = items.filter(i => i.id !== id);
-        this.saveUsedItems(newItems);
+    async deleteUsedItem(id: string) {
+        await ApiService.delete(`/used/${id}`); // Need to add this route
+        window.dispatchEvent(new Event('xiaoyu-used-items-update'));
     }
 
-    markUsedItemAsSold(id: string) {
-        const items = this.getUsedItems();
-        const index = items.findIndex(i => i.id === id);
-        if (index > -1) {
-            items[index] = {
-                ...items[index],
-                status: 'sold',
-                soldAt: Date.now()
-            };
-            this.saveUsedItems(items);
+    async markUsedItemAsSold(id: string) {
+        const item = await ApiService.get(`/used/${id}`); // assuming GET /used/:id exists or use find
+        if (item) {
+            item.status = 'sold';
+            item.soldAt = Date.now();
+            await ApiService.post('/used', item);
+            window.dispatchEvent(new Event('xiaoyu-used-items-update'));
         }
     }
 
 
-    // --- Recycle Requests ---
-    getRecycleRequests(): RecycleRequest[] {
+    async getRecycleRequests(): Promise<RecycleRequest[]> {
         try {
-            const data = localStorage.getItem(KEYS.RECYCLE_REQUESTS);
-            return data ? JSON.parse(data) : [];
+            return await ApiService.get('/recycle');
         } catch (e) {
-            console.error('Failed to load recycle requests', e);
             return [];
         }
     }
 
-    saveRecycleRequests(requests: RecycleRequest[]) {
-        safeSetItem(KEYS.RECYCLE_REQUESTS, JSON.stringify(requests));
+    async addRecycleRequest(request: RecycleRequest) {
+        await ApiService.post('/recycle', request);
         window.dispatchEvent(new Event('xiaoyu-recycle-requests-update'));
     }
 
-    addRecycleRequest(request: RecycleRequest) {
-        const requests = this.getRecycleRequests();
-        requests.unshift({ ...request, isRead: false }); // Add to start, mark as unread
-        this.saveRecycleRequests(requests);
+    async updateRecycleRequest(request: RecycleRequest) {
+        await ApiService.post('/recycle', request);
         window.dispatchEvent(new Event('xiaoyu-recycle-requests-update'));
     }
 
-    updateRecycleRequest(request: RecycleRequest) {
-        const requests = this.getRecycleRequests();
-        const index = requests.findIndex(r => r.id === request.id);
-        if (index > -1) {
-            requests[index] = request;
-            this.saveRecycleRequests(requests);
+    async markRecycleRequestAsRead(id: string) {
+        // Simple update: fetch then update
+        const resp = await ApiService.get('/recycle');
+        const req = resp.find((r: any) => r._id === id || r.id === id);
+        if (req) {
+            req.isRead = true;
+            await ApiService.post('/recycle', req);
+            window.dispatchEvent(new Event('xiaoyu-recycle-requests-update'));
         }
     }
 
-    markRecycleRequestAsRead(id: string) {
-        const requests = this.getRecycleRequests();
-        const request = requests.find(r => r.id === id);
-        if (request && !request.isRead) {
-            request.isRead = true;
-            this.saveRecycleRequests(requests);
-        }
-    }
-
-    deleteRecycleRequest(id: string) {
-        const requests = this.getRecycleRequests().filter(r => r.id !== id);
-        this.saveRecycleRequests(requests);
+    async deleteRecycleRequest(id: string) {
+        await ApiService.delete(`/recycle/${id}`);
+        window.dispatchEvent(new Event('xiaoyu-recycle-requests-update'));
     }
 
     // --- User Likes ---
@@ -711,22 +435,17 @@ class StorageService {
         }
     }
 
-    login(username: string, password?: string): UserItem | null {
-        const users = this.getUsers();
-        const user = users.find(u => u.username === username);
-
-        if (user) {
-            const isValid = user.password ? user.password === password : true;
-
-            if (isValid) {
-                user.lastLogin = new Date().toISOString();
-                this.saveUser(user);
-                localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(user));
-                window.dispatchEvent(new Event('xiaoyu-login'));
-                return user;
-            }
+    async login(username: string, password?: string): Promise<UserItem | null> {
+        try {
+            const res = await ApiService.post('/auth/login', { username, password });
+            localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(res.user));
+            // Store token if needed, usually in a cookie or localStorage
+            if (res.token) localStorage.setItem('xiaoyu_token', res.token);
+            window.dispatchEvent(new Event('xiaoyu-login'));
+            return res.user;
+        } catch (e) {
+            return null;
         }
-        return null;
     }
 
     logout() {
