@@ -53,7 +53,7 @@ app.get('/api/health', (_req: express.Request, res: express.Response) => {
 });
 
 // 所有非 API 请求返回 index.html (支持客户端路由)
-app.get('*', (req: express.Request, res: express.Response) => {
+app.use((req: express.Request, res: express.Response) => {
     if (req.path.startsWith('/api')) return res.status(404).json({ error: 'Not Found' });
     res.sendFile(path.join(distPath, 'index.html'));
 });
