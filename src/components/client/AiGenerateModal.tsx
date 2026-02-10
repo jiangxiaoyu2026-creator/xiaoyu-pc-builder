@@ -46,7 +46,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
         try {
             // 1. Analyze & Generate (Real Logic)
             const request = aiBuilder.parseRequest(prompt);
-            const result = aiBuilder.generateBuild(request);
+            const result = await aiBuilder.generateBuild(request);
 
             // 2. Animate the Logs (Replay "Thinking")
             for (const log of result.logs) {
@@ -172,8 +172,17 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                         <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs w-fit flex items-center gap-1.5 shadow-[0_0_10px_rgba(99,102,241,0.2)]">
                                             <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
                                             {(() => {
-                                                const p = storage.getAISettings().persona;
-                                                return p === 'toxic' ? '毒舌吐槽 (Toxic)' : p === 'professional' ? '专业稳重 (PRO)' : p === 'enthusiastic' ? '热心小姐姐' : '均衡模式';
+                                                const [persona, setPersona] = useState<string>('');
+                                                const [, setStrategy] = useState<string>('');
+
+                                                useEffect(() => {
+                                                    storage.getAISettings().then(s => {
+                                                        setPersona(s.persona || 'toxic');
+                                                        setStrategy(s.strategy || 'balanced');
+                                                    });
+                                                }, []);
+
+                                                return persona === 'toxic' ? '毒舌吐槽 (Toxic)' : persona === 'professional' ? '专业稳重 (PRO)' : persona === 'enthusiastic' ? '热心小姐姐' : '均衡模式';
                                             })()}
                                         </span>
                                     </div>
@@ -182,8 +191,11 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                         <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs w-fit flex items-center gap-1.5 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
                                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                                             {(() => {
-                                                const s = storage.getAISettings().strategy;
-                                                return s === 'performance' ? '性能至上' : s === 'aesthetic' ? '颜值巅峰' : s === 'budget' ? '极致性价比' : '均衡之道';
+                                                const [strategy, setStrategy] = useState<string>('');
+                                                useEffect(() => {
+                                                    storage.getAISettings().then(s => setStrategy(s.strategy || 'balanced'));
+                                                }, []);
+                                                return strategy === 'performance' ? '性能至上' : strategy === 'aesthetic' ? '颜值巅峰' : strategy === 'budget' ? '极致性价比' : '均衡之道';
                                             })()}
                                         </span>
                                     </div>
@@ -203,9 +215,9 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                                         {new Date().toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                                     </span>
                                                     <span className={`px-1.5 py-0.5 rounded-[4px] text-[9px] font-black tracking-widest uppercase border ${isSystem ? 'bg-slate-500/10 text-slate-400 border-slate-500/20' :
-                                                            isCritical ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
-                                                                isCore ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
-                                                                    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                        isCritical ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                                                            isCore ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
+                                                                'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                                                         }`}>
                                                         {tag}
                                                     </span>
@@ -213,8 +225,8 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                                 </div>
                                                 <div className="pl-14">
                                                     <span className={`leading-relaxed ${isCritical ? 'text-rose-300' :
-                                                            isCore ? 'text-white font-medium' :
-                                                                'text-slate-300'
+                                                        isCore ? 'text-white font-medium' :
+                                                            'text-slate-300'
                                                         }`}>
                                                         {text}
                                                     </span>

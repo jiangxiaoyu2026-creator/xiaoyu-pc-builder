@@ -1,16 +1,25 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Trash2, MessageSquare } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { CommentItem } from '../../types/adminTypes';
 
 export default function CommentManager() {
-    const [comments, setComments] = useState<CommentItem[]>(() => storage.getComments());
+    const [comments, setComments] = useState<CommentItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const handleDelete = (id: string) => {
+    const refreshComments = async () => {
+        const all = await storage.getComments();
+        setComments(all);
+    };
+
+    useEffect(() => {
+        refreshComments();
+    }, []);
+
+    const handleDelete = async (id: string) => {
         if (confirm('确定要删除这条评论吗？此操作无法撤销。')) {
-            storage.deleteComment(id);
-            setComments(storage.getComments());
+            await storage.deleteComment(id);
+            await refreshComments();
         }
     };
 
@@ -22,8 +31,8 @@ export default function CommentManager() {
         );
     }, [comments, searchTerm]);
 
-    const handleRefresh = () => {
-        setComments(storage.getComments());
+    const handleRefresh = async () => {
+        await refreshComments();
     };
 
     return (

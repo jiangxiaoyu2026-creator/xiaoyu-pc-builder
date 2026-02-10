@@ -234,6 +234,14 @@ class StorageService {
             localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(user));
             window.dispatchEvent(new Event('xiaoyu-login'));
         }
+        window.dispatchEvent(new Event('xiaoyu-user-update'));
+    }
+
+    async saveUsers(users: UserItem[]) {
+        for (const u of users) {
+            await ApiService.post('/auth/user', u);
+        }
+        window.dispatchEvent(new Event('xiaoyu-user-update'));
     }
 
     async updateUserVIP(userId: string, durationDays: number) {
@@ -330,23 +338,18 @@ class StorageService {
         }
     }
 
-    saveUsedItems(items: UsedItem[]) {
-        safeSetItem(KEYS.USED_ITEMS, JSON.stringify(items));
-        window.dispatchEvent(new Event('xiaoyu-used-items-update'));
-    }
-
-    async addUsedItem(item: UsedItem) {
-        await ApiService.post('/used', item);
-        window.dispatchEvent(new Event('xiaoyu-used-items-update'));
-    }
-
     async updateUsedItem(item: UsedItem) {
         await ApiService.post('/used', item);
         window.dispatchEvent(new Event('xiaoyu-used-items-update'));
     }
 
     async deleteUsedItem(id: string) {
-        await ApiService.delete(`/used/${id}`); // Need to add this route
+        await ApiService.delete(`/used?id=${id}`);
+        window.dispatchEvent(new Event('xiaoyu-used-items-update'));
+    }
+
+    async addUsedItem(item: UsedItem) {
+        await ApiService.post('/used', item);
         window.dispatchEvent(new Event('xiaoyu-used-items-update'));
     }
 

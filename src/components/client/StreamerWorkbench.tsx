@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { Zap, ChevronDown, RefreshCw, Save, Share2, X, Sparkles, Trash2, Settings } from 'lucide-react';
+import { Zap, X, Sparkles, Trash2, Settings, ChevronDown, Save, RefreshCw, Share2 } from 'lucide-react';
 import { BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
@@ -78,7 +78,11 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const [highlightIndex, setHighlightIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const hardwareList = useMemo(() => storage.getProducts(), []);
+    const [hardwareList, setHardwareList] = useState<HardwareItem[]>([]);
+
+    useEffect(() => {
+        storage.getProducts().then(setHardwareList);
+    }, []);
 
     const suggestions = useMemo(() => {
         // If query is empty, show all items in this category (limit to 20 for performance)
@@ -305,26 +309,27 @@ export default function StreamerWorkbench({
     onAiCheck?: () => boolean
 
 }) {
-    const [settings, setSettings] = useState(storage.getSettings());
+    const [pricingStrategy, setPricingStrategy] = useState<import('../../types/adminTypes').PricingStrategy | null>(null);
     const [strategies, setStrategies] = useState<{ value: number; label: string }[]>([]);
 
     useEffect(() => {
-        const loadSettings = () => {
-            const s = storage.getSettings();
-            setSettings(s);
-            // Transform discountTiers to options format
-            const opts = s.discountTiers
-                .sort((a, b) => a.sortOrder - b.sortOrder)
-                .map(tier => ({
-                    value: tier.multiplier,
-                    label: `${tier.name} (${Math.round(tier.multiplier * 100)}折)`
-                }));
-            setStrategies(opts);
-        };
+        const load = async () => {
+            const [p] = await Promise.all([
+                storage.getPricingStrategy()
+            ]);
+            setPricingStrategy(p);
 
-        loadSettings();
-        window.addEventListener('xiaoyu-storage-update', loadSettings);
-        return () => window.removeEventListener('xiaoyu-storage-update', loadSettings);
+            if (p.discountTiers) {
+                const opts = p.discountTiers
+                    .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
+                    .map((tier: any) => ({
+                        value: tier.multiplier,
+                        label: `${tier.name} (${Math.round(tier.multiplier * 100)}折)`
+                    }));
+                setStrategies(opts);
+            }
+        };
+        load();
     }, []);
 
     const [showAiModal, setShowAiModal] = useState(false);
@@ -360,7 +365,7 @@ export default function StreamerWorkbench({
     const handleAiBuild = async (prompt: any) => {
         try {
             const request = typeof prompt === 'string' ? aiBuilder.parseRequest(prompt) : prompt;
-            const result = aiBuilder.generateBuildWithLogs(request);
+            const result = await aiBuilder.generateBuildWithLogs(request);
 
             setShowAiModal(false);
             clearBuild();
@@ -375,7 +380,7 @@ export default function StreamerWorkbench({
 
             for (let i = 0; i < cats.length; i++) {
                 const cat = cats[i];
-                const targetItem = result.items[cat as keyof typeof result.items];
+                const targetItem = (result.items as any)[cat];
                 const entry = buildList.find(e => e.category === cat);
 
                 if (entry && targetItem) {
@@ -396,7 +401,7 @@ export default function StreamerWorkbench({
                         if (!row) continue;
 
                         // 2. Type Keyword with "Mistakes"
-                        const keywords = targetItem.model.split(' ');
+                        const keywords = (targetItem as any).model.split(' ');
                         const keyword = keywords[0].length > 3 ? keywords[0] : (keywords[1] || keywords[0]);
 
                         let currentText = "";
@@ -429,9 +434,9 @@ export default function StreamerWorkbench({
 
                         // 5. Final Selection
                         setGhostStatus('锁定');
-                        row.simulateType(`${targetItem.brand} ${targetItem.model}`);
+                        row.simulateType(`${(targetItem as any).brand} ${(targetItem as any).model}`);
                         await new Promise(r => setTimeout(r, 150));
-                        onUpdate(entry.id, { item: targetItem });
+                        onUpdate(entry.id, { item: targetItem as any });
 
                         // row.simulateEnter(); 
                         await new Promise(r => setTimeout(r, 150));
@@ -445,7 +450,6 @@ export default function StreamerWorkbench({
 
             setIsAiTyping(false);
             setAiResult(result);
-
         } catch (error) {
             console.error(error);
             setIsAiTyping(false);
@@ -568,7 +572,7 @@ export default function StreamerWorkbench({
                                 <ChevronDown className="absolute right-2 top-1.5 text-slate-400 pointer-events-none" size={12} />
                             </div>
                         </div>
-                        <div className="text-[10px] text-slate-400 font-medium pl-0.5">标准价格含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机售后服务费</div>
+                        <div className="text-[10px] text-slate-400 font-medium pl-0.5">标准价格含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 装机售后服务费</div>
                     </div>
 
                     <div className="flex flex-col items-center justify-center">

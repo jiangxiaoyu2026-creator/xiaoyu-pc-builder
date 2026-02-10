@@ -98,13 +98,14 @@ export const aiBuilder = {
         return { score, title: "AI 评测报告", pros, cons, suggestions };
     },
 
-    generateBuild: (req: AIBuildRequest): AIBuildResult => {
-        const aiSettings = storage.getAISettings();
+    generateBuild: async (req: AIBuildRequest): Promise<AIBuildResult> => {
+        const aiSettings = await storage.getAISettings();
         const persona = aiSettings.persona || 'toxic';
         const strategy = aiSettings.strategy || 'balanced';
 
-        const products = storage.getProducts();
-        const communityConfigs = storage.getConfigs().filter(c => c.status === 'published');
+        const products = await storage.getProducts();
+        const configs = await storage.getConfigs();
+        const communityConfigs = configs.filter((c: ConfigItem) => c.status === 'published');
         const logs: AIBuildLog[] = [];
         const result: Partial<Record<Category, HardwareItem>> = {};
 
@@ -121,7 +122,7 @@ export const aiBuilder = {
         // --- Learning Phase: Reference Community Configs ---
         addLog('search', '特征向量提取', `[CRITICAL] 正在检索全局分布式存储 [官方推荐/主播精选] 方案簇，提取硬件特征向量...`);
         const relevantConfigs = communityConfigs
-            .filter(c => {
+            .filter((c: ConfigItem) => {
                 // Must be recommended by Official or Streamer
                 if (!c.isRecommended) return false;
 
@@ -134,7 +135,7 @@ export const aiBuilder = {
 
                 return priceMatch && usageMatch;
             })
-            .sort((a, b) => (b.likes + b.views / 100) - (a.likes + a.views / 100)); // Sort by popularity
+            .sort((a: ConfigItem, b: ConfigItem) => (b.likes + b.views / 100) - (a.likes + a.views / 100)); // Sort by popularity
 
         let communityReference: ConfigItem | null = null;
         if (relevantConfigs.length > 0) {
@@ -171,10 +172,10 @@ export const aiBuilder = {
 
         // Helper to find best fit with reason tracking
         const findBestFit = (cat: Category, budgetCap: number, filters: { keyword?: string, socket?: string, memoryType?: string } = {}): { item: HardwareItem | null, reason: string } => {
-            const allCandidates = products.filter(p => p.category === cat && p.status === 'active');
+            const allCandidates = products.filter((p: HardwareItem) => p.category === cat && p.status === 'active');
 
             // 1. Strict Compatibility Filtering (Socket, Memory, Keyword)
-            let compatible = allCandidates.filter(p => {
+            let compatible = allCandidates.filter((p: HardwareItem) => {
                 if (filters.socket) {
                     const s = p.specs?.socket;
                     if (s && s !== filters.socket && !p.model.includes(filters.socket)) return false;
@@ -195,23 +196,23 @@ export const aiBuilder = {
 
             if (strategy === 'budget') {
                 // Prioritize cheapest among those that are not "trash"
-                selectedCandidates = compatible.filter(p => p.price <= budgetCap * 1.5);
-                selectedCandidates.sort((a, b) => a.price - b.price);
+                selectedCandidates = compatible.filter((p: HardwareItem) => p.price <= budgetCap * 1.5);
+                selectedCandidates.sort((a: HardwareItem, b: HardwareItem) => a.price - b.price);
                 reason = 'budget_lock';
             } else if (strategy === 'performance' && (cat === 'gpu' || cat === 'cpu')) {
                 // Allow up to 150% of targeted category budget if it gets a massive boost
-                selectedCandidates = compatible.filter(p => p.price <= budgetCap * 1.5 && p.price >= budgetCap * 0.8);
-                selectedCandidates.sort((a, b) => b.price - a.price); // Best performance in reach
+                selectedCandidates = compatible.filter((p: HardwareItem) => p.price <= budgetCap * 1.5 && p.price >= budgetCap * 0.8);
+                selectedCandidates.sort((a: HardwareItem, b: HardwareItem) => b.price - a.price); // Best performance in reach
                 reason = 'perf_focus';
             } else {
-                selectedCandidates = compatible.filter(p => p.price <= budgetCap * 1.3 && p.price >= budgetCap * 0.4);
-                selectedCandidates.sort((a, b) => Math.abs(a.price - budgetCap) - Math.abs(b.price - budgetCap));
+                selectedCandidates = compatible.filter((p: HardwareItem) => p.price <= budgetCap * 1.3 && p.price >= budgetCap * 0.4);
+                selectedCandidates.sort((a: HardwareItem, b: HardwareItem) => Math.abs(a.price - budgetCap) - Math.abs(b.price - budgetCap));
             }
 
             // Fallback 1: Relaxed Price Range
             if (selectedCandidates.length === 0) {
-                selectedCandidates = compatible.filter(p => p.price <= budgetCap * 3.0 && p.price >= budgetCap * 0.1);
-                selectedCandidates.sort((a, b) => Math.abs(a.price - budgetCap) - Math.abs(b.price - budgetCap));
+                selectedCandidates = compatible.filter((p: HardwareItem) => p.price <= budgetCap * 3.0 && p.price >= budgetCap * 0.1);
+                selectedCandidates.sort((a: HardwareItem, b: HardwareItem) => Math.abs(a.price - budgetCap) - Math.abs(b.price - budgetCap));
                 reason = 'tolerance_match';
             }
 
@@ -223,7 +224,7 @@ export const aiBuilder = {
 
             // 3. Appearance Preference (White) - STRONGER if strategy is aesthetic
             if ((req.appearance === 'white' || strategy === 'aesthetic') && ['case', 'cooling', 'gpu', 'ram', 'mainboard'].includes(cat)) {
-                const whiteOnes = selectedCandidates.filter(p => /white|白|雪|冰|纯/.test(p.model.toLowerCase()));
+                const whiteOnes = selectedCandidates.filter((p: HardwareItem) => /white|白|雪|冰|纯/.test(p.model.toLowerCase()));
                 if (whiteOnes.length > 0) {
                     selectedCandidates = whiteOnes;
                     reason = 'aesthetic_choice';
@@ -242,7 +243,7 @@ export const aiBuilder = {
         // Influence from community reference
         let cpuFilters: any = {};
         if (communityReference?.items.cpu) {
-            const refCpu = products.find(p => p.id === communityReference?.items.cpu);
+            const refCpu = products.find((p: HardwareItem) => p.id === communityReference?.items.cpu);
             if (refCpu) {
                 cpuFilters.keyword = refCpu.model.split(' ')[0]; // Use brand/series as hint
             }
@@ -288,7 +289,7 @@ export const aiBuilder = {
 
         // Influence from community reference
         if (communityReference?.items.gpu) {
-            const refGpu = products.find(p => p.id === communityReference?.items.gpu);
+            const refGpu = products.find((p: HardwareItem) => p.id === communityReference?.items.gpu);
             if (refGpu) {
                 gpuFilters.keyword = refGpu.model.split(' ')[0];
             }
@@ -407,10 +408,10 @@ export const aiBuilder = {
 
         narrative += `**结论**：当前配置整机价格 ${currentTotal} 元，相比预算${priceDiff > 0 ? `超支 ${priceDiff} 元` : `节省 ${Math.abs(priceDiff)} 元`}。针对您的场景需求表现均衡，性价比表现优秀 ${conclusionEmoji}。\n\n`;
 
-        const cta = aiSettings.ctas || [];
-        if (cta.length > 0) narrative += `(${cta[Math.floor(Math.random() * cta.length)]})`;
+        const ctas = aiSettings.ctas || [];
+        if (ctas.length > 0) narrative += `(${ctas[Math.floor(Math.random() * ctas.length)]})`;
 
-        storage.logAiGeneration();
+        await storage.logAiGeneration();
 
         return {
             items: result,
@@ -421,7 +422,7 @@ export const aiBuilder = {
     },
 
     // Legacy support alias if needed, or just remove if we fix all calls
-    generateBuildWithLogs: function (req: AIBuildRequest) {
-        return this.generateBuild(req);
+    generateBuildWithLogs: async function (req: AIBuildRequest) {
+        return await this.generateBuild(req);
     }
 };

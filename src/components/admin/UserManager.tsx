@@ -55,7 +55,7 @@ export default function UserManager() {
         }
     };
 
-    const handleDelete = async (id: string, isSelf: boolean) => {
+    const handleDelete = async (_id: string, isSelf: boolean) => {
         if (isSelf) return alert('不能删除自己');
         if (confirm('确定删除该用户吗？')) {
             // 目前后端可能未实现物理删除接口给前端，通常管理员建议使用封禁

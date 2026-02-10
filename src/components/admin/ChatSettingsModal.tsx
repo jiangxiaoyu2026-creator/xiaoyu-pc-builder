@@ -16,18 +16,19 @@ export function ChatSettingsModal({ onClose }: ChatSettingsModalProps) {
     });
 
     useEffect(() => {
-        const current = storage.getChatSettings();
-        setSettings({
-            ...current,
-            autoReplyEnabled: current.autoReplyEnabled || false,
-            autoReplyContent: current.autoReplyContent || ''
-        });
+        const loadSettings = async () => {
+            const current = await storage.getChatSettings();
+            setSettings({
+                ...current,
+                autoReplyEnabled: current.autoReplyEnabled || false,
+                autoReplyContent: current.autoReplyContent || ''
+            });
+        };
+        loadSettings();
     }, []);
 
-    const handleSave = () => {
-        storage.saveChatSettings(settings);
-        // Dispatch event is handled in storage but we can double check
-        // Ideally show a toast
+    const handleSave = async () => {
+        await storage.saveChatSettings(settings);
         onClose();
     };
 

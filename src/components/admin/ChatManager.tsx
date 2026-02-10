@@ -15,11 +15,12 @@ export default function ChatManager() {
 
     // Initial Load & Polling
     useEffect(() => {
-        const loadSessions = () => {
-            const all = storage.getChatSessions();
+        const loadSessions = async () => {
+            const [all, settings] = await Promise.all([
+                storage.getChatSessions(),
+                storage.getChatSettings()
+            ]);
             setSessions(all);
-            // Load Settings too
-            const settings = storage.getChatSettings();
             setQuickReplies(settings.quickReplies || []);
         };
         loadSessions();
@@ -49,10 +50,11 @@ export default function ChatManager() {
     useEffect(() => {
         if (!selectedSessionId) return;
 
-        const loadMessages = () => {
-            setMessages(storage.getChatMessages(selectedSessionId));
+        const loadMessages = async () => {
+            const msgs = await storage.getChatMessages(selectedSessionId);
+            setMessages(msgs);
             // Mark as read
-            storage.markSessionRead(selectedSessionId);
+            await storage.markSessionRead(selectedSessionId);
         };
         loadMessages();
 
@@ -84,11 +86,11 @@ export default function ChatManager() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!input.trim() || !selectedSessionId) return;
 
-        storage.addChatMessage(selectedSessionId, {
-            sender: 'agent',
+        await storage.addChatMessage(selectedSessionId, {
+            sender: 'admin',
             content: input.trim()
         });
         setInput('');

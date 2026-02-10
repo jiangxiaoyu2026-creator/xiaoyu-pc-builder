@@ -314,7 +314,7 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
             {isOfficialPublishModalOpen && (
                 <OfficialPublishModal
                     onClose={() => setIsOfficialPublishModalOpen(false)}
-                    onSuccess={async (newItem) => {
+                    onSuccess={async () => {
                         const latestItems = await storage.getUsedItems();
                         setUsedItems(latestItems);
                         setIsOfficialPublishModalOpen(false);

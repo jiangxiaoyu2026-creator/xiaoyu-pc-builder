@@ -1,20 +1,35 @@
-
 import { Package, AlertCircle, FileText, CheckCircle2, Zap, Users, Crown, TrendingUp } from 'lucide-react';
-import { HardwareItem, ConfigItem, UserItem } from '../../types/adminTypes';
+import { HardwareItem, ConfigItem, UserItem, SystemStats, RecycleRequest } from '../../types/adminTypes';
 import { StatCard } from './Shared';
 import { storage } from '../../services/storage';
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function DashboardView({ products, configs, users }: { products: HardwareItem[], configs: ConfigItem[], users?: UserItem[] }) {
-    const stats = useMemo(() => storage.getSystemStats(), []);
+    const [stats, setStats] = useState<SystemStats>({ totalAiGenerations: 0, dailyStats: [] });
+    const [allUsers, setAllUsers] = useState<UserItem[]>(users || []);
+    const [recycleRequests, setRecycleRequests] = useState<RecycleRequest[]>([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const [s, u, r] = await Promise.all([
+                storage.getSystemStats(),
+                users ? Promise.resolve(users) : storage.getUsers(),
+                storage.getRecycleRequests()
+            ]);
+            setStats(s);
+            setAllUsers(u);
+            setRecycleRequests(r);
+        };
+        fetchData();
+    }, [users]);
+
     const today = new Date().toISOString().split('T')[0];
     const todayStat = stats.dailyStats.find(d => d.date === today);
 
     const archivedProducts = products.filter(p => p.status === 'archived').length;
-
-    // VIP Stats
-    const allUsers = users || storage.getUsers();
     const vipUsers = allUsers.filter(u => u.vipExpireAt && u.vipExpireAt > Date.now()).length;
+
+    const unreadRecycleCount = recycleRequests.filter(r => !r.isRead).length;
 
     return (
         <div className="space-y-6">
@@ -73,7 +88,7 @@ export default function DashboardView({ products, configs, users }: { products: 
                 {/* Quality Stats */}
                 <StatCard
                     title="待审核请求"
-                    value={storage.getRecycleRequests().filter(r => !r.isRead).length}
+                    value={unreadRecycleCount}
                     unit="项"
                     desc="回收及个性化申请"
                     icon={<AlertCircle size={24} />}
@@ -94,7 +109,7 @@ export default function DashboardView({ products, configs, users }: { products: 
                     )}
                     <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg text-sm text-amber-800 border border-amber-100">
                         <AlertCircle size={16} />
-                        <span>提醒：共有 {storage.getRecycleRequests().filter(r => !r.isRead).length} 条新回收申请待处理。</span>
+                        <span>提醒：共有 {unreadRecycleCount} 条新回收申请待处理。</span>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 border border-blue-100">
                         <CheckCircle2 size={16} />

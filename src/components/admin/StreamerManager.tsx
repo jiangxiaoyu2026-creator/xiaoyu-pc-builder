@@ -1,25 +1,34 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserPlus, Trash2, Ban, CheckCircle2, KeyRound, Mic2 } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { UserItem } from '../../types/adminTypes';
 
 export default function StreamerManager() {
     // Filter only streamers
-    const [users, setUsers] = useState<UserItem[]>(storage.getUsers().filter(u => u.role === 'streamer'));
+    const [users, setUsers] = useState<UserItem[]>([]);
     const [newStreamer, setNewStreamer] = useState({ username: '' });
     const [lastReset, setLastReset] = useState<string | null>(null);
     const [passwordModal, setPasswordModal] = useState<{ isOpen: boolean, username: string, userId: string }>({ isOpen: false, username: '', userId: '' });
     const [newPassword, setNewPassword] = useState('');
 
-    const refreshStreamers = () => {
-        setUsers(storage.getUsers().filter(u => u.role === 'streamer'));
+    const refreshStreamers = async () => {
+        const allUsers = await storage.getUsers();
+        setUsers(allUsers.filter(u => u.role === 'streamer'));
     };
 
-    const handleAddStreamer = () => {
+    useState(() => {
+        refreshStreamers();
+    });
+
+    useEffect(() => {
+        refreshStreamers();
+    }, []);
+
+    const handleAddStreamer = async () => {
         if (!newStreamer.username) return alert('请输入主播用户名');
 
-        const allUsers = storage.getUsers();
+        const allUsers = await storage.getUsers();
         if (allUsers.some(u => u.username === newStreamer.username)) return alert('该用户名已存在');
 
         const user: UserItem = {
@@ -29,24 +38,24 @@ export default function StreamerManager() {
             status: 'active',
             lastLogin: ''
         };
-        storage.saveUser(user);
-        refreshStreamers();
+        await storage.saveUser(user);
+        await refreshStreamers();
         setNewStreamer({ username: '' });
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (confirm('确定删除该主播账号吗？删除后不可恢复。')) {
-            const allUsers = storage.getUsers().filter(u => u.id !== id);
-            storage.saveUsers(allUsers);
-            refreshStreamers();
+            const allUsers = (await storage.getUsers()).filter(u => u.id !== id);
+            await storage.saveUsers(allUsers);
+            await refreshStreamers();
         }
     };
 
-    const toggleStatus = (user: UserItem) => {
+    const toggleStatus = async (user: UserItem) => {
         const newStatus = user.status === 'active' ? 'banned' : 'active';
         user.status = newStatus;
-        storage.saveUser(user);
-        refreshStreamers();
+        await storage.saveUser(user);
+        await refreshStreamers();
     };
 
     const handleOpenPasswordModal = (user: UserItem) => {
@@ -54,14 +63,14 @@ export default function StreamerManager() {
         setNewPassword('');
     };
 
-    const handleSavePassword = () => {
+    const handleSavePassword = async () => {
         if (!newPassword) return alert('请输入新密码');
-        const allUsers = storage.getUsers();
+        const allUsers = await storage.getUsers();
         const targetIndex = allUsers.findIndex(u => u.id === passwordModal.userId);
         if (targetIndex !== -1) {
             allUsers[targetIndex].password = newPassword;
-            storage.saveUsers(allUsers);
-            refreshStreamers();
+            await storage.saveUsers(allUsers);
+            await refreshStreamers();
             setLastReset(`✅ ${passwordModal.username} 的密码已更新`);
             setTimeout(() => setLastReset(null), 3000);
             setPasswordModal({ isOpen: false, username: '', userId: '' });

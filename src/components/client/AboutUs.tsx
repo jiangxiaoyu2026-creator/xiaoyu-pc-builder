@@ -6,11 +6,18 @@ import { AboutUsConfig } from '../../types/adminTypes';
 const ICON_MAP: Record<string, any> = { Zap, Heart, Sparkles };
 
 export default function AboutUs() {
-    const [config, setConfig] = useState<AboutUsConfig>(() => storage.getAboutUsConfig());
+    const [config, setConfig] = useState<AboutUsConfig>({ topCards: [], brandImages: [] });
 
     useEffect(() => {
-        const handleUpdate = () => {
-            setConfig(storage.getAboutUsConfig());
+        const load = async () => {
+            const data = await storage.getAboutUsConfig();
+            setConfig(data);
+        };
+        load();
+
+        const handleUpdate = async () => {
+            const data = await storage.getAboutUsConfig();
+            setConfig(data);
         };
         window.addEventListener('xiaoyu-aboutus-update', handleUpdate);
         return () => window.removeEventListener('xiaoyu-aboutus-update', handleUpdate);

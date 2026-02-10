@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Heart, Share2, CheckCircle2 } from 'lucide-react';
-import { ConfigTemplate } from '../../types/clientTypes';
+import { ConfigTemplate, HardwareItem } from '../../types/clientTypes';
 import { UserItem } from '../../types/adminTypes';
 import { HARDWARE_DB, CATEGORY_MAP } from '../../data/clientData';
 import { getIconByCategory } from './Shared';
@@ -10,21 +10,35 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
     const [commentText, setCommentText] = React.useState('');
 
     const [comments, setComments] = React.useState<any[]>([]);
+    const [allProducts, setAllProducts] = React.useState<HardwareItem[]>([]);
+    const [users, setUsers] = React.useState<UserItem[]>([]);
 
-    // Load comments
+    // Initial Load
     React.useEffect(() => {
-        const loadComments = () => {
-            const all = storage.getComments(config.id);
-            setComments(all);
+        const loadInitialData = async () => {
+            const [fetchedComments, fetchedProducts, fetchedUsers] = await Promise.all([
+                storage.getComments(config.id),
+                storage.getProducts(),
+                storage.getUsers()
+            ]);
+            setComments(fetchedComments);
+            setAllProducts(fetchedProducts);
+            setUsers(fetchedUsers);
         };
-        loadComments();
-        window.addEventListener('xiaoyu-comment-update', loadComments);
-        return () => window.removeEventListener('xiaoyu-comment-update', loadComments);
+        loadInitialData();
     }, [config.id]);
 
-    // ... (keep getHardwareDetail)
+    // Update listeners
+    React.useEffect(() => {
+        const refreshComments = async () => {
+            const all = await storage.getComments(config.id);
+            setComments(all);
+        };
+        window.addEventListener('xiaoyu-comment-update', refreshComments);
+        return () => window.removeEventListener('xiaoyu-comment-update', refreshComments);
+    }, [config.id]);
+
     const getHardwareDetail = (id: string) => {
-        const allProducts = storage.getProducts();
         const p = allProducts.find(i => i.id === id);
         if (p) return p;
         return HARDWARE_DB.find(i => i.id === id);
@@ -62,7 +76,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
         }
     };
 
-    const handleSendComment = () => {
+    const handleSendComment = async () => {
         if (!currentUser) {
             showToast('🔒 请先登录后评论');
             window.dispatchEvent(new Event('xiaoyu-trigger-login'));
@@ -82,7 +96,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
         };
 
         // @ts-ignore
-        storage.saveComment(newComment);
+        await storage.saveComment(newComment);
         setCommentText('');
         showToast('评论已发布');
     };
@@ -264,7 +278,6 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                             <div className={`w-12 h-12 rounded-full ${config.avatarColor} border-2 border-white shadow-md flex items-center justify-center text-lg text-white font-bold flex-shrink-0 relative`}>
                                 {config.author[0].toUpperCase()}
                                 {(() => {
-                                    const users = storage.getUsers();
                                     const authorUser = config.userId ? users.find(u => u.id === config.userId) : users.find(u => u.username === config.author);
                                     const isVip = authorUser && (['admin', 'streamer', 'sub_admin'].includes(authorUser.role) || (authorUser.vipExpireAt && authorUser.vipExpireAt > Date.now()));
 
@@ -282,7 +295,6 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                 <div className="flex items-center gap-1.5">
                                     <div className="font-bold text-slate-900 text-base truncate max-w-[150px]" title={config.author}>{config.author}</div>
                                     {(() => {
-                                        const users = storage.getUsers();
                                         const authorUser = config.userId ? users.find(u => u.id === config.userId) : users.find(u => u.username === config.author);
                                         const isVip = authorUser && (['admin', 'streamer', 'sub_admin'].includes(authorUser.role) || (authorUser.vipExpireAt && authorUser.vipExpireAt > Date.now()));
 
@@ -364,8 +376,8 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                             {/* Deletion for Admin or Author */}
                                             {(currentUser?.role === 'admin' || currentUser?.id === c.userId) && (
                                                 <button
-                                                    onClick={() => {
-                                                        if (confirm('确定删除此评论？')) storage.deleteComment(c.id);
+                                                    onClick={async () => {
+                                                        if (confirm('确定删除此评论？')) await storage.deleteComment(c.id);
                                                     }}
                                                     className="absolute -right-2 -top-2 bg-slate-200 text-slate-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
                                                 >

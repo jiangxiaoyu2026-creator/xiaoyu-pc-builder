@@ -39,7 +39,8 @@ export interface HardwareItem {
     createdAt?: string;
     isDiscount?: boolean;
     isRecommended?: boolean;
-    isNew?: boolean;
+    isNew?: boolean; // 新品 (后台标记)
+    status?: 'active' | 'draft' | 'archived'; // 上架、草稿、下架
 }
 
 export interface BuildEntry {

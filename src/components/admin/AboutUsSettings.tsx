@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, Image as ImageIcon, Sparkles, Heart, Zap, Plus, Trash2 } from 'lucide-react';
 import { AboutUsConfig, AboutUsCard } from '../../types/adminTypes';
 import { storage } from '../../services/storage';
@@ -7,16 +7,22 @@ import { storage } from '../../services/storage';
 const ICON_MAP: Record<string, any> = { Zap, Heart, Sparkles };
 
 export default function AboutUsSettings() {
-    const [config, setConfig] = useState<AboutUsConfig>(() => storage.getAboutUsConfig());
+    const [config, setConfig] = useState<AboutUsConfig>({ topCards: [], brandImages: [] });
     const [isSaving, setIsSaving] = useState(false);
 
-    const handleSave = () => {
+    useEffect(() => {
+        const load = async () => {
+            const data = await storage.getAboutUsConfig();
+            setConfig(data);
+        };
+        load();
+    }, []);
+
+    const handleSave = async () => {
         setIsSaving(true);
-        storage.saveAboutUsConfig(config);
-        setTimeout(() => {
-            setIsSaving(false);
-            alert('配置已成功更新并发布到前台。');
-        }, 500);
+        await storage.saveAboutUsConfig(config);
+        setIsSaving(false);
+        alert('配置已成功更新并发布到前台。');
     };
 
     const updateTopCard = (index: number, field: keyof AboutUsCard, value: string) => {

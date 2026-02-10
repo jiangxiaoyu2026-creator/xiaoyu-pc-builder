@@ -111,7 +111,7 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
         setError('');
 
         if (mode === 'login') {
-            const user = storage.login(username, password);
+            const user = await storage.login(username, password);
             if (user) {
                 onLoginSuccess(user);
                 onClose();
@@ -124,7 +124,7 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
             if (username.length > 12) { setError('用户名最多 12 个字符'); return; }
 
             const forbidden = ['admin', 'system', 'root', '管理员', '官方', '客服', 'sb', '傻逼'];
-            if (forbidden.some(w => username.toLowerCase().includes(w))) {
+            if (forbidden.some((w: string) => username.toLowerCase().includes(w))) {
                 setError('用户名包含敏感词或保留字，请修改');
                 return;
             }
@@ -151,8 +151,8 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
                 return;
             }
 
-            const existingUsers = storage.getUsers();
-            if (existingUsers.some(u => u.username === username)) {
+            const existingUsers = await storage.getUsers();
+            if (existingUsers.some((u: UserItem) => u.username === username)) {
                 setError('用户名已存在');
                 return;
             }
@@ -167,17 +167,17 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
                 invitedBy: inviteCode.toUpperCase() || undefined,
             };
 
-            storage.saveUser(newUser);
+            await storage.saveUser(newUser);
 
             // 处理邀请奖励
             if (inviteCode) {
-                const inviter = storage.findUserByInviteCode(inviteCode);
+                const inviter = await storage.findUserByInviteCode(inviteCode);
                 if (inviter) {
-                    storage.processReferral(inviter.id);
+                    await storage.processReferral(inviter.id);
                 }
             }
 
-            storage.login(username, password);
+            await storage.login(username, password);
             onLoginSuccess(newUser);
             onClose();
         }
