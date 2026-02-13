@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, ShieldCheck, ExternalLink, User, Shield, AlertTriangle, Copy, Check } from 'lucide-react';
+import { X, ShieldCheck, User, Shield, AlertTriangle, Copy, Check } from 'lucide-react';
 import { UsedItem, UserItem } from '../../types/adminTypes';
 import OfficialInspectionCard from './OfficialInspectionCard';
 
@@ -15,17 +15,33 @@ export default function UsedItemDetail({ item, onClose, currentUser, onLogin, on
     const [activeImage, setActiveImage] = useState(0);
     const [copied, setCopied] = useState(false);
 
-    const handleCopyLink = () => {
-        if (item.xianyuLink) {
-            navigator.clipboard.writeText(item.xianyuLink);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        }
-    };
 
-    const handleGoToXianyu = () => {
+
+    const handleXianyuClick = () => {
         if (item.xianyuLink) {
-            window.open(item.xianyuLink, '_blank');
+            navigator.clipboard.writeText(item.xianyuLink).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+                // Remove existing toast if any (optional, but good for spamming)
+                const existing = document.getElementById('xianyu-toast');
+                if (existing) existing.remove();
+
+                const toast = document.createElement('div');
+                toast.id = 'xianyu-toast';
+                toast.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white px-6 py-3 rounded-xl backdrop-blur-md z-50 flex items-center gap-3 animate-in fade-in zoom-in duration-200';
+                toast.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-400"><path d="M20 6 9 17l-5-5"/></svg>
+                    <span class="font-bold">已复制闲鱼口令/链接</span>
+                    <span class="text-sm opacity-80">请打开闲鱼APP查看</span>
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('animate-out', 'fade-out', 'zoom-out');
+                    setTimeout(() => toast.remove(), 200);
+                }, 2000);
+            }).catch(() => {
+                alert('复制失败，请手动复制');
+            });
         }
     };
 
@@ -141,26 +157,15 @@ export default function UsedItemDetail({ item, onClose, currentUser, onLogin, on
                             <div className="space-y-3">
                                 <div className="flex gap-3">
                                     <button
-                                        onClick={handleCopyLink}
-                                        className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+                                        onClick={handleXianyuClick}
+                                        className="flex-1 py-4 bg-[#ffda44] hover:bg-[#ffe160] text-slate-900 rounded-xl font-bold transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2"
                                     >
                                         {copied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} />}
-                                        {copied ? '已复制' : '复制链接'}
-                                    </button>
-                                    <button
-                                        onClick={handleGoToXianyu}
-                                        disabled={item.status === 'sold'}
-                                        className={`flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${item.status === 'sold'
-                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                            : 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/30'
-                                            }`}
-                                    >
-                                        <ExternalLink size={18} />
-                                        {item.status === 'sold' ? '已售出' : '去闲鱼购买'}
+                                        {copied ? '已复制' : '复制闲鱼链接'}
                                     </button>
                                 </div>
                                 <p className="text-xs text-center text-slate-400">
-                                    点击将跳转至闲鱼平台完成交易
+                                    点击复制链接后，请打开闲鱼APP查看
                                 </p>
                             </div>
                         ) : (

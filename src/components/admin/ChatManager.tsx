@@ -54,7 +54,7 @@ export default function ChatManager() {
             const msgs = await storage.getChatMessages(selectedSessionId);
             setMessages(msgs);
             // Mark as read
-            await storage.markSessionRead(selectedSessionId);
+            await storage.markChatSessionRead(selectedSessionId);
         };
         loadMessages();
 
@@ -165,7 +165,7 @@ export default function ChatManager() {
                                             </span>
                                         </div>
                                         <p className={`text-xs truncate ${session.unreadCount > 0 ? 'text-slate-600 font-medium' : 'text-slate-400'}`}>
-                                            {session.lastMessage?.content || '暂无消息'}
+                                            {typeof session.lastMessage === 'object' ? session.lastMessage.content : (session.lastMessage || '暂无消息')}
                                         </p>
                                     </div>
                                 </button>
@@ -204,7 +204,7 @@ export default function ChatManager() {
                         {/* Messages */}
                         <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
                             {messages.map((msg) => {
-                                const isAgent = msg.sender === 'agent' || msg.sender === 'system';
+                                const isAgent = msg.sender === 'agent' || msg.sender === 'system' || msg.sender === 'admin';
                                 const isSystem = msg.sender === 'system';
 
                                 if (isSystem) {
@@ -286,5 +286,3 @@ export default function ChatManager() {
         </>
     );
 }
-
-

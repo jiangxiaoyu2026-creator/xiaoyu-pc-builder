@@ -1,12 +1,68 @@
-
-import { useState } from 'react';
-import { Calculator, Tag, Trash2, Plus, Download, Upload, ShieldCheck } from 'lucide-react';
-import { PricingStrategy, DiscountTier } from '../../types/adminTypes';
+import { useState, useEffect, useRef } from 'react';
+import { Calculator, Tag, Trash2, Plus, Download, Upload, Pin, Sparkles, X } from 'lucide-react';
+import { PricingStrategy, DiscountTier, PopupSettings, SystemAnnouncementSettings, AnnouncementItem } from '../../types/adminTypes';
 import { storage } from '../../services/storage';
+import ConfirmModal from '../common/ConfirmModal';
 
 export default function SettingsView({ strategy, setStrategy }: { strategy: PricingStrategy, setStrategy: any }) {
     const [newTier, setNewTier] = useState<Partial<DiscountTier>>({ name: '', multiplier: 0.95, description: '', sortOrder: 99 });
-    const [loading, setLoading] = useState(false);
+
+    // Confirm Modal States
+    const [deleteTierId, setDeleteTierId] = useState<string | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [importConfirmFile, setImportConfirmFile] = useState<File | null>(null);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+    // Popup Settings State
+    const [popupSettings, setPopupSettings] = useState<PopupSettings>({
+        enabled: false,
+        title: '',
+        content: '',
+        frequency: 'daily',
+        theme: 'default'
+    });
+
+    const [announcementSettings, setAnnouncementSettings] = useState<SystemAnnouncementSettings>({
+        enabled: true,
+        items: []
+    });
+
+    const isLoadedRef = useRef(false);
+
+    useEffect(() => {
+        storage.getPopupSettings().then(setPopupSettings);
+        storage.getSystemAnnouncement().then(s => {
+            setAnnouncementSettings(s);
+            // Small delay to allow initial render before enabling auto-save
+            setTimeout(() => { isLoadedRef.current = true; }, 500);
+        });
+    }, []);
+
+    // Debounced auto-save for announcements
+    useEffect(() => {
+        if (!isLoadedRef.current) return;
+
+        const timer = setTimeout(() => {
+            storage.saveSystemAnnouncement(announcementSettings);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [announcementSettings]);
+
+
+
+    // Debounced auto-save for popup settings
+    useEffect(() => {
+        if (!isLoadedRef.current) return;
+
+        const timer = setTimeout(() => {
+            storage.savePopupSettings(popupSettings);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [popupSettings]);
+
+
 
     const updateTier = async (id: string, field: keyof DiscountTier, val: any) => {
         const newTiers = strategy.discountTiers.map(t => t.id === id ? { ...t, [field]: val } : t);
@@ -16,13 +72,14 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
         await storage.savePricingStrategy(updatedStrategy);
     };
 
-    const deleteTier = async (id: string) => {
-        if (confirm('确定删除该折扣方案吗？')) {
-            const newTiers = strategy.discountTiers.filter(t => t.id !== id);
-            const updatedStrategy = { ...strategy, discountTiers: newTiers };
-            setStrategy(updatedStrategy);
-            await storage.savePricingStrategy(updatedStrategy);
-        }
+    const deleteTier = async () => {
+        if (!deleteTierId) return;
+        const newTiers = strategy.discountTiers.filter(t => t.id !== deleteTierId);
+        const updatedStrategy = { ...strategy, discountTiers: newTiers };
+        setStrategy(updatedStrategy);
+        await storage.savePricingStrategy(updatedStrategy);
+        setIsDeleteModalOpen(false);
+        setDeleteTierId(null);
     };
 
     const addTier = async () => {
@@ -41,92 +98,7 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
         setNewTier({ name: '', multiplier: 0.95, description: '', sortOrder: 99 });
     };
 
-    const handleResetSystem = async () => {
-        if (confirm('⚠️ 警告：这将清空所有数据（配置单、用户、设置）并重置为初始状态！\n\n确定要继续吗？')) {
-            await storage.resetData();
-        }
-    };
 
-    const handleGenerateMockData = async () => {
-        if (!confirm('确定要生成 200 条测试数据吗？（质量更好，且默认上架）')) return;
-        setLoading(true);
-        try {
-            const MOCKS: Record<string, { brands: string[], models: string[] }> = {
-                cpu: {
-                    brands: ['Intel', 'AMD'],
-                    models: ['Core i9-14900K', 'Core i7-14700K', 'Core i5-13600K', 'Ryzen 9 7950X', 'Ryzen 7 7800X3D', 'Ryzen 5 7600X']
-                },
-                gpu: {
-                    brands: ['ASUS', 'MSI', 'Gigabyte', 'Colorful', 'Zotac', 'Sapphire'],
-                    models: ['RTX 4090 D', 'RTX 4080 Super', 'RTX 4070 Ti Super', 'RTX 4060 Ti', 'RX 7900 XTX', 'RX 7800 XT']
-                },
-                mainboard: {
-                    brands: ['ASUS', 'MSI', 'Gigabyte', 'ASRock'],
-                    models: ['Z790 Hero', 'B760M Bomber', 'X670E Taichi', 'B650M Mortar', 'Z790 Formula', 'B760-G Strix']
-                },
-                ram: {
-                    brands: ['G.Skill', 'Corsair', 'Kingston', 'ADATA'],
-                    models: ['Trident Z5 32GB', 'Vengeance 16GB', 'Fury Beast 16GB', 'Lancer RGB 32GB']
-                },
-                disk: {
-                    brands: ['Samsung', 'WD', 'Crucial', 'Lexar'],
-                    models: ['990 Pro 2TB', 'SN850X 1TB', 'P3 Plus 1TB', 'NM800 Pro 2TB']
-                },
-                power: {
-                    brands: ['Corsair', 'Seasonic', 'ASUS', 'MSI'],
-                    models: ['RM1000e', 'Focus GX-850', 'Thor 1200W', 'A1000G']
-                },
-                case: {
-                    brands: ['LianLi', 'NZXT', 'Corsair', 'Phanteks'],
-                    models: ['O11 Ultra', 'H9 Flow', '4000D Airflow', 'NV7']
-                },
-                cooling: {
-                    brands: ['Valkyrie', 'DeepCool', 'NZXT', 'Corsair'],
-                    models: ['GL360', 'E360', 'Kraken 360', 'H150i']
-                },
-                monitor: {
-                    brands: ['LG', 'Samsung', 'ASUS', 'AOC'],
-                    models: ['27GP950', 'G9 Neo', 'PG27AQDM', 'Q27G2S']
-                }
-            };
-
-            const GENERIC_BRANDS = ['Generic', 'Other'];
-            const GENERIC_MODELS = ['Standard Edition', 'Pro Version'];
-            const CATEGORIES = ['cpu', 'mainboard', 'gpu', 'ram', 'disk', 'power', 'case', 'cooling', 'monitor', 'keyboard', 'mouse', 'fan'];
-
-            const newProducts = [];
-            for (let i = 0; i < 200; i++) {
-                const cat = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
-                const config = MOCKS[cat] || { brands: GENERIC_BRANDS, models: GENERIC_MODELS };
-
-                const brand = config.brands[Math.floor(Math.random() * config.brands.length)];
-                const modelBase = config.models[Math.floor(Math.random() * config.models.length)];
-                const price = Math.floor(Math.random() * 8000) + 100;
-
-                newProducts.push({
-                    category: cat,
-                    brand: brand,
-                    model: `${modelBase} (Test-${i})`,
-                    price: price,
-                    status: 'active',
-                    sortOrder: 100,
-                    specs: {
-                        socket: cat === 'cpu' || cat === 'mainboard' ? (modelBase.includes('Ryzen') || modelBase.includes('X670') || modelBase.includes('B650') ? 'AM5' : 'LGA1700') : undefined,
-                        memoryType: cat === 'ram' || cat === 'mainboard' ? 'DDR5' : undefined,
-                        wattage: cat === 'power' ? [750, 850, 1000, 1200][Math.floor(Math.random() * 4)] : undefined
-                    },
-                    imageUrl: ''
-                });
-            }
-
-            await storage.saveProducts(newProducts as any);
-            alert(`⚡️ 成功生成 ${newProducts.length} 条测试数据并存入数据库！`);
-        } catch (error) {
-            alert('生成失败');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <div className="space-y-8">
@@ -143,7 +115,7 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">全局基础服务费率 (Profit Margin)</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">全局基础服务费率</label>
                         <div className="flex items-center gap-3">
                             <input
                                 type="number"
@@ -180,7 +152,7 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
                                             onChange={e => updateTier(tier.id, 'name', e.target.value)}
                                         />
                                     </div>
-                                    <button onClick={() => deleteTier(tier.id)} className="text-slate-400 hover:text-red-500"><Trash2 size={16} /></button>
+                                    <button onClick={() => { setDeleteTierId(tier.id); setIsDeleteModalOpen(true); }} className="text-slate-400 hover:text-red-500"><Trash2 size={16} /></button>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2">
@@ -230,6 +202,318 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
                 </div>
             </div>
 
+            {/* 营销弹窗设置 */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span className="text-2xl">📢</span> 每日营销弹窗设置
+                    </h3>
+                    <div className="flex items-center gap-3">
+                        <span className={`text-sm font-bold ${popupSettings.enabled ? 'text-emerald-600' : 'text-slate-400'}`}>
+                            {popupSettings.enabled ? '已开启' : '已关闭'}
+                        </span>
+                        <button
+                            onClick={() => setPopupSettings({ ...popupSettings, enabled: !popupSettings.enabled })}
+                            className={`w-12 h-6 rounded-full transition-colors relative ${popupSettings.enabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                        >
+                            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${popupSettings.enabled ? 'left-7' : 'left-1'}`} />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">弹窗标题</label>
+                            <input
+                                type="text"
+                                className="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                placeholder="例如：今日限定优惠"
+                                value={popupSettings.title}
+                                onChange={e => setPopupSettings({ ...popupSettings, title: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Banner 图片链接 (可选)</label>
+                            <input
+                                type="text"
+                                className="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-mono text-slate-600"
+                                placeholder="https://..."
+                                value={popupSettings.imageUrl || ''}
+                                onChange={e => setPopupSettings({ ...popupSettings, imageUrl: e.target.value })}
+                            />
+                            <p className="text-xs text-slate-400 mt-1">建议尺寸: 800x400。留空则不显示图片。</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">跳转链接 (可选)</label>
+                                <input
+                                    type="text"
+                                    className="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    placeholder="https://..."
+                                    value={popupSettings.linkUrl || ''}
+                                    onChange={e => setPopupSettings({ ...popupSettings, linkUrl: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">按钮文字</label>
+                                <input
+                                    type="text"
+                                    className="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    placeholder="默认: 查看详情"
+                                    value={popupSettings.buttonText || ''}
+                                    onChange={e => setPopupSettings({ ...popupSettings, buttonText: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col h-full">
+                        <label className="block text-sm font-bold text-slate-700 mb-1">弹窗正文内容</label>
+                        <textarea
+                            className="flex-1 w-full border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none min-h-[120px]"
+                            placeholder="支持简单的文本内容..."
+                            value={popupSettings.content}
+                            onChange={e => setPopupSettings({ ...popupSettings, content: e.target.value })}
+                        />
+
+                        <div className="mt-4 grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">展示频率</label>
+                                <select
+                                    className="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    value={popupSettings.frequency || 'daily'}
+                                    onChange={e => setPopupSettings({ ...popupSettings, frequency: e.target.value as any })}
+                                >
+                                    <option value="once">仅一次 (Once)</option>
+                                    <option value="daily">每天一次 (Daily)</option>
+                                    <option value="always">每次刷新 (Always)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">主题风格</label>
+                                <select
+                                    className="w-full border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    value={popupSettings.theme || 'default'}
+                                    onChange={e => setPopupSettings({ ...popupSettings, theme: e.target.value as any })}
+                                >
+                                    <option value="default">默认 (Default)</option>
+                                    <option value="festive">节日 (Festive)</option>
+                                    <option value="promo">大促 (Promo)</option>
+                                    <option value="notice">公告 (Notice)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">开始日期 (可选)</label>
+                                <input
+                                    type="date"
+                                    className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none"
+                                    value={popupSettings.startDate || ''}
+                                    onChange={e => setPopupSettings({ ...popupSettings, startDate: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">结束日期 (可选)</label>
+                                <input
+                                    type="date"
+                                    className="w-full border border-slate-200 rounded-lg p-2.5 text-sm outline-none"
+                                    value={popupSettings.endDate || ''}
+                                    onChange={e => setPopupSettings({ ...popupSettings, endDate: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Live Preview Section */}
+                <div className="mt-8 p-6 bg-slate-50 rounded-xl border border-slate-100 flex flex-col items-center">
+                    <h4 className="text-sm font-bold text-slate-400 mb-4 w-full">效果预览 (Live Preview)</h4>
+
+                    {/* Mock Popup Window */}
+                    <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100 transform scale-90 sm:scale-100 transition-all duration-300">
+                        {/* Close Button Mock */}
+                        <div className="absolute top-4 right-4 z-10 text-slate-400">
+                            <X size={20} />
+                        </div>
+
+                        {/* Image Area */}
+                        {popupSettings.imageUrl ? (
+                            <div className="w-full h-40 bg-slate-100 relative">
+                                <img src={popupSettings.imageUrl} alt="Banner" className="w-full h-full object-cover" />
+                                {popupSettings.theme === 'promo' && (
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500" />
+                                )}
+                            </div>
+                        ) : (
+                            <div className={`w-full h-24 flex items-center justify-center ${popupSettings.theme === 'festive' ? 'bg-red-50 text-red-500' :
+                                popupSettings.theme === 'promo' ? 'bg-indigo-50 text-indigo-500' :
+                                    popupSettings.theme === 'notice' ? 'bg-amber-50 text-amber-500' :
+                                        'bg-slate-100 text-slate-400'
+                                }`}>
+                                <Sparkles size={32} />
+                            </div>
+                        )}
+
+                        {/* Content Area */}
+                        <div className="p-6 text-center">
+                            <h3 className={`text-xl font-bold mb-2 ${popupSettings.theme === 'festive' ? 'text-red-600' :
+                                popupSettings.theme === 'promo' ? 'text-indigo-600' :
+                                    'text-slate-800'
+                                }`}>
+                                {popupSettings.title || '标题'}
+                            </h3>
+                            <p className="text-slate-600 text-sm mb-6 whitespace-pre-wrap">
+                                {popupSettings.content || '内容...'}
+                            </p>
+
+                            {popupSettings.linkUrl && (
+                                <button className={`px-6 py-2.5 rounded-xl font-bold text-white transition-all shadow-lg active:scale-95 ${popupSettings.theme === 'festive' ? 'bg-red-500 hover:bg-red-600 shadow-red-200' :
+                                    popupSettings.theme === 'promo' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200' :
+                                        popupSettings.theme === 'notice' ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' :
+                                            'bg-slate-900 hover:bg-slate-800 shadow-slate-200'
+                                    }`}>
+                                    {popupSettings.buttonText || '查看详情'}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-4">注意：实际显示效果可能因用户设备屏幕大小而略有不同。</p>
+
+                    {/* 系统公告设置 (Visual Builder Remark Replacement) */}
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <span className="text-2xl">📢</span> 首页公告栏设置
+                            </h3>
+                            <div className="flex items-center gap-3">
+                                <span className={`text-sm font-bold ${announcementSettings.enabled ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                    {announcementSettings.enabled ? '已开启' : '已关闭'}
+                                </span>
+                                <button
+                                    onClick={() => setAnnouncementSettings({ ...announcementSettings, enabled: !announcementSettings.enabled })}
+                                    className={`w-12 h-6 rounded-full transition-colors relative ${announcementSettings.enabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                >
+                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${announcementSettings.enabled ? 'left-7' : 'left-1'}`} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="space-y-4">
+                                {announcementSettings.items && announcementSettings.items.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {announcementSettings.items.map((item, index) => (
+                                            <div key={item.id} className={`p-4 border rounded-xl transition-all ${item.pinned ? 'border-indigo-200 bg-indigo-50/50' : 'border-slate-100 bg-slate-50'}`}>
+                                                <div className="flex gap-3 items-start">
+                                                    <div className="pt-2">
+                                                        <select
+                                                            className={`text-xs font-bold rounded px-2 py-1 border outline-none cursor-pointer ${item.type === 'warning' ? 'bg-red-100 text-red-600 border-red-200' :
+                                                                item.type === 'promo' ? 'bg-amber-100 text-amber-600 border-amber-200' :
+                                                                    'bg-blue-100 text-blue-600 border-blue-200'
+                                                                }`}
+                                                            value={item.type}
+                                                            onChange={e => {
+                                                                const newItems = [...announcementSettings.items];
+                                                                newItems[index].type = e.target.value as any;
+                                                                setAnnouncementSettings({ ...announcementSettings, items: newItems });
+                                                            }}
+                                                        >
+                                                            <option value="info">通知</option>
+                                                            <option value="warning">紧急</option>
+                                                            <option value="promo">活动</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex-1 space-y-2">
+                                                        <textarea
+                                                            className="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-700 outline-none resize-none focus:ring-0 placeholder:text-slate-400"
+                                                            placeholder="公告内容..."
+                                                            rows={2}
+                                                            value={item.content}
+                                                            onChange={e => {
+                                                                const newItems = [...announcementSettings.items];
+                                                                newItems[index].content = e.target.value;
+                                                                setAnnouncementSettings({ ...announcementSettings, items: newItems });
+                                                            }}
+                                                        />
+                                                        <input
+                                                            className="w-full bg-transparent border-none p-0 text-xs text-slate-500 outline-none focus:ring-0 placeholder:text-slate-400"
+                                                            placeholder="跳转链接 (可选)..."
+                                                            value={item.linkUrl || ''}
+                                                            onChange={e => {
+                                                                const newItems = [...announcementSettings.items];
+                                                                newItems[index].linkUrl = e.target.value;
+                                                                setAnnouncementSettings({ ...announcementSettings, items: newItems });
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col gap-1">
+                                                        <button
+                                                            onClick={() => {
+                                                                const newItems = [...announcementSettings.items];
+                                                                newItems[index].pinned = !newItems[index].pinned;
+                                                                // Sort: Pinned first
+                                                                newItems.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+                                                                setAnnouncementSettings({ ...announcementSettings, items: newItems });
+                                                            }}
+                                                            className={`p-1.5 rounded hover:bg-black/5 ${item.pinned ? 'text-indigo-600' : 'text-slate-300'}`}
+                                                            title={item.pinned ? "取消置顶" : "置顶公告"}
+                                                        >
+                                                            <Pin size={16} className={item.pinned ? 'fill-current' : ''} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                const newItems = announcementSettings.items.filter((_, i) => i !== index);
+                                                                setAnnouncementSettings({ ...announcementSettings, items: newItems });
+                                                            }}
+                                                            className="p-1.5 rounded hover:bg-black/5 text-slate-300 hover:text-red-500"
+                                                            title="删除"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-slate-400 text-sm bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                        暂无公告，点击下方按钮添加
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={() => {
+                                        const newItem: AnnouncementItem = {
+                                            id: `ann-${Date.now()}`,
+                                            content: '',
+                                            type: 'info',
+                                            pinned: false
+                                        };
+                                        setAnnouncementSettings({
+                                            ...announcementSettings,
+                                            items: [...(announcementSettings.items || []), newItem]
+                                        });
+                                    }}
+                                    className="w-full py-3 flex items-center justify-center gap-2 border border-dashed border-slate-300 rounded-xl text-slate-500 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50 transition-all font-bold text-sm"
+                                >
+                                    <Plus size={18} /> 添加新公告
+                                </button>
+                                <p className="text-xs text-slate-400 mt-2">提示：置顶公告将优先展示。支持多条公告轮播显示。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 邮件 SMTP 设置 (已隐藏) */}
+            {/* <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                ... (Email settings hidden as requested) ...
+            </div> */}
+
+
+
             {/* 数据管理与备份 */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm">
@@ -260,11 +544,11 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
                             type="file"
                             className="hidden"
                             accept=".json"
-                            onChange={async (e) => {
+                            onChange={(e) => {
                                 const file = e.target.files?.[0];
-                                if (file && confirm('确定要从备份文件恢复吗？当前所有数据将被覆盖！')) {
-                                    const success = await storage.importData(file);
-                                    if (!success) alert('导入失败，请检查文件格式。');
+                                if (file) {
+                                    setImportConfirmFile(file);
+                                    setIsImportModalOpen(true);
                                 }
                             }}
                         />
@@ -272,33 +556,33 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
                 </div>
             </div>
 
-            {/* 系统管理 - 危险区域 */}
-            <div className="bg-red-50 p-8 rounded-[32px] border border-red-100 shadow-sm">
-                <h3 className="text-lg font-bold text-red-700 mb-4 flex items-center gap-2">
-                    <ShieldCheck size={20} /> 系统底层重置 (Danger Zone)
-                </h3>
-                <p className="text-sm text-red-600 mb-4">
-                    如果您需要清空所有测试数据重新开始，请点击下方按钮。这将会清除所有已发布的配置单、用户创建的硬件、以及自定义的设置，并将系统恢复到初始演示数据状态。
-                </p>
-                <button
-                    onClick={handleResetSystem}
-                    className="px-6 py-2 bg-white border border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-600 hover:text-white transition-colors shadow-sm"
-                >
-                    重置所有数据 (Factory Reset)
-                </button>
+            {/* Confirm Tier Delete Modal */}
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="确认删除折扣方案"
+                description="确定要删除该折扣方案吗？删除后相关的价格策略将受影响。"
+                confirmText="确认删除"
+                isDangerous={true}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={deleteTier}
+            />
 
-                <div className="mt-6 pt-6 border-t border-red-100/50">
-                    <h4 className="text-sm font-bold text-slate-700 mb-2">测试数据生成</h4>
-                    <p className="text-xs text-slate-500 mb-3">生成 200 条随机硬件数据以测试性能和前端选择功能。</p>
-                    <button
-                        onClick={handleGenerateMockData}
-                        disabled={loading}
-                        className="px-6 py-2 bg-white border border-indigo-200 text-indigo-600 font-bold rounded-lg hover:bg-indigo-600 hover:text-white transition-colors shadow-sm disabled:opacity-50"
-                    >
-                        {loading ? '生成中...' : '⚡️ 生成 200 条测试硬件'}
-                    </button>
-                </div>
-            </div>
+            {/* Confirm Import Modal */}
+            <ConfirmModal
+                isOpen={isImportModalOpen}
+                title="确认从备份恢复"
+                description="确定要从备份文件恢复吗？当前所有数据（包括硬件、配置、用户等）将被覆盖并刷新页面！"
+                confirmText="确认恢复"
+                isDangerous={true}
+                onClose={() => setIsImportModalOpen(false)}
+                onConfirm={async () => {
+                    if (importConfirmFile) {
+                        const success = await storage.importData(importConfirmFile);
+                        if (!success) alert('导入失败，请检查文件格式。');
+                        setIsImportModalOpen(false);
+                    }
+                }}
+            />
         </div>
     );
 }

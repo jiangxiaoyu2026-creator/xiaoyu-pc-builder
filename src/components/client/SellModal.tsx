@@ -1,31 +1,56 @@
-import { useState } from 'react';
-import { X, Plus, ExternalLink, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Plus, ExternalLink, AlertTriangle, Tags } from 'lucide-react'; // Added Tags
 import { UsedItem, UserItem, UsedCategory, UsedCondition } from '../../types/adminTypes';
 import { storage } from '../../services/storage';
+// Removed useAuth as we will pass user via props for consistency with existing code
+// If useAuth is globally available we could use it, but let's stick to props if provided.
 
 interface SellModalProps {
     onClose: () => void;
     onSuccess: () => void;
     currentUser: UserItem;
     showToast: (msg: string) => void;
+    initialData?: UsedItem; // Added
 }
 
-const CONDITIONS: UsedCondition[] = ['全新', '99新', '95新', '9成新', '8成新', '较旧'];
+const CONDITIONS: UsedCondition[] = ['全新/仅拆封', '99新 (准新)', '95新 (轻微使用)', '9成新 (明显使用)', '8成新 (伊拉克)', '功能机 (配件)'];
 const CATEGORIES: { id: UsedCategory, label: string }[] = [
     { id: 'gpu', label: '显卡' },
-    { id: 'host', label: '主机/整机' },
-    { id: 'accessory', label: '其他配件' },
+    { id: 'host', label: '整机' },
+    { id: 'accessory', label: '周边/配件' },
 ];
 
-export default function SellModal({ onClose, onSuccess, currentUser, showToast }: SellModalProps) {
+export default function SellModal({ onClose, onSuccess, currentUser, showToast, initialData }: SellModalProps) {
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<Partial<UsedItem>>({
         category: 'gpu',
-        condition: '95新',
+        condition: '95新 (轻微使用)',
+        brand: '',
+        model: '',
+        price: undefined,
+        originalPrice: undefined,
+        description: '',
         images: [],
-        type: 'personal', // 个人闲置
-        xianyuLink: ''
+        xianyuLink: '',
+        contact: ''
     });
-    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                category: initialData.category,
+                condition: initialData.condition,
+                brand: initialData.brand,
+                model: initialData.model,
+                price: initialData.price,
+                originalPrice: initialData.originalPrice,
+                description: initialData.description,
+                images: initialData.images,
+                xianyuLink: initialData.xianyuLink,
+                contact: initialData.contact
+            });
+        }
+    }, [initialData]);
 
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,20 +79,20 @@ export default function SellModal({ onClose, onSuccess, currentUser, showToast }
         setLoading(true);
 
         if (!formData.brand || !formData.model || !formData.price || !formData.description) {
-            showToast('请填写完整信息');
+            showToast('请填写所有必填项');
             setLoading(false);
             return;
         }
 
         if (!formData.xianyuLink) {
-            showToast('请填写闲鱼链接');
+            showToast('请输入闲鱼链接');
             setLoading(false);
             return;
         }
 
         const newItem: UsedItem = {
             id: `used_${Date.now()}`,
-            type: 'personal', // 个人闲置
+            type: 'personal', // Personal Used Item
             sellerId: currentUser.id,
             sellerName: currentUser.username,
             category: formData.category!,
@@ -88,7 +113,7 @@ export default function SellModal({ onClose, onSuccess, currentUser, showToast }
 
         setTimeout(() => {
             setLoading(false);
-            showToast('发布成功！请等待管理员审核');
+            showToast('发布成功！等待管理员审核。');
             onSuccess();
             onClose();
         }, 1000);
@@ -97,13 +122,15 @@ export default function SellModal({ onClose, onSuccess, currentUser, showToast }
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
             <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-up">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-800">发布个人闲置</h2>
-                        <p className="text-xs text-slate-500">提交后需经管理员审核才可上架</p>
-                    </div>
+                <div className="p-4 border-b border-orange-100 flex justify-between items-center sticky top-0 bg-white/80 backdrop-blur-md z-10">
+                    <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                            <Tags size={18} />
+                        </div>
+                        {initialData ? '编辑闲置' : '发布闲置'}
+                    </h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                        <X size={20} className="text-slate-500" />
+                        <X size={24} className="text-slate-400" />
                     </button>
                 </div>
 
@@ -111,8 +138,8 @@ export default function SellModal({ onClose, onSuccess, currentUser, showToast }
                 <div className="mx-6 mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex gap-3">
                     <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
                     <div className="text-sm text-amber-800">
-                        <p className="font-bold mb-1">个人闲置交易说明</p>
-                        <p>个人闲置商品由用户自行发布，平台仅提供展示服务。交易将通过闲鱼平台完成，请买卖双方自行核实商品信息，平台不承担担保责任。</p>
+                        <p className="font-bold mb-1">个人闲置交易指南</p>
+                        <p>个人物品由用户自行发布，交易通过闲鱼进行。平台仅提供信息展示，不承担交易风险，请仔细甄别。</p>
                     </div>
                 </div>
 
@@ -121,16 +148,16 @@ export default function SellModal({ onClose, onSuccess, currentUser, showToast }
                     <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl">
                         <label className="block text-sm font-bold text-orange-700 mb-2 flex items-center gap-2">
                             <ExternalLink size={16} />
-                            闲鱼商品链接 <span className="text-red-500">*</span>
+                            闲鱼宝贝链接 <span className="text-red-500">*</span>
                         </label>
                         <textarea
-                            placeholder="直接粘贴闲鱼分享内容，例如：【闲鱼】https://m.tb.cn/... 点击链接直接打开"
+                            placeholder="在此粘贴闲鱼分享口令或链接，例如：https://m.tb.cn/..."
                             value={formData.xianyuLink || ''}
                             onChange={e => setFormData({ ...formData, xianyuLink: e.target.value })}
                             className="w-full p-3 bg-white border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 h-24 resize-none"
                             required
                         />
-                        <p className="text-xs text-orange-600 mt-2">直接从闲鱼APP复制分享内容粘贴到这里即可</p>
+                        <p className="text-xs text-orange-600 mt-2">请直接从闲鱼APP复制分享内容。</p>
                     </div>
 
                     {/* Basic Info */}
@@ -162,7 +189,7 @@ export default function SellModal({ onClose, onSuccess, currentUser, showToast }
                             <label className="block text-sm font-bold text-slate-700 mb-2">品牌</label>
                             <input
                                 type="text"
-                                placeholder="例如：ASUS 华硕"
+                                placeholder="例如: 华硕 (ASUS)"
                                 value={formData.brand || ''}
                                 onChange={e => setFormData({ ...formData, brand: e.target.value })}
                                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
@@ -173,7 +200,7 @@ export default function SellModal({ onClose, onSuccess, currentUser, showToast }
                             <label className="block text-sm font-bold text-slate-700 mb-2">型号</label>
                             <input
                                 type="text"
-                                placeholder="例如：RTX 3070 TUF"
+                                placeholder="例如: RTX 3070 TUF"
                                 value={formData.model || ''}
                                 onChange={e => setFormData({ ...formData, model: e.target.value })}
                                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
@@ -185,7 +212,7 @@ export default function SellModal({ onClose, onSuccess, currentUser, showToast }
                     {/* Price */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">期望售价 (¥)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">期望价格 (¥)</label>
                             <input
                                 type="number"
                                 placeholder="0.00"
@@ -196,7 +223,7 @@ export default function SellModal({ onClose, onSuccess, currentUser, showToast }
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">入手原价 (选填)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">原价 (选填)</label>
                             <input
                                 type="number"
                                 placeholder="0.00"
@@ -211,7 +238,7 @@ export default function SellModal({ onClose, onSuccess, currentUser, showToast }
                     <div>
                         <label className="block text-sm font-bold text-slate-700 mb-2">详细描述</label>
                         <textarea
-                            placeholder="请描述硬件的使用时间、购买来源、是否有拆修、包装配件是否齐全等..."
+                            placeholder="描述使用时间、来源、维修情况、包装配件等..."
                             value={formData.description || ''}
                             onChange={e => setFormData({ ...formData, description: e.target.value })}
                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 h-32 resize-none"

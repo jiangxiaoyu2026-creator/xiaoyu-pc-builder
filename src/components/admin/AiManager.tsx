@@ -51,14 +51,35 @@ export default function AiManager() {
             alert('请先填写 API Key');
             return;
         }
+        const baseUrl = aiConfig.baseUrl || (aiConfig.provider === 'deepseek' ? 'https://api.deepseek.com/v1' : 'https://api.openai.com/v1');
+        const model = aiConfig.model || (aiConfig.provider === 'deepseek' ? 'deepseek-chat' : 'gpt-3.5-turbo');
+
         setIsTesting(true);
         setTestResult(null);
+        const startTime = Date.now();
         try {
-            // Mock connection test
-            await new Promise(r => setTimeout(r, 1500));
-            setTestResult({ success: true, msg: `连接成功！模型 ${aiConfig.model} 响应正常 (延迟 124ms)` });
-        } catch (e) {
-            setTestResult({ success: false, msg: '连接失败，请检查 Base URL 或 Key' });
+            const response = await fetch(`${baseUrl}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${aiConfig.apiKey}`
+                },
+                body: JSON.stringify({
+                    model,
+                    messages: [{ role: 'user', content: 'Hi' }],
+                    max_tokens: 5
+                })
+            });
+            const latency = Date.now() - startTime;
+            if (response.ok) {
+                setTestResult({ success: true, msg: `连接成功！模型 ${model} 响应正常 (延迟 ${latency}ms)` });
+            } else {
+                const errData = await response.json().catch(() => ({}));
+                const errMsg = (errData as any)?.error?.message || `HTTP ${response.status}`;
+                setTestResult({ success: false, msg: `连接失败: ${errMsg}` });
+            }
+        } catch (e: any) {
+            setTestResult({ success: false, msg: `网络错误: ${e.message || '请检查 Base URL 或网络连接'}` });
         } finally {
             setIsTesting(false);
         }
@@ -86,7 +107,7 @@ export default function AiManager() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">接入服务商 (Provider)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">接入服务商</label>
                             <div className="flex gap-2">
                                 {['deepseek', 'openai', 'custom'].map(p => (
                                     <button
@@ -115,7 +136,7 @@ export default function AiManager() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Base URL (API域名)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">API 域名 (Base URL)</label>
                             <input
                                 type="text"
                                 value={aiConfig.baseUrl}
@@ -126,7 +147,7 @@ export default function AiManager() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Model Name (模型名称)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">模型名称 (Model Name)</label>
                             <input
                                 type="text"
                                 value={aiConfig.model}
@@ -139,7 +160,7 @@ export default function AiManager() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">AI 性格模式 (Persona)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">AI 性格模式</label>
                             <div className="grid grid-cols-2 gap-2">
                                 {[
                                     { id: 'toxic', label: '毒舌吐槽', desc: '犀利幽默，爱说真话' },
@@ -163,7 +184,7 @@ export default function AiManager() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">AI 装机策略 (Strategy)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">AI 配单策略</label>
                             <div className="grid grid-cols-2 gap-2">
                                 {[
                                     { id: 'performance', label: '性能至上', desc: '最大化硬件跑分' },

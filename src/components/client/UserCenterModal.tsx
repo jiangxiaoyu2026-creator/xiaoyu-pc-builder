@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { X, User, Heart, FileText, Calendar, LogOut, Edit3, Gift, Copy, Crown, Share2, ShoppingBag } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { UserItem, ConfigTemplate } from '../../types/clientTypes';
+import ConfirmModal from '../common/ConfirmModal';
 
 import { ConfigDetailModal } from './Modals';
+import SellModal from './SellModal';
 
 // 邀请好友卡片组件
 function InviteCard({ userId, showToast }: { userId: string; showToast: (msg: string) => void }) {
@@ -18,11 +20,10 @@ function InviteCard({ userId, showToast }: { userId: string; showToast: (msg: st
             setInviteCode(code);
 
             // Get invite stats
-            const users = await storage.getUsers();
-            const user = users.find(u => u.id === userId || (u as any)._id === userId);
-            if (user) {
-                setInviteCount(user.inviteCount || 0);
-                setInviteVipDays(user.inviteVipDays || 0);
+            const currentUser = storage.getCurrentUser();
+            if (currentUser && (currentUser.id === userId || (currentUser as any)._id === userId)) {
+                setInviteCount(currentUser.inviteCount || 0);
+                setInviteVipDays(currentUser.inviteVipDays || 0);
             }
         };
         loadInviteData();
@@ -136,6 +137,11 @@ export function UserCenterModal({
     const [favorites, setFavorites] = useState<ConfigTemplate[]>([]);
     const [myUsedItems, setMyUsedItems] = useState<import('../../types/adminTypes').UsedItem[]>([]);
     const [selectedConfig, setSelectedConfig] = useState<ConfigTemplate | null>(null);
+    const [editingItem, setEditingItem] = useState<import('../../types/adminTypes').UsedItem | null>(null);
+
+    // Confirm Modal States
+    const [isActionLoading, setIsActionLoading] = useState(false);
+    const [confirmConfig, setConfirmConfig] = useState<{ id: string, type: 'delete' | 'sold', title: string, desc: string } | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -143,21 +149,21 @@ export function UserCenterModal({
                 const [all, likes, used] = await Promise.all([
                     storage.getConfigs(),
                     storage.getUserLikes(user.id),
-                    storage.getUsedItems()
+                    storage.getUsedItems({ status: 'all' })
                 ]);
 
                 const userLikes = likes;
-                const publishedConfigs = all.filter(c => c.status === 'published');
+                const publishedConfigs = all.items.filter(c => c.status === 'published');
 
                 // Map to client template format (simplified reuse of logic from ClientApp)
                 const mapConfig = (c: any): ConfigTemplate => ({
                     id: c.id,
                     userId: c.userId,
                     title: c.title,
-                    author: c.authorName,
+                    author: c.authorName || 'Unknown',
                     avatarColor: 'bg-zinc-500', // Default, maybe enhance later
-                    type: c.authorName.includes('官方') ? 'official' : (c.authorName.includes('主播') ? 'streamer' : (c.tags.includes('求助') ? 'help' : 'user')),
-                    tags: c.tags.map((t: string) => ({ type: 'usage', label: t })),
+                    type: (c.authorName && c.authorName.includes('官方')) ? 'official' : ((c.authorName && c.authorName.includes('主播')) ? 'streamer' : ((c.tags && c.tags.includes('求助')) ? 'help' : 'user')),
+                    tags: (c.tags || []).map((t: string) => ({ type: 'usage', label: t })),
                     price: c.totalPrice,
                     items: c.items,
                     likes: c.likes,
@@ -173,7 +179,7 @@ export function UserCenterModal({
 
                 setMyConfigs(mappedAll.filter(c => c.userId === user.id || c.author === user.username));
                 setFavorites(mappedAll.filter(c => userLikes.includes(c.id)));
-                setMyUsedItems(used.filter(item => item.sellerId === user.id));
+                setMyUsedItems(used.items.filter(item => item.sellerId === user.id));
             } catch (error) {
                 console.error('Failed to load user center data:', error);
             }
@@ -380,28 +386,52 @@ export function UserCenterModal({
 
                                                     <div className="mt-auto space-y-2">
                                                         {item.status === 'published' && (
+                                                            <>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setEditingItem(item);
+                                                                    }}
+                                                                    className="w-full py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                                                                >
+                                                                    <Edit3 size={14} /> 编辑信息
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setConfirmConfig({
+                                                                            id: item.id,
+                                                                            type: 'sold',
+                                                                            title: '确认商品已售',
+                                                                            desc: '确定要将该商品标记为已售吗？'
+                                                                        });
+                                                                    }}
+                                                                    className="w-full py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                                                                >
+                                                                    <ShoppingBag size={14} /> 标记已售
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        {item.status === 'pending' && (
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    if (confirm('确定要将该商品标记为已售吗？')) {
-                                                                        storage.markUsedItemAsSold(item.id).then(() => {
-                                                                            showToast('已标记为已售！');
-                                                                        });
-                                                                    }
+                                                                    setEditingItem(item);
                                                                 }}
-                                                                className="w-full py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                                                                className="w-full py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                                             >
-                                                                <ShoppingBag size={14} /> 标记已售
+                                                                <Edit3 size={14} /> 修改发布
                                                             </button>
                                                         )}
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                if (confirm('确定要删除这条发布吗？')) {
-                                                                    storage.deleteUsedItem(item.id).then(() => {
-                                                                        showToast('已删除发布');
-                                                                    });
-                                                                }
+                                                                setConfirmConfig({
+                                                                    id: item.id,
+                                                                    type: 'delete',
+                                                                    title: '确认删除发布',
+                                                                    desc: '确定要删除这条发布吗？此操作无法撤销。'
+                                                                });
                                                             }}
                                                             className="w-full py-2 bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                                         >
@@ -562,6 +592,48 @@ export function UserCenterModal({
                     showToast={showToast}
                     onToggleLike={_onToggleLike}
                     currentUser={user}
+                />
+            )}
+
+            {/* Confirm Actions Modal */}
+            <ConfirmModal
+                isOpen={!!confirmConfig}
+                title={confirmConfig?.title || ''}
+                description={confirmConfig?.desc || ''}
+                confirmText="确定"
+                isDangerous={confirmConfig?.type === 'delete'}
+                isLoading={isActionLoading}
+                onClose={() => setConfirmConfig(null)}
+                onConfirm={async () => {
+                    if (!confirmConfig) return;
+                    setIsActionLoading(true);
+                    try {
+                        if (confirmConfig.type === 'sold') {
+                            await storage.markUsedItemAsSold(confirmConfig.id);
+                            showToast('已标记为已售！');
+                        } else {
+                            await storage.deleteUsedItem(confirmConfig.id);
+                            showToast('已删除发布');
+                        }
+                        setConfirmConfig(null);
+                    } catch (err) {
+                        showToast('操作失败');
+                    } finally {
+                        setIsActionLoading(false);
+                    }
+                }}
+            />
+
+            {editingItem && (
+                <SellModal
+                    currentUser={user}
+                    onClose={() => setEditingItem(null)}
+                    onSuccess={() => {
+                        showToast('已更新发布信息');
+                        // Storage update event will trigger reload
+                    }}
+                    showToast={showToast}
+                    initialData={editingItem}
                 />
             )}
         </div>

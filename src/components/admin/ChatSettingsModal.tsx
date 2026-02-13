@@ -19,7 +19,8 @@ export function ChatSettingsModal({ onClose }: ChatSettingsModalProps) {
         const loadSettings = async () => {
             const current = await storage.getChatSettings();
             setSettings({
-                ...current,
+                welcomeMessage: current.welcomeMessage || '',
+                quickReplies: current.quickReplies || [],
                 autoReplyEnabled: current.autoReplyEnabled || false,
                 autoReplyContent: current.autoReplyContent || ''
             });

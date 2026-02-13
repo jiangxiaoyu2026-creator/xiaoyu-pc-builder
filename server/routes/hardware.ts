@@ -8,14 +8,20 @@ const router = express.Router();
 // Get all active products (Public)
 router.get('/', async (req, res) => {
     try {
-        const rows = db.prepare('SELECT * FROM hardware WHERE status = "active" ORDER BY sortOrder ASC').all();
-        const products = rows.map((row: any) => ({
-            ...row,
-            specs: row.specs ? JSON.parse(row.specs) : {}
-        }));
+        const rows = db.prepare("SELECT * FROM hardware WHERE status = 'active' ORDER BY sortOrder ASC").all();
+        const products = rows.map((row: any) => {
+            let specs = {};
+            try {
+                specs = row.specs ? JSON.parse(row.specs) : {};
+            } catch (e) {
+                console.error(`Failed to parse specs for product ${row.uuid || row.id}:`, e);
+            }
+            return { ...row, specs };
+        });
         res.json(products);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch products' });
+        console.error('Failed to fetch public products:', error);
+        res.status(500).json({ error: 'Failed to fetch products', details: (error as Error).message });
     }
 });
 
@@ -23,13 +29,19 @@ router.get('/', async (req, res) => {
 router.get('/admin', authenticate, authorize(['admin', 'streamer']), async (req, res) => {
     try {
         const rows = db.prepare('SELECT * FROM hardware ORDER BY sortOrder ASC').all();
-        const products = rows.map((row: any) => ({
-            ...row,
-            specs: row.specs ? JSON.parse(row.specs) : {}
-        }));
+        const products = rows.map((row: any) => {
+            let specs = {};
+            try {
+                specs = row.specs ? JSON.parse(row.specs) : {};
+            } catch (e) {
+                console.error(`Failed to parse specs for product ${row.id}:`, e);
+            }
+            return { ...row, specs };
+        });
         res.json(products);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch products' });
+        console.error('Failed to fetch admin products:', error);
+        res.status(500).json({ error: 'Failed to fetch products', details: (error as Error).message });
     }
 });
 
@@ -37,31 +49,40 @@ router.get('/admin', authenticate, authorize(['admin', 'streamer']), async (req,
 router.post('/', authenticate, authorize(['admin', 'streamer']), async (req, res) => {
     const p = req.body;
     try {
-        const id = p.id || p._id;
-        const specs = p.specs ? JSON.stringify(p.specs) : null;
+        let id = p.id || p._id;
+        const specs = p.specs ? JSON.stringify(p.specs) : '{}';
 
-        if (id) {
-            db.prepare(`
-                UPDATE hardware 
-                SET category = ?, brand = ?, model = ?, price = ?, status = ?, sortOrder = ?, specs = ?, imageUrl = ?
-                WHERE id = ?
-            `).run(p.category, p.brand, p.model, p.price, p.status, p.sortOrder, specs, p.imageUrl, id);
+        // If it's a temporary ID from frontend, treat it as new
+        const isNew = !id || id.startsWith('new-');
 
-            const updated = db.prepare('SELECT * FROM hardware WHERE id = ?').get(id);
-            res.json({ ...updated as any, specs: p.specs });
-        } else {
-            const newId = crypto.randomUUID();
-            db.prepare(`
-                INSERT INTO hardware (id, category, brand, model, price, status, sortOrder, specs, imageUrl)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `).run(newId, p.category, p.brand, p.model, p.price, p.status || 'active', p.sortOrder || 100, specs, p.imageUrl);
+        if (!isNew) {
+            // Check if it actually exists in DB
+            const existing = db.prepare('SELECT id FROM hardware WHERE id = ?').get(id);
+            if (existing) {
+                db.prepare(`
+                    UPDATE hardware 
+                    SET category = ?, brand = ?, model = ?, price = ?, status = ?, sortOrder = ?, specs = ?, image = ?, isDiscount = ?, isRecommended = ?, isNew = ?
+                    WHERE id = ?
+                `).run(p.category, p.brand, p.model, p.price, p.status, p.sortOrder, specs, p.image, p.isDiscount || 0, p.isRecommended || 0, p.isNew || 0, id);
 
-            const created = db.prepare('SELECT * FROM hardware WHERE id = ?').get(newId);
-            res.json({ ...created as any, specs: p.specs });
+                const updated = db.prepare('SELECT * FROM hardware WHERE id = ?').get(id);
+                return res.json({ ...updated as any, specs: p.specs });
+            }
         }
+
+        // Create new
+        const newId = crypto.randomUUID();
+        const now = new Date().toISOString();
+        db.prepare(`
+            INSERT INTO hardware (id, category, brand, model, price, status, sortOrder, specs, image, createdAt, isDiscount, isRecommended, isNew)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0)
+        `).run(newId, p.category, p.brand, p.model, p.price, p.status || 'active', p.sortOrder || 100, specs, p.image, now);
+
+        const created = db.prepare('SELECT * FROM hardware WHERE id = ?').get(newId);
+        res.json({ ...created as any, specs: p.specs });
     } catch (error) {
         console.error('Failed to save product:', error);
-        res.status(500).json({ error: 'Failed to save product' });
+        res.status(500).json({ error: 'Failed to save product', details: (error as Error).message });
     }
 });
 

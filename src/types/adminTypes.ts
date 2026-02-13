@@ -23,6 +23,7 @@ export interface HardwareItem {
 export interface ConfigItem {
     id: string;
     userId: string;
+    userName?: string; // Backend 对应 userName
     authorName: string;
     title: string;
     totalPrice: number;
@@ -40,6 +41,7 @@ export interface ConfigItem {
 export interface UserItem {
     id: string;
     username: string;
+    email?: string;           // Added email field
     password?: string; // Optional for compatibility/security masking
     role: 'admin' | 'streamer' | 'user' | 'sub_admin';
     status: 'active' | 'banned';
@@ -96,6 +98,7 @@ export interface ChatMessage {
     sessionId: string;
     sender: 'user' | 'agent' | 'system' | 'admin';
     content: string;
+    type?: 'text' | 'image' | 'product' | 'order'; // Added type
     timestamp: number;
     isRead: boolean;
     isAdmin?: boolean;
@@ -104,9 +107,10 @@ export interface ChatMessage {
 export interface ChatSession {
     id: string;
     userId: string; // 'guest-xxx' or 'user-id'
+    userParserId?: string; // Added userParserId
     username: string;
     userAvatar?: string;
-    lastMessage?: ChatMessage;
+    lastMessage?: ChatMessage | string; // Compatible with string or object
     unreadCount: number;
     createdAt: number;
     updatedAt: number;
@@ -120,8 +124,11 @@ export interface ChatSession {
 export interface ChatSettings {
     welcomeMessage: string;
     quickReplies: string[];
-    autoReplyEnabled?: boolean;
-    autoReplyContent?: string;
+    workingHours?: string;     // Added
+    autoReply?: string;        // Added (was autoReplyContent)
+    autoReplyEnabled?: boolean; // Keep for compatibility or remove
+    autoReplyContent?: string;  // Keep for compatibility or remove
+    enabled?: boolean;         // Added
 }
 
 export interface SMSSettings {
@@ -145,7 +152,7 @@ export interface CommentItem {
 
 // ========== 二手硬件模块 ==========
 
-export type UsedCondition = '全新' | '99新' | '95新' | '9成新' | '8成新' | '较旧';
+export type UsedCondition = 'Brand New' | 'Like New (99%)' | 'Slightly Used (95%)' | 'Used (90%)' | 'Used (80%)' | 'Old' | '全新' | '99新' | '95新' | '9成新' | '8成新' | '较旧' | '全新/仅拆封' | '99新 (准新)' | '95新 (轻微使用)' | '9成新 (明显使用)' | '8成新 (伊拉克)' | '功能机 (配件)';
 export type InspectionGrade = 'A' | 'B' | 'C' | 'D';
 
 export interface InspectionReport {
@@ -224,4 +231,32 @@ export interface RecycleRequest {
     status: 'pending' | 'completed';
     isRead: boolean;             // 是否已读
     createdAt: string;
+}
+
+export interface PopupSettings {
+    enabled: boolean;       // 是否开启
+    title: string;          // 弹窗标题
+    content: string;        // 弹窗正文内容
+    imageUrl?: string;      // (可选) Banner 图片链接
+    linkUrl?: string;       // (可选) 跳转链接
+    buttonText?: string;    // (可选) 按钮文字
+    frequency?: 'once' | 'daily' | 'always';  // 展示频率
+    startDate?: string;     // 定时开始日期 (YYYY-MM-DD)
+    endDate?: string;       // 定时结束日期 (YYYY-MM-DD)
+    theme?: 'default' | 'festive' | 'promo' | 'notice'; // 弹窗主题
+}
+
+export interface AnnouncementItem {
+    id: string;
+    content: string;
+    type: 'info' | 'warning' | 'promo';  // 通知/紧急/促销
+    linkUrl?: string;                     // 可选跳转链接
+    pinned?: boolean;                     // 是否置顶
+}
+
+export interface SystemAnnouncementSettings {
+    enabled: boolean;
+    items: AnnouncementItem[];            // 多条公告
+    // 兼容旧格式
+    content?: string;
 }

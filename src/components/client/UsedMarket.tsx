@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Search, Plus, Recycle, ShoppingBag, Eye, Shield, User, ExternalLink } from 'lucide-react';
 import { UsedItem, UserItem, UsedCategory } from '../../types/adminTypes';
 import { storage } from '../../services/storage';
+import Pagination from '../common/Pagination';
 
 interface UsedMarketProps {
     currentUser: UserItem | null;
@@ -32,24 +33,39 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
     const [selectedType, setSelectedType] = useState<'all' | 'official' | 'personal'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [items, setItems] = useState<UsedItem[]>([]);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(12);
+    const [loading, setLoading] = useState(false);
 
     // Load data
     const loadData = async () => {
+        setLoading(true);
         try {
-            const data = await storage.getUsedItems();
-            setItems(data);
+            const result = await storage.getUsedItems({
+                page,
+                pageSize,
+                type: selectedType,
+                category: selectedCategory
+                // search: not yet on backend, but could be added
+            });
+            setItems(result.items);
+            setTotal(result.total);
         } catch (error) {
             console.error('Failed to load used items:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Listen for storage updates
     useEffect(() => {
         loadData();
-        window.addEventListener('storage', loadData);
+    }, [page, selectedCategory, selectedType]);
+
+    // Listen for storage updates (could be optimized)
+    useEffect(() => {
         window.addEventListener('xiaoyu-storage-update', loadData);
         return () => {
-            window.removeEventListener('storage', loadData);
             window.removeEventListener('xiaoyu-storage-update', loadData);
         };
     }, []);
@@ -65,13 +81,7 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                 return false;
             }
 
-            // 类型筛选
-            if (selectedType !== 'all' && item.type !== selectedType) return false;
-
-            // 分类筛选
-            if (selectedCategory !== 'all' && item.category !== selectedCategory) return false;
-
-            // 搜索
+            // Client-side search for now
             if (searchQuery) {
                 const q = searchQuery.toLowerCase();
                 return item.brand.toLowerCase().includes(q) ||
@@ -80,7 +90,7 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
             }
             return true;
         });
-    }, [items, selectedCategory, selectedType, searchQuery]);
+    }, [items, searchQuery]);
 
     return (
         <div className="space-y-8 pb-20">
@@ -276,6 +286,21 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                     </button>
                 </div>
             )}
+
+            {loading && (
+                <div className="flex justify-center items-center py-10">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+                </div>
+            )}
+
+            <div className="flex justify-center mt-12 pb-20">
+                <Pagination
+                    currentPage={page}
+                    totalItems={total}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                />
+            </div>
         </div>
     );
 }

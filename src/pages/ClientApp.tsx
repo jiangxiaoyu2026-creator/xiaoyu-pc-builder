@@ -20,11 +20,18 @@ import SellModal from '../components/client/SellModal';
 import RecycleModal from '../components/client/RecycleModal';
 import UsedItemDetail from '../components/client/UsedItemDetail';
 import { UsedItem } from '../types/adminTypes';
+import DailyPopup from '../components/client/DailyPopup';
+import ArticleList from '../components/client/ArticleList';
 
 // ...
 
 export default function ClientApp() {
-    const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about'>('visual');
+    const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'headlines'>(() => {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        if (tab === 'headlines') return 'headlines';
+        return 'visual';
+    });
     const [buildList, setBuildList] = useState<BuildEntry[]>(() =>
         DEFAULT_BUILD_TEMPLATE.map(i => ({ ...i, item: null, customPrice: undefined, quantity: 1 }))
     );
@@ -46,28 +53,33 @@ export default function ClientApp() {
         return currentUser.role === 'streamer' || currentUser.role === 'admin';
     }, [currentUser]);
 
+    const [allProducts, setAllProducts] = useState<import('../types/clientTypes').HardwareItem[]>([]);
+
     const loadData = async () => {
         try {
-            const [user, s, configs, allUsers] = await Promise.all([
+            const [user, s, configs, allUsers, productsRes] = await Promise.all([
                 storage.getCurrentUser(),
                 storage.getPricingStrategy(),
                 storage.getConfigs(),
-                storage.getUsers()
+                storage.getUsers(),
+                storage.getProducts(1, 1000)
             ]);
 
             setCurrentUser(user);
             setSettings(s);
+            setAllProducts(productsRes.items);
 
-            const visibleConfigs = configs.filter(c => c.status === 'published');
+            const visibleConfigs = configs.items.filter((c: any) => c.status === 'published');
             // Map admin configs to client template
-            const mappedList: ConfigTemplate[] = visibleConfigs.map(c => {
+            const mappedList: ConfigTemplate[] = visibleConfigs.map((c: any) => {
+                const authorName = c.userName || c.authorName || '未知用户';
                 let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
-                if (c.authorName.includes('官方')) type = 'official';
-                if (c.authorName.includes('主播')) type = 'streamer';
+                if (authorName.includes('官方')) type = 'official';
+                if (authorName.includes('主播')) type = 'streamer';
                 if (c.tags.includes('求助')) type = 'help';
-
+                if (c.isRecommended) type = 'official'; // Override if recommended
                 // Check VIP status
-                const author = allUsers.find(u => u.id === c.userId);
+                const author = allUsers.find((u: any) => u.id === c.userId);
                 const isVip = author ? (
                     ['admin', 'streamer', 'sub_admin'].includes(author.role) ||
                     !!(author.vipExpireAt && author.vipExpireAt > Date.now())
@@ -77,10 +89,10 @@ export default function ClientApp() {
                     id: c.id,
                     userId: c.userId,
                     title: c.title,
-                    author: c.authorName,
+                    author: authorName,
                     avatarColor: 'bg-zinc-500',
                     type: type,
-                    tags: c.tags.map(t => ({ type: 'usage' as const, label: t })),
+                    tags: c.tags.map((t: string) => ({ type: 'usage' as const, label: t })),
                     price: c.totalPrice,
                     items: c.items,
                     likes: c.likes,
@@ -179,7 +191,15 @@ export default function ClientApp() {
         const standardPrice = hardwareTotal * (1 + settings.serviceFeeRate);
         const finalPrice = Math.floor(standardPrice * discountRate);
         const savedAmount = Math.floor(standardPrice - finalPrice);
-        return { hardwareTotal, standardPrice, finalPrice, savedAmount };
+        return {
+            hardwareTotal,
+            standardPrice,
+            finalPrice,
+            savedAmount,
+            discountTiers: settings.discountTiers,
+            discountRate,
+            onDiscountChange: setDiscountRate
+        };
     }, [buildList, discountRate, settings]);
 
     const healthCheck = useMemo(() => {
@@ -267,7 +287,7 @@ export default function ClientApp() {
 
             // Update admin config storage (count only)
             const allConfigs = await storage.getConfigs();
-            const adminConfig = allConfigs.find(c => c.id === id);
+            const adminConfig = allConfigs.items.find((c: any) => c.id === id);
             if (adminConfig) {
                 adminConfig.likes = isLiked ? adminConfig.likes + 1 : adminConfig.likes - 1;
                 await storage.saveConfig(adminConfig);
@@ -277,13 +297,13 @@ export default function ClientApp() {
 
     const handleFork = async (config: ConfigTemplate) => {
         // ... implementation of handleFork
-        const allProducts = await storage.getProducts();
+        const products = await storage.getProducts();
         const newList = DEFAULT_BUILD_TEMPLATE.map(entry => {
             // @ts-ignore
             const itemId = config.items?.[entry.category] || config.items?.[entry.id]; // Try both
             if (itemId) {
                 // Find in storage
-                const adminItem = allProducts.find(h => h.id === itemId);
+                const adminItem = products.items.find((h: any) => h.id === itemId);
                 let clientItem = null;
                 if (adminItem) {
                     clientItem = {
@@ -338,7 +358,7 @@ export default function ClientApp() {
             const adminConfig: any = {
                 id: newTemplate.id,
                 userId: currentUser?.id || 'guest',
-                authorName: newTemplate.author,
+                userName: newTemplate.author,
                 title: newTemplate.title,
                 totalPrice: newTemplate.price,
                 items: newTemplate.items,
@@ -358,20 +378,21 @@ export default function ClientApp() {
             // But to be sure, let's manually fetch fresh data like before to update the list immediately
 
             const freshConfigs = await storage.getConfigs();
-            const visibleConfigs = freshConfigs.filter(c => c.status === 'published');
-            const newConfigList = visibleConfigs.map(c => {
+            const visibleConfigs = freshConfigs.items.filter((c: any) => c.status === 'published');
+            const newConfigList = visibleConfigs.map((c: any) => {
+                const authorName = c.userName || c.authorName || '未知用户';
                 let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
-                if (c.authorName.includes('官方')) type = 'official';
-                if (c.authorName.includes('主播')) type = 'streamer';
+                if (authorName.includes('官方')) type = 'official';
+                if (authorName.includes('主播')) type = 'streamer';
                 if (c.tags.includes('求助')) type = 'help';
 
                 return {
                     id: c.id,
                     title: c.title,
-                    author: c.authorName,
+                    author: authorName,
                     avatarColor: 'bg-zinc-500',
                     type: type,
-                    tags: c.tags.map(t => ({ type: 'usage' as const, label: t })),
+                    tags: c.tags.map((t: string) => ({ type: 'usage' as const, label: t })),
                     price: c.totalPrice,
                     items: c.items,
                     likes: c.likes,
@@ -383,7 +404,6 @@ export default function ClientApp() {
                     description: c.description
                 };
             });
-
             setConfigList(newConfigList);
             setShowShareModal(false);
             // showToast removed to avoid duplicate/conflicting messages
@@ -430,18 +450,13 @@ export default function ClientApp() {
                         <div className="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200">
                             <Monitor className="text-white" size={20} />
                         </div>
-                        <span className="text-xl font-extrabold text-slate-900 tracking-tight">小鱼装机 <span className="text-indigo-600 text-xs bg-indigo-50 px-1.5 py-0.5 rounded ml-1 align-middle border border-indigo-100">PRO</span></span>
+                        <span className="text-xl font-extrabold text-slate-900 tracking-tight">小鱼装机平台</span>
                     </div>
                     {/* Navigation Tabs - Hidden on mobile, visible on tablet/desktop */}
                     <div className="hidden md:flex bg-slate-50/90 p-2 rounded-2xl border border-slate-200/80 backdrop-blur-xl shadow-inner overflow-x-auto no-scrollbar max-w-none gap-1">
                         <TabButton
                             active={viewMode === 'streamer'}
                             onClick={() => {
-                                const user = storage.getCurrentUser();
-                                if (!user || (user.role !== 'streamer' && user.role !== 'admin')) {
-                                    alert('您当前无权访问主播工作台，请联系管理员开通主播权限');
-                                    return;
-                                }
                                 setViewMode('streamer');
                             }}
                             icon={<Zap size={16} />}
@@ -449,6 +464,7 @@ export default function ClientApp() {
                         />
                         <TabButton active={viewMode === 'visual'} onClick={() => setViewMode('visual')} icon={<LayoutGrid size={16} />} label="AI装机台" />
                         <TabButton active={viewMode === 'square'} onClick={() => setViewMode('square')} icon={<Share2 size={16} />} label="配置广场" />
+                        <TabButton active={viewMode === 'headlines'} onClick={() => setViewMode('headlines')} icon={<BookOpen size={16} />} label="装机头条" />
                         <TabButton active={viewMode === 'used'} onClick={() => setViewMode('used')} icon={<ShoppingBag size={16} />} label="二手闲置" />
                         <TabButton active={viewMode === 'about'} onClick={() => setViewMode('about')} icon={<Info size={16} />} label="关于我们" />
                     </div>
@@ -613,13 +629,12 @@ export default function ClientApp() {
                         handleShareTrigger={handleShareTrigger}
                         handleSave={handleSave}
                         clearBuild={() => {
-                            if (window.confirm('确定要清空当前配置吗？')) {
-                                setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
-                            }
+                            setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
                         }}
                         hasPermission={hasStreamerPermission}
                         onApply={() => window.open('https://chat.xiaoyu.com', '_blank')}
                         onAiCheck={handleAiPermission}
+                        onOpenLibrary={() => setShowLibraryModal(true)}
                     />
                 )}
 
@@ -639,25 +654,17 @@ export default function ClientApp() {
                         onAiModalClose={() => setTriggerAiModal(false)}
                         onSave={handleSave}
                         onShare={handleShareTrigger}
-                        onExport={() => alert('导出功能开发中')}
                         onReset={() => {
-                            if (window.confirm('确定要清空当前配置吗？')) {
-                                setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
-                            }
+                            setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
                         }}
                     />
                 )}
 
                 {viewMode === 'square' && (
                     <ConfigSquare
-                        configList={configList}
                         onLoadConfig={handleFork}
                         showToast={showToast}
-                        onToggleLike={(id) => {
-                            setConfigList(prev => prev.map(c =>
-                                c.id === id ? { ...c, isLiked: !c.isLiked, likes: c.isLiked ? c.likes - 1 : c.likes + 1 } : c
-                            ));
-                        }}
+                        onToggleLike={handleToggleLike}
                         currentUser={currentUser}
                     />
                 )}
@@ -674,6 +681,7 @@ export default function ClientApp() {
 
 
 
+                {viewMode === 'headlines' && <ArticleList />}
                 {viewMode === 'about' && <AboutUs />}
             </main>
 
@@ -748,6 +756,7 @@ export default function ClientApp() {
             {showLibraryModal && (
                 <ConfigLibraryModal
                     configList={configList}
+                    products={allProducts}
                     onClose={() => setShowLibraryModal(false)}
                     onSelectConfig={handleFork}
                 />
@@ -828,7 +837,7 @@ export default function ClientApp() {
                                 <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="appearance-none bg-slate-100 border border-slate-200 hover:border-indigo-300 text-slate-700 text-[10px] font-medium py-1 pl-2 pr-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer">
                                     {settings.discountTiers.map(opt => (
                                         <option key={opt.id} value={opt.multiplier}>
-                                            {opt.name} ({Math.round(opt.multiplier * 100)}%)
+                                            {opt.name.replace(/\s*\(.*?\)/g, '')}
                                         </option>
                                     ))}
                                 </select>
@@ -912,6 +921,7 @@ export default function ClientApp() {
                 initialMessage={chatInitialMessage}
                 onInitialMessageSent={() => setChatInitialMessage('')}
             />
+            <DailyPopup />
         </div>
     );
 }

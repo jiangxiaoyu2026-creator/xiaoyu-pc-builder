@@ -8,7 +8,19 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
     const [isThinking, setIsThinking] = useState(false);
     const [thinkSteps, setThinkSteps] = useState<AIBuildLog[]>([]);
     const [metrics, setMetrics] = useState({ load: 0, match: 0, latency: 0 });
+    const [personaLabel, setPersonaLabel] = useState('');
+    const [strategyLabel, setStrategyLabel] = useState('');
     const logEndRef = useRef<HTMLDivElement>(null);
+
+    // 加载 AI 设置中的性格和策略标签
+    useEffect(() => {
+        storage.getAISettings().then(s => {
+            const p = s.persona || 'toxic';
+            setPersonaLabel(p === 'toxic' ? '毒舌 (讽刺)' : p === 'professional' ? '专业 (PRO)' : p === 'enthusiastic' ? '热情' : '平衡');
+            const st = s.strategy || 'balanced';
+            setStrategyLabel(st === 'performance' ? '性能优先' : st === 'aesthetic' ? '颜值优先' : st === 'budget' ? '预算优先' : '均衡策略');
+        });
+    }, []);
 
     // Dynamic metrics simulation
     useEffect(() => {
@@ -28,11 +40,11 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
     }, [thinkSteps]);
 
     const SUGGESTIONS = [
-        "3000元办公电脑",
-        "5000元性价比游戏主机",
-        "8000元带显示器的直播电脑",
-        "15000的极致游戏电脑",
-        "20000元的高端高颜值主机"
+        "3000元 办公主机",
+        "5000元 性价比游戏主机",
+        "8000元 直播主机",
+        "15000元 极致游戏主机",
+        "20000元 高端海景房主机"
     ];
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +76,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
             onSubmit(prompt, result);
         } catch (error) {
             console.error(error);
-            setThinkSteps(prev => [...prev, { type: 'analysis', step: 'ERROR', detail: '[CRITICAL] 系统内核溢出，尝试强制恢复路径失败。' }]);
+            setThinkSteps(prev => [...prev, { type: 'analysis', step: '错误', detail: '[严重错误] 神经核心溢出，强制恢复失败。' }]);
         }
     };
 
@@ -101,12 +113,12 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                         <div>
                             <div className="flex items-center gap-3">
                                 <h2 className="text-2xl font-bold text-white tracking-tight">
-                                    {isThinking ? 'AI 神经网络演算中' : '小鱼 AI 核心顾问'}
+                                    {isThinking ? '神经网络计算中' : '小鱼 AI 顾问'}
                                 </h2>
-                                <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono tracking-wider animate-pulse">SYSTEM ONLINE</span>
+                                <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono tracking-wider animate-pulse">系统在线</span>
                             </div>
                             <p className="text-slate-400 text-sm mt-1 font-medium">
-                                {isThinking ? '正在进行全特征向量检索与兼容性拓扑计算...' : '基于 LLM 深度学习模型的硬件专家。'}
+                                {isThinking ? '正在执行向量检索与兼容性拓扑计算...' : '基于大语言模型的硬件专家'}
                             </p>
                         </div>
                     </div>
@@ -124,7 +136,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                 <div className="bg-slate-950/50 rounded-xl p-3 border border-white/5 flex flex-col gap-1 items-center justify-center group/metric transition-all hover:bg-slate-950/80">
                                     <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
                                         <Cpu size={12} className="text-indigo-500" />
-                                        Neural Load
+                                        神经负载
                                     </div>
                                     <div className="text-xl font-mono text-indigo-400 font-bold tracking-tighter">
                                         {metrics.load}%
@@ -136,7 +148,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                 <div className="bg-slate-950/50 rounded-xl p-3 border border-white/5 flex flex-col gap-1 items-center justify-center group/metric transition-all hover:bg-slate-950/80">
                                     <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
                                         <Activity size={12} className="text-emerald-500" />
-                                        Match Rate
+                                        匹配率
                                     </div>
                                     <div className="text-xl font-mono text-emerald-400 font-bold tracking-tighter">
                                         {metrics.match}%
@@ -148,7 +160,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                 <div className="bg-slate-950/50 rounded-xl p-3 border border-white/5 flex flex-col gap-1 items-center justify-center group/metric transition-all hover:bg-slate-950/80">
                                     <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
                                         <Zap size={12} className="text-amber-500" />
-                                        Latency
+                                        延迟
                                     </div>
                                     <div className="text-xl font-mono text-amber-400 font-bold tracking-tighter">
                                         {metrics.latency}ms
@@ -168,35 +180,17 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                 {/* Active Stats Row */}
                                 <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/5 relative z-10 shrink-0">
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Cognitive Mode</span>
+                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">认知模式</span>
                                         <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs w-fit flex items-center gap-1.5 shadow-[0_0_10px_rgba(99,102,241,0.2)]">
                                             <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
-                                            {(() => {
-                                                const [persona, setPersona] = useState<string>('');
-                                                const [, setStrategy] = useState<string>('');
-
-                                                useEffect(() => {
-                                                    storage.getAISettings().then(s => {
-                                                        setPersona(s.persona || 'toxic');
-                                                        setStrategy(s.strategy || 'balanced');
-                                                    });
-                                                }, []);
-
-                                                return persona === 'toxic' ? '毒舌吐槽 (Toxic)' : persona === 'professional' ? '专业稳重 (PRO)' : persona === 'enthusiastic' ? '热心小姐姐' : '均衡模式';
-                                            })()}
+                                            {personaLabel || '加载中...'}
                                         </span>
                                     </div>
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Heuristic Strategy</span>
+                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">启发式策略</span>
                                         <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs w-fit flex items-center gap-1.5 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
                                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                            {(() => {
-                                                const [strategy, setStrategy] = useState<string>('');
-                                                useEffect(() => {
-                                                    storage.getAISettings().then(s => setStrategy(s.strategy || 'balanced'));
-                                                }, []);
-                                                return strategy === 'performance' ? '性能至上' : strategy === 'aesthetic' ? '颜值巅峰' : strategy === 'budget' ? '极致性价比' : '均衡之道';
-                                            })()}
+                                            {strategyLabel || '加载中...'}
                                         </span>
                                     </div>
                                 </div>
@@ -238,7 +232,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                     {isThinking && (
                                         <div className="flex items-center gap-2 pl-14 text-indigo-500/60 animate-pulse">
                                             <RefreshCw size={12} className="animate-spin" />
-                                            <span className="text-[10px] font-bold tracking-widest uppercase">Processing Buffer...</span>
+                                            <span className="text-[10px] font-bold tracking-widest uppercase">处理缓冲区...</span>
                                         </div>
                                     )}
                                 </div>
@@ -251,19 +245,19 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                     value={prompt}
                                     onChange={e => setPrompt(e.target.value)}
                                     className="w-full h-40 pl-6 pr-6 py-5 bg-slate-800/50 border border-slate-700 rounded-2xl font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all resize-none text-lg placeholder-slate-500 shadow-inner"
-                                    placeholder="描述您的需求，例如：&#10;“我想配一台白色海景房主机，主要玩黑神话悟空，预算1万左右...”"
+                                    placeholder="请描述您的装机需求，例如：&#10;“我想配一台白色海景房主机，主要玩3A大作，预算1万元左右...”"
                                     autoFocus
                                 />
                                 <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-900/80 px-2 py-1 rounded border border-white/5 pointer-events-none shadow-xl">
                                     <Sparkles size={10} className="text-indigo-500 animate-pulse" />
-                                    NEURAL CORE V4
+                                    神经核心 V4
                                 </div>
                             </div>
 
                             <div>
                                 <div className="flex items-center gap-2 mb-3">
                                     <Database size={14} className="text-indigo-400" />
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">启发式特征推荐</span>
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">启发式建议</span>
                                 </div>
                                 <div className="flex flex-wrap gap-2.5">
                                     {SUGGESTIONS.map((s, i) => (
@@ -287,7 +281,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                             >
                                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 skew-y-12"></div>
                                 <Activity className="animate-pulse" />
-                                <span className="relative z-10 tracking-widest uppercase text-sm">Initialize Neural Construction</span>
+                                <span className="relative z-10 tracking-widest uppercase text-sm">启动智能构建</span>
                             </button>
                         </form>
                     )}

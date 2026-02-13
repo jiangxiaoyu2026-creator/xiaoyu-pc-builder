@@ -1,5 +1,5 @@
 import os
-from sqlmodel import SQLModel, create_engine, Session
+from sqlmodel import SQLModel, create_engine, Session, select
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,6 +24,30 @@ engine = create_engine(DATABASE_URL, echo=True, connect_args={"check_same_thread
 
 def init_db():
     SQLModel.metadata.create_all(engine)
+    _create_default_admin()
+
+def _create_default_admin():
+    """创建默认管理员账户"""
+    from .models import User
+    from .utils.auth import get_password_hash
+
+    with Session(engine) as session:
+        # 检查是否已存在管理员
+        existing = session.exec(select(User).where(User.username == "admin")).first()
+        if existing:
+            return
+
+        # 创建默认管理员
+        admin = User(
+            id="admin-default-001",
+            username="admin",
+            password=get_password_hash("admin123"),
+            role="admin",
+            status="active"
+        )
+        session.add(admin)
+        session.commit()
+        print("Default admin created: admin / admin123")
 
 def get_session():
     with Session(engine) as session:

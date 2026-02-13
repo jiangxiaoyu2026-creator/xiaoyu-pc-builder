@@ -10,24 +10,32 @@ const JWT_SECRET = process.env.JWT_SECRET || 'xiaoyu_pc_builder_secret_key_2026'
 
 // Register
 router.post('/register', async (req: Request, res: Response) => {
-    const { username, password } = req.body;
+    const { username, password, phone } = req.body;
     try {
-        const existing = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
-        if (existing) return res.status(400).json({ error: 'Username already exists' });
+        const existing = db.prepare('SELECT * FROM users WHERE username = ? OR (phone IS NOT NULL AND phone = ?)').get(username, phone);
+        if (existing) return res.status(400).json({ error: 'Username or phone already exists' });
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const userId = crypto.randomUUID();
+        const now = new Date().toISOString();
 
         db.prepare(`
-            INSERT INTO users (id, username, password, role)
-            VALUES (?, ?, ?, ?)
-        `).run(userId, username, hashedPassword, 'user');
+            INSERT INTO users (id, username, password, phone, role, status, inviteCount, inviteVipDays, createdAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(userId, username, hashedPassword, phone || null, 'user', 'active', 0, 0, now);
+
+        // Log daily stat
+        const today = new Date().toISOString().split('T')[0];
+        db.prepare(`
+            INSERT INTO daily_stats (date, newUsers) VALUES (?, 1)
+            ON CONFLICT(date) DO UPDATE SET newUsers = daily_stats.newUsers + 1
+        `).run(today);
 
         const token = jwt.sign({ id: userId, role: 'user' }, JWT_SECRET, { expiresIn: '7d' });
-        res.json({ token, user: { id: userId, username, role: 'user' } });
+        res.json({ token, user: { id: userId, username, phone, role: 'user' } });
     } catch (error) {
         console.error('Registration failed:', error);
-        res.status(500).json({ error: 'Registration failed' });
+        res.status(500).json({ error: 'Registration failed', details: (error as Error).message });
     }
 });
 
@@ -48,14 +56,14 @@ router.post('/login', async (req: Request, res: Response) => {
         res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
     } catch (error) {
         console.error('Login failed:', error);
-        res.status(500).json({ error: 'Login failed' });
+        res.status(500).json({ error: 'Login failed', details: (error as Error).message });
     }
 });
 
 // Get all users (Admin only)
 router.get('/users', authenticate, authorize(['admin']), async (req: Request, res: Response) => {
     try {
-        const users = db.prepare('SELECT id, username, role, status, lastLogin, vipExpireAt, inviteCode, invitedBy, inviteCount, inviteVipDays FROM users').all();
+        const users = db.prepare('SELECT id, username, phone, role, status, lastLogin, vipExpireAt, inviteCode, invitedBy, inviteCount, inviteVipDays FROM users').all();
         res.json(users);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch users' });
@@ -80,6 +88,7 @@ router.post('/user', authenticate, async (req: Request, res: Response) => {
             const params = [];
 
             if (userData.username) { fields.push('username = ?'); params.push(userData.username); }
+            if (userData.phone) { fields.push('phone = ?'); params.push(userData.phone); }
             if (userData.password) {
                 const hashedPassword = await bcrypt.hash(userData.password, 10);
                 fields.push('password = ?');
@@ -94,7 +103,7 @@ router.post('/user', authenticate, async (req: Request, res: Response) => {
             params.push(id);
             db.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`).run(...params);
 
-            const updatedUser = db.prepare('SELECT id, username, role, status FROM users WHERE id = ?').get(id);
+            const updatedUser = db.prepare('SELECT id, username, phone, role, status FROM users WHERE id = ?').get(id);
             res.json(updatedUser);
         } else {
             // Create user (Admin only)
@@ -102,18 +111,19 @@ router.post('/user', authenticate, async (req: Request, res: Response) => {
 
             const hashedPassword = await bcrypt.hash(userData.password || '123456', 10);
             const newId = crypto.randomUUID();
+            const now = new Date().toISOString();
 
             db.prepare(`
-                INSERT INTO users (id, username, password, role, status)
-                VALUES (?, ?, ?, ?, ?)
-            `).run(newId, userData.username, hashedPassword, userData.role || 'user', userData.status || 'active');
+                INSERT INTO users (id, username, password, phone, role, status, inviteCount, inviteVipDays, createdAt)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).run(newId, userData.username, hashedPassword, userData.phone || null, userData.role || 'user', userData.status || 'active', 0, 0, now);
 
-            const newUser = db.prepare('SELECT id, username, role, status FROM users WHERE id = ?').get(newId);
+            const newUser = db.prepare('SELECT id, username, phone, role, status FROM users WHERE id = ?').get(newId);
             res.json(newUser);
         }
     } catch (error) {
         console.error('Failed to save user:', error);
-        res.status(500).json({ error: 'Failed to save user' });
+        res.status(500).json({ error: 'Failed to save user', details: (error as Error).message });
     }
 });
 

@@ -2,10 +2,17 @@ import { useState, useMemo, useEffect } from 'react';
 import { Search, Trash2, MessageSquare } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { CommentItem } from '../../types/adminTypes';
+import ConfirmModal from '../common/ConfirmModal';
 
 export default function CommentManager() {
     const [comments, setComments] = useState<CommentItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Confirm Modal State
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
 
     const refreshComments = async () => {
         const all = await storage.getComments();
@@ -16,10 +23,24 @@ export default function CommentManager() {
         refreshComments();
     }, []);
 
-    const handleDelete = async (id: string) => {
-        if (confirm('确定要删除这条评论吗？此操作无法撤销。')) {
-            await storage.deleteComment(id);
+    const confirmDelete = (id: string) => {
+        setDeleteId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!deleteId) return;
+        setIsDeleting(true);
+        try {
+            await storage.deleteComment(deleteId);
             await refreshComments();
+            setIsDeleteModalOpen(false);
+            setDeleteId(null);
+        } catch (error) {
+            console.error('Failed to delete comment:', error);
+            alert('删除失败');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -110,7 +131,7 @@ export default function CommentManager() {
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <button
-                                            onClick={() => handleDelete(comment.id)}
+                                            onClick={() => confirmDelete(comment.id)}
                                             className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                                             title="删除评论"
                                         >
@@ -133,6 +154,17 @@ export default function CommentManager() {
                     </table>
                 </div>
             </div>
+            {/* Confirm Delete Modal */}
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="确认删除评论"
+                description="确定要删除这条评论吗？此操作无法撤销。"
+                confirmText="确认删除"
+                isDangerous={true}
+                isLoading={isDeleting}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDelete}
+            />
         </div>
     );
 }

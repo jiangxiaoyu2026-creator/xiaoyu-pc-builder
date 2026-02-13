@@ -1,21 +1,99 @@
-import { useState, useMemo } from 'react';
-import { Search, Sparkles, Cpu, Monitor, Crown } from 'lucide-react';
-import { ConfigTemplate } from '../../types/clientTypes';
+import { useState, useMemo, useEffect } from 'react';
+import { Search, Sparkles, Cpu, Zap, Crown } from 'lucide-react';
+import { ConfigTemplate, HardwareItem } from '../../types/clientTypes';
 import { TAGS_APPEARANCE, TAGS_USAGE, HARDWARE_DB } from '../../data/clientData';
 import { ConfigDetailModal } from './ConfigDetailModal';
+import { storage } from '../../services/storage';
+import Pagination from '../common/Pagination';
 
 import { UserItem } from '../../types/adminTypes';
 
-function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, currentUser }: { configList: ConfigTemplate[], onLoadConfig: (cfg: ConfigTemplate) => void, showToast: (msg: string) => void, onToggleLike: (id: string) => void, currentUser: UserItem | null }) {
+function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { onLoadConfig: (cfg: ConfigTemplate) => void, showToast: (msg: string) => void, onToggleLike: (id: string) => void, currentUser: UserItem | null }) {
+    const [configs, setConfigs] = useState<ConfigTemplate[]>([]);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(12); // Square usually shows more per page
+    const [loading, setLoading] = useState(false);
+    const [allProducts, setAllProducts] = useState<HardwareItem[]>([]);
+
     const [selectedTag, setSelectedTag] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'recommend' | 'hot' | 'new'>('recommend');
     const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null);
 
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            // Need products for spec mapping (though backend join would be better)
+            // For now, fetch a large enough set of products or just what's needed
+            const [cRes, pRes] = await Promise.all([
+                storage.getConfigs({
+                    page,
+                    pageSize,
+                    tag: selectedTag,
+                    search: searchQuery,
+                    sortBy
+                }),
+                storage.getAdminProducts(1, 1000) // Products still needed for spec names
+            ]);
+
+            setTotal(cRes.total);
+            setAllProducts(pRes.items);
+
+            // Map to client template
+            const mappedList: ConfigTemplate[] = cRes.items.map(c => {
+                const authorName = c.userName || c.authorName || 'Unknown User';
+                let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
+                if (authorName.includes('官方')) type = 'official';
+                if (authorName.includes('主播')) type = 'streamer';
+                if (c.tags.includes('求助')) type = 'help';
+                if (c.isRecommended) type = 'official';
+
+                return {
+                    id: c.id,
+                    userId: c.userId,
+                    title: c.title,
+                    author: authorName,
+                    avatarColor: 'bg-zinc-500',
+                    type: type,
+                    tags: (c.tags || []).map((t: string) => ({ type: 'usage' as const, label: t })),
+                    price: c.totalPrice,
+                    items: c.items || {},
+                    likes: c.likes || 0,
+                    views: c.views || 0,
+                    comments: 0,
+                    date: c.createdAt,
+                    isLiked: false,
+                    serialNumber: c.serialNumber,
+                    description: c.description
+                    // isVip: handled if needed
+                };
+            });
+            setConfigs(mappedList);
+        } catch (error) {
+            console.error('Failed to load configs:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadData();
+    }, [page, sortBy, selectedTag]);
+
+    // Debounced search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (page === 1) loadData();
+            else setPage(1);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
     // Derive the active config from the fresh list to ensure updates (like likes) are reflected immediately
     const activeConfig = useMemo(() => {
-        return configList.find(c => c.id === selectedConfigId) || null;
-    }, [configList, selectedConfigId]);
+        return configs.find(c => c.id === selectedConfigId) || null;
+    }, [configs, selectedConfigId]);
 
     const TAG_OPTIONS = [
         { id: 'all', label: '全部' },
@@ -23,49 +101,31 @@ function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, curre
         ...TAGS_USAGE.map(t => ({ id: t, label: t }))
     ];
 
-    const filteredConfigs = useMemo(() => {
-        return configList.filter(cfg => {
-            if (searchQuery) {
-                const query = searchQuery.toLowerCase();
-                if (!cfg.title.toLowerCase().includes(query) && !cfg.author.toLowerCase().includes(query)) return false;
-            }
-            if (selectedTag !== 'all' && !cfg.tags.some(t => t.label === selectedTag)) return false;
-            return true;
-        });
-    }, [searchQuery, selectedTag, configList]);
-
-    const sortedConfigs = useMemo(() => {
-        return [...filteredConfigs].sort((a, b) => {
-            if (sortBy === 'recommend') {
-                const typePriority: Record<string, number> = { 'official': 4, 'streamer': 3, 'user': 2, 'help': 1 };
-                const pA = typePriority[a.type] || 0;
-                const pB = typePriority[b.type] || 0;
-
-                if (pA !== pB) return pB - pA; // Higher priority first
-                return new Date(b.date).getTime() - new Date(a.date).getTime(); // Newer first
-            } else if (sortBy === 'hot') {
-                const scoreA = a.views + (a.likes * 2) + (a.comments * 5);
-                const scoreB = b.views + (b.likes * 2) + (b.comments * 5);
-                return scoreB - scoreA;
-            } else {
-                return new Date(b.date).getTime() - new Date(a.date).getTime();
-            }
-        });
-    }, [filteredConfigs, sortBy]);
+    const sortedConfigs = configs; // Now sorted on server
 
     const getCoreSpecs = (cfg: ConfigTemplate) => {
-        const cpu = HARDWARE_DB.find(i => i.id === cfg.items.cpu)?.model || 'CPU';
-        const gpu = HARDWARE_DB.find(i => i.id === cfg.items.gpu)?.model || '集显';
+        const getModel = (id: string | undefined, defaultText: string) => {
+            if (!id) return defaultText;
+            const item = allProducts.find(i => i.id === id) || HARDWARE_DB.find(i => i.id === id);
+            return item ? item.model : defaultText;
+        };
+
+        const cpu = getModel(cfg.items.cpu, 'CPU');
+        const gpu = getModel(cfg.items.gpu, '集显');
+        const monitor = getModel(cfg.items.monitor, '自备显示器');
+
         // Simplify names
         const cpuShort = cpu.replace(/Intel Core |AMD Ryzen /i, '').replace(/ Processor/i, '');
         const gpuShort = gpu.replace(/NVIDIA GeForce |AMD Radeon /i, '').replace(/ Graphics/i, '');
-        return { cpu: cpuShort, gpu: gpuShort };
+        const monitorShort = monitor;
+
+        return { cpu: cpuShort, gpu: gpuShort, monitor: monitorShort };
     };
 
     const getTypeTheme = (type: ConfigTemplate['type']) => {
         switch (type) {
-            case 'official': return { style: 'bg-black text-white border-black', label: '官方严选' };
-            case 'streamer': return { style: 'bg-indigo-600 text-white border-indigo-600', label: '主播推荐' };
+            case 'official': return { style: 'bg-black text-white border-black', label: '官方推荐' };
+            case 'streamer': return { style: 'bg-indigo-600 text-white border-indigo-600', label: '主播力荐' };
             case 'user': return { style: 'bg-white text-slate-600 border-slate-200', label: '用户分享' };
             case 'help': return { style: 'bg-orange-500 text-white border-orange-500', label: '求助' };
             default: return { style: 'bg-slate-100 text-slate-400 border-slate-200', label: '未知' };
@@ -85,13 +145,13 @@ function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, curre
                     <div className="space-y-4">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold tracking-wide uppercase border border-indigo-100">
                             <Sparkles size={12} />
-                            <span>Inspiration Gallery</span>
+                            <span>装机灵感</span>
                         </div>
                         <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
                             配置广场
                         </h2>
                         <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium">
-                            “装机不是零件的堆砌，而是对生活品质的追求。”
+                            "装机不仅是堆砌硬件，更是对品质生活的追求。"
                         </p>
                     </div>
 
@@ -104,7 +164,7 @@ function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, curre
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="搜索配置单、CPU、显卡..."
+                            placeholder="搜索配置、CPU、显卡..."
                             className="block w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-full text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_25px_rgba(0,0,0,0.08)] text-base"
                         />
                         <div className="absolute inset-y-2 right-2 flex items-center">
@@ -129,9 +189,9 @@ function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, curre
                     {/* Sort Options */}
                     <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto">
                         {[
-                            { id: 'recommend', label: '综合推荐' },
-                            { id: 'new', label: '最新发布' },
-                            { id: 'hot', label: '热门榜单' }
+                            { id: 'recommend', label: '推荐' },
+                            { id: 'new', label: '最新' },
+                            { id: 'hot', label: '热门' }
                         ].map(opt => (
                             <button
                                 key={opt.id}
@@ -161,7 +221,7 @@ function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, curre
                                         : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent hover:border-slate-200'
                                         }`}
                                 >
-                                    {opt.label}
+                                    {opt.id === 'all' ? '全部' : opt.label}
                                 </button>
                             );
                         })}
@@ -175,11 +235,22 @@ function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, curre
                     const specs = getCoreSpecs(cfg);
                     const theme = getTypeTheme(cfg.type);
 
+                    // Recalculate price for accuracy (sum of parts + 6% fee)
+                    let base = 0;
+                    Object.values(cfg.items).forEach(itemId => {
+                        if (!itemId) return;
+                        const item = allProducts.find(p => p.id === itemId) || HARDWARE_DB.find(p => p.id === itemId);
+                        if (item) base += (item as any).price || 0;
+                    });
+                    // Wait, let's stick to 1.06 as in the previous file content I saw.
+                    // Actually, I'll use 1.06 to be consistent with the other parts of the app.
+                    const finalPrice = Math.floor(base * 1.06);
+
                     return (
                         <div
                             key={cfg.id}
                             onClick={() => setSelectedConfigId(cfg.id)}
-                            className="group relative bg-white rounded-2xl border border-slate-200 hover:border-slate-300 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 cursor-pointer overflow-hidden flex flex-col ripple h-[340px]"
+                            className="group relative bg-white rounded-2xl border border-slate-200 hover:border-slate-300 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 cursor-pointer overflow-hidden flex flex-col ripple h-[320px]"
                         >
                             {/* Corner Badge (Top Left) */}
                             <div className={`absolute top-4 left-4 z-10 px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide uppercase border shadow-sm ${theme.style}`}>
@@ -215,16 +286,16 @@ function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, curre
                                         <Cpu size={16} />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-[10px] uppercase text-slate-400 font-bold">Processor</div>
+                                        <div className="text-[10px] uppercase text-slate-400 font-bold">处理器</div>
                                         <div className="text-xs font-bold text-slate-700 truncate" title={specs.cpu}>{specs.cpu}</div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 group-hover:bg-slate-50/80 transition-colors border border-slate-100/50">
                                     <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-slate-400 shadow-sm border border-slate-100">
-                                        <Monitor size={16} />
+                                        <Zap size={16} />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-[10px] uppercase text-slate-400 font-bold">Graphics</div>
+                                        <div className="text-[10px] uppercase text-slate-400 font-bold">显卡</div>
                                         <div className="text-xs font-bold text-slate-700 truncate" title={specs.gpu}>{specs.gpu}</div>
                                     </div>
                                 </div>
@@ -237,16 +308,37 @@ function ConfigSquare({ configList, onLoadConfig, showToast, onToggleLike, curre
                                         {cfg.author[0].toUpperCase()}
                                     </div>
                                     <div className="text-xs text-slate-500 font-medium">
-                                        {cfg.likes} <span className="text-[10px]">Likes</span>
+                                        {cfg.likes} <span className="text-[10px]">赞</span>
                                     </div>
                                 </div>
                                 <div className="text-lg font-mono font-bold text-slate-900 tracking-tight">
-                                    ¥{cfg.price.toLocaleString()}
+                                    ¥{finalPrice.toLocaleString()}
                                 </div>
                             </div>
                         </div>
                     );
                 })}
+            </div>
+
+            {loading && (
+                <div className="flex justify-center items-center py-20">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                </div>
+            )}
+
+            {!loading && sortedConfigs.length === 0 && (
+                <div className="text-center py-20">
+                    <div className="text-slate-400 font-bold">未找到相关配置</div>
+                </div>
+            )}
+
+            <div className="max-w-7xl mx-auto px-4 mt-12 mb-20 flex justify-center">
+                <Pagination
+                    currentPage={page}
+                    totalItems={total}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                />
             </div>
 
             {activeConfig && (

@@ -7,8 +7,8 @@ export function NavButton({ active, onClick, icon, label }: { active: boolean, o
         <button
             onClick={onClick}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50 font-bold'
-                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white font-medium'
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50 font-bold'
+                : 'text-zinc-400 hover:bg-zinc-800 hover:text-white font-medium'
                 }`}
         >
             {icon}
@@ -23,6 +23,8 @@ export function StatCard({ title, value, unit, desc, icon, color }: any) {
         blue: 'bg-blue-50 text-blue-600',
         emerald: 'bg-emerald-50 text-emerald-600',
         amber: 'bg-amber-50 text-amber-600',
+        orange: 'bg-orange-50 text-orange-600',
+        yellow: 'bg-yellow-50 text-yellow-600',
         red: 'bg-red-50 text-red-600',
         purple: 'bg-purple-50 text-purple-600',
         gray: 'bg-gray-100 text-gray-600'

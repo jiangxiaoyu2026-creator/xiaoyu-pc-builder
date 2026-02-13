@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, X, Trash2, Eye, FileText, User, Plus, Shield } from 'lucide-react';
 import { UsedItem, UsedCategory, UsedCondition } from '../../types/adminTypes';
 import { storage } from '../../services/storage';
+import ConfirmModal from '../common/ConfirmModal';
+import Pagination from '../common/Pagination';
 
 const CONDITIONS: UsedCondition[] = ['全新', '99新', '95新', '9成新', '8成新', '较旧'];
 const CATEGORIES: { id: UsedCategory, label: string }[] = [
@@ -10,14 +12,45 @@ const CATEGORIES: { id: UsedCategory, label: string }[] = [
     { id: 'accessory', label: '其他配件' },
 ];
 
-export default function UsedManager({ usedItems, setUsedItems }: { usedItems: UsedItem[], setUsedItems: any }) {
+export default function UsedManager() {
+    const [usedItems, setUsedItems] = useState<UsedItem[]>([]);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(20);
+    const [loading, setLoading] = useState(false);
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [search, setSearch] = useState('');
     const [selectedItem, setSelectedItem] = useState<UsedItem | null>(null);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [isOfficialPublishModalOpen, setIsOfficialPublishModalOpen] = useState(false);
 
-    // Filter items
+    // Confirm Modal State
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isActionLoading, setIsActionLoading] = useState(false);
+
+    // Dynamic confirmation for status changes
+    const [statusConfirm, setStatusConfirm] = useState<{ id: string, status: import('../../types/adminTypes').UsedItem['status'], title: string, desc: string } | null>(null);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const result = await storage.getAdminUsedItems(page, pageSize, filterStatus);
+            setUsedItems(result.items);
+            setTotal(result.total);
+        } catch (error) {
+            console.error('Failed to load used items:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadData();
+    }, [page, filterStatus]);
+
+
+    // Filter items (client side on the current page for search, or we could trigger re-fetch)
     const filteredItems = useMemo(() => {
         return usedItems.filter(item => {
             const matchStatus = filterStatus === 'all' || item.status === filterStatus;
@@ -32,26 +65,39 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
     const handleStatusChange = async (id: string, newStatus: UsedItem['status']) => {
         const item = usedItems.find(i => i.id === id || (i as any)._id === id);
         if (item) {
+            setIsActionLoading(true);
             try {
                 const updatedItem = { ...item, status: newStatus };
                 await storage.updateUsedItem(updatedItem);
-                const latestItems = await storage.getUsedItems();
-                setUsedItems(latestItems);
+                loadData(); // Re-fetch
+                setStatusConfirm(null);
             } catch (error) {
                 console.error('Failed to change status:', error);
+                alert('操作失败');
+            } finally {
+                setIsActionLoading(false);
             }
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm('确定要删除这个商品吗？操作不可恢复。')) {
-            try {
-                await storage.deleteUsedItem(id);
-                const latestItems = await storage.getUsedItems();
-                setUsedItems(latestItems);
-            } catch (error) {
-                console.error('Failed to delete item:', error);
-            }
+    const confirmDelete = (id: string) => {
+        setDeleteId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!deleteId) return;
+        setIsActionLoading(true);
+        try {
+            await storage.deleteUsedItem(deleteId);
+            loadData(); // Re-fetch
+            setIsDeleteModalOpen(false);
+            setDeleteId(null);
+        } catch (error) {
+            console.error('Failed to delete item:', error);
+            alert('删除失败');
+        } finally {
+            setIsActionLoading(false);
         }
     };
 
@@ -162,7 +208,7 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                                                 </button>
                                             )}
                                             <button
-                                                onClick={() => handleDelete(itemId)}
+                                                onClick={() => confirmDelete(itemId)}
                                                 className="p-2 text-slate-400 hover:text-red-600 transition-colors"
                                                 title="删除"
                                             >
@@ -182,7 +228,19 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                         )}
                     </tbody>
                 </table>
+                {loading && (
+                    <div className="flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    </div>
+                )}
             </div>
+
+            <Pagination
+                currentPage={page}
+                totalItems={total}
+                pageSize={pageSize}
+                onPageChange={setPage}
+            />
 
             {/* Review Modal */}
             {isReviewModalOpen && selectedItem && (
@@ -201,7 +259,7 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                                     <img src={selectedItem.images[0]} alt={selectedItem.model} className="w-full h-full object-cover" />
                                 </div>
                                 <div className="grid grid-cols-4 gap-2">
-                                    {selectedItem.images.slice(1).map((img, idx) => (
+                                    {Array.isArray(selectedItem.images) && selectedItem.images.slice(1).map((img, idx) => (
                                         <div key={idx} className="aspect-square bg-slate-50 rounded-lg overflow-hidden border border-slate-200">
                                             <img src={img} alt="" className="w-full h-full object-cover" />
                                         </div>
@@ -240,7 +298,33 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                                         {selectedItem.description}
                                     </p>
                                 </div>
-
+                                {selectedItem.xianyuLink && (
+                                    <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                                        <h4 className="font-bold text-orange-900 mb-2 flex items-center gap-2">
+                                            闲鱼链接
+                                        </h4>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                readOnly
+                                                value={selectedItem.xianyuLink}
+                                                className="flex-1 bg-white border border-orange-200 rounded-lg px-3 py-2 text-xs text-orange-800 focus:outline-none"
+                                            />
+                                            <button
+                                                onClick={() => navigator.clipboard.writeText(selectedItem.xianyuLink || '')}
+                                                className="px-3 py-2 bg-white border border-orange-200 text-orange-700 rounded-lg text-xs font-bold hover:bg-orange-100 transition-colors"
+                                            >
+                                                复制
+                                            </button>
+                                            <button
+                                                onClick={() => window.open(selectedItem.xianyuLink, '_blank')}
+                                                className="px-3 py-2 bg-orange-500 text-white rounded-lg text-xs font-bold hover:bg-orange-600 transition-colors"
+                                            >
+                                                打开
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                                 {selectedItem.inspectionReport && (
                                     <div>
                                         <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
@@ -262,11 +346,13 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                             {selectedItem.status === 'pending' ? (
                                 <>
                                     <button
-                                        onClick={async () => {
-                                            if (window.confirm('确认拒绝该商品的发布申请吗？')) {
-                                                await handleStatusChange(selectedItem.id || (selectedItem as any)._id, 'rejected');
-                                                setIsReviewModalOpen(false);
-                                            }
+                                        onClick={() => {
+                                            setStatusConfirm({
+                                                id: selectedItem.id || (selectedItem as any)._id,
+                                                status: 'rejected',
+                                                title: '确认拒绝发布',
+                                                desc: '您确定要拒绝该商品的发布申请吗？'
+                                            });
                                         }}
                                         className="flex-1 py-3 bg-white border border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-colors"
                                     >
@@ -292,11 +378,13 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                                     </button>
                                     {selectedItem.status === 'published' && (
                                         <button
-                                            onClick={async () => {
-                                                if (window.confirm('确认下架该商品吗？')) {
-                                                    await handleStatusChange(selectedItem.id || (selectedItem as any)._id, 'rejected');
-                                                    setIsReviewModalOpen(false);
-                                                }
+                                            onClick={() => {
+                                                setStatusConfirm({
+                                                    id: selectedItem.id || (selectedItem as any)._id,
+                                                    status: 'rejected',
+                                                    title: '确认下架商品',
+                                                    desc: '您确定要下架该商品吗？'
+                                                });
                                             }}
                                             className="flex-1 py-3 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 transition-colors"
                                         >
@@ -315,12 +403,39 @@ export default function UsedManager({ usedItems, setUsedItems }: { usedItems: Us
                 <OfficialPublishModal
                     onClose={() => setIsOfficialPublishModalOpen(false)}
                     onSuccess={async () => {
-                        const latestItems = await storage.getUsedItems();
-                        setUsedItems(latestItems);
+                        loadData(); // Re-fetch
                         setIsOfficialPublishModalOpen(false);
                     }}
                 />
             )}
+
+            {/* Confirm Delete Modal */}
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="确认删除二手商品"
+                description="您确定要删除这个商品吗？此操作不可恢复。"
+                confirmText="确认删除"
+                isDangerous={true}
+                isLoading={isActionLoading}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDelete}
+            />
+
+            {/* Confirm Status Change Modal */}
+            <ConfirmModal
+                isOpen={!!statusConfirm}
+                title={statusConfirm?.title || ''}
+                description={statusConfirm?.desc || ''}
+                confirmText="确定操作"
+                isDangerous={true}
+                isLoading={isActionLoading}
+                onClose={() => setStatusConfirm(null)}
+                onConfirm={() => {
+                    if (statusConfirm) {
+                        handleStatusChange(statusConfirm.id, statusConfirm.status);
+                    }
+                }}
+            />
         </div>
     );
 }

@@ -2,16 +2,22 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: xiaoyu-pc-builder
     ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    restart: always
+      - "3002:8000"
     environment:
       - PORT=8000
+      - RELOAD=false
+      - SQLITE_DB_PATH=/app/data/xiaoyu.db
+    restart: unless-stopped
     volumes:
       - ./data:/app/data
-  # SQLite doesn't need a separate service as it's a file in the persistence volume
-  # The server container should mount a volume to persist the .db file
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

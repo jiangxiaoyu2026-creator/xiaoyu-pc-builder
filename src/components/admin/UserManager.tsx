@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { User, Shield, UserPlus, Trash2, Ban, CheckCircle2, Crown, Calendar, Lock } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { UserItem } from '../../types/adminTypes';
+import ConfirmModal from '../common/ConfirmModal';
 
 // VIP 时长选项
 const VIP_OPTIONS = [
@@ -18,6 +19,11 @@ export default function UserManager() {
     const [newUser, setNewUser] = useState({ username: '', password: '', role: 'user' as UserItem['role'] });
     const [showVipModal, setShowVipModal] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+
+    // Confirm Delete State
+    const [deleteConfig, setDeleteConfig] = useState<{ id: string, isSelf: boolean } | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
 
     useEffect(() => {
         fetchUsers();
@@ -55,12 +61,32 @@ export default function UserManager() {
         }
     };
 
-    const handleDelete = async (_id: string, isSelf: boolean) => {
+    const confirmDelete = (id: string, isSelf: boolean) => {
         if (isSelf) return alert('不能删除自己');
-        if (confirm('确定删除该用户吗？')) {
-            // 目前后端可能未实现物理删除接口给前端，通常管理员建议使用封禁
-            alert('为了数据安全，目前请使用“封禁”功能来限制用户访问。');
-        }
+        setDeleteConfig({ id, isSelf });
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!deleteConfig) return;
+        // 目前后端可能未实现物理删除接口给前端，通常管理员建议使用封禁
+        // For now, we just show the alert as before, but inside the modal confirm action?
+        // Actually the original code just showed an alert after confirm.
+        // Let's keep it consistent: The user wants to "delete", so we should try to specific action or show the message.
+        // Original: if (confirm) alert(...)
+
+        // Since we are modernizing, let's assume we want to call a delete API if available, 
+        // OR just show the message that it's recommended to ban.
+        // But to replace "confirm disappears", we must show the modal.
+
+        // If the intention of the original code was "Don't delete, just ban", then the modal should say that?
+        // Let's implement the "Alert" behavior but nicely.
+        // actually, let's just close the modal and show the alert, OR make the modal explain it.
+
+        // To be safe and follow the request "Fix confirm disappearing":
+        setIsDeleteModalOpen(false);
+        setDeleteConfig(null);
+        alert('为了数据安全，目前请使用“封禁”功能来限制用户访问。');
     };
 
     const toggleStatus = async (user: UserItem) => {
@@ -159,8 +185,8 @@ export default function UserManager() {
                         onChange={e => setNewUser({ ...newUser, role: e.target.value as any })}
                     >
                         <option value="user">普通用户</option>
-                        <option value="streamer">小主播 (Streamer)</option>
-                        <option value="admin">管理员 (Admin)</option>
+                        <option value="streamer">主播</option>
+                        <option value="admin">管理员</option>
                     </select>
                     <button
                         onClick={handleAddUser}
@@ -223,9 +249,9 @@ export default function UserManager() {
                                                     }}
                                                     className="text-xs border border-slate-200 rounded px-1.5 py-0.5 bg-slate-50 text-slate-600 outline-none focus:border-indigo-500 cursor-pointer hover:bg-white transition-colors"
                                                 >
-                                                    <option value="user">User (普通)</option>
-                                                    <option value="streamer">Streamer (主播)</option>
-                                                    <option value="admin">Admin (管理)</option>
+                                                    <option value="user">普通用户</option>
+                                                    <option value="streamer">主播</option>
+                                                    <option value="admin">管理员</option>
                                                 </select>
 
                                                 <div className="h-3 w-[1px] bg-slate-200"></div>
@@ -291,7 +317,7 @@ export default function UserManager() {
                                             {user.status === 'active' ? <Ban size={18} /> : <CheckCircle2 size={18} />}
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(userId, userId === currentId)}
+                                            onClick={() => confirmDelete(userId, userId === currentId)}
                                             className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             title="删除"
                                         >
@@ -304,6 +330,17 @@ export default function UserManager() {
                     </div>
                 )}
             </div>
+            {/* Confirm Delete Modal */}
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="确认删除用户"
+                description="确定要删除该用户吗？此操作涉及数据关联，建议优先使用“封禁”功能。"
+                confirmText="知道了"
+                cancelText="返回"
+                isDangerous={true}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDelete}
+            />
         </div>
     );
 }

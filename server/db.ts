@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
@@ -28,7 +29,9 @@ export function connectDB() {
         CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
+            mobile TEXT,
             password TEXT NOT NULL,
+            phone TEXT UNIQUE,
             role TEXT DEFAULT 'user',
             status TEXT DEFAULT 'active',
             lastLogin TEXT,
@@ -40,6 +43,25 @@ export function connectDB() {
             createdAt TEXT DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS orders (
+            id TEXT PRIMARY KEY,
+            userId TEXT NOT NULL,
+            planId TEXT NOT NULL,
+            planName TEXT,
+            amount INTEGER NOT NULL, -- 单位：分
+            status TEXT DEFAULT 'pending', -- pending, paid, failed
+            payMethod TEXT, -- wechat, alipay
+            createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+            paidAt TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS daily_stats (
+            date TEXT PRIMARY KEY, -- YYYY-MM-DD
+            aiGenerations INTEGER DEFAULT 0,
+            newConfigs INTEGER DEFAULT 0,
+            newUsers INTEGER DEFAULT 0
+        );
+
         CREATE TABLE IF NOT EXISTS hardware (
             id TEXT PRIMARY KEY,
             category TEXT NOT NULL,
@@ -49,7 +71,10 @@ export function connectDB() {
             status TEXT DEFAULT 'active',
             sortOrder INTEGER DEFAULT 100,
             specs TEXT, -- JSON string
-            imageUrl TEXT,
+            image TEXT,
+            isDiscount INTEGER DEFAULT 0,
+            isRecommended INTEGER DEFAULT 0,
+            isNew INTEGER DEFAULT 0,
             createdAt TEXT DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -67,9 +92,14 @@ export function connectDB() {
             caseId TEXT,
             coolId TEXT,
             monId TEXT,
-            totalPrice REAL,
+            totalPrice REAL NOT NULL,
             status TEXT DEFAULT 'draft',
-            evaluation TEXT, -- JSON string
+            evaluation TEXT NOT NULL, -- JSON string
+            items TEXT NOT NULL, -- JSON string (redundant but required by DB)
+            tags TEXT NOT NULL, -- JSON string
+            isRecommended INTEGER DEFAULT 0,
+            views INTEGER DEFAULT 0,
+            likes INTEGER DEFAULT 0,
             createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
             updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
         );
@@ -83,13 +113,14 @@ export function connectDB() {
             category TEXT,
             brand TEXT,
             model TEXT,
-            price REAL,
+            price REAL NOT NULL,
             originalPrice REAL,
-            condition TEXT,
-            images TEXT, -- JSON string
-            description TEXT,
+            condition TEXT NOT NULL,
+            images TEXT NOT NULL, -- JSON string
+            description TEXT NOT NULL,
             status TEXT DEFAULT 'pending',
             inspectionReport TEXT, -- JSON string
+            soldAt INTEGER,
             createdAt TEXT DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -110,4 +141,63 @@ export function connectDB() {
             createdAt TEXT DEFAULT CURRENT_TIMESTAMP
         );
     `);
+
+    // Migration logic to ensure code and actual DB are in sync
+    const migrateTable = (tableName: string, definitions: Record<string, string>) => {
+        const tableInfo: any = db.prepare(`PRAGMA table_info(${tableName})`).all();
+        const existingCols = tableInfo.map((col: any) => col.name);
+
+        for (const [col, def] of Object.entries(definitions)) {
+            if (!existingCols.includes(col)) {
+                console.log(`🔄 Migrating ${tableName} table: adding missing column ${col}...`);
+                try {
+                    db.prepare(`ALTER TABLE ${tableName} ADD COLUMN ${col} ${def}`).run();
+                } catch (e) {
+                    console.error(`❌ Failed to add ${col} to ${tableName}:`, e);
+                }
+            }
+        }
+    };
+
+    migrateTable('users', {
+        'phone': 'TEXT',
+        'mobile': 'TEXT',
+        'inviteCount': 'INTEGER DEFAULT 0',
+        'inviteVipDays': 'INTEGER DEFAULT 0'
+    });
+
+    migrateTable('hardware', {
+        'isDiscount': 'INTEGER DEFAULT 0',
+        'isRecommended': 'INTEGER DEFAULT 0',
+        'isNew': 'INTEGER DEFAULT 0'
+    });
+
+    migrateTable('configs', {
+        'items': 'TEXT NOT NULL DEFAULT "{}"',
+        'tags': 'TEXT NOT NULL DEFAULT "[]"',
+        'isRecommended': 'INTEGER DEFAULT 0',
+        'views': 'INTEGER DEFAULT 0',
+        'likes': 'INTEGER DEFAULT 0'
+    });
+
+    migrateTable('used_items', {
+        'soldAt': 'INTEGER'
+    });
+
+    // Special case: Ensure unique phone index
+    try {
+        db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone)').run();
+    } catch (e) { }
+
+    // Seed Admin User
+    const admin = db.prepare('SELECT * FROM users WHERE role = ?').get('admin');
+    if (!admin) {
+        console.log('🌱 Seeding default admin user...');
+        const hashedPassword = bcrypt.hashSync('admin123', 10);
+        db.prepare(`
+            INSERT INTO users (id, username, password, role, status, inviteCount, inviteVipDays, createdAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).run('admin-root', 'admin', hashedPassword, 'admin', 'active', 0, 0, new Date().toISOString());
+        console.log('✅ Default admin user created: admin / admin123');
+    }
 }

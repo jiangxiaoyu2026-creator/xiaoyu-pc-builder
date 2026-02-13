@@ -1,28 +1,84 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Download, Plus, ListFilter, Package, Edit3, Trash2, X, Sparkles, Image as ImageIcon, Upload } from 'lucide-react';
 import { HardwareItem, Category } from '../../types/adminTypes';
 import { CATEGORY_MAP, COMPATIBILITY_FIELDS } from '../../data/adminData';
 import { SortIcon } from './Shared';
+import { storage } from '../../services/storage';
+import { ApiService } from '../../services/api';
+import ConfirmModal from '../common/ConfirmModal';
+import Pagination from '../common/Pagination';
 
-export default function ProductManager({ products, setProducts }: { products: HardwareItem[], setProducts: any }) {
+export default function ProductManager() {
+    const [products, setProducts] = useState<HardwareItem[]>([]);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(20);
+    const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [filterCat, setFilterCat] = useState('all');
+    const [filterBrand, setFilterBrand] = useState('all');
+    const [brands, setBrands] = useState<string[]>([]);
     const [sortConfig, setSortConfig] = useState<{ key: keyof HardwareItem, direction: 'asc' | 'desc' } | null>({ key: 'sortOrder', direction: 'asc' });
 
-    const updatePrice = (id: string, newPrice: number) => {
-        setProducts(products.map(p => p.id === id ? { ...p, price: newPrice } : p));
+    const loadProducts = async () => {
+        setLoading(true);
+        try {
+            const result = await storage.getAdminProducts(page, pageSize, filterCat, filterBrand, search);
+            setProducts(result.items);
+            setTotal(result.total);
+
+            // Refresh brands when category changes
+            const brandList = await storage.getBrands(filterCat);
+            setBrands(brandList);
+        } catch (error) {
+            console.error('Failed to load products:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // const updateSortOrder = (id: string, newSortOrder: number) => {
-    //     setProducts((prev: HardwareItem[]) => prev.map(p => p.id === id ? { ...p, sortOrder: newSortOrder } : p));
-    // };
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (page !== 1) setPage(1);
+            else loadProducts();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
 
-    const toggleStatus = (id: string) => {
-        setProducts(products.map(p => p.id === id ? {
-            ...p,
-            status: p.status === 'active' ? 'archived' : 'active'
-        } : p));
+    useEffect(() => {
+        setPage(1);
+        setFilterBrand('all'); // Reset brand filter when category changes
+        loadProducts();
+    }, [filterCat]);
+
+    useEffect(() => {
+        setPage(1);
+        loadProducts();
+    }, [filterBrand]);
+
+    useEffect(() => {
+        loadProducts();
+    }, [page]);
+
+    // 价格编辑：onChange 只更新本地状态，onBlur 时才保存到后端
+    const handlePriceChange = (id: string, newPrice: number) => {
+        setProducts(products.map(x => x.id === id ? { ...x, price: newPrice } : x));
+    };
+
+    const handlePriceBlur = async (id: string) => {
+        const p = products.find(x => x.id === id);
+        if (!p) return;
+        await storage.saveProduct(p);
+    };
+
+    const toggleStatus = async (id: string) => {
+        const p = products.find(x => x.id === id);
+        if (!p) return;
+        const updated = { ...p, status: (p.status === 'active' ? 'archived' : 'active') as any };
+        setProducts(products.map(x => x.id === id ? updated : x));
+        await storage.saveProduct(updated);
     };
 
     const handleSort = (key: keyof HardwareItem) => {
@@ -33,31 +89,26 @@ export default function ProductManager({ products, setProducts }: { products: Ha
         setSortConfig({ key, direction });
     };
 
+    // Client-side sorting on the current page (optional, but good for UX)
     const filtered = useMemo(() => {
-        let res = products.filter(p => {
-            const matchCat = filterCat === 'all' || p.category === filterCat;
-            const matchSearch = p.model.toLowerCase().includes(search.toLowerCase()) || p.brand.toLowerCase().includes(search.toLowerCase());
-            return matchCat && matchSearch;
-        });
-
+        let sorted = [...products];
         if (sortConfig) {
-            res.sort((a, b) => {
-                const valA = a[sortConfig.key] ?? 0;
-                const valB = b[sortConfig.key] ?? 0;
-                if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
-                if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
-                return 0;
+            sorted.sort((a, b) => {
+                const aValue = a[sortConfig.key] ?? '';
+                const bValue = b[sortConfig.key] ?? '';
+                if (aValue === bValue) return 0;
+                const result = aValue > bValue ? 1 : -1;
+                return sortConfig.direction === 'asc' ? result : -result;
             });
         }
-
-        return res;
-    }, [products, search, filterCat, sortConfig]);
+        return sorted;
+    }, [products, sortConfig]);
 
     const handleExportHardware = () => {
         const headers = ['ID', '分类', '品牌', '型号', '售价', '状态', '排序', '规格参数'];
         const rows = filtered.map(p => [
             p.id,
-            CATEGORY_MAP[p.category].label,
+            (CATEGORY_MAP[p.category]?.label || p.category),
             p.brand,
             p.model,
             p.price,
@@ -80,31 +131,59 @@ export default function ProductManager({ products, setProducts }: { products: Ha
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<HardwareItem | null>(null);
 
-    const handleSaveProduct = (product: HardwareItem, keepOpen = false) => {
-        if (editingProduct) {
-            setProducts(products.map(p => p.id === product.id ? product : p));
-        } else {
-            setProducts([{ ...product, id: `new-${Date.now()}`, createdAt: new Date().toISOString() }, ...products]);
-        }
+    // Confirm Modal State
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+
+    const handleSaveProduct = async (product: HardwareItem, keepOpen = false) => {
+        await storage.saveProduct(product);
+        loadProducts(); // Re-fetch to see changes
         if (!keepOpen) {
             setIsEditModalOpen(false);
         }
     };
 
-    const handleDelete = (id: string) => {
-        if (confirm('确认删除？此操作不可恢复。')) {
-            setProducts(products.filter(p => p.id !== id));
+    const confirmDelete = (id: string) => {
+        setDeleteId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!deleteId) return;
+        setIsDeleting(true);
+        try {
+            await ApiService.delete(`/products/${deleteId}`);
+            loadProducts(); // Re-fetch
+            setIsDeleteModalOpen(false);
+            setDeleteId(null);
+        } catch (error) {
+            console.error('删除失败:', error);
+            alert('删除失败，请重试');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
-                <div className="flex-1 min-w-0 flex gap-2 overflow-x-auto pb-1 mask-gradient-right">
-                    <button onClick={() => setFilterCat('all')} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>全部</button>
-                    {Object.entries(CATEGORY_MAP).map(([k, v]) => (
-                        <button key={k} onClick={() => setFilterCat(k)} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === k ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{v.label}</button>
-                    ))}
+                <div className="flex-1 min-w-0 flex flex-col gap-2">
+                    <div className="flex gap-2 overflow-x-auto pb-1 mask-gradient-right">
+                        <button onClick={() => setFilterCat('all')} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>全部</button>
+                        {Object.entries(CATEGORY_MAP).map(([k, v]) => (
+                            <button key={k} onClick={() => setFilterCat(k)} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === k ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{v.label}</button>
+                        ))}
+                    </div>
+                    {/* Brand Filter */}
+                    <div className="flex gap-2 overflow-x-auto pb-1 mask-gradient-right border-t border-slate-100 pt-2">
+                        <span className="text-xs font-bold text-slate-400 self-center shrink-0">品牌:</span>
+                        <button onClick={() => setFilterBrand('all')} className={`shrink-0 px-3 py-1 rounded text-xs font-bold whitespace-nowrap transition-colors ${filterBrand === 'all' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>全部</button>
+                        {brands.map(b => (
+                            <button key={b} onClick={() => setFilterBrand(b)} className={`shrink-0 px-3 py-1 rounded text-xs font-bold whitespace-nowrap transition-colors ${filterBrand === b ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>{b}</button>
+                        ))}
+                    </div>
                 </div>
                 <div className="flex gap-2">
                     <div className="relative">
@@ -181,7 +260,7 @@ export default function ProductManager({ products, setProducts }: { products: Ha
                                                     {p.isRecommended && <span className="text-[10px] bg-orange-100 text-orange-600 px-1 rounded">荐</span>}
                                                     {p.isDiscount && <span className="text-[10px] bg-rose-100 text-rose-600 px-1 rounded">折</span>}
                                                 </div>
-                                                <div className="text-xs text-slate-500">{p.brand} · {CATEGORY_MAP[p.category].label}</div>
+                                                <div className="text-xs text-slate-500">{p.brand} · {CATEGORY_MAP[p.category]?.label || p.category}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -195,7 +274,8 @@ export default function ProductManager({ products, setProducts }: { products: Ha
                                                 type="number"
                                                 className="w-24 text-right font-bold text-indigo-600 bg-slate-50 border border-slate-200 rounded px-2 py-1 focus:border-indigo-500 focus:outline-none transition-colors"
                                                 value={p.price}
-                                                onChange={(e) => updatePrice(p.id, Number(e.target.value))}
+                                                onChange={(e) => handlePriceChange(p.id, Number(e.target.value))}
+                                                onBlur={() => handlePriceBlur(p.id)}
                                             />
                                         </div>
                                     </td>
@@ -213,16 +293,39 @@ export default function ProductManager({ products, setProducts }: { products: Ha
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <button onClick={() => { setEditingProduct(p); setIsEditModalOpen(true); }} className="text-slate-400 hover:text-indigo-600 p-2" title="编辑"><Edit3 size={18} /></button>
-                                        <button onClick={() => handleDelete(p.id)} className="text-slate-400 hover:text-red-600 p-2" title="删除"><Trash2 size={18} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); confirmDelete(p.id); }} className="text-slate-400 hover:text-red-600 p-2" title="删除" type="button"><Trash2 size={18} /></button>
                                     </td>
                                 </tr>
                             )
                         })}
                     </tbody>
                 </table>
+                {loading && (
+                    <div className="flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    </div>
+                )}
             </div>
 
+            <Pagination
+                currentPage={page}
+                totalItems={total}
+                pageSize={pageSize}
+                onPageChange={setPage}
+            />
+
             {isEditModalOpen && <ProductEditModal product={editingProduct} onClose={() => setIsEditModalOpen(false)} onSave={handleSaveProduct} />}
+
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="确认删除硬件"
+                description="您确定要下架并删除该硬件商品吗？此操作无法撤销。"
+                confirmText="确认删除"
+                isDangerous={true}
+                isLoading={isDeleting}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDelete}
+            />
         </div>
     )
 }
@@ -428,8 +531,11 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                             <div className="text-xs text-slate-400 italic">该分类暂无特定兼容性参数，请使用下方自由录入。</div>
                         )}
 
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 mb-1">其他规格 (自由JSON)</label>
+                        <details className="group">
+                            <summary className="list-none cursor-pointer text-xs font-bold text-slate-400 flex items-center gap-1 mb-2 hover:text-slate-600 transition-colors">
+                                <span className="group-open:rotate-90 transition-transform">▶</span>
+                                <span>其他规格 (自由JSON) - 高级模式</span>
+                            </summary>
                             <textarea
                                 className="w-full border border-slate-200 rounded-lg p-2 text-xs font-mono h-20"
                                 value={JSON.stringify(formData.specs, null, 2)}
@@ -440,7 +546,7 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                 }}
                                 placeholder="这里显示最终合并的JSON数据，也可手动修改"
                             />
-                        </div>
+                        </details>
                     </div>
 
                     <div className="pt-4 flex gap-3">

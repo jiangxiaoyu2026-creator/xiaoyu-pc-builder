@@ -25,7 +25,7 @@ interface PaymentConfig {
     } | null;
 }
 
-const API_BASE = 'http://localhost:3001/api/payment';
+const API_BASE = '/api/payment';
 
 export default function PaymentSettings() {
     const [loading, setLoading] = useState(true);
@@ -122,9 +122,13 @@ export default function PaymentSettings() {
                 }
             }
 
+            const token = localStorage.getItem('xiaoyu_token');
             const res = await fetch(`${API_BASE}/settings`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify(payload)
             });
 

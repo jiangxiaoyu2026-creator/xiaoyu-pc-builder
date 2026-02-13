@@ -5,6 +5,7 @@ import { UserItem } from '../../types/adminTypes';
 import { HARDWARE_DB, CATEGORY_MAP } from '../../data/clientData';
 import { getIconByCategory } from './Shared';
 import { storage } from '../../services/storage';
+import ConfirmModal from '../common/ConfirmModal';
 
 export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggleLike, currentUser }: { config: ConfigTemplate, onClose: () => void, onLoad: () => void, showToast: (msg: string) => void, onToggleLike: (id: string) => void, currentUser: UserItem | null }) {
     const [commentText, setCommentText] = React.useState('');
@@ -12,6 +13,11 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
     const [comments, setComments] = React.useState<any[]>([]);
     const [allProducts, setAllProducts] = React.useState<HardwareItem[]>([]);
     const [users, setUsers] = React.useState<UserItem[]>([]);
+
+    // Confirm Modal State
+    const [deleteCommentId, setDeleteCommentId] = React.useState<string | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+    const [isDeleting, setIsDeleting] = React.useState(false);
 
     // Initial Load
     React.useEffect(() => {
@@ -22,7 +28,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                 storage.getUsers()
             ]);
             setComments(fetchedComments);
-            setAllProducts(fetchedProducts);
+            setAllProducts(fetchedProducts.items);
             setUsers(fetchedUsers);
         };
         loadInitialData();
@@ -49,7 +55,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
 
     const handleCopyLink = () => {
         const textLines = [
-            `【小鱼装机】配置清单: ${config.title}`,
+            `[小鱼装机] 配置清单: ${config.title}`,
             `------------------`
         ];
 
@@ -78,7 +84,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
 
     const handleSendComment = async () => {
         if (!currentUser) {
-            showToast('🔒 请先登录后评论');
+            showToast('🔒 请先登录');
             window.dispatchEvent(new Event('xiaoyu-trigger-login'));
             return;
         }
@@ -101,7 +107,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
         showToast('评论已发布');
     };
 
-    const QUICK_REPLIES = ['大佬666', '作业已抄', '性价比很高', '颜值在线', '求配置单'];
+    const QUICK_REPLIES = ['大佬牛逼！', '抄作业了', '性价比很高', '颜值爆表', '求配置单'];
 
     // Close on Escape key
     React.useEffect(() => {
@@ -153,14 +159,14 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                         <div className="flex-1 min-w-0">
                             <h2 className="text-base md:text-xl font-extrabold text-slate-900 truncate tracking-tight">{config.title}</h2>
                             <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">
-                                <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">配置清單</span>
+                                <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">配置清单</span>
                                 <span>•</span>
-                                <span>共 {Object.keys(config.items).length} 件</span>
+                                <span>共 {Object.keys(config.items).length} 件硬件</span>
                             </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                             <div className="text-right">
-                                <div className="text-[10px] md:text-sm font-bold text-slate-400 uppercase tracking-wider">Total</div>
+                                <div className="text-[10px] md:text-sm font-bold text-slate-400 uppercase tracking-wider">总价</div>
                                 <div className="text-lg md:text-2xl font-mono font-black text-indigo-600 leading-none">
                                     ¥{config.price}
                                 </div>
@@ -188,7 +194,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                             {getIconByCategory(category)}
                                         </div>
                                         <div className="flex-1">
-                                            <div className="text-[10px] text-slate-400 font-bold">商品已失效</div>
+                                            <div className="text-[10px] text-slate-400 font-bold">商品已下架</div>
                                             <div className="text-xs font-mono text-slate-300">ID: {itemId}</div>
                                         </div>
                                     </div>
@@ -267,7 +273,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                     <button
                         onClick={onClose}
                         className="absolute top-3 right-3 z-50 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-all group active:scale-90"
-                        title="关闭 (Esc)"
+                        title="Close (Esc)"
                     >
                         <X size={18} />
                     </button>
@@ -376,8 +382,9 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                             {/* Deletion for Admin or Author */}
                                             {(currentUser?.role === 'admin' || currentUser?.id === c.userId) && (
                                                 <button
-                                                    onClick={async () => {
-                                                        if (confirm('确定删除此评论？')) await storage.deleteComment(c.id);
+                                                    onClick={() => {
+                                                        setDeleteCommentId(c.id);
+                                                        setIsDeleteModalOpen(true);
                                                     }}
                                                     className="absolute -right-2 -top-2 bg-slate-200 text-slate-500 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
                                                 >
@@ -390,7 +397,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                             ))}
                             {comments.length === 0 && (
                                 <div className="text-center py-10 text-slate-400 text-sm">
-                                    还没有人评论，快来抢沙发~
+                                    暂无评论，快来抢沙发！
                                 </div>
                             )}
                         </div>
@@ -412,7 +419,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                 <textarea
                                     value={commentText}
                                     onChange={e => setCommentText(e.target.value)}
-                                    placeholder={currentUser ? "发表你的看法..." : "登录后即可发表评论"}
+                                    placeholder={currentUser ? "说点什么..." : "登录后发表评论"}
                                     disabled={!currentUser}
                                     className={`flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none h-[42px] max-h-[80px] ${!currentUser ? 'opacity-60 cursor-not-allowed' : ''}`}
                                     onKeyDown={e => {
@@ -435,6 +442,32 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                 </div>
 
             </div>
+
+            {/* Confirm Delete Comment Modal */}
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="删除评论"
+                description="确定要删除这条评论吗？此操作无法撤销。"
+                confirmText="删除"
+                isDangerous={true}
+                isLoading={isDeleting}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={async () => {
+                    if (deleteCommentId) {
+                        setIsDeleting(true);
+                        try {
+                            await storage.deleteComment(deleteCommentId);
+                            setIsDeleteModalOpen(false);
+                            setDeleteCommentId(null);
+                        } catch (err) {
+                            console.error(err);
+                            showToast('删除失败');
+                        } finally {
+                            setIsDeleting(false);
+                        }
+                    }
+                }}
+            />
         </div>
     );
 }

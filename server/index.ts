@@ -11,6 +11,7 @@ import configRoutes from './routes/config';
 import usedRoutes from './routes/used';
 import settingsRoutes from './routes/settings';
 import recycleRouter from './routes/recycle';
+import statsRoutes from './routes/stats';
 
 import { connectDB } from './db';
 
@@ -46,6 +47,7 @@ app.use('/api/configs', configRoutes);
 app.use('/api/used', usedRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/recycle', recycleRouter);
+app.use('/api/stats', statsRoutes);
 
 // 健康检查
 app.get('/api/health', (_req: express.Request, res: express.Response) => {

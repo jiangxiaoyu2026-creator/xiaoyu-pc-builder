@@ -1,23 +1,59 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Download, Star, Eye, Search } from 'lucide-react';
 import { ConfigItem, HardwareItem, Category } from '../../types/adminTypes';
 import { CATEGORY_MAP } from '../../data/adminData';
 import { SortIcon } from './Shared';
+import { ApiService } from '../../services/api';
+import { storage } from '../../services/storage';
+import Pagination from '../common/Pagination';
 
-export default function ConfigManager({ configs, setConfigs, products }: { configs: ConfigItem[], setConfigs: any, products: HardwareItem[] }) {
+export default function ConfigManager() {
+    const [configs, setConfigs] = useState<ConfigItem[]>([]);
+    const [products, setProducts] = useState<HardwareItem[]>([]);
+    const [total, setTotal] = useState(0);
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(20);
+    const [loading, setLoading] = useState(false);
     const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'hidden'>('all');
     const [sortConfig, setSortConfig] = useState<{ key: keyof ConfigItem, direction: 'asc' | 'desc' } | null>({ key: 'createdAt', direction: 'desc' });
     const [searchTerm, setSearchTerm] = useState('');
-
-    const handleStatusChange = (id: string, newStatus: ConfigItem['status']) => {
-        const newConfigs = configs.map(c => c.id === id ? { ...c, status: newStatus } : c);
-        setConfigs(newConfigs);
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const [cResult, pResult] = await Promise.all([
+                storage.getAdminConfigs(page, pageSize, statusFilter),
+                storage.getAdminProducts(1, 1000) // Products still needed for mapping display
+            ]);
+            setConfigs(cResult.items);
+            setTotal(cResult.total);
+            setProducts(pResult.items);
+        } catch (error) {
+            console.error('Failed to load configs:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const toggleRecommend = (id: string) => {
-        const newConfigs = configs.map(c => c.id === id ? { ...c, isRecommended: !c.isRecommended } : c);
-        setConfigs(newConfigs);
+    useEffect(() => {
+        loadData();
+    }, [page, statusFilter]);
+
+    const handleStatusChange = async (id: string, newStatus: ConfigItem['status']) => {
+        const config = configs.find(c => c.id === id);
+        if (!config) return;
+        const updated = { ...config, status: newStatus };
+        setConfigs(configs.map(c => c.id === id ? updated : c));
+        await storage.updateConfig(updated);
+    };
+
+    const toggleRecommend = async (id: string) => {
+        const config = configs.find(c => c.id === id);
+        if (!config) return;
+
+        const updated = { ...config, isRecommended: !config.isRecommended };
+        setConfigs(configs.map(c => c.id === id ? updated : c));
+        await storage.updateConfig(updated);
     };
 
     const handleSort = (key: keyof ConfigItem) => {
@@ -86,10 +122,14 @@ export default function ConfigManager({ configs, setConfigs, products }: { confi
         document.body.removeChild(link);
     };
 
-    const deleteConfig = (id: string) => {
-        if (confirm('确定要删除这条配置单吗？此操作无法撤销。')) {
+    const deleteConfig = async (id: string) => {
+        try {
+            await ApiService.delete(`/configs/${id}`);
             const newConfigs = configs.filter(c => c.id !== id);
             setConfigs(newConfigs);
+        } catch (error) {
+            console.error('删除配置单失败:', error);
+            alert('删除失败，请重试');
         }
     };
 
@@ -161,7 +201,7 @@ export default function ConfigManager({ configs, setConfigs, products }: { confi
                                             </h3>
                                             <div className="text-xs text-slate-500 mt-1 flex items-center gap-3">
                                                 <span className="flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-full font-bold text-slate-600">
-                                                    Author: {config.authorName}
+                                                    作者: {config.authorName}
                                                 </span>
                                                 {config.tags && config.tags.length > 0 && (
                                                     <div className="flex gap-1">
@@ -223,7 +263,19 @@ export default function ConfigManager({ configs, setConfigs, products }: { confi
                     </div>
                     {filtered.length === 0 && <div className="text-center py-10 text-slate-400">列表为空</div>}
                 </div>
+                {loading && (
+                    <div className="flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    </div>
+                )}
             </div>
+
+            <Pagination
+                currentPage={page}
+                totalItems={total}
+                pageSize={pageSize}
+                onPageChange={setPage}
+            />
         </div>
     )
 }

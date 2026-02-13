@@ -1,5 +1,7 @@
 const API_BASE = '/api';
 
+// 确保 endpoint 以 / 结尾（用于 POST 请求） - 被移除，因为 FastAPI 路由参数不兼容多余斜杠
+
 export class ApiService {
     private static getHeaders() {
         const headers: Record<string, string> = {
@@ -21,7 +23,8 @@ export class ApiService {
     }
 
     static async post(endpoint: string, data: any) {
-        const response = await fetch(`${API_BASE}${endpoint}`, {
+        const url = `${API_BASE}${endpoint}`;
+        const response = await fetch(url, {
             method: 'POST',
             headers: this.getHeaders(),
             body: JSON.stringify(data)
@@ -31,15 +34,10 @@ export class ApiService {
     }
 
     static async login(form_data: { username: string, password: string }) {
-        // FastAPI OAuth2PasswordRequestForm expects multipart/form-data or x-www-form-urlencoded
-        const body = new URLSearchParams();
-        body.append('username', form_data.username);
-        body.append('password', form_data.password);
-
         const response = await fetch(`${API_BASE}/auth/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: body
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(form_data)
         });
         if (!response.ok) throw new Error(`Login failed: ${response.statusText}`);
 
@@ -60,6 +58,16 @@ export class ApiService {
         const response = await fetch(`${API_BASE}${endpoint}`, {
             method: 'DELETE',
             headers: this.getHeaders()
+        });
+        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+        return response.json();
+    }
+
+    static async put(endpoint: string, data: any) {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+            method: 'PUT',
+            headers: this.getHeaders(),
+            body: JSON.stringify(data)
         });
         if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
         return response.json();

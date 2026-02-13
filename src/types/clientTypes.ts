@@ -72,3 +72,28 @@ export interface ConfigTemplate {
     userId?: string; // Author ID for checking roles/VIP
     isVip?: boolean; // Pre-calculated VIP status
 }
+
+export interface AnnouncementItem {
+    id: string;
+    content: string;
+    type: 'info' | 'warning' | 'promo';
+    pinned?: boolean;
+    linkUrl?: string;
+}
+
+export interface SystemAnnouncementSettings {
+    enabled: boolean;
+    items: AnnouncementItem[];
+    content?: string; // Legacy support
+}
+
+export interface Article {
+    id: string;
+    title: string;
+    summary: string;
+    content: string;
+    coverImage?: string;
+    isPinned?: boolean;
+    createdAt: string;
+    updatedAt: string;
+}

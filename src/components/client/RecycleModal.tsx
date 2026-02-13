@@ -32,11 +32,11 @@ export default function RecycleModal({ onClose, onSuccess, currentUser, showToas
         e.preventDefault();
 
         if (!description.trim()) {
-            showToast('请填写回收物品描述');
+            showToast('请描述要回收的物品');
             return;
         }
         if (!wechat.trim()) {
-            showToast('请填写微信号');
+            showToast('请输入微信号');
             return;
         }
 
@@ -92,7 +92,7 @@ export default function RecycleModal({ onClose, onSuccess, currentUser, showToas
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                     <div>
                         <h2 className="text-xl font-bold text-slate-800">我要回收</h2>
-                        <p className="text-xs text-slate-500">告诉我们您想回收什么，我们会联系您</p>
+                        <p className="text-xs text-slate-500">告诉我们要回收什么，我们会尽快联系您</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                         <X size={20} className="text-slate-500" />
@@ -103,10 +103,10 @@ export default function RecycleModal({ onClose, onSuccess, currentUser, showToas
                     {/* Description */}
                     <div>
                         <label className="block text-sm font-bold text-slate-700 mb-2">
-                            回收物品描述 <span className="text-red-500">*</span>
+                            物品描述 <span className="text-red-500">*</span>
                         </label>
                         <textarea
-                            placeholder="请描述您要回收的物品，例如：整机一台，i5-12400 + RTX 3060，16G内存，用了一年..."
+                            placeholder="请描述物品详情，例如：整机，i5-12400 + RTX 3060，使用1年..."
                             value={description}
                             onChange={e => setDescription(e.target.value)}
                             className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 h-28 resize-none text-sm"
@@ -117,7 +117,7 @@ export default function RecycleModal({ onClose, onSuccess, currentUser, showToas
                     {/* Image Upload */}
                     <div>
                         <label className="block text-sm font-bold text-slate-700 mb-2">
-                            上传图片 <span className="text-slate-400 font-normal">(配置单/产品图)</span>
+                            上传图片 <span className="text-slate-400 font-normal">(配置单或实物图)</span>
                         </label>
                         {image ? (
                             <div className="relative w-full h-40 rounded-xl overflow-hidden border border-slate-200 group">
@@ -146,7 +146,7 @@ export default function RecycleModal({ onClose, onSuccess, currentUser, showToas
                         </label>
                         <input
                             type="text"
-                            placeholder="请输入您的微信号，方便我们联系您"
+                            placeholder="请输入您的微信号，方便联系"
                             value={wechat}
                             onChange={e => setWechat(e.target.value)}
                             className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 text-sm"

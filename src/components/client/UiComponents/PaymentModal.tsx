@@ -12,10 +12,10 @@ interface PaymentModalProps {
 }
 
 const PLANS: PaymentPlan[] = [
-    { id: 'day', name: '1 天体验卡', price: 3, durationDays: 1, originalPrice: 9.9 },
-    { id: 'week', name: '7 天周卡', price: 9.9, durationDays: 7, originalPrice: 19.9 },
-    { id: 'month', name: '30 天月卡', price: 19.9, durationDays: 30, originalPrice: 39.9 },
-    { id: 'year', name: '365 天年卡', price: 99, durationDays: 365, originalPrice: 199 },
+    { id: 'day', name: '1天 体验卡', price: 3, durationDays: 1, originalPrice: 9.9 },
+    { id: 'week', name: '7天 周卡', price: 9.9, durationDays: 7, originalPrice: 19.9 },
+    { id: 'month', name: '30天 月卡', price: 19.9, durationDays: 30, originalPrice: 39.9 },
+    { id: 'year', name: '365天 年卡', price: 99, durationDays: 365, originalPrice: 199 },
 ];
 
 export function PaymentModal({ user, onClose, onSuccess, onGoToInvite }: PaymentModalProps) {
@@ -104,14 +104,14 @@ export function PaymentModal({ user, onClose, onSuccess, onGoToInvite }: Payment
                     <div className="relative z-10">
                         <div className="flex items-center gap-2 mb-3">
                             <span className="bg-gradient-to-r from-amber-300 to-amber-500 text-black text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-[0_0_10px_rgba(245,158,11,0.4)] tracking-wider">
-                                SVIP MEMBER
+                                SVIP 尊享会员
                             </span>
                         </div>
                         <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-200 to-amber-100 mb-2 tracking-tight drop-shadow-sm flex items-center gap-2">
-                            开通尊贵会员
+                            加入 SVIP 会员
                         </h2>
                         <p className="text-zinc-400 text-sm font-medium leading-relaxed max-w-[85%]">
-                            解锁 <span className="text-amber-400 font-bold">AI 智能装机</span> 核心特权
+                            解锁 <span className="text-amber-400 font-bold">AI 装机与更多高级权益</span>
                         </p>
                     </div>
                 </div>
@@ -128,7 +128,7 @@ export function PaymentModal({ user, onClose, onSuccess, onGoToInvite }: Payment
                                     </div>
                                     <div>
                                         <h4 className="text-sm font-bold text-amber-50 mb-0.5">AI 架构师引擎</h4>
-                                        <p className="text-[11px] text-zinc-500 leading-relaxed">调用万级算力，为您生成极致方案</p>
+                                        <p className="text-[11px] text-zinc-500 leading-relaxed">高性能 AI 驱动，为您生成最佳装机配置。</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-4 group p-2.5 rounded-2xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
@@ -136,8 +136,8 @@ export function PaymentModal({ user, onClose, onSuccess, onGoToInvite }: Payment
                                         <ShieldCheck size={18} />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-bold text-amber-50 mb-0.5">防坑避雷检测</h4>
-                                        <p className="text-[11px] text-zinc-500 leading-relaxed">全网大数据比价与兼容性风控</p>
+                                        <h4 className="text-sm font-bold text-amber-50 mb-0.5">以太盾兼容性防护</h4>
+                                        <p className="text-[11px] text-zinc-500 leading-relaxed">实时价格分析与硬件风控保护。</p>
                                     </div>
                                 </div>
                             </div>
@@ -145,14 +145,14 @@ export function PaymentModal({ user, onClose, onSuccess, onGoToInvite }: Payment
                             <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-6"></div>
 
                             <h3 className="text-xs font-bold text-amber-50 mb-4 px-1 flex items-center justify-between">
-                                <span>选择尊享方案</span>
+                                <span>选择您的方案</span>
                                 {onGoToInvite && (
                                     <span
                                         onClick={() => { onClose(); onGoToInvite(); }}
                                         className="flex items-center gap-1 text-amber-400 hover:text-amber-300 cursor-pointer transition-colors group underline underline-offset-2"
                                     >
                                         <Gift size={12} className="group-hover:animate-bounce" />
-                                        邀请好友免费得 VIP
+                                        邀请好友免费获赠 VIP
                                     </span>
                                 )}
                             </h3>
@@ -194,7 +194,7 @@ export function PaymentModal({ user, onClose, onSuccess, onGoToInvite }: Payment
                                         : 'border-white/10 text-zinc-500 hover:bg-white/5'
                                         }`}
                                 >
-                                    <img src="https://api.iconify.design/ri:wechat-pay-fill.svg?color=%2307C160" className="w-5 h-5" alt="WC" />
+                                    <img src="https://api.iconify.design/ri:wechat-pay-fill.svg?color=%2307C160" className="w-5 h-5" alt="WeChat Pay" />
                                     <span className="text-sm font-bold">微信支付</span>
                                 </button>
                                 <button
@@ -204,7 +204,7 @@ export function PaymentModal({ user, onClose, onSuccess, onGoToInvite }: Payment
                                         : 'border-white/10 text-zinc-500 hover:bg-white/5'
                                         }`}
                                 >
-                                    <img src="https://api.iconify.design/ri:alipay-fill.svg?color=%231677FF" className="w-5 h-5" alt="ALI" />
+                                    <img src="https://api.iconify.design/ri:alipay-fill.svg?color=%231677FF" className="w-5 h-5" alt="Alipay" />
                                     <span className="text-sm font-bold">支付宝</span>
                                 </button>
                             </div>
@@ -237,19 +237,19 @@ export function PaymentModal({ user, onClose, onSuccess, onGoToInvite }: Payment
                                 </div>
                             </div>
                             <div className="text-amber-400 font-bold mb-2">请使用微信扫码支付</div>
-                            <div className="text-zinc-500 text-xs mb-6 px-12">支付完成后将自动为您开通 VIP，如支付成功未生效，请联系客服。</div>
+                            <div className="text-zinc-500 text-xs mb-6 px-12">支付成功后 VIP 权益将自动生效。如遇问题请联系客服。</div>
 
                             <button
                                 onClick={() => setQrCodeUrl(null)}
                                 className="text-zinc-400 hover:text-white text-xs underline"
                             >
-                                返回重新选择
+                                返回
                             </button>
                         </div>
                     )}
 
                     <p className="text-center text-[10px] text-zinc-600 mt-6">
-                        🔒 安全加密支付 • 支付后即时生效
+                        🔒 安全加密支付 • 即时生效
                     </p>
                 </div>
             </div>

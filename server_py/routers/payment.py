@@ -2,13 +2,85 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session, select
 from typing import List, Optional
 from ..db import get_session
-from ..models import Order, User
-from .auth import get_current_user
+from ..models import Order, User, Setting
+from .auth import get_current_user, get_current_admin
 import uuid
 import time
+import json
 from datetime import datetime, timedelta
 
 router = APIRouter()
+
+@router.get("/settings")
+async def get_payment_settings(session: Session = Depends(get_session)):
+    setting = session.get(Setting, "payment_config")
+    if not setting:
+        return {"wechat": None, "alipay": None}
+    try:
+        data = json.loads(setting.value)
+        # Mask sensitive fields
+        result = {"wechat": None, "alipay": None}
+        if data.get("wechat"):
+            w = data["wechat"]
+            result["wechat"] = {
+                "appId": w.get("appId", ""),
+                "mchId": w.get("mchId", ""),
+                "notifyUrl": w.get("notifyUrl", ""),
+                "hasApiKey": bool(w.get("apiKey"))
+            }
+        if data.get("alipay"):
+            a = data["alipay"]
+            result["alipay"] = {
+                "appId": a.get("appId", ""),
+                "notifyUrl": a.get("notifyUrl", ""),
+                "returnUrl": a.get("returnUrl", ""),
+                "sandbox": a.get("sandbox", False),
+                "hasPrivateKey": bool(a.get("privateKey")),
+                "hasPublicKey": bool(a.get("alipayPublicKey"))
+            }
+        return result
+    except:
+        return {"wechat": None, "alipay": None}
+
+@router.post("/settings")
+async def save_payment_settings(
+    payload: dict,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    setting = session.get(Setting, "payment_config")
+    existing = {}
+    if setting:
+        try:
+            existing = json.loads(setting.value)
+        except:
+            pass
+    
+    # Merge: keep existing secrets if not provided
+    if "wechat" in payload:
+        w = payload["wechat"]
+        old_w = existing.get("wechat", {})
+        if "apiKey" not in w and old_w.get("apiKey"):
+            w["apiKey"] = old_w["apiKey"]
+        existing["wechat"] = w
+    
+    if "alipay" in payload:
+        a = payload["alipay"]
+        old_a = existing.get("alipay", {})
+        if "privateKey" not in a and old_a.get("privateKey"):
+            a["privateKey"] = old_a["privateKey"]
+        if "alipayPublicKey" not in a and old_a.get("alipayPublicKey"):
+            a["alipayPublicKey"] = old_a["alipayPublicKey"]
+        existing["alipay"] = a
+    
+    if setting:
+        setting.value = json.dumps(existing)
+    else:
+        setting = Setting(key="payment_config", value=json.dumps(existing))
+    
+    session.add(setting)
+    session.commit()
+    return {"success": True}
 
 @router.post("/wechat/create")
 async def create_wechat_order(
@@ -79,7 +151,7 @@ async def alipay_notify(request: Request, session: Session = Depends(get_session
 async def get_order_status(order_id: str, session: Session = Depends(get_session)):
     order = session.get(Order, order_id)
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+        raise HTTPException(status_code=404, detail="未找到订单")
     
     return {
         "success": True,

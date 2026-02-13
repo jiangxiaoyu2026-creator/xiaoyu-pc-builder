@@ -2,7 +2,7 @@
  * 支付 API 封装
  */
 
-const API_BASE = 'http://localhost:3001/api/payment';
+const API_BASE = '/api/payment';
 
 export interface PaymentPlan {
     id: string;

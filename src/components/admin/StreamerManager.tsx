@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { UserPlus, Trash2, Ban, CheckCircle2, KeyRound, Mic2 } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { UserItem } from '../../types/adminTypes';
+import ConfirmModal from '../common/ConfirmModal';
 
 export default function StreamerManager() {
     // Filter only streamers
@@ -11,6 +12,12 @@ export default function StreamerManager() {
     const [lastReset, setLastReset] = useState<string | null>(null);
     const [passwordModal, setPasswordModal] = useState<{ isOpen: boolean, username: string, userId: string }>({ isOpen: false, username: '', userId: '' });
     const [newPassword, setNewPassword] = useState('');
+
+    // Confirm Modal State
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
 
     const refreshStreamers = async () => {
         const allUsers = await storage.getUsers();
@@ -43,11 +50,25 @@ export default function StreamerManager() {
         setNewStreamer({ username: '' });
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm('确定删除该主播账号吗？删除后不可恢复。')) {
-            const allUsers = (await storage.getUsers()).filter(u => u.id !== id);
+    const confirmDelete = (id: string) => {
+        setDeleteId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!deleteId) return;
+        setIsDeleting(true);
+        try {
+            const allUsers = (await storage.getUsers()).filter(u => u.id !== deleteId);
             await storage.saveUsers(allUsers);
             await refreshStreamers();
+            setIsDeleteModalOpen(false);
+            setDeleteId(null);
+        } catch (error) {
+            console.error('Failed to delete streamer:', error);
+            alert('删除失败');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -179,7 +200,7 @@ export default function StreamerManager() {
                                     {user.status === 'active' ? <Ban size={18} /> : <CheckCircle2 size={18} />}
                                 </button>
                                 <button
-                                    onClick={() => handleDelete(user.id)}
+                                    onClick={() => confirmDelete(user.id)}
                                     className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                     title="删除账号"
                                 >
@@ -195,6 +216,17 @@ export default function StreamerManager() {
                     )}
                 </div>
             </div>
+            {/* Confirm Delete Modal */}
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="确认删除主播"
+                description="确定删除该主播账号吗？删除后不可恢复。"
+                confirmText="确认删除"
+                isDangerous={true}
+                isLoading={isDeleting}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDelete}
+            />
         </div>
     );
 }

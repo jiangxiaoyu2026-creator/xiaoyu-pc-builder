@@ -123,7 +123,7 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
                                 <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full"></div>
                             </div>
                             <div>
-                                <h3 className="text-white font-bold text-sm">小鱼装机客服</h3>
+                                <h3 className="text-white font-bold text-sm">小鱼装机平台客服</h3>
                                 <p className="text-slate-400 text-xs flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                     人工在线

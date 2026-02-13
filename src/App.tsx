@@ -5,6 +5,8 @@ import ClientApp from './pages/ClientApp';
 import AdminApp from './pages/AdminApp';
 import { storage } from './services/storage';
 
+import ArticleDetail from './components/client/ArticleDetail';
+
 function App() {
     useEffect(() => {
         // Trigger one-time migration and initialization
@@ -14,6 +16,7 @@ function App() {
     return (
         <Routes>
             <Route path="/" element={<ClientApp />} />
+            <Route path="/article/:id" element={<ArticleDetail />} />
             <Route path="/admin" element={<AdminApp />} />
         </Routes>
     );

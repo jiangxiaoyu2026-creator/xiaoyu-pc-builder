@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { Zap, X, Sparkles, Trash2, Settings, ChevronDown, Save, RefreshCw, Share2 } from 'lucide-react';
+import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2 } from 'lucide-react';
 import { BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
@@ -19,17 +19,16 @@ export function StreamerPermissionDenied({ onApply }: { onApply: () => void }) {
                 <div className="mb-6 inline-flex p-4 bg-rose-50 rounded-full text-rose-500">
                     <Zap size={32} />
                 </div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">访问受限</h2>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">访问被拒绝</h2>
                 <p className="text-slate-500 mb-8">
-                    您当前账号暂无主播工作台访问权限。<br />
-                    请联系管理员开通主播权限。
+                    当前账号没有访问主播/商家工作台的权限。<br />
+                    请联系管理员开通权限：<span className="font-bold text-slate-900 select-all">13793195989</span>
                 </p>
-
                 <button
                     onClick={onApply}
-                    className="w-full py-3 bg-slate-900 hover:bg-indigo-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-slate-200 active:scale-95"
+                    className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-black transition-all"
                 >
-                    联系管理员申请
+                    在线咨询
                 </button>
             </div>
         </div>
@@ -81,7 +80,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const [hardwareList, setHardwareList] = useState<HardwareItem[]>([]);
 
     useEffect(() => {
-        storage.getProducts().then(setHardwareList);
+        storage.getProducts().then(res => setHardwareList(res.items));
     }, []);
 
     const suggestions = useMemo(() => {
@@ -200,19 +199,19 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className="w-full bg-transparent border-none p-0 text-slate-800 font-medium placeholder-slate-300 focus:ring-0 focus:outline-none" placeholder={entry.category === 'accessory' ? "输入配件名称…" : `输入/搜索${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                <input ref={inputRef} type="text" className="w-full bg-transparent border-none p-0 text-slate-800 font-medium placeholder-slate-300 focus:ring-0 focus:outline-none" placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
                 {showSuggestions && (
                     <div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-xl border border-slate-100 z-50 mt-2 overflow-hidden max-h-[300px] overflow-y-auto">
                         {suggestions.map((item, idx) => (
                             <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? 'bg-indigo-50 text-indigo-700 transition-colors' : 'text-slate-600 hover:bg-slate-50'}`} onMouseDown={() => selectItem(item)}>
                                 <span className="flex items-center">
                                     {item.brand} {item.model}
-                                    {item.isDiscount && <span className="ml-1.5 bg-rose-50 text-rose-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 shrink-0 scale-90 origin-left">折扣</span>}
+                                    {item.isDiscount && <span className="ml-1.5 bg-rose-50 text-rose-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 shrink-0 scale-90 origin-left">特惠</span>}
                                 </span>
                                 <span className="font-bold">¥{item.price}</span>
                             </div>
                         ))}
-                        {suggestions.length === 0 && <div className="px-4 py-3 text-xs text-slate-400 text-center">无匹配结果</div>}
+                        {suggestions.length === 0 && <div className="px-4 py-3 text-xs text-slate-400 text-center">未找到匹配项</div>}
                     </div>
                 )}
             </div>
@@ -293,7 +292,8 @@ export default function StreamerWorkbench({
     clearBuild,
     hasPermission,
     onApply,
-    onAiCheck
+    onAiCheck,
+    onOpenLibrary
 }: {
     buildList: BuildEntry[],
     onUpdate: (id: string, data: Partial<BuildEntry>) => void,
@@ -306,7 +306,8 @@ export default function StreamerWorkbench({
     clearBuild: () => void,
     hasPermission: boolean,
     onApply: () => void,
-    onAiCheck?: () => boolean
+    onAiCheck?: () => boolean,
+    onOpenLibrary: () => void
 
 }) {
     const [pricingStrategy, setPricingStrategy] = useState<import('../../types/adminTypes').PricingStrategy | null>(null);
@@ -324,7 +325,7 @@ export default function StreamerWorkbench({
                     .sort((a: any, b: any) => a.sortOrder - b.sortOrder)
                     .map((tier: any) => ({
                         value: tier.multiplier,
-                        label: `${tier.name} (${Math.round(tier.multiplier * 100)}折)`
+                        label: tier.name
                     }));
                 setStrategies(opts);
             }
@@ -393,7 +394,7 @@ export default function StreamerWorkbench({
                         // Wait for focus and move ghost to active element
                         await new Promise(r => setTimeout(r, 50));
                         const activeEl = document.activeElement as HTMLElement;
-                        updateGhost(activeEl, '检索中...');
+                        updateGhost(activeEl, '搜索中...');
 
                         // Initial hesitation
                         await new Promise(r => setTimeout(r, 100 + Math.random() * 200));
@@ -423,7 +424,7 @@ export default function StreamerWorkbench({
                         }
 
                         // 3. Simulate "Browsing"
-                        updateGhost(activeEl, '比价中...');
+                        updateGhost(activeEl, '比对价格...');
                         await new Promise(r => setTimeout(r, 150));
 
                         const browseCount = 1 + Math.floor(Math.random() * 2);
@@ -433,7 +434,7 @@ export default function StreamerWorkbench({
                         }
 
                         // 5. Final Selection
-                        setGhostStatus('锁定');
+                        setGhostStatus('已锁定');
                         row.simulateType(`${(targetItem as any).brand} ${(targetItem as any).model}`);
                         await new Promise(r => setTimeout(r, 150));
                         onUpdate(entry.id, { item: targetItem as any });
@@ -445,7 +446,7 @@ export default function StreamerWorkbench({
                 }
             }
 
-            setGhostStatus('生成报告...');
+            setGhostStatus('生成报告中...');
             await new Promise(r => setTimeout(r, 400)); // Finish hesitation
 
             setIsAiTyping(false);
@@ -453,7 +454,7 @@ export default function StreamerWorkbench({
         } catch (error) {
             console.error(error);
             setIsAiTyping(false);
-            alert("AI 生成失败");
+            alert("AI Generation Failed");
         }
     };
 
@@ -468,40 +469,39 @@ export default function StreamerWorkbench({
                         <div className="mb-6 inline-flex p-4 bg-indigo-50 rounded-full text-indigo-600 ring-4 ring-indigo-50/50">
                             <Zap size={40} />
                         </div>
-                        <h3 className="text-2xl font-extrabold text-slate-900 mb-2">主播/装机店主专属工作台</h3>
+                        <h3 className="text-2xl font-extrabold text-slate-900 mb-2">专业装机工作台</h3>
                         <p className="text-slate-500 mb-8 font-medium px-4">
-                            专为专业装机人打造的高效工具
+                            专为高效装机打造的强大工具。
                         </p>
 
                         <div className="text-left space-y-3 mb-8 bg-slate-50 p-5 rounded-2xl border border-slate-100">
                             <div className="flex items-center gap-3 text-slate-700 font-medium">
                                 <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
-                                极速装机与报价工具
+                                快速报价 & 装机单生成
                             </div>
                             <div className="flex items-center gap-3 text-slate-700 font-medium">
                                 <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
-                                粉丝专属多级折扣方案
+                                多级折扣方案管理
                             </div>
                             <div className="flex items-center gap-3 text-slate-700 font-medium">
                                 <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
-                                一键生成精美配置单图片
+                                一键生成配置图
                             </div>
                             <div className="flex items-center gap-3 text-slate-700 font-medium">
                                 <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
-                                自动生成引流宣传海报
+                                营销海报生成器
                             </div>
                         </div>
 
                         <div className="bg-indigo-50 rounded-xl p-4 mb-6 border border-indigo-100">
-                            <p className="text-indigo-900 text-sm font-bold mb-1">如需开通请联系管理员</p>
-                            <p className="text-indigo-600 font-mono text-lg font-bold select-all">WX: xiaoyu_admin888</p>
+                            <p className="text-indigo-900 text-sm font-bold mb-1">联系管理员开通权限</p>
+                            <p className="text-indigo-600 font-mono text-lg font-bold select-all">手机: 13793195989</p>
                         </div>
-
                         <button
                             onClick={onApply}
-                            className="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-xl shadow-slate-200 active:scale-95"
+                            className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all"
                         >
-                            联系管理员开通
+                            立即在线咨询
                         </button>
                     </div>
                 </div>
@@ -520,17 +520,17 @@ export default function StreamerWorkbench({
                         极速录入模式
                     </h2>
                     <div className="flex gap-3">
-                        <button onClick={() => setShowChatSettings(true)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors mr-2" title="咨询设置">
-                            <Settings size={18} />
+                        <button onClick={onOpenLibrary} className="flex items-center gap-1.5 px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-full transition-colors active:scale-95 border border-slate-200">
+                            <Zap size={14} className="text-amber-500" /> 快速装机
                         </button>
                         <button onClick={() => {
                             if (onAiCheck && !onAiCheck()) return;
                             setShowAiModal(true);
                         }} className="flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-full shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0">
-                            <Sparkles size={14} /> AI 帮我写
+                            <Sparkles size={14} /> AI装机
                         </button>
                         <div className="text-xs font-medium text-slate-500 bg-white text-indigo-700 px-3 py-1.5 rounded-full border border-indigo-100 shadow-sm">
-                            按 Enter 自动跳转
+                            按 Enter 跳过
                         </div>
                     </div>
                 </div>
@@ -538,10 +538,10 @@ export default function StreamerWorkbench({
                 <div className="overflow-x-auto">
                     <div className="min-w-[600px]">
                         <div className="grid grid-cols-[80px_1fr_80px_100px_50px] gap-4 px-6 py-3 bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                            <div>类型</div>
-                            <div>硬件型号 (支持联想搜索/自定义录入)</div>
+                            <div>类别</div>
+                            <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
-                            <div className="text-right">单价</div>
+                            <div className="text-right">价格</div>
                             <div></div>
                         </div>
 
@@ -572,7 +572,7 @@ export default function StreamerWorkbench({
                                 <ChevronDown className="absolute right-2 top-1.5 text-slate-400 pointer-events-none" size={12} />
                             </div>
                         </div>
-                        <div className="text-[10px] text-slate-400 font-medium pl-0.5">标准价格含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 装机售后服务费</div>
+                        <div className="text-[10px] text-slate-400 font-medium pl-0.5">标准价格包含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 服务费</div>
                     </div>
 
                     <div className="flex flex-col items-center justify-center">
@@ -604,7 +604,7 @@ export default function StreamerWorkbench({
                             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-white">
                                     <Sparkles size={18} className="animate-pulse" />
-                                    <h3 className="font-bold text-lg tracking-wide">AI 装机点评</h3>
+                                    <h3 className="font-bold text-lg tracking-wide">AI 装机分析</h3>
                                 </div>
                                 <button onClick={() => setAiResult(null)} className="text-white/80 hover:text-white transition-colors">
                                     <X size={18} />

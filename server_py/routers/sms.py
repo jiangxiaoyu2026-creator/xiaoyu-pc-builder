@@ -10,6 +10,52 @@ import os
 
 router = APIRouter()
 
+@router.get("/config")
+async def get_sms_config(session: Session = Depends(get_session)):
+    """前端获取SMS配置状态"""
+    setting = session.get(Setting, "sms_config")
+    if not setting:
+        return {
+            "success": True,
+            "config": {
+                "accessKeyId": "",
+                "signName": "",
+                "templateCode": "",
+                "isConfigured": False
+            }
+        }
+    try:
+        data = json.loads(setting.value)
+        return {
+            "success": True,
+            "config": {
+                "accessKeyId": data.get("accessKeyId", "")[:4] + "****" if data.get("accessKeyId") else "",
+                "signName": data.get("signName", ""),
+                "templateCode": data.get("templateCode", ""),
+                "isConfigured": bool(data.get("accessKeyId") or data.get("appCode"))
+            }
+        }
+    except:
+        return {"success": False, "config": {"isConfigured": False}}
+
+@router.post("/config")
+@router.post("/config/")
+async def save_sms_config(
+    config: dict,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """保存SMS配置"""
+    setting = session.get(Setting, "sms_config")
+    if not setting:
+        setting = Setting(key="sms_config", value=json.dumps(config))
+    else:
+        setting.value = json.dumps(config)
+
+    session.add(setting)
+    session.commit()
+    return {"success": True}
+
 @router.get("/settings")
 async def get_sms_settings(
     session: Session = Depends(get_session),
@@ -31,6 +77,7 @@ async def get_sms_settings(
         return {}
 
 @router.post("/settings")
+@router.post("/settings/")
 async def save_sms_settings(
     settings: dict,
     session: Session = Depends(get_session),
@@ -47,18 +94,19 @@ async def save_sms_settings(
     return {"success": True}
 
 @router.post("/send-code")
+@router.post("/send-code/")
 async def send_code(
     data: dict,
     session: Session = Depends(get_session)
 ):
     mobile = data.get("mobile")
     if not mobile:
-        raise HTTPException(status_code=400, detail="Mobile number required")
+        raise HTTPException(status_code=400, detail="请输入手机号")
     
     # Get SMS config for appCode
     setting = session.get(Setting, "sms_config")
     if not setting:
-        raise HTTPException(status_code=500, detail="SMS service not configured")
+        raise HTTPException(status_code=500, detail="短信服务未配置")
     
     config = json.loads(setting.value)
     app_code = config.get("appCode")
@@ -68,15 +116,16 @@ async def send_code(
         app_code = config.get("accessKeyId")
     
     if not app_code:
-        raise HTTPException(status_code=500, detail="Aliyun AppCode missing in configuration")
+        raise HTTPException(status_code=500, detail="配置中缺少阿里云 AppCode")
     
     success = await SMSService.send_verification_code(mobile, session, app_code)
     if not success:
-        raise HTTPException(status_code=500, detail="Failed to send verification code. Please check your SMS configuration.")
+        raise HTTPException(status_code=500, detail="验证码发送失败，请检查短信服务配置。")
         
-    return {"success": True, "message": "Verification code sent"}
+    return {"success": True, "message": "验证码已发送"}
 
 @router.post("/send-test")
+@router.post("/send-test/")
 async def send_test_sms(
     data: dict,
     session: Session = Depends(get_session),
@@ -84,6 +133,6 @@ async def send_test_sms(
 ):
     phone = data.get("phone")
     if not phone:
-        raise HTTPException(status_code=400, detail="Phone number required")
+        raise HTTPException(status_code=400, detail="请输入手机号")
     
     return {"success": True, "message": f"Mock test SMS sent to {phone}"}

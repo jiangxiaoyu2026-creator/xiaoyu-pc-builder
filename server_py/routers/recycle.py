@@ -10,6 +10,7 @@ from datetime import datetime
 router = APIRouter()
 
 @router.get("/", response_model=List[RecycleRequest])
+@router.get("", response_model=List[RecycleRequest])
 async def get_recycle_requests(
     session: Session = Depends(get_session),
     admin: User = Depends(get_current_admin)
@@ -17,6 +18,7 @@ async def get_recycle_requests(
     return session.exec(select(RecycleRequest)).all()
 
 @router.post("/")
+@router.post("")
 async def create_recycle_request(
     request_data: dict, 
     session: Session = Depends(get_session),
@@ -45,7 +47,7 @@ async def mark_as_read(
 ):
     req = session.get(RecycleRequest, req_id)
     if not req:
-        raise HTTPException(status_code=404, detail="Request not found")
+        raise HTTPException(status_code=404, detail="申请记录未找到")
     
     req.isRead = True
     session.add(req)
@@ -60,9 +62,23 @@ async def mark_as_completed(
 ):
     req = session.get(RecycleRequest, req_id)
     if not req:
-        raise HTTPException(status_code=404, detail="Request not found")
+        raise HTTPException(status_code=404, detail="申请记录未找到")
     
     req.status = "completed"
     session.add(req)
+    session.commit()
+    return {"success": True}
+
+@router.delete("/{req_id}")
+async def delete_recycle_request(
+    req_id: str,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    req = session.get(RecycleRequest, req_id)
+    if not req:
+        raise HTTPException(status_code=404, detail="申请记录未找到")
+    
+    session.delete(req)
     session.commit()
     return {"success": True}

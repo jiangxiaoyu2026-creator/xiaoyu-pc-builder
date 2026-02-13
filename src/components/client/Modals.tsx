@@ -1,7 +1,7 @@
 
 import { useState, useMemo } from 'react';
 import { X, Share2, Save, Copy, Search, Cpu, Monitor, User, Heart, CheckCircle2 } from 'lucide-react';
-import { ConfigTemplate, BuildEntry, Category } from '../../types/clientTypes';
+import { ConfigTemplate, BuildEntry, Category, HardwareItem } from '../../types/clientTypes';
 import { TAGS_APPEARANCE, TAGS_USAGE, ALL_SCENARIO_TAGS, CATEGORY_MAP, HARDWARE_DB } from '../../data/clientData';
 
 export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, onPublish: (data: { title: string, tags: string[], desc: string }) => void }) {
@@ -91,7 +91,7 @@ export function SavePreviewModal({ buildList, pricing, onClose, onCopy, onSave }
     );
 }
 
-export function ConfigLibraryModal({ configList, onClose, onSelectConfig }: { configList: ConfigTemplate[], onClose: () => void, onSelectConfig: (cfg: ConfigTemplate) => void }) {
+export function ConfigLibraryModal({ configList, products, onClose, onSelectConfig }: { configList: ConfigTemplate[], products?: HardwareItem[], onClose: () => void, onSelectConfig: (cfg: ConfigTemplate) => void }) {
     const [filterTag, setFilterTag] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -149,8 +149,9 @@ export function ConfigLibraryModal({ configList, onClose, onSelectConfig }: { co
                 <div className="flex-1 overflow-y-auto p-6 bg-slate-50 custom-scrollbar">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {filteredConfigs.map(cfg => {
-                            const cpuItem = HARDWARE_DB.find(h => h.id === cfg.items?.cpu);
-                            const gpuItem = HARDWARE_DB.find(h => h.id === cfg.items?.gpu);
+                            const sourceDB = products || HARDWARE_DB;
+                            const cpuItem = sourceDB.find(h => h.id === cfg.items?.cpu);
+                            const gpuItem = sourceDB.find(h => h.id === cfg.items?.gpu);
                             // Simpler names
                             const cpuName = cpuItem ? cpuItem.model.replace(/Intel Core |AMD Ryzen /i, '').replace(/ Processor/i, '') : 'CPU';
                             const gpuName = gpuItem ? gpuItem.model.replace(/NVIDIA GeForce |AMD Radeon /i, '').replace(/ Graphics/i, '') : '集成显卡';
@@ -189,7 +190,7 @@ export function ConfigLibraryModal({ configList, onClose, onSelectConfig }: { co
                                                 <Cpu size={16} className="group-hover:text-indigo-500 transition-colors" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-[10px] font-bold text-slate-400 uppercase">Processor</div>
+                                                <div className="text-[10px] font-bold text-slate-400 uppercase">核心处理器</div>
                                                 <div className="text-xs font-bold text-slate-700 truncate">{cpuName}</div>
                                             </div>
                                         </div>
@@ -198,7 +199,7 @@ export function ConfigLibraryModal({ configList, onClose, onSelectConfig }: { co
                                                 <Monitor size={16} className="group-hover:text-indigo-500 transition-colors" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-[10px] font-bold text-slate-400 uppercase">Graphics</div>
+                                                <div className="text-[10px] font-bold text-slate-400 uppercase">图形显卡</div>
                                                 <div className="text-xs font-bold text-slate-700 truncate">{gpuName}</div>
                                             </div>
                                         </div>

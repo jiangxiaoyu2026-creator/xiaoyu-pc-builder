@@ -19,12 +19,17 @@
 
 ## 2. 后端部署准备
 
-后端是一个运行在 Node.js 环境下的 Express 服务。
+后端已迁移至 Python (FastAPI)。
 
 **操作步骤：**
-1. 确保服务器上安装了 Node.js (建议版本 v18+)。
-2. 将 `server` 文件夹和 `package.json` 复制到生产环境。
-3. 在生产环境中运行 `npm install --production` 安装依赖。
+1. 确保服务器上安装了 Python 3.9+。
+2. 将 `server_py` 文件夹、`requirements.txt`、`.env` 和 `products.json` (如果需要) 复制到生产环境。
+3. 创建虚拟环境并安装依赖：
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r server_py/requirements.txt
+   ```
 4. **环境变量**：确保生产环境中存在 `.env` 文件，并包含必要的配置（如 阿里云 SMS 密钥等）。
 
 ---
@@ -32,16 +37,21 @@
 ## 3. 部署方案推荐
 
 ### 方案 A：宝塔面板 / VPS (推荐，控制力最强)
-1. **上传文件**：将根目录下的所有内容（除了 `node_modules` 和 `.git`）上传到服务器。
-2. **PM2 管理**：在服务器上启动并管理 Node 服务：
+1. **上传文件**：将根目录下的 `dist` (前端)、`server_py` (后端)、`requirements.txt` 等文件上传到服务器。
+2. **进程管理**：使用 `supervisor` 或 `systemd` 或 `nohup` 运行 Python 服务。
    ```bash
-   npm install pm2 -g
-   pm2 start server/index.ts --interpreter tsx --name "pc-builder-api"
+   # 示例：使用 uvicorn 直接运行 (生产环境建议配合 gunicorn)
+   python3 -m uvicorn server_py.main:app --host 0.0.0.0 --port 8000
+   ```
+   或者使用 `pm2` 管理 Python 进程：
+   ```bash
+   pm2 start "python3 -m uvicorn server_py.main:app --host 0.0.0.0 --port 8000" --name "pc-builder-api"
    ```
 3. **Nginx 配置**：
    - 将域名指向服务器。
    - 配置 Nginx `root` 目录为项目中的 `dist` 文件夹。
-   - 配置反向代理，将请求转发给后端的端口（通常是 `.env` 中定义的端口）。
+   - 配置反向代理，将 `/api` 开头的请求转发给后端的 8000 端口。
+
 
 ### 方案 B：云平台 (最简单，自动化)
 - **前端**：可以使用 [Vercel](https://vercel.com) 或 [Netlify](https://netlify.com)，只需关联 GitHub 仓库即可自动构建部署。

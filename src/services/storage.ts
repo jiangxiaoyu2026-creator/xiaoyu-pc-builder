@@ -48,7 +48,7 @@ const DEFAULT_SMS_SETTINGS: SMSSettings = {
     provider: 'mock',
     accessKeyId: '',
     accessKeySecret: '',
-    signName: '小鱼装机',
+    signName: '小鱼装机平台',
     templateCode: 'SMS_123456789',
     enabled: false
 };
@@ -100,19 +100,75 @@ class StorageService {
                 for (const u of users) await ApiService.post('/auth/register', u);
             }
 
+            localStorage.removeItem(KEYS.PRODUCTS);
+            localStorage.removeItem(KEYS.CONFIGS);
+            localStorage.removeItem(KEYS.SETTINGS);
+            localStorage.removeItem(KEYS.USED_ITEMS);
+            localStorage.removeItem(KEYS.USERS);
+
             localStorage.setItem('xiaoyu_db_migration_done_v1', 'true');
-            console.log('UseStorage: Migration complete.');
+            console.log('UseStorage: Migration complete and local data cleared.');
         } catch (err) {
             console.error('Migration failed:', err);
+        }
+
+        // Cleanup V2: Ensure all legacy data is removed even if migrated previously
+        const cleanupDone = localStorage.getItem('xiaoyu_cleanup_done_v2');
+        if (!cleanupDone) {
+            console.log('UseStorage: Cleaning up legacy local data (V2)...');
+            localStorage.removeItem(KEYS.PRODUCTS);
+            localStorage.removeItem(KEYS.CONFIGS);
+            localStorage.removeItem(KEYS.SETTINGS);
+            localStorage.removeItem(KEYS.USED_ITEMS);
+            localStorage.removeItem(KEYS.USERS);
+            localStorage.setItem('xiaoyu_cleanup_done_v2', 'true');
         }
     }
 
     // --- Products ---
-    async getProducts(): Promise<HardwareItem[]> {
+    async getProducts(page: number = 1, pageSize: number = 20): Promise<{ items: HardwareItem[], total: number }> {
         try {
-            return await ApiService.get('/products');
+            const result = await ApiService.get(`/products?page=${page}&page_size=${pageSize}`);
+            return {
+                items: result.items || [],
+                total: result.total || 0
+            };
         } catch (e) {
             console.error('Failed to load products', e);
+            return { items: [], total: 0 };
+        }
+    }
+
+    async getAdminProducts(page: number = 1, pageSize: number = 20, category: string = 'all', brand: string = 'all', search: string = ''): Promise<{ items: HardwareItem[], total: number }> {
+        try {
+            const params = new URLSearchParams({
+                page: page.toString(),
+                page_size: pageSize.toString()
+            });
+            if (category && category !== 'all') params.append('category', category);
+            if (brand && brand !== 'all') params.append('brand', brand);
+            if (search) params.append('search', search);
+
+            const result = await ApiService.get(`/products/admin?${params.toString()}`);
+            return {
+                items: Array.isArray(result.items) ? result.items : [],
+                total: result.total || 0
+            };
+        } catch (e) {
+            console.error('Failed to load admin products', e);
+            return { items: [], total: 0 };
+        }
+    }
+
+    async getBrands(category: string = 'all'): Promise<string[]> {
+        try {
+            const params = new URLSearchParams();
+            if (category && category !== 'all') params.append('category', category);
+
+            const result = await ApiService.get(`/products/brands?${params.toString()}`);
+            return Array.isArray(result) ? result : [];
+        } catch (e) {
+            console.error('Failed to load brands', e);
             return [];
         }
     }
@@ -135,12 +191,45 @@ class StorageService {
     }
 
     // --- Configs ---
-    async getConfigs(): Promise<ConfigItem[]> {
+    async getConfigs(params: {
+        page?: number,
+        pageSize?: number,
+        tag?: string,
+        search?: string,
+        sortBy?: string,
+        isRecommended?: boolean,
+        status?: string
+    } = {}): Promise<{ items: ConfigItem[], total: number }> {
+        const { page = 1, pageSize = 20, tag, search, sortBy, isRecommended, status } = params;
         try {
-            return await ApiService.get('/configs');
+            let url = `/configs?page=${page}&page_size=${pageSize}`;
+            if (tag && tag !== 'all') url += `&tag=${encodeURIComponent(tag)}`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (sortBy) url += `&sort_by=${sortBy}`;
+            if (isRecommended !== undefined) url += `&is_recommended=${isRecommended}`;
+            if (status) url += `&status=${status}`;
+
+            const result = await ApiService.get(url);
+            return {
+                items: Array.isArray(result.items) ? result.items : [],
+                total: result.total || 0
+            };
         } catch (e) {
             console.error('Failed to load configs', e);
-            return [];
+            return { items: [], total: 0 };
+        }
+    }
+
+    async getAdminConfigs(page: number = 1, pageSize: number = 20, status: string = 'all'): Promise<{ items: ConfigItem[], total: number }> {
+        try {
+            const result = await ApiService.get(`/configs?page=${page}&page_size=${pageSize}&status=${status}`);
+            return {
+                items: Array.isArray(result.items) ? result.items : [],
+                total: result.total || 0
+            };
+        } catch (e) {
+            console.error('Failed to load admin configs', e);
+            return { items: [], total: 0 };
         }
     }
 
@@ -149,12 +238,6 @@ class StorageService {
             await ApiService.post('/configs', c);
         }
         this.logNewConfig();
-        window.dispatchEvent(new Event('xiaoyu-storage-update'));
-    }
-
-
-    async saveConfig(config: ConfigItem) {
-        await ApiService.post('/configs', config);
         window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 
@@ -219,14 +302,18 @@ class StorageService {
     // --- Users ---
     async getUsers(): Promise<UserItem[]> {
         try {
-            return await ApiService.get('/auth/users'); // I need to add this route or similar
+            return await ApiService.get('/auth/users');
         } catch (e) {
             return [];
         }
     }
 
     async saveUser(user: UserItem) {
-        await ApiService.post('/auth/user', user); // Need to add this route
+        if (user.id || (user as any)._id) {
+            await ApiService.post('/auth/user', user);
+        } else {
+            await ApiService.post('/auth/users', user);
+        }
 
         // Update current user if it matches
         const currentUser = this.getCurrentUser();
@@ -268,22 +355,27 @@ class StorageService {
     }
 
     async ensureUserInviteCode(userId: string): Promise<string> {
-        const users = await this.getUsers();
-        const user = users.find(u => u.id === userId || (u as any)._id === userId);
-        if (!user) return '';
-
-        if (!user.inviteCode) {
-            // 生成唯一邀请码
-            let code = this.generateInviteCode();
-            while (users.some(u => u.inviteCode === code)) {
-                code = this.generateInviteCode();
-            }
-            user.inviteCode = code;
-            user.inviteCount = user.inviteCount || 0;
-            user.inviteVipDays = user.inviteVipDays || 0;
-            await this.saveUser(user);
+        // 1. Try to get from local current user first
+        let currentUser = this.getCurrentUser();
+        if (currentUser && (currentUser.id === userId || (currentUser as any)._id === userId)) {
+            if (currentUser.inviteCode) return currentUser.inviteCode;
         }
-        return user.inviteCode;
+
+        // 2. Try to fetch from /auth/me (if it is the current user)
+        try {
+            const remoteUser = await ApiService.get('/auth/me');
+            if (remoteUser && (remoteUser.id === userId || remoteUser._id === userId)) {
+                // Update local storage if needed
+                if (currentUser && (currentUser.id === userId || (currentUser as any)._id === userId)) {
+                    localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(remoteUser));
+                }
+                return remoteUser.inviteCode || '';
+            }
+        } catch (e) {
+            console.error('Failed to fetch user profile for invite code', e);
+        }
+
+        return '';
     }
 
     async findUserByInviteCode(code: string): Promise<UserItem | null> {
@@ -330,21 +422,68 @@ class StorageService {
     }
 
     // --- Used Items ---
-    async getUsedItems(): Promise<UsedItem[]> {
+    async getUsedItems(params: {
+        page?: number,
+        pageSize?: number,
+        type?: string,
+        category?: string,
+        condition?: string,
+        status?: string
+    } = {}): Promise<{ items: UsedItem[], total: number }> {
+        const { page = 1, pageSize = 20, type, category, condition, status } = params;
         try {
-            return await ApiService.get('/used');
+            let url = `/used?page=${page}&page_size=${pageSize}`;
+            if (type && type !== 'all') url += `&type=${type}`;
+            if (category && category !== 'all') url += `&category=${encodeURIComponent(category)}`;
+            if (condition && condition !== 'all') url += `&condition=${encodeURIComponent(condition)}`;
+            if (status) url += `&status=${status}`;
+
+            const result = await ApiService.get(url);
+            if (result && Array.isArray(result.items)) {
+                return {
+                    items: result.items.map((item: any) => ({
+                        ...item,
+                        images: typeof item.images === 'string' ? JSON.parse(item.images) : (item.images || []),
+                        inspectionReport: typeof item.inspectionReport === 'string' ? JSON.parse(item.inspectionReport) : item.inspectionReport
+                    })),
+                    total: result.total || 0
+                };
+            }
+            return { items: [], total: 0 };
         } catch (e) {
-            return [];
+            return { items: [], total: 0 };
+        }
+    }
+
+    async getAdminUsedItems(page: number = 1, pageSize: number = 20, status: string = 'all'): Promise<{ items: UsedItem[], total: number }> {
+        try {
+            const result = await ApiService.get(`/used?page=${page}&page_size=${pageSize}&status=${status}`);
+            if (result && Array.isArray(result.items)) {
+                return {
+                    items: result.items.map((item: any) => ({
+                        ...item,
+                        images: typeof item.images === 'string' ? JSON.parse(item.images) : (item.images || []),
+                        inspectionReport: typeof item.inspectionReport === 'string' ? JSON.parse(item.inspectionReport) : item.inspectionReport
+                    })),
+                    total: result.total || 0
+                };
+            }
+            return { items: [], total: 0 };
+        } catch (e) {
+            return { items: [], total: 0 };
         }
     }
 
     async updateUsedItem(item: UsedItem) {
-        await ApiService.post('/used', item);
+        // Use PUT for updates. Ensure item.id is present.
+        const id = item.id || (item as any)._id;
+        if (!id) return;
+        await ApiService.put(`/used/${id}`, item);
         window.dispatchEvent(new Event('xiaoyu-used-items-update'));
     }
 
     async deleteUsedItem(id: string) {
-        await ApiService.delete(`/used?id=${id}`);
+        await ApiService.delete(`/used/${id}`); // Standard REST
         window.dispatchEvent(new Event('xiaoyu-used-items-update'));
     }
 
@@ -354,21 +493,30 @@ class StorageService {
     }
 
     async markUsedItemAsSold(id: string) {
-        const item = await ApiService.get(`/used/${id}`); // assuming GET /used/:id exists or use find
-        if (item) {
-            item.status = 'sold';
-            item.soldAt = Date.now();
-            await ApiService.post('/used', item);
+        // First get the item
+        try {
+            // We might need to fetch via API if not local, but here we assume storage sync.
+            // Better to just call an API endpoint if available, but let's stick to PUT update pattern
+            // Since we don't have a direct "get one" in storage cleanly without fetching all, 
+            // let's rely on the backend router's specific endpoint if it exists, or update via PUT.
+            // The router has @router.post("/{item_id}/mark-sold"), let's use that.
+            await ApiService.post(`/used/${id}/mark-sold`, {});
             window.dispatchEvent(new Event('xiaoyu-used-items-update'));
+        } catch (e) {
+            console.error("Failed to mark as sold", e);
         }
     }
 
 
-    async getRecycleRequests(): Promise<RecycleRequest[]> {
+    async getRecycleRequests(page: number = 1, pageSize: number = 20): Promise<{ items: RecycleRequest[], total: number }> {
         try {
-            return await ApiService.get('/recycle');
+            const result = await ApiService.get(`/recycle?page=${page}&page_size=${pageSize}`);
+            return {
+                items: Array.isArray(result.items) ? result.items : [],
+                total: result.total || 0
+            };
         } catch (e) {
-            return [];
+            return { items: [], total: 0 };
         }
     }
 
@@ -383,13 +531,11 @@ class StorageService {
     }
 
     async markRecycleRequestAsRead(id: string) {
-        // Simple update: fetch then update
-        const resp = await ApiService.get('/recycle');
-        const req = resp.find((r: any) => r._id === id || r.id === id);
-        if (req) {
-            req.isRead = true;
-            await ApiService.post('/recycle', req);
+        try {
+            await ApiService.post(`/recycle/${id}/read`, {});
             window.dispatchEvent(new Event('xiaoyu-recycle-requests-update'));
+        } catch (error) {
+            console.error('Failed to mark recycle request as read:', error);
         }
     }
 
@@ -439,10 +585,21 @@ class StorageService {
 
     async login(username: string, password?: string): Promise<UserItem | null> {
         try {
-            const res = await ApiService.post('/auth/login', { username, password });
+            const res = await ApiService.login({ username, password: password || '' });
             localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(res.user));
-            // Store token if needed, usually in a cookie or localStorage
-            if (res.token) localStorage.setItem('xiaoyu_token', res.token);
+            if (res.access_token) localStorage.setItem('xiaoyu_token', res.access_token);
+            window.dispatchEvent(new Event('xiaoyu-login'));
+            return res.user;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async loginEmail(email: string, code: string): Promise<UserItem | null> {
+        try {
+            const res = await ApiService.post('/auth/login-email', { email, code });
+            localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(res.user));
+            if (res.access_token) localStorage.setItem('xiaoyu_token', res.access_token);
             window.dispatchEvent(new Event('xiaoyu-login'));
             return res.user;
         } catch (e) {
@@ -549,172 +706,233 @@ class StorageService {
         } catch (e) { }
     }
 
+    // --- Email Rate Limiting ---
+    checkEmailLimit(email: string): { canSend: boolean, reason?: string } {
+        try {
+            const logsData = localStorage.getItem('xiaoyu_email_logs');
+            const logs: Record<string, { dailyCount: number, lastDate: string, lastTimestamp: number }> = logsData ? JSON.parse(logsData) : {};
+
+            const log = logs[email];
+            const today = new Date().toISOString().split('T')[0];
+
+            if (!log) return { canSend: true };
+
+            const now = Date.now();
+            if (now - log.lastTimestamp < 60000) {
+                return { canSend: false, reason: '请求过于频繁，请 60 秒后再试' };
+            }
+
+            if (log.lastDate === today && log.dailyCount >= 10) { // Email allows more than SMS
+                return { canSend: false, reason: '该邮箱今日验证码发送次数已达上限 (10次)' };
+            }
+
+            return { canSend: true };
+        } catch (e) {
+            return { canSend: true };
+        }
+    }
+
+    logEmailAttempt(email: string) {
+        try {
+            const logsData = localStorage.getItem('xiaoyu_email_logs');
+            const logs: Record<string, { dailyCount: number, lastDate: string, lastTimestamp: number }> = logsData ? JSON.parse(logsData) : {};
+
+            const today = new Date().toISOString().split('T')[0];
+            const log = logs[email] || { dailyCount: 0, lastDate: today, lastTimestamp: 0 };
+
+            if (log.lastDate !== today) {
+                log.dailyCount = 1;
+                log.lastDate = today;
+            } else {
+                log.dailyCount += 1;
+            }
+            log.lastTimestamp = Date.now();
+
+            logs[email] = log;
+            localStorage.setItem('xiaoyu_email_logs', JSON.stringify(logs));
+        } catch (e) { }
+    }
+
+    async saveConfig(config: ConfigItem) {
+        await ApiService.post('/configs', config);
+        window.dispatchEvent(new Event('xiaoyu-storage-update'));
+    }
+
+    async updateConfig(config: ConfigItem) {
+        if (!config.id) return;
+        await ApiService.put(`/configs/${config.id}`, config);
+        window.dispatchEvent(new Event('xiaoyu-storage-update'));
+    }
+
+    // --- Settings ---
+    // --- Articles ---
+    async getArticles(page: number = 1, pageSize: number = 20): Promise<{ items: import('../types/clientTypes').Article[], total: number }> {
+        try {
+            const result = await ApiService.get(`/articles/?page=${page}&page_size=${pageSize}`);
+            return {
+                items: Array.isArray(result.items) ? result.items : [],
+                total: result.total || 0
+            };
+        } catch (e) {
+            console.error('Failed to get articles', e);
+            return { items: [], total: 0 };
+        }
+    }
+
+    async getArticle(id: string): Promise<import('../types/clientTypes').Article | null> {
+        try {
+            return await ApiService.get(`/articles/${id}`);
+        } catch (e) {
+            console.error('Failed to get article', e);
+            return null;
+        }
+    }
+
+    async saveArticle(article: Partial<import('../types/clientTypes').Article>) {
+        if (article.id) {
+            await ApiService.put(`/articles/${article.id}`, article);
+        } else {
+            await ApiService.post('/articles/', article);
+        }
+        window.dispatchEvent(new Event('xiaoyu-article-update'));
+    }
+
+    async deleteArticle(id: string) {
+        await ApiService.delete(`/articles/${id}`);
+        window.dispatchEvent(new Event('xiaoyu-article-update'));
+    }
+
     // --- Enhanced Chat System ---
 
     async getChatSettings(): Promise<import('../types/adminTypes').ChatSettings> {
         try {
-            const data = localStorage.getItem('xiaoyu_chat_settings');
-            return data ? JSON.parse(data) : {
-                welcomeMessage: '您好！我是小鱼装机客服，请问有什么可以帮您？',
-                quickReplies: ['如何下单？', '发货时间是多久？', '售后保修政策', '我想咨询配置推荐']
+            const result = await ApiService.get('/chat/configurations');
+            if (result) return result;
+            return {
+                welcomeMessage: '您好！有什么可以帮您？',
+                quickReplies: [],
+                workingHours: '9:00 - 18:00',
+                autoReply: '',
+                enabled: true
             };
         } catch (e) {
-            return { welcomeMessage: '', quickReplies: [] };
+            console.error('Failed to get chat settings', e);
+            return {
+                welcomeMessage: '您好！(离线)',
+                quickReplies: [],
+                workingHours: '9:00 - 18:00',
+                autoReply: '',
+                enabled: true
+            };
         }
     }
 
     async saveChatSettings(settings: import('../types/adminTypes').ChatSettings) {
-        localStorage.setItem('xiaoyu_chat_settings', JSON.stringify(settings));
+        try {
+            await ApiService.post('/chat/configurations', settings);
+            window.dispatchEvent(new Event('xiaoyu-chat-settings-update'));
+        } catch (e) {
+            console.error('Failed to save chat settings', e);
+            throw e;
+        }
     }
 
     // Sessions
     async getChatSessions(): Promise<import('../types/adminTypes').ChatSession[]> {
         try {
-            const data = localStorage.getItem('xiaoyu_chat_sessions');
-            return data ? JSON.parse(data) : [];
-        } catch (e) { return []; }
+            const sessions = await ApiService.get('/chat/admin/sessions');
+            return sessions || [];
+        } catch (e) {
+            console.error('Failed to get chat sessions', e);
+            return [];
+        }
     }
 
     async getChatSession(sessionId: string): Promise<import('../types/adminTypes').ChatSession | undefined> {
+        // For admin usage mostly
         const sessions = await this.getChatSessions();
         return sessions.find(s => s.id === sessionId);
     }
 
-    async saveChatSession(session: import('../types/adminTypes').ChatSession) {
-        let sessions = await this.getChatSessions();
-        const idx = sessions.findIndex(s => s.id === session.id);
-        if (idx >= 0) {
-            sessions[idx] = session;
-        } else {
-            sessions.push(session);
+    async saveChatSession(_session: import('../types/adminTypes').ChatSession) {
+        // No-op: Backend handles session updates via message/init
+    }
+
+    async markChatSessionRead(sessionId: string) {
+        try {
+            await ApiService.post(`/chat/admin/sessions/${sessionId}/read`, {});
+            window.dispatchEvent(new Event('xiaoyu-chat-session-update'));
+        } catch (e) {
+            console.error('Failed to mark session read', e);
         }
-        // Sort by updatedAt desc
-        sessions.sort((a, b) => b.updatedAt - a.updatedAt);
-        localStorage.setItem('xiaoyu_chat_sessions', JSON.stringify(sessions));
-        window.dispatchEvent(new Event('xiaoyu-chat-session-update'));
     }
 
     // Messages
     async getChatMessages(sessionId: string): Promise<import('../types/adminTypes').ChatMessage[]> {
         try {
-            const data = localStorage.getItem(`xiaoyu_chat_msgs_${sessionId}`);
-            return data ? JSON.parse(data) : [];
-        } catch (e) { return []; }
+            const msgs = await ApiService.get(`/chat/messages?sessionId=${sessionId}`);
+            return msgs || [];
+        } catch (e) {
+            console.error('Failed to get messages', e);
+            return [];
+        }
     }
 
     async addChatMessage(sessionId: string, message: Omit<import('../types/adminTypes').ChatMessage, 'id' | 'sessionId' | 'timestamp' | 'isRead'>) {
-        const fullMsg: import('../types/adminTypes').ChatMessage = {
-            id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            sessionId,
-            timestamp: Date.now(),
-            isRead: false,
-            ...message
-        };
+        try {
+            const payload = {
+                sessionId,
+                content: message.content,
+                type: message.type || 'text',
+                sender: message.sender
+            };
+            const newMsg = await ApiService.post('/chat/messages', payload);
 
-        // 1. Save Message
-        const msgs = await this.getChatMessages(sessionId);
-        msgs.push(fullMsg);
-        localStorage.setItem(`xiaoyu_chat_msgs_${sessionId}`, JSON.stringify(msgs));
+            // Dispatch events for UI update
+            window.dispatchEvent(new CustomEvent('xiaoyu-chat-message-update', { detail: { sessionId } }));
+            window.dispatchEvent(new Event('xiaoyu-chat-session-update'));
 
-        // 2. Update Session
-        const session = await this.getChatSession(sessionId);
-        if (session) {
-            session.lastMessage = fullMsg;
-            session.updatedAt = Date.now();
-            if (message.sender === 'user') {
-                session.unreadCount += 1; // Admin sees unread
-            }
-            await this.saveChatSession(session);
+            return newMsg;
+        } catch (e) {
+            console.error('Failed to send message', e);
+            throw e;
         }
-
-        window.dispatchEvent(new CustomEvent('xiaoyu-chat-message-update', { detail: { sessionId } }));
-
-        // --- Auto Reply Logic ---
-        if (message.sender === 'user') {
-            const settings = await this.getChatSettings();
-            if (settings.autoReplyEnabled && settings.autoReplyContent) {
-                // Check if last message was already this auto-reply (prevent spam)
-                const lastAdminMsg = msgs.slice().reverse().find(m => m.sender === 'admin' || m.sender === 'system');
-
-                if (!lastAdminMsg || lastAdminMsg.content !== settings.autoReplyContent) {
-                    const autoMsg: import('../types/adminTypes').ChatMessage = {
-                        id: `msg-${Date.now() + 1}-${Math.random().toString(36).substr(2, 9)}`,
-                        sessionId,
-                        sender: 'admin',
-                        content: settings.autoReplyContent,
-                        timestamp: Date.now() + 100,
-                        isRead: false,
-                        isAdmin: true
-                    };
-
-                    // Push and Save
-                    msgs.push(autoMsg);
-                    localStorage.setItem(`xiaoyu_chat_msgs_${sessionId}`, JSON.stringify(msgs));
-
-                    // Update Session
-                    if (session) {
-                        session.lastMessage = autoMsg;
-                        session.updatedAt = Date.now() + 100;
-                        await this.saveChatSession(session);
-                    }
-                    // Dispatch update again
-                    setTimeout(() => {
-                        window.dispatchEvent(new CustomEvent('xiaoyu-chat-message-update', { detail: { sessionId } }));
-                    }, 100);
-                }
-            }
-        }
-
-        return fullMsg;
     }
 
-    async markSessionRead(sessionId: string) {
-        const session = await this.getChatSession(sessionId);
-        if (session && session.unreadCount > 0) {
-            session.unreadCount = 0;
-            await this.saveChatSession(session);
-        }
+    async handleAutoReply(_sessionId: string) {
+        // Backend handles auto-reply if configured, or admin manually replies.
     }
 
     // Helper to start/get session for current user
-    async getOrCreateCurrentUserSession(user: { id?: string, username?: string } | null): Promise<import('../types/adminTypes').ChatSession> {
-        const userId = user?.id || localStorage.getItem('xiaoyu_guest_id') || `guest-${Math.random().toString(36).substr(2, 9)}`;
-        if (!user?.id && !localStorage.getItem('xiaoyu_guest_id')) {
-            localStorage.setItem('xiaoyu_guest_id', userId);
+    async getOrCreateCurrentUserSession(_user: { id?: string, username?: string, avatar?: string } | null): Promise<import('../types/adminTypes').ChatSession> {
+        let parserId = localStorage.getItem('xiaoyu_chat_parser_id');
+        if (!parserId) {
+            parserId = 'guest_' + Math.random().toString(36).substring(2, 9);
+            localStorage.setItem('xiaoyu_chat_parser_id', parserId);
         }
 
-        const sessions = await this.getChatSessions();
-        let session = sessions.find(s => s.userId === userId && s.status === 'active');
+        const payload = {
+            userParserId: parserId
+        };
 
-        if (!session) {
-            session = {
-                id: `session-${Date.now()}`,
-                userId,
-                username: user?.username || `游客 ${userId.substr(-4)}`,
-                unreadCount: 0,
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-                status: 'active'
-            };
-            await this.saveChatSession(session);
-
-            // Add initial welcome message
-            const settings = await this.getChatSettings();
-            await this.addChatMessage(session.id, {
-                sender: 'system',
-                content: settings.welcomeMessage
-            });
+        try {
+            const session = await ApiService.post('/chat/session/init', payload);
+            return session;
+        } catch (e) {
+            console.error('Failed to init session', e);
+            throw e;
         }
-        return session;
     }
 
     // --- System Statistics ---
     async getSystemStats(): Promise<SystemStats> {
         try {
+            const result = await ApiService.get('/stats');
+            return result;
+        } catch (e) {
+            console.error('Failed to fetch stats from API, falling back to local storage:', e);
             const data = localStorage.getItem(KEYS.SYSTEM_STATS);
             return data ? JSON.parse(data) : { totalAiGenerations: 0, dailyStats: [] };
-        } catch (e) {
-            return { totalAiGenerations: 0, dailyStats: [] };
         }
     }
 
@@ -737,16 +955,110 @@ class StorageService {
     }
 
     async logAiGeneration() {
-        const stats = await this.getSystemStats();
         const today = new Date().toISOString().split('T')[0];
-        const daily = this.getOrCreateDailyStat(today, stats);
-
+        const stats = await this.getSystemStats();
         stats.totalAiGenerations += 1;
+        const daily = this.getOrCreateDailyStat(today, stats);
         daily.aiGenerations += 1;
         await this.saveSystemStats(stats);
     }
 
+    // --- Popup Settings ---
+    async getPopupSettings(): Promise<import('../types/adminTypes').PopupSettings> {
+        try {
+            // Try fetching from API first
+            const result = await ApiService.get('/settings/xiaoyu_popup_settings');
+            if (result && result.value) {
+                return {
+                    enabled: false,
+                    title: '欢迎回来',
+                    content: '这里是您的每日公告内容。',
+                    imageUrl: '',
+                    linkUrl: '',
+                    buttonText: '',
+                    frequency: 'daily',
+                    theme: 'default',
+                    ...result.value
+                };
+            }
+            // Fallback to local storage (migration or offline)
+            const data = localStorage.getItem('xiaoyu_popup_settings');
+            const parsed = data ? JSON.parse(data) : null;
+            return {
+                enabled: false,
+                title: '欢迎回来',
+                content: '这里是您的每日公告内容。',
+                imageUrl: '',
+                linkUrl: '',
+                buttonText: '',
+                frequency: 'daily',
+                theme: 'default',
+                ...parsed
+            };
+        } catch (e) {
+            return {
+                enabled: false,
+                title: '欢迎回来',
+                content: '这里是您的每日公告内容。',
+                frequency: 'daily',
+                theme: 'default'
+            };
+        }
+    }
+
+    async savePopupSettings(settings: import('../types/adminTypes').PopupSettings) {
+        try {
+            await ApiService.post('/settings/xiaoyu_popup_settings', settings);
+        } catch (e) {
+            console.error('Failed to save popup settings to API', e);
+        }
+        safeSetItem('xiaoyu_popup_settings', JSON.stringify(settings));
+        window.dispatchEvent(new Event('xiaoyu-popup-settings-update'));
+    }
+
+    async getSystemAnnouncement(): Promise<import('../types/adminTypes').SystemAnnouncementSettings> {
+        try {
+            // Try fetching from API first
+            const result = await ApiService.get('/settings/xiaoyu_system_announcement');
+            if (result && result.value) {
+                return { enabled: true, items: [], ...result.value };
+            }
+
+            // Fallback
+            const data = localStorage.getItem('xiaoyu_system_announcement');
+            if (!data) return { enabled: true, items: [] };
+            const parsed = JSON.parse(data);
+            // Migrate old format: { content, enabled } → { enabled, items }
+            if (parsed.content && !parsed.items) {
+                return {
+                    enabled: parsed.enabled ?? true,
+                    items: [{ id: 'migrated-1', content: parsed.content, type: 'info' as const }]
+                };
+            }
+            return { enabled: true, items: [], ...parsed };
+        } catch (e) {
+            return { enabled: true, items: [] };
+        }
+    }
+
+    async saveSystemAnnouncement(settings: import('../types/adminTypes').SystemAnnouncementSettings) {
+        try {
+            await ApiService.post('/settings/xiaoyu_system_announcement', settings);
+        } catch (e) {
+            console.error('Failed to save announcement settings to API', e);
+        }
+        safeSetItem('xiaoyu_system_announcement', JSON.stringify(settings));
+        window.dispatchEvent(new Event('xiaoyu-announcement-update'));
+    }
+
+
     async logNewConfig() {
+        try {
+            await ApiService.post('/stats/log', { type: 'new_config' });
+        } catch (e) {
+            console.error('Failed to log new config to API:', e);
+        }
+
         const stats = await this.getSystemStats();
         const today = new Date().toISOString().split('T')[0];
         const daily = this.getOrCreateDailyStat(today, stats);
@@ -756,6 +1068,12 @@ class StorageService {
     }
 
     async logNewUser() {
+        try {
+            await ApiService.post('/stats/log', { type: 'new_user' });
+        } catch (e) {
+            console.error('Failed to log new user to API:', e);
+        }
+
         const stats = await this.getSystemStats();
         const today = new Date().toISOString().split('T')[0];
         const daily = this.getOrCreateDailyStat(today, stats);
@@ -837,6 +1155,53 @@ class StorageService {
             };
             reader.readAsText(file);
         });
+    }
+
+    async getEmailVerifications(page: number = 1, pageSize: number = 20, email: string = ''): Promise<{ items: any[], total: number }> {
+        try {
+            const params = new URLSearchParams({
+                page: page.toString(),
+                page_size: pageSize.toString()
+            });
+            if (email) params.append('email', email);
+            const result = await ApiService.get(`/email/verifications?${params.toString()}`);
+            return {
+                items: result.items || [],
+                total: result.total || 0
+            };
+        } catch (e) {
+            console.error('Failed to load email verifications', e);
+            return { items: [], total: 0 };
+        }
+    }
+
+    async deleteEmailVerification(id: number): Promise<boolean> {
+        try {
+            await ApiService.delete(`/email/verifications/${id}`);
+            return true;
+        } catch (e) {
+            console.error('Failed to delete email verification', e);
+            return false;
+        }
+    }
+
+    async getEmailConfig(): Promise<any> {
+        try {
+            return await ApiService.get('/email/config');
+        } catch (e) {
+            console.error('Failed to load email config', e);
+            return null;
+        }
+    }
+
+    async saveEmailConfig(config: any): Promise<boolean> {
+        try {
+            await ApiService.post('/email/config', config);
+            return true;
+        } catch (e) {
+            console.error('Failed to save email config', e);
+            return false;
+        }
     }
 }
 

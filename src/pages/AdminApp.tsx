@@ -10,9 +10,9 @@ import {
     MessageSquare,
     Users,
     MessageCircle,
-    Smartphone,
     CreditCard,
     Info,
+    Gift,
 } from 'lucide-react';
 import { NavButton } from '../components/admin/Shared';
 import DashboardView from '../components/admin/DashboardView';
@@ -23,73 +23,39 @@ import AiManager from '../components/admin/AiManager';
 import UserManager from '../components/admin/UserManager';
 import CommentManager from '../components/admin/CommentManager';
 import ChatManager from '../components/admin/ChatManager';
-import SmsSettingsModal from '../components/admin/SmsSettingsModal';
 import UsedManager from '../components/admin/UsedManager';
 import RecycleManager from '../components/admin/RecycleManager';
 import PaymentSettings from '../components/admin/PaymentSettings';
 import AboutUsSettings from '../components/admin/AboutUsSettings';
-import { HardwareItem, ConfigItem, PricingStrategy, UserItem, UsedItem, RecycleRequest } from '../types/adminTypes';
+import InvitationManager from '../components/admin/InvitationManager';
+import { PricingStrategy, UserItem } from '../types/adminTypes';
 import { storage } from '../services/storage';
 import LoginModal from '../components/common/LoginModal';
+import ArticleManager from '../components/admin/ArticleManager';
+import { BookOpen } from 'lucide-react';
 
 export default function AdminApp() {
-    const [currentTab, setCurrentTab] = useState<'dashboard' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'payment' | 'about_us'>('dashboard');
+    const [currentTab, setCurrentTab] = useState<'dashboard' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles'>('dashboard');
 
-    // Global Data State
-    const [products, setProducts] = useState<HardwareItem[]>([]);
-    const [configs, setConfigs] = useState<ConfigItem[]>([]);
     const [pricingStrategy, setPricingStrategy] = useState<PricingStrategy>({
         serviceFeeRate: 0.06,
         discountTiers: []
     });
-    const [usedItems, setUsedItems] = useState<UsedItem[]>([]);
-    const [recycleRequests, setRecycleRequests] = useState<RecycleRequest[]>([]);
 
-    // SMS Settings Modal State
-    const [showSmsSettings, setShowSmsSettings] = useState(false);
 
-    // Load initial data
+
+    // Load initial global settings (pricing, etc.)
     useEffect(() => {
-        const loadData = async () => {
+        const loadSettings = async () => {
             try {
-                const [p, c, s, u, r] = await Promise.all([
-                    storage.getProducts(),
-                    storage.getConfigs(),
-                    storage.getPricingStrategy(),
-                    storage.getUsedItems(),
-                    storage.getRecycleRequests()
-                ]);
-                setProducts(p);
-                setConfigs(c);
+                const s = await storage.getPricingStrategy();
                 setPricingStrategy(s);
-                setUsedItems(u);
-                setRecycleRequests(r);
             } catch (error) {
-                console.error('Failed to load initial data:', error);
+                console.error('Failed to load pricing strategy:', error);
             }
         };
-        loadData();
-
-        window.addEventListener('storage', loadData);
-        window.addEventListener('xiaoyu-storage-update', () => loadData());
-        window.addEventListener('xiaoyu-recycle-requests-update', () => loadData());
-        return () => {
-            window.removeEventListener('storage', loadData);
-            window.removeEventListener('xiaoyu-storage-update', () => loadData());
-            window.removeEventListener('xiaoyu-recycle-requests-update', () => loadData());
-        };
+        loadSettings();
     }, []);
-
-    // Handlers for data updates
-    const handleUpdateProducts = async (newProducts: HardwareItem[]) => {
-        setProducts(newProducts);
-        await storage.saveProducts(newProducts);
-    };
-
-    const handleUpdateConfigs = async (newConfigs: ConfigItem[]) => {
-        setConfigs(newConfigs);
-        await storage.saveConfigs(newConfigs);
-    };
 
     const handleUpdateSettings = async (newStrategy: PricingStrategy) => {
         setPricingStrategy(newStrategy);
@@ -148,7 +114,7 @@ export default function AdminApp() {
                     </div>
                     <div>
                         <h1 className="text-lg font-extrabold tracking-tight">小鱼后台</h1>
-                        <p className="text-[10px] text-zinc-500 uppercase">{isSubAdmin ? 'Operation Mode' : 'Management OS'}</p>
+                        <p className="text-[10px] text-zinc-500 uppercase">{isSubAdmin ? '运营模式' : '管理系统'}</p>
                     </div>
                 </div>
 
@@ -157,7 +123,8 @@ export default function AdminApp() {
                     <NavButton active={currentTab === 'dashboard'} onClick={() => setCurrentTab('dashboard')} icon={<LayoutDashboard size={18} />} label="数据概览" />
                     <NavButton active={currentTab === 'configs'} onClick={() => setCurrentTab('configs')} icon={<ListFilter size={18} />} label="配置单管理" />
                     <NavButton active={currentTab === 'comments'} onClick={() => setCurrentTab('comments')} icon={<MessageSquare size={18} />} label="评论管理" />
-                    <NavButton active={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} icon={<MessageCircle size={18} />} label="客户咨询 (Chat)" />
+                    <NavButton active={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} icon={<MessageCircle size={18} />} label="客户咨询" />
+                    <NavButton active={currentTab === 'articles'} onClick={() => setCurrentTab('articles')} icon={<BookOpen size={18} />} label="头条管理" />
 
                     <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-6 uppercase">二手市场</div>
                     <NavButton active={currentTab === 'used_items'} onClick={() => setCurrentTab('used_items')} icon={<Package size={18} />} label="二手商品" />
@@ -168,16 +135,18 @@ export default function AdminApp() {
                             <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-6 uppercase">系统管理</div>
                             <NavButton active={currentTab === 'users'} onClick={() => setCurrentTab('users')} icon={<Users size={18} />} label="用户与权限" />
                             <NavButton active={currentTab === 'ai'} onClick={() => setCurrentTab('ai')} icon={<Bot size={18} />} label="AI 大脑中枢" />
-                            <NavButton active={currentTab === 'settings'} onClick={() => setCurrentTab('settings')} icon={<Settings size={18} />} label="价格与利润设置" />
-                            <NavButton active={currentTab === 'about_us'} onClick={() => setCurrentTab('about_us')} icon={<Info size={18} />} label="关于我们 (CMS)" />
+                            <NavButton active={currentTab === 'settings'} onClick={() => setCurrentTab('settings')} icon={<Settings size={18} />} label="全局系统设置" />
+                            <NavButton active={currentTab === 'about_us'} onClick={() => setCurrentTab('about_us')} icon={<Info size={18} />} label="关于我们" />
                             <NavButton active={currentTab === 'payment'} onClick={() => setCurrentTab('payment')} icon={<CreditCard size={18} />} label="支付设置" />
+                            <NavButton active={currentTab === 'invitations'} onClick={() => setCurrentTab('invitations')} icon={<Gift size={18} />} label="邀请码管理" />
+                            {/* <NavButton active={currentTab === 'verifications'} onClick={() => setCurrentTab('verifications')} icon={<ShieldCheck size={18} />} label="验证码管理" />
                             <button
                                 onClick={() => setShowSmsSettings(true)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
                             >
                                 <Smartphone size={18} />
                                 <span className="font-medium text-sm">短信服务配置</span>
-                            </button>
+                            </button> */}
                         </>
                     )}
 
@@ -208,10 +177,9 @@ export default function AdminApp() {
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm shrink-0">
                     <h2 className="text-xl font-bold text-slate-800 uppercase tracking-tight">
-                        {currentTab === 'dashboard' && '运营概览 Dashboard'}
+                        {currentTab === 'dashboard' && '运营概览'}
                         {currentTab === 'products' && '硬件库与价格库'}
-                        {currentTab === 'configs' && '社区配置与推荐'}
-                        {currentTab === 'settings' && '全局价格策略'}
+                        {currentTab === 'settings' && '全局系统设置 (价格/弹窗/备份)'}
                         {currentTab === 'ai' && 'AI 配置中枢'}
                         {currentTab === 'users' && '系统权限管理'}
                         {currentTab === 'comments' && '评论与留言'}
@@ -219,7 +187,9 @@ export default function AdminApp() {
                         {currentTab === 'used_items' && '二手商品管理'}
                         {currentTab === 'recycle_requests' && '回收申请管理'}
                         {currentTab === 'payment' && '支付设置'}
-                        {currentTab === 'about_us' && '品牌页面管理 (About Us)'}
+                        {currentTab === 'about_us' && '品牌页面管理'}
+                        {currentTab === 'verifications' && '邮箱验证码安全审计'}
+                        {currentTab === 'invitations' && '注册邀请码管理'}
                     </h2>
                     <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -232,24 +202,27 @@ export default function AdminApp() {
                         <ChatManager />
                     ) : (
                         <div className="max-w-7xl mx-auto">
-                            {currentTab === 'dashboard' && <DashboardView products={products} configs={configs} />}
-                            {currentTab === 'products' && <ProductManager products={products} setProducts={handleUpdateProducts} />}
-                            {currentTab === 'configs' && <ConfigManager configs={configs} setConfigs={handleUpdateConfigs} products={products} />}
-                            {currentTab === 'used_items' && <UsedManager usedItems={usedItems} setUsedItems={setUsedItems} />}
-                            {currentTab === 'recycle_requests' && <RecycleManager requests={recycleRequests} setRequests={setRecycleRequests} />}
+                            {currentTab === 'dashboard' && <DashboardView />}
+                            {currentTab === 'products' && <ProductManager />}
+                            {currentTab === 'configs' && <ConfigManager />}
+                            {currentTab === 'used_items' && <UsedManager />}
+                            {currentTab === 'recycle_requests' && <RecycleManager />}
                             {currentTab === 'settings' && <SettingsView strategy={pricingStrategy} setStrategy={handleUpdateSettings} />}
                             {currentTab === 'ai' && <AiManager />}
                             {currentTab === 'users' && <UserManager />}
                             {currentTab === 'comments' && <CommentManager />}
                             {currentTab === 'payment' && <PaymentSettings />}
                             {currentTab === 'about_us' && <AboutUsSettings />}
+                            {/* {currentTab === 'verifications' && <VerificationManager />} */}
+                            {currentTab === 'invitations' && <InvitationManager />}
+                            {currentTab === 'articles' && <ArticleManager />}
                         </div>
                     )}
                 </main>
             </div>
 
-            {/* SMS Settings Modal */}
-            {showSmsSettings && <SmsSettingsModal onClose={() => setShowSmsSettings(false)} />}
+            {/* SMS Settings Modal (Hidden) */}
+            {/* {showSmsSettings && <SmsSettingsModal onClose={() => setShowSmsSettings(false)} />} */}
         </div>
     );
 }

@@ -8,14 +8,24 @@ const router = express.Router();
 // Get all published configs (Public)
 router.get('/', async (req, res) => {
     try {
-        const rows = db.prepare('SELECT * FROM configs WHERE status = "published" ORDER BY createdAt DESC').all();
-        const configs = rows.map((row: any) => ({
-            ...row,
-            evaluation: row.evaluation ? JSON.parse(row.evaluation) : null
-        }));
+        const rows = db.prepare("SELECT * FROM configs WHERE status = 'published' ORDER BY createdAt DESC").all();
+        const configs = rows.map((row: any) => {
+            let evaluation = null;
+            let items = {};
+            let tags = [];
+            try {
+                evaluation = row.evaluation ? JSON.parse(row.evaluation) : null;
+                items = row.items ? JSON.parse(row.items) : {};
+                tags = row.tags ? JSON.parse(row.tags) : [];
+            } catch (e) {
+                console.error(`Failed to parse JSON for config ${row.id}:`, e);
+            }
+            return { ...row, evaluation, items, tags };
+        });
         res.json(configs);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch configurations' });
+        console.error('Failed to fetch public configs:', error);
+        res.status(500).json({ error: 'Failed to fetch configurations', details: (error as Error).message });
     }
 });
 
@@ -23,13 +33,23 @@ router.get('/', async (req, res) => {
 router.get('/user/:userId', async (req, res) => {
     try {
         const rows = db.prepare('SELECT * FROM configs WHERE userId = ? ORDER BY createdAt DESC').all(req.params.userId);
-        const configs = rows.map((row: any) => ({
-            ...row,
-            evaluation: row.evaluation ? JSON.parse(row.evaluation) : null
-        }));
+        const configs = rows.map((row: any) => {
+            let evaluation = null;
+            let items = {};
+            let tags = [];
+            try {
+                evaluation = row.evaluation ? JSON.parse(row.evaluation) : null;
+                items = row.items ? JSON.parse(row.items) : {};
+                tags = row.tags ? JSON.parse(row.tags) : [];
+            } catch (e) {
+                console.error(`Failed to parse JSON for config ${row.id}:`, e);
+            }
+            return { ...row, evaluation, items, tags };
+        });
         res.json(configs);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch user configurations' });
+        console.error('Failed to fetch user configs:', error);
+        res.status(500).json({ error: 'Failed to fetch user configurations', details: (error as Error).message });
     }
 });
 
@@ -39,8 +59,29 @@ router.post('/', authenticate, async (req, res) => {
     const user = (req as any).user;
     try {
         const id = c.id || c._id;
-        const evaluation = c.evaluation ? JSON.stringify(c.evaluation) : null;
         const now = new Date().toISOString();
+
+        // Extract nested items if present (from frontend) or use flat properties
+        const itemsObj = c.items || {};
+        const cpuId = itemsObj.cpu || c.cpuId;
+        const gpuId = itemsObj.gpu || c.gpuId;
+        const mbId = itemsObj.mainboard || c.mbId;
+        const ramId = itemsObj.ram || c.ramId;
+        const diskId = itemsObj.disk || c.diskId;
+        const psuId = itemsObj.power || c.psuId;
+        const caseId = itemsObj.case || c.caseId;
+        const coolId = itemsObj.cooling || c.coolId;
+        const monId = itemsObj.monitor || c.monId;
+
+        // Mandatory columns
+        const evaluation = JSON.stringify(c.evaluation || { score: 0, verdict: 'Pending evaluation' });
+        const itemsJson = JSON.stringify(itemsObj);
+        const tagsJson = JSON.stringify(c.tags || []);
+        const totalPrice = c.totalPrice || 0;
+        const status = c.status || 'draft';
+        const isRecommended = c.isRecommended ? 1 : 0;
+        const views = c.views || 0;
+        const likes = c.likes || 0;
 
         if (id) {
             const existing: any = db.prepare('SELECT userId FROM configs WHERE id = ?').get(id);
@@ -50,9 +91,13 @@ router.post('/', authenticate, async (req, res) => {
 
             db.prepare(`
                 UPDATE configs 
-                SET userId = ?, userName = ?, cpuId = ?, gpuId = ?, mbId = ?, ramId = ?, diskId = ?, psuId = ?, caseId = ?, coolId = ?, monId = ?, totalPrice = ?, status = ?, evaluation = ?, updatedAt = ?
+                SET userId = ?, userName = ?, cpuId = ?, gpuId = ?, mbId = ?, ramId = ?, diskId = ?, psuId = ?, caseId = ?, coolId = ?, monId = ?, 
+                    totalPrice = ?, status = ?, evaluation = ?, items = ?, tags = ?, isRecommended = ?, views = ?, likes = ?, updatedAt = ?
                 WHERE id = ?
-            `).run(c.userId, c.userName, c.cpuId, c.gpuId, c.mbId, c.ramId, c.diskId, c.psuId, c.caseId, c.coolId, c.monId, c.totalPrice, c.status, evaluation, now, id);
+            `).run(
+                c.userId || user.id, c.userName || user.username, cpuId, gpuId, mbId, ramId, diskId, psuId, caseId, coolId, monId,
+                totalPrice, status, evaluation, itemsJson, tagsJson, isRecommended, views, likes, now, id
+            );
 
             res.json({ ...c, updatedAt: now });
         } else {
@@ -65,9 +110,13 @@ router.post('/', authenticate, async (req, res) => {
             }
 
             db.prepare(`
-                INSERT INTO configs (id, userId, userName, serialNumber, cpuId, gpuId, mbId, ramId, diskId, psuId, caseId, coolId, monId, totalPrice, status, evaluation, createdAt, updatedAt)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `).run(newId, c.userId, c.userName, sn, c.cpuId, c.gpuId, c.mbId, c.ramId, c.diskId, c.psuId, c.caseId, c.coolId, c.monId, c.totalPrice, c.status || 'draft', evaluation, now, now);
+                INSERT INTO configs (id, userId, userName, serialNumber, cpuId, gpuId, mbId, ramId, diskId, psuId, caseId, coolId, monId, 
+                                    totalPrice, status, evaluation, items, tags, isRecommended, views, likes, createdAt, updatedAt)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).run(
+                newId, c.userId || user.id, c.userName || user.username, sn, cpuId, gpuId, mbId, ramId, diskId, psuId, caseId, coolId, monId,
+                totalPrice, status, evaluation, itemsJson, tagsJson, isRecommended, views, likes, now, now
+            );
 
             res.json({ ...c, id: newId, serialNumber: sn, createdAt: now, updatedAt: now });
         }
