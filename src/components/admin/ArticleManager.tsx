@@ -92,14 +92,55 @@ export default function ArticleManager() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">封面图片 URL (可选)</label>
-                        <input
-                            type="text"
-                            value={currentArticle.coverImage || ''}
-                            onChange={e => setCurrentArticle({ ...currentArticle, coverImage: e.target.value })}
-                            className="w-full border border-slate-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
-                            placeholder="https://..."
-                        />
+                        <label className="block text-sm font-bold text-slate-700 mb-2">封面图片</label>
+                        <div className="flex gap-4 items-start">
+                            <div className="w-32 h-32 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center relative overflow-hidden group shrink-0">
+                                {currentArticle.coverImage ? (
+                                    <>
+                                        <img src={currentArticle.coverImage} alt="Preview" className="w-full h-full object-cover" />
+                                        <button
+                                            onClick={() => setCurrentArticle({ ...currentArticle, coverImage: '' })}
+                                            className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="text-center text-slate-400">
+                                        <Plus size={24} className="mx-auto mb-1" />
+                                        <span className="text-xs">选择文件</span>
+                                    </div>
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const res = await storage.uploadImage(file);
+                                            if (res) {
+                                                setCurrentArticle({ ...currentArticle, coverImage: res.url });
+                                            } else {
+                                                alert('上传失败');
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                            <div className="flex-1 space-y-2">
+                                <p className="text-xs text-slate-500">支持 JPG, PNG, WEBP 格式。建议尺寸 1200x600px。</p>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={currentArticle.coverImage || ''}
+                                        onChange={e => setCurrentArticle({ ...currentArticle, coverImage: e.target.value })}
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                                        placeholder="或输入图片 URL..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div>

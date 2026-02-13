@@ -14,8 +14,8 @@ export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, on
     };
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-            <div className="bg-white w-full max-w-lg rounded-3xl p-6 shadow-2xl animate-scale-up">
+        <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md">
+            <div className="bg-white w-full max-w-lg md:rounded-3xl rounded-t-[32px] p-6 shadow-2xl animate-slide-up md:animate-scale-up">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-slate-800">分享配置单</h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={20} /></button>
@@ -48,7 +48,7 @@ export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, on
                 </div>
 
                 <div className="mt-8">
-                    <button onClick={() => onPublish({ title, tags: selectedTags, desc })} disabled={!title.trim()} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2">
+                    <button onClick={() => onPublish({ title, tags: selectedTags, desc })} disabled={!title.trim()} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2 tap-active">
                         <Share2 size={18} /> 发布到配置广场
                     </button>
                 </div>
@@ -69,8 +69,8 @@ export function SavePreviewModal({ buildList, pricing, onClose, onCopy, onSave }
         return `📋 小鱼装机单 (${today})\n--------------------------\n${itemsText}\n--------------------------\n💰 总价：¥${pricing.finalPrice}`;
     };
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-            <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl animate-scale-up">
+        <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md">
+            <div className="bg-white w-full max-w-md md:rounded-2xl rounded-t-[32px] p-6 shadow-2xl animate-slide-up md:animate-scale-up">
                 <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><Save size={20} /> 保存配置单</h3>
                 <div className="bg-slate-50 p-4 rounded-xl text-xs font-mono text-slate-600 mb-6 whitespace-pre-wrap border border-slate-200 max-h-[60vh] overflow-y-auto">
                     {generateText()}
@@ -96,16 +96,21 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
     const [searchQuery, setSearchQuery] = useState('');
 
     const filteredConfigs = useMemo(() => {
+        const searchStr = searchQuery.toLowerCase().trim();
         return configList.filter(cfg => {
-            if (searchQuery && !cfg.title.toLowerCase().includes(searchQuery.toLowerCase()) && !cfg.author.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+            if (searchStr) {
+                const searchTerms = searchStr.split(/\s+/);
+                const searchableText = `${cfg.title} ${cfg.author}`.toLowerCase();
+                if (!searchTerms.every(term => searchableText.includes(term))) return false;
+            }
             if (filterTag !== 'all' && !cfg.tags.some(t => t.label === filterTag)) return false;
             return true;
         });
     }, [filterTag, searchQuery, configList]);
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-            <div className="bg-white w-full max-w-5xl h-[85vh] rounded-[24px] shadow-2xl overflow-hidden flex flex-col relative animate-scale-up">
+        <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+            <div className="bg-white w-full max-w-5xl h-[90vh] md:h-[85vh] md:rounded-[24px] rounded-t-[32px] shadow-2xl overflow-hidden flex flex-col relative animate-slide-up md:animate-scale-up">
 
                 {/* Header */}
                 <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white z-10 shrink-0">
@@ -263,7 +268,7 @@ export function ConfigDetailModal({
     return (
         <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center md:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in" onClick={onClose}>
             <div
-                className="relative bg-white w-full md:max-w-xl md:rounded-[32px] rounded-t-[32px] shadow-2xl animate-slide-up-mobile flex flex-col overflow-hidden"
+                className="relative bg-white w-full md:max-w-xl md:rounded-[32px] rounded-t-[32px] shadow-2xl animate-slide-up flex flex-col overflow-hidden"
                 style={{ height: '85vh', maxHeight: '85vh' }}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -323,7 +328,7 @@ export function ConfigDetailModal({
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); onLoad(config); }}
-                        className="flex-1 h-11 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 text-sm"
+                        className="flex-1 h-11 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 text-sm tap-active"
                     >
                         <CheckCircle2 size={18} />
                         <span>加载此配置</span>

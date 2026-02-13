@@ -33,6 +33,23 @@ export class ApiService {
         return response.json();
     }
 
+    static async postFile(endpoint: string, formData: FormData) {
+        const url = `${API_BASE}${endpoint}`;
+        const token = localStorage.getItem('xiaoyu_token');
+        const headers: Record<string, string> = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: formData
+        });
+        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+        return response.json();
+    }
+
     static async login(form_data: { username: string, password: string }) {
         const response = await fetch(`${API_BASE}/auth/login`, {
             method: 'POST',

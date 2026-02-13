@@ -403,44 +403,15 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                     type="file"
                                     className="absolute inset-0 opacity-0 cursor-pointer"
                                     accept="image/*"
-                                    onChange={(e) => {
+                                    onChange={async (e) => {
                                         const file = e.target.files?.[0];
                                         if (file) {
-                                            // Image Compression Logic
-                                            const reader = new FileReader();
-                                            reader.onload = (event) => {
-                                                const img = new Image();
-                                                img.onload = () => {
-                                                    const canvas = document.createElement('canvas');
-                                                    let width = img.width;
-                                                    let height = img.height;
-
-                                                    // Max dimension 600px
-                                                    const MAX_SIZE = 600;
-                                                    if (width > height) {
-                                                        if (width > MAX_SIZE) {
-                                                            height *= MAX_SIZE / width;
-                                                            width = MAX_SIZE;
-                                                        }
-                                                    } else {
-                                                        if (height > MAX_SIZE) {
-                                                            width *= MAX_SIZE / height;
-                                                            height = MAX_SIZE;
-                                                        }
-                                                    }
-
-                                                    canvas.width = width;
-                                                    canvas.height = height;
-                                                    const ctx = canvas.getContext('2d');
-                                                    ctx?.drawImage(img, 0, 0, width, height);
-
-                                                    // Compress to JPEG 0.7
-                                                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                                                    setFormData({ ...formData, image: compressedBase64 });
-                                                };
-                                                img.src = event.target?.result as string;
-                                            };
-                                            reader.readAsDataURL(file);
+                                            const res = await storage.uploadImage(file);
+                                            if (res) {
+                                                setFormData({ ...formData, image: res.url });
+                                            } else {
+                                                alert('上传失败');
+                                            }
                                         }
                                     }}
                                 />

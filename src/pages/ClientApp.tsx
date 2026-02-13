@@ -500,7 +500,7 @@ export default function ClientApp() {
                         )}
 
                         <button
-                            className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 text-white shadow-lg shadow-slate-200 active:scale-90 transition-all"
+                            className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 text-white shadow-lg shadow-slate-200 active:scale-90 transition-all tap-active"
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
                         >
                             {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
@@ -602,7 +602,7 @@ export default function ClientApp() {
                                                 <div className="font-bold text-sm tracking-tight">{item.label}</div>
                                                 <div className={`text-[10px] ${isActive ? 'text-slate-400' : 'text-slate-400'}`}>{item.desc}</div>
                                             </div>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isActive
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors tap-active ${isActive
                                                 ? 'bg-white/10 text-white'
                                                 : item.chevronBg || 'bg-slate-100/50 text-slate-400'
                                                 }`}>
@@ -617,7 +617,7 @@ export default function ClientApp() {
                 </div>
             )}
 
-            <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-40 md:pb-32">
+            <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-40 md:pb-32 view-transition-enter" key={viewMode}>
                 {viewMode === 'streamer' && (
                     <StreamerWorkbench
                         buildList={buildList}

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import {
     LayoutDashboard,
     Package,
@@ -13,26 +13,28 @@ import {
     CreditCard,
     Info,
     Gift,
+    BookOpen,
 } from 'lucide-react';
 import { NavButton } from '../components/admin/Shared';
-import DashboardView from '../components/admin/DashboardView';
-import ProductManager from '../components/admin/ProductManager';
-import ConfigManager from '../components/admin/ConfigManager';
-import SettingsView from '../components/admin/SettingsView';
-import AiManager from '../components/admin/AiManager';
-import UserManager from '../components/admin/UserManager';
-import CommentManager from '../components/admin/CommentManager';
-import ChatManager from '../components/admin/ChatManager';
-import UsedManager from '../components/admin/UsedManager';
-import RecycleManager from '../components/admin/RecycleManager';
-import PaymentSettings from '../components/admin/PaymentSettings';
-import AboutUsSettings from '../components/admin/AboutUsSettings';
-import InvitationManager from '../components/admin/InvitationManager';
 import { PricingStrategy, UserItem } from '../types/adminTypes';
 import { storage } from '../services/storage';
 import LoginModal from '../components/common/LoginModal';
-import ArticleManager from '../components/admin/ArticleManager';
-import { BookOpen } from 'lucide-react';
+
+// Views
+const DashboardView = lazy(() => import('../components/admin/DashboardView'));
+const ProductManager = lazy(() => import('../components/admin/ProductManager'));
+const ConfigManager = lazy(() => import('../components/admin/ConfigManager'));
+const SettingsView = lazy(() => import('../components/admin/SettingsView'));
+const AiManager = lazy(() => import('../components/admin/AiManager'));
+const UserManager = lazy(() => import('../components/admin/UserManager'));
+const CommentManager = lazy(() => import('../components/admin/CommentManager'));
+const ChatManager = lazy(() => import('../components/admin/ChatManager'));
+const UsedManager = lazy(() => import('../components/admin/UsedManager'));
+const RecycleManager = lazy(() => import('../components/admin/RecycleManager'));
+const PaymentSettings = lazy(() => import('../components/admin/PaymentSettings'));
+const AboutUsSettings = lazy(() => import('../components/admin/AboutUsSettings'));
+const InvitationManager = lazy(() => import('../components/admin/InvitationManager'));
+const ArticleManager = lazy(() => import('../components/admin/ArticleManager'));
 
 export default function AdminApp() {
     const [currentTab, setCurrentTab] = useState<'dashboard' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles'>('dashboard');
@@ -198,26 +200,33 @@ export default function AdminApp() {
                 </header>
 
                 <main className="flex-1 overflow-y-auto p-8 bg-slate-50">
-                    {currentTab === 'chat' ? (
-                        <ChatManager />
-                    ) : (
-                        <div className="max-w-7xl mx-auto">
-                            {currentTab === 'dashboard' && <DashboardView />}
-                            {currentTab === 'products' && <ProductManager />}
-                            {currentTab === 'configs' && <ConfigManager />}
-                            {currentTab === 'used_items' && <UsedManager />}
-                            {currentTab === 'recycle_requests' && <RecycleManager />}
-                            {currentTab === 'settings' && <SettingsView strategy={pricingStrategy} setStrategy={handleUpdateSettings} />}
-                            {currentTab === 'ai' && <AiManager />}
-                            {currentTab === 'users' && <UserManager />}
-                            {currentTab === 'comments' && <CommentManager />}
-                            {currentTab === 'payment' && <PaymentSettings />}
-                            {currentTab === 'about_us' && <AboutUsSettings />}
-                            {/* {currentTab === 'verifications' && <VerificationManager />} */}
-                            {currentTab === 'invitations' && <InvitationManager />}
-                            {currentTab === 'articles' && <ArticleManager />}
+                    <Suspense fallback={
+                        <div className="flex flex-col items-center justify-center h-full py-20 text-slate-400 gap-4">
+                            <div className="w-8 h-8 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>
+                            <span className="text-xs font-bold animate-pulse">模块加载中...</span>
                         </div>
-                    )}
+                    }>
+                        {currentTab === 'chat' ? (
+                            <ChatManager />
+                        ) : (
+                            <div className="max-w-7xl mx-auto">
+                                {currentTab === 'dashboard' && <DashboardView />}
+                                {currentTab === 'products' && <ProductManager />}
+                                {currentTab === 'configs' && <ConfigManager />}
+                                {currentTab === 'used_items' && <UsedManager />}
+                                {currentTab === 'recycle_requests' && <RecycleManager />}
+                                {currentTab === 'settings' && <SettingsView strategy={pricingStrategy} setStrategy={handleUpdateSettings} />}
+                                {currentTab === 'ai' && <AiManager />}
+                                {currentTab === 'users' && <UserManager />}
+                                {currentTab === 'comments' && <CommentManager />}
+                                {currentTab === 'payment' && <PaymentSettings />}
+                                {currentTab === 'about_us' && <AboutUsSettings />}
+                                {/* {currentTab === 'verifications' && <VerificationManager />} */}
+                                {currentTab === 'invitations' && <InvitationManager />}
+                                {currentTab === 'articles' && <ArticleManager />}
+                            </div>
+                        )}
+                    </Suspense>
                 </main>
             </div>
 

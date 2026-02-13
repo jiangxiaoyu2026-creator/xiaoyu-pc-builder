@@ -17,6 +17,7 @@ async def get_used_items(
     category: Optional[str] = None,
     condition: Optional[str] = None,
     status: Optional[str] = "published",
+    search: Optional[str] = None,
     page: int = 1,
     page_size: int = 20,
     session: Session = Depends(get_session)
@@ -31,6 +32,17 @@ async def get_used_items(
         query = query.where(UsedItem.category == category)
     if condition:
         query = query.where(UsedItem.condition == condition)
+    
+    if search:
+        from sqlalchemy import or_, func
+        keywords = search.strip().split()
+        for kw in keywords:
+            search_term = f"%{kw}%"
+            query = query.where(or_(
+                func.coalesce(UsedItem.brand, "").ilike(search_term),
+                func.coalesce(UsedItem.model, "").ilike(search_term),
+                func.coalesce(UsedItem.description, "").ilike(search_term)
+            ))
         
     # Count total
     from sqlalchemy import func
@@ -41,6 +53,16 @@ async def get_used_items(
     if type: count_query = count_query.where(UsedItem.type == type)
     if category: count_query = count_query.where(UsedItem.category == category)
     if condition: count_query = count_query.where(UsedItem.condition == condition)
+    if search:
+        from sqlalchemy import or_, func
+        keywords = search.strip().split()
+        for kw in keywords:
+            search_term = f"%{kw}%"
+            count_query = count_query.where(or_(
+                func.coalesce(UsedItem.brand, "").ilike(search_term),
+                func.coalesce(UsedItem.model, "").ilike(search_term),
+                func.coalesce(UsedItem.description, "").ilike(search_term)
+            ))
     total = session.scalar(count_query)
 
     offset = (page - 1) * page_size
@@ -53,9 +75,54 @@ async def get_used_items(
         "page_size": page_size
     }
 
-@router.get("/admin", response_model=List[UsedItem])
-async def get_admin_used_items(session: Session = Depends(get_session), admin: User = Depends(get_current_admin)):
-    return session.exec(select(UsedItem).order_by(UsedItem.createdAt.desc())).all()
+@router.get("/admin", response_model=dict)
+async def get_admin_used_items(
+    page: int = 1,
+    page_size: int = 20,
+    category: Optional[str] = None,
+    brand: Optional[str] = None,
+    search: Optional[str] = None,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    from sqlalchemy import func, or_
+    query = select(UsedItem)
+    if category and category != 'all':
+        query = query.where(UsedItem.category == category)
+    if brand and brand != 'all':
+        query = query.where(UsedItem.brand == brand)
+    if search:
+        keywords = search.strip().split()
+        for kw in keywords:
+            search_term = f"%{kw}%"
+            query = query.where(or_(
+                func.coalesce(UsedItem.brand, "").ilike(search_term),
+                func.coalesce(UsedItem.model, "").ilike(search_term),
+                func.coalesce(UsedItem.description, "").ilike(search_term)
+            ))
+
+    count_query = select(func.count()).select_from(UsedItem)
+    if category and category != 'all': count_query = count_query.where(UsedItem.category == category)
+    if brand and brand != 'all': count_query = count_query.where(UsedItem.brand == brand)
+    if search:
+        keywords = search.strip().split()
+        for kw in keywords:
+            search_term = f"%{kw}%"
+            count_query = count_query.where(or_(
+                func.coalesce(UsedItem.brand, "").ilike(search_term),
+                func.coalesce(UsedItem.model, "").ilike(search_term)
+            ))
+
+    total = session.scalar(count_query)
+    offset = (page - 1) * page_size
+    items = session.exec(query.order_by(UsedItem.createdAt.desc()).offset(offset).limit(page_size)).all()
+    
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size
+    }
 
 @router.post("/")
 @router.post("")

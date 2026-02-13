@@ -16,6 +16,7 @@ async def get_products(
     category: Optional[str] = None,
     brand: Optional[str] = None,
     is_recommended: Optional[bool] = None,
+    search: Optional[str] = None,
     page: int = 1,
     page_size: int = 20,
     session: Session = Depends(get_session)
@@ -29,6 +30,18 @@ async def get_products(
         query = query.where(Hardware.brand == brand)
     if is_recommended is not None:
         query = query.where(Hardware.isRecommended == is_recommended)
+    
+    if search:
+        from sqlmodel import or_
+        keywords = search.strip().split()
+        for kw in keywords:
+            search_term = f"%{kw}%"
+            # Use coalesce to handle potential NULL values in database
+            from sqlalchemy import func
+            query = query.where(or_(
+                func.coalesce(Hardware.brand, "").ilike(search_term),
+                func.coalesce(Hardware.model, "").ilike(search_term)
+            ))
         
     # Count total
     from sqlalchemy import func
@@ -36,6 +49,14 @@ async def get_products(
     if category: count_query = count_query.where(Hardware.category == category)
     if brand: count_query = count_query.where(Hardware.brand == brand)
     if is_recommended is not None: count_query = count_query.where(Hardware.isRecommended == is_recommended)
+    if search:
+        keywords = search.strip().split()
+        for kw in keywords:
+            search_term = f"%{kw}%"
+            count_query = count_query.where(or_(
+                func.coalesce(Hardware.brand, "").ilike(search_term),
+                func.coalesce(Hardware.model, "").ilike(search_term)
+            ))
     total = session.scalar(count_query)
 
     offset = (page - 1) * page_size
@@ -81,8 +102,16 @@ async def get_admin_products(
         query = query.where(Hardware.brand == brand)
     
     if search:
-        search_term = f"%{search}%"
-        query = query.where(or_(Hardware.brand.ilike(search_term), Hardware.model.ilike(search_term)))
+        print(f"DEBUG: Search query: '{search}'")
+        # Support multi-keyword search (e.g., "MSI 迫" -> matches MSI brand and 迫击炮 model)
+        keywords = search.strip().split()
+        print(f"DEBUG: Keywords: {keywords}")
+        for kw in keywords:
+            search_term = f"%{kw}%"
+            query = query.where(or_(
+                func.coalesce(Hardware.brand, "").ilike(search_term),
+                func.coalesce(Hardware.model, "").ilike(search_term)
+            ))
         
     # Count total for the filtered query
     count_query = select(func.count()).select_from(Hardware)
@@ -91,8 +120,13 @@ async def get_admin_products(
     if brand and brand != 'all':
         count_query = count_query.where(Hardware.brand == brand)
     if search:
-        search_term = f"%{search}%"
-        count_query = count_query.where(or_(Hardware.brand.ilike(search_term), Hardware.model.ilike(search_term)))
+        keywords = search.strip().split()
+        for kw in keywords:
+            search_term = f"%{kw}%"
+            count_query = count_query.where(or_(
+                func.coalesce(Hardware.brand, "").ilike(search_term),
+                func.coalesce(Hardware.model, "").ilike(search_term)
+            ))
         
     total = session.scalar(count_query)
     

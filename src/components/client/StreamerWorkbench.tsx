@@ -80,19 +80,21 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const [hardwareList, setHardwareList] = useState<HardwareItem[]>([]);
 
     useEffect(() => {
-        storage.getProducts().then(res => setHardwareList(res.items));
+        storage.getProducts(1, 1000).then(res => setHardwareList(res.items));
     }, []);
 
     const suggestions = useMemo(() => {
-        // If query is empty, show all items in this category (limit to 20 for performance)
-        if (!query) {
+        const searchStr = query.toLowerCase().trim();
+        if (!searchStr) {
             return hardwareList.filter(item => item.category === entry.category).slice(0, 20);
         }
-        // Otherwise filter by query
-        return hardwareList.filter(item => item.category === entry.category && (
-            item.model.toLowerCase().includes(query.toLowerCase()) ||
-            item.brand.toLowerCase().includes(query.toLowerCase())
-        ));
+
+        const searchTerms = searchStr.split(/\s+/);
+        return hardwareList.filter(item => {
+            if (item.category !== entry.category) return false;
+            const searchableText = `${item.brand} ${item.model} ${CATEGORY_MAP[item.category] || item.category}`.toLowerCase();
+            return searchTerms.every(term => searchableText.includes(term));
+        });
     }, [query, entry.category, hardwareList]);
 
     useEffect(() => {

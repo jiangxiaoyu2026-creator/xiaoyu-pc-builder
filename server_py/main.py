@@ -4,7 +4,7 @@ from .db import init_db
 import logging
 
 
-from .routers import auth, configs, used, payment, settings, sms, recycle, products, stats, email, invitations, chat, ai, articles
+from .routers import auth, configs, used, payment, settings, sms, recycle, products, stats, email, invitations, chat, ai, articles, upload
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
@@ -53,6 +53,7 @@ app.include_router(invitations.router, prefix="/api/invitations", tags=["invitat
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
 app.include_router(articles.router, prefix="/api/articles", tags=["articles"])
+app.include_router(upload.router, prefix="/api/upload", tags=["upload"])
 
 # 静态文件和 SPA 路由处理
 DIST_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist")
@@ -62,6 +63,12 @@ if os.path.exists(DIST_DIR):
     assets_dir = os.path.join(DIST_DIR, "assets")
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+# 挂载上传文件目录
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # SPA fallback - 处理前端路由
 # 注意：不使用 catch-all 路由，而是使用具体的前端路由模式

@@ -252,11 +252,12 @@ function VisualBuilder({
             i.category === modalCategory &&
             (modalBrand === 'all' || i.brand === modalBrand) &&
             (() => {
-                const searchTerms = modalSearch.toLowerCase().trim().split(/\s+/);
-                const model = i.model.toLowerCase();
-                const brand = i.brand.toLowerCase();
-                // ALL terms must match either model or brand (or combination)
-                return searchTerms.every(term => model.includes(term) || brand.includes(term));
+                const searchStr = modalSearch.toLowerCase().trim();
+                if (!searchStr) return true;
+                const searchTerms = searchStr.split(/\s+/);
+                // Combine brand, model, and category for better matching
+                const searchableText = `${i.brand} ${i.model} ${CATEGORY_MAP[i.category] || i.category}`.toLowerCase();
+                return searchTerms.every(term => searchableText.includes(term));
             })()
         );
 
@@ -456,13 +457,13 @@ function VisualBuilder({
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mb-2">
-                        <button onClick={onShare} className="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 active:scale-95">
+                        <button onClick={onShare} className="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 tap-active">
                             <Share2 size={16} /> 分享配置
                         </button>
-                        <button onClick={onSave} className="py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-200 transition-all flex items-center justify-center gap-2 active:scale-95">
+                        <button onClick={onSave} className="py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-200 transition-all flex items-center justify-center gap-2 tap-active">
                             <FileText size={16} /> 保存方案
                         </button>
-                        <button onClick={onReset} className="col-span-2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95">
+                        <button onClick={onReset} className="col-span-2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all flex items-center justify-center gap-2 tap-active">
                             <X size={16} /> 重置
                         </button>
                     </div>
@@ -563,7 +564,7 @@ function VisualBuilder({
                                                 <button
                                                     key={brand}
                                                     onClick={() => setModalBrand(brand)}
-                                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all border shrink-0 ${modalBrand === brand
+                                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all border shrink-0 tap-active ${modalBrand === brand
                                                         ? 'bg-slate-800 text-white border-slate-800 shadow-md'
                                                         : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
                                                         }`}

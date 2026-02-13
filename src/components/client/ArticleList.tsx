@@ -41,7 +41,7 @@ export default function ArticleList() {
                             装机<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">头条</span>
                         </h2>
                         <p className="text-slate-400 text-lg max-w-xl leading-relaxed">
-                            获取最新的硬件资讯、深度的评测报告以及专业的装机指南。让您的每一次装机都充满智慧。
+                            获取最新的硬件资讯、深度的评测报告以及专业的装机指南。掌握硬件前沿资讯，助您打造性能之巅。
                         </p>
                     </div>
                     {/* Decorative Icon */}

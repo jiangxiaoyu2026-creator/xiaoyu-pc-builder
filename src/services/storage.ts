@@ -126,9 +126,17 @@ class StorageService {
     }
 
     // --- Products ---
-    async getProducts(page: number = 1, pageSize: number = 20): Promise<{ items: HardwareItem[], total: number }> {
+    async getProducts(page: number = 1, pageSize: number = 20, category: string = 'all', brand: string = 'all', search: string = ''): Promise<{ items: HardwareItem[], total: number }> {
         try {
-            const result = await ApiService.get(`/products?page=${page}&page_size=${pageSize}`);
+            const params = new URLSearchParams({
+                page: page.toString(),
+                page_size: pageSize.toString()
+            });
+            if (category && category !== 'all') params.append('category', category);
+            if (brand && brand !== 'all') params.append('brand', brand);
+            if (search) params.append('search', search);
+
+            const result = await ApiService.get(`/products?${params.toString()}`);
             return {
                 items: result.items || [],
                 total: result.total || 0
@@ -1201,6 +1209,17 @@ class StorageService {
         } catch (e) {
             console.error('Failed to save email config', e);
             return false;
+        }
+    }
+
+    async uploadImage(file: File): Promise<{ url: string, filename: string } | null> {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            return await ApiService.postFile('/upload/image', formData);
+        } catch (e) {
+            console.error('Failed to upload image', e);
+            return null;
         }
     }
 }
