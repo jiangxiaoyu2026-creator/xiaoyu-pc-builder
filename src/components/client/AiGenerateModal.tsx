@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, Sparkles, X, RefreshCw, Activity, Cpu, Database, Zap } from 'lucide-react';
+import { Bot, Sparkles, X, RefreshCw, Activity, Cpu, Zap } from 'lucide-react';
 import { aiBuilder, AIBuildResult, AIBuildLog } from '../../services/aiBuilder';
 import { storage } from '../../services/storage';
 
@@ -97,32 +97,38 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                 <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
                 {/* Header */}
-                <div className="relative p-8 pb-6 border-b border-white/5 flex items-start justify-between bg-gradient-to-r from-slate-900/50 to-indigo-950/30 backdrop-blur-xl">
-                    <div className="flex items-center gap-4">
-                        <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 p-[1px] shadow-lg shadow-indigo-500/30 ${isThinking ? 'animate-pulse' : ''}`}>
-                            <div className="w-full h-full bg-slate-900 rounded-2xl flex items-center justify-center relative overflow-hidden">
+                <div className="relative p-8 pb-6 border-b border-white/10 flex items-start justify-between bg-gradient-to-r from-slate-900 via-indigo-950/20 to-slate-900 backdrop-blur-2xl">
+                    <div className="flex items-center gap-5">
+                        <div className={`relative w-16 h-16 rounded-2xl p-[1.5px] group/icon overflow-hidden ${isThinking ? 'animate-pulse' : ''}`}>
+                            {/* Rotating border effect */}
+                            <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,#6366f1,#a855f7,#6366f1)] animate-[spin_4s_linear_infinite] opacity-40"></div>
+                            <div className="relative w-full h-full bg-slate-900 rounded-2xl flex items-center justify-center overflow-hidden">
                                 {isThinking ? (
                                     <RefreshCw size={28} className="text-indigo-400 animate-spin" />
                                 ) : (
-                                    <Bot size={32} className="text-white fill-indigo-500/20" />
+                                    <Bot size={34} className="text-white drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
                                 )}
                                 {/* Inner Glow */}
-                                <div className="absolute inset-0 bg-indigo-500/20 blur-md"></div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20"></div>
                             </div>
                         </div>
                         <div>
                             <div className="flex items-center gap-3">
-                                <h2 className="text-2xl font-bold text-white tracking-tight">
+                                <h2 className="text-2xl font-black text-white tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
                                     {isThinking ? '神经网络计算中' : '小鱼 AI 顾问'}
                                 </h2>
-                                <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono tracking-wider animate-pulse">系统在线</span>
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30">
+                                    <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></div>
+                                    <span className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">System Online</span>
+                                </div>
                             </div>
-                            <p className="text-slate-400 text-sm mt-1 font-medium">
+                            <p className="text-slate-400 text-sm mt-1.5 font-medium flex items-center gap-2">
+                                <Sparkles size={14} className="text-indigo-400" />
                                 {isThinking ? '正在执行向量检索与兼容性拓扑计算...' : '基于大语言模型的硬件专家'}
                             </p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+                    <button onClick={onClose} className="p-2.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all hover:rotate-90">
                         <X size={24} />
                     </button>
                 </div>
@@ -132,41 +138,51 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                     {isThinking ? (
                         <div className="flex flex-col gap-6">
                             {/* Metrics Dashboard */}
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="bg-slate-950/50 rounded-xl p-3 border border-white/5 flex flex-col gap-1 items-center justify-center group/metric transition-all hover:bg-slate-950/80">
-                                    <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                                        <Cpu size={12} className="text-indigo-500" />
-                                        神经负载
-                                    </div>
-                                    <div className="text-xl font-mono text-indigo-400 font-bold tracking-tighter">
-                                        {metrics.load}%
-                                    </div>
-                                    <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden mt-1">
-                                        <div className="h-full bg-indigo-500 transition-all duration-1000" style={{ width: `${metrics.load}%` }}></div>
-                                    </div>
-                                </div>
-                                <div className="bg-slate-950/50 rounded-xl p-3 border border-white/5 flex flex-col gap-1 items-center justify-center group/metric transition-all hover:bg-slate-950/80">
-                                    <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                                        <Activity size={12} className="text-emerald-500" />
-                                        匹配率
-                                    </div>
-                                    <div className="text-xl font-mono text-emerald-400 font-bold tracking-tighter">
-                                        {metrics.match}%
-                                    </div>
-                                    <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden mt-1">
-                                        <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${metrics.match}%` }}></div>
+                            {/* Metrics Dashboard */}
+                            <div className="grid grid-cols-3 gap-5">
+                                <div className="relative bg-slate-950/40 rounded-2xl p-4 border border-white/10 overflow-hidden group/metric transition-all hover:bg-slate-950/60 hover:border-indigo-500/30">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover/metric:opacity-100 transition-opacity"></div>
+                                    <div className="relative flex flex-col gap-2">
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-black">
+                                            <Cpu size={14} className="text-indigo-400" />
+                                            神经负载
+                                        </div>
+                                        <div className="text-2xl font-black font-mono text-white tracking-tighter flex items-baseline gap-1">
+                                            {metrics.load}<span className="text-xs text-indigo-500">%</span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-slate-800/50 rounded-full overflow-hidden mt-1 ring-1 ring-white/5">
+                                            <div className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 transition-all duration-1000 shadow-[0_0_8px_rgba(99,102,241,0.5)]" style={{ width: `${metrics.load}%` }}></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="bg-slate-950/50 rounded-xl p-3 border border-white/5 flex flex-col gap-1 items-center justify-center group/metric transition-all hover:bg-slate-950/80">
-                                    <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                                        <Zap size={12} className="text-amber-500" />
-                                        延迟
+                                <div className="relative bg-slate-950/40 rounded-2xl p-4 border border-white/10 overflow-hidden group/metric transition-all hover:bg-slate-950/60 hover:border-emerald-500/30">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover/metric:opacity-100 transition-opacity"></div>
+                                    <div className="relative flex flex-col gap-2">
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-black">
+                                            <Activity size={14} className="text-emerald-400" />
+                                            匹配率
+                                        </div>
+                                        <div className="text-2xl font-black font-mono text-white tracking-tighter flex items-baseline gap-1">
+                                            {metrics.match}<span className="text-xs text-emerald-500">%</span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-slate-800/50 rounded-full overflow-hidden mt-1 ring-1 ring-white/5">
+                                            <div className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-1000 shadow-[0_0_8px_rgba(16,185,129,0.5)]" style={{ width: `${metrics.match}%` }}></div>
+                                        </div>
                                     </div>
-                                    <div className="text-xl font-mono text-amber-400 font-bold tracking-tighter">
-                                        {metrics.latency}ms
-                                    </div>
-                                    <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden mt-1">
-                                        <div className="h-full bg-amber-500 animate-pulse" style={{ width: '100%' }}></div>
+                                </div>
+                                <div className="relative bg-slate-950/40 rounded-2xl p-4 border border-white/10 overflow-hidden group/metric transition-all hover:bg-slate-950/60 hover:border-amber-500/30">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover/metric:opacity-100 transition-opacity"></div>
+                                    <div className="relative flex flex-col gap-2">
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-black">
+                                            <Zap size={14} className="text-amber-400" />
+                                            实时延迟
+                                        </div>
+                                        <div className="text-2xl font-black font-mono text-white tracking-tighter flex items-baseline gap-1">
+                                            {metrics.latency}<span className="text-xs text-amber-500">ms</span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-slate-800/50 rounded-full overflow-hidden mt-1 ring-1 ring-white/5">
+                                            <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.5)]" style={{ width: '100%' }}></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -239,36 +255,38 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                             </div>
                         </div>
                     ) : (
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-8">
                             <div className="group/input relative">
+                                {/* Animated glow background for textarea */}
+                                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl blur-lg opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-500"></div>
                                 <textarea
                                     value={prompt}
                                     onChange={e => setPrompt(e.target.value)}
-                                    className="w-full h-40 pl-6 pr-6 py-5 bg-slate-800/50 border border-slate-700 rounded-2xl font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all resize-none text-lg placeholder-slate-500 shadow-inner"
+                                    className="relative w-full h-44 pl-8 pr-8 py-7 bg-slate-950/40 border border-white/10 rounded-2xl font-medium text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all resize-none text-lg placeholder-slate-500 shadow-2xl backdrop-blur-sm"
                                     placeholder="请描述您的装机需求，例如：&#10;“我想配一台白色海景房主机，主要玩3A大作，预算1万元左右...”"
                                     autoFocus
                                 />
-                                <div className="absolute bottom-4 right-4 flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-900/80 px-2 py-1 rounded border border-white/5 pointer-events-none shadow-xl">
-                                    <Sparkles size={10} className="text-indigo-500 animate-pulse" />
-                                    神经核心 V4
+                                <div className="absolute bottom-6 right-6 flex items-center gap-2 py-1.5 px-3 rounded-full bg-black/40 border border-white/10 backdrop-blur-md pointer-events-none shadow-xl group-focus-within/input:border-indigo-500/30 transition-colors">
+                                    <Sparkles size={12} className="text-indigo-400 animate-pulse" />
+                                    <span className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">NEURAL CORE V4.2</span>
                                 </div>
                             </div>
 
-                            <div>
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Database size={14} className="text-indigo-400" />
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">启发式建议</span>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 px-1">
+                                    <div className="w-1 h-4 bg-indigo-500 rounded-full"></div>
+                                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em]">启发式建议 Heuristics</span>
                                 </div>
-                                <div className="flex flex-wrap gap-2.5">
+                                <div className="flex flex-wrap gap-3">
                                     {SUGGESTIONS.map((s, i) => (
                                         <button
                                             key={i}
                                             type="button"
                                             onClick={() => setPrompt(s)}
-                                            className="px-3.5 py-2 bg-slate-800 hover:bg-indigo-600/10 hover:text-indigo-300 text-slate-400 text-sm rounded-xl border border-slate-700/50 hover:border-indigo-500/30 transition-all text-left group flex items-center gap-2"
+                                            className="px-4 py-2.5 bg-slate-900/40 hover:bg-indigo-600/10 hover:text-white text-slate-400 text-sm rounded-xl border border-white/5 hover:border-indigo-500/40 transition-all flex items-center gap-3 group/chip shadow-sm backdrop-blur-sm"
                                         >
-                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-indigo-500 transition-colors"></div>
-                                            <span className="group-hover:translate-x-0.5 transition-transform inline-block">{s}</span>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover/chip:bg-indigo-400 transition-colors group-hover/chip:scale-125 shadow-[0_0_8px_transparent] group-hover/chip:shadow-indigo-500/50"></div>
+                                            <span className="font-semibold tracking-wide">{s}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -277,11 +295,20 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                             <button
                                 type="submit"
                                 disabled={!prompt.trim()}
-                                className="w-full py-5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-lg rounded-2xl shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_40px_rgba(79,70,229,0.5)] transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 disabled:grayscale disabled:pointer-events-none group/btn relative overflow-hidden"
+                                className="relative w-full py-6 group/btn overflow-hidden rounded-2xl transition-all active:scale-[0.98] disabled:opacity-40 disabled:grayscale"
                             >
-                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 skew-y-12"></div>
-                                <Activity className="animate-pulse" />
-                                <span className="relative z-10 tracking-widest uppercase text-sm">启动智能构建</span>
+                                {/* Gradient Background */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-[length:200%_auto] animate-gradient flex items-center justify-center"></div>
+                                {/* Shine Effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
+
+                                <div className="relative z-10 flex items-center justify-center gap-4 text-white">
+                                    <Activity className={`${prompt.trim() ? 'animate-pulse' : ''}`} size={22} />
+                                    <span className="text-lg font-black tracking-[0.2em] uppercase">启动智能构建引擎</span>
+                                    <Zap size={18} className="text-amber-300 transition-transform group-hover/btn:scale-125" />
+                                </div>
+
+                                <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(255,255,255,0.1)] rounded-2xl"></div>
                             </button>
                         </form>
                     )}
