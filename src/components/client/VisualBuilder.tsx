@@ -624,10 +624,10 @@ function VisualBuilder({
                                                             {Object.entries(item.specs).slice(0, 3).map(([key, val]) => (<span key={key} className="hidden sm:inline opacity-75 truncate max-w-[100px]">• {val}</span>))}
 
                                                             {/* Badges Inline */}
-                                                            {item.isRecommended && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold">REC</span>}
-                                                            {item.isDiscount && <span className="text-[10px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded font-bold">SALE</span>}
+                                                            {item.isRecommended && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold">推荐</span>}
+                                                            {item.isDiscount && <span className="text-[10px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded font-bold">特价</span>}
                                                             {item.createdAt && (new Date().getTime() - new Date(item.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000) && (
-                                                                <span className="text-[10px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold">NEW</span>
+                                                                <span className="text-[10px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold">新品</span>
                                                             )}
                                                         </div>
                                                     </div>
