@@ -124,11 +124,12 @@ export interface ChatSession {
 export interface ChatSettings {
     welcomeMessage: string;
     quickReplies: string[];
-    workingHours?: string;     // Added
-    autoReply?: string;        // Added (was autoReplyContent)
-    autoReplyEnabled?: boolean; // Keep for compatibility or remove
-    autoReplyContent?: string;  // Keep for compatibility or remove
-    enabled?: boolean;         // Added
+    workingHours?: string;
+    autoReply?: string;       // Matches backend
+    enabled?: boolean;        // Matches backend
+    // Legacy support
+    autoReplyEnabled?: boolean;
+    autoReplyContent?: string;
 }
 
 export interface SMSSettings {

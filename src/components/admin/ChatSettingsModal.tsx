@@ -11,8 +11,8 @@ export function ChatSettingsModal({ onClose }: ChatSettingsModalProps) {
     const [settings, setSettings] = useState<ChatSettings>({
         welcomeMessage: '',
         quickReplies: [],
-        autoReplyEnabled: false,
-        autoReplyContent: ''
+        enabled: true,
+        autoReply: ''
     });
 
     useEffect(() => {
@@ -21,8 +21,8 @@ export function ChatSettingsModal({ onClose }: ChatSettingsModalProps) {
             setSettings({
                 welcomeMessage: current.welcomeMessage || '',
                 quickReplies: current.quickReplies || [],
-                autoReplyEnabled: current.autoReplyEnabled || false,
-                autoReplyContent: current.autoReplyContent || ''
+                enabled: current.enabled !== undefined ? current.enabled : (current.autoReplyEnabled || false),
+                autoReply: current.autoReply || current.autoReplyContent || ''
             });
         };
         loadSettings();
@@ -75,8 +75,8 @@ export function ChatSettingsModal({ onClose }: ChatSettingsModalProps) {
                                 <input
                                     type="checkbox"
                                     className="sr-only peer"
-                                    checked={settings.autoReplyEnabled}
-                                    onChange={e => setSettings(prev => ({ ...prev, autoReplyEnabled: e.target.checked }))}
+                                    checked={settings.enabled}
+                                    onChange={e => setSettings(prev => ({ ...prev, enabled: e.target.checked }))}
                                 />
                                 <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                             </label>
@@ -84,10 +84,10 @@ export function ChatSettingsModal({ onClose }: ChatSettingsModalProps) {
                         <p className="text-sm text-slate-500">
                             开启后，当用户发送第一条消息或在非工作时间咨询时，系统将自动发送下方设置的回复内容。
                         </p>
-                        {settings.autoReplyEnabled && (
+                        {settings.enabled && (
                             <textarea
-                                value={settings.autoReplyContent}
-                                onChange={e => setSettings(prev => ({ ...prev, autoReplyContent: e.target.value }))}
+                                value={settings.autoReply}
+                                onChange={e => setSettings(prev => ({ ...prev, autoReply: e.target.value }))}
                                 className="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
                                 placeholder="例如：您好，我现在有点忙，稍后会尽快回复您！您也可以先查看我们的配置广场。"
                             />
