@@ -41,8 +41,8 @@ def _migrate_extra_columns():
         # 补齐 users 表
         cursor.execute("PRAGMA table_info(users)")
         user_cols = [row[1] for row in cursor.fetchall()]
-        if 'phone' not in user_cols:
-            cursor.execute("ALTER TABLE users ADD COLUMN phone TEXT")
+        if 'mobile' not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN mobile TEXT")
         if 'email' not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN email TEXT")
             
@@ -61,8 +61,8 @@ def _migrate_extra_columns():
 
 def _create_default_admin():
     """创建默认管理员账户"""
-    from .models import User
-    from .utils.auth import get_password_hash
+    from models import User
+    from utils.auth import get_password_hash
 
     with Session(engine) as session:
         # 检查是否已存在管理员

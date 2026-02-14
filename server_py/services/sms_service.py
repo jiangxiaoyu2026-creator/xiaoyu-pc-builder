@@ -1,7 +1,7 @@
 import httpx
 from datetime import datetime, timedelta
 import random
-from ..models import SMSVerification
+from models import SMSVerification
 from sqlmodel import Session, select
 
 class SMSService:

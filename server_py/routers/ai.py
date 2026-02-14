@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlmodel import Session
-from ..db import get_session
-from ..services.ai_service import AiService
+from db import get_session
+from services.ai_service import AiService
 from pydantic import BaseModel
 
 router = APIRouter()

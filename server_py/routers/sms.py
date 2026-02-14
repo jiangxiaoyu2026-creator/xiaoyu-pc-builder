@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List, Optional
-from ..db import get_session
-from ..models import Setting, User
-from ..services.sms_service import SMSService
+from db import get_session
+from models import Setting, User
+from services.sms_service import SMSService
 from .auth import get_current_admin
 import json
 import os

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select, func
 from typing import List, Optional
-from ..db import get_session
-from ..models import ChatSession, ChatMessage, ChatSettings, User
+from db import get_session
+from models import ChatSession, ChatMessage, ChatSettings, User
 from .auth import get_current_user_optional, get_current_admin
 import uuid
 import json

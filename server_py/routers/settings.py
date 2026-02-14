@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List, Optional
-from ..db import get_session
-from ..models import Setting, User
+from db import get_session
+from models import Setting, User
 from .auth import get_current_admin
 import json
 

@@ -2,8 +2,8 @@ import json
 import random
 from typing import List, Dict, Any, Optional
 from sqlmodel import Session, select, col
-from ..models import Hardware, Config, Setting, ChatSettings
-from ..db import engine
+from models import Hardware, Config, Setting, ChatSettings
+from db import engine
 from openai import OpenAI
 import os
 

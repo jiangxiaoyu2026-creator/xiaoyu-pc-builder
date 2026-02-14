@@ -3,7 +3,7 @@ import os
 import uuid
 import shutil
 from .auth import get_current_admin
-from ..models import User
+from models import User
 
 router = APIRouter()
 

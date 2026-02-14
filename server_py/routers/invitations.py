@@ -4,8 +4,8 @@ from typing import List
 import random, string, uuid
 from datetime import datetime
 
-from ..db import get_session
-from ..models import User, InvitationCode
+from db import get_session
+from models import User, InvitationCode
 from .auth import get_current_admin
 
 router = APIRouter()

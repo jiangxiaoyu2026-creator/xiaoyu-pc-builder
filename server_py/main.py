@@ -1,10 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .db import init_db
+from db import init_db
 import logging
 
 
-from .routers import auth, configs, used, payment, settings, sms, recycle, products, stats, email, invitations, chat, ai, articles, upload
+from routers import auth, configs, used, payment, settings, sms, recycle, products, stats, email, invitations, chat, ai, articles, upload
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
@@ -106,4 +106,4 @@ if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "8000"))
     reload = os.getenv("RELOAD", "true").lower() == "true"
-    uvicorn.run("server_py.main:app", host=host, port=port, reload=reload, log_level="info")
+    uvicorn.run("main:app", host=host, port=port, reload=reload, log_level="info")
