@@ -37,14 +37,23 @@ export default function AboutUsSettings() {
         setConfig({ ...config, brandImages: newBrandImages });
     };
 
-    const handleImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                updateBrandImage(index, 'url', reader.result as string);
-            };
-            reader.readAsDataURL(file);
+            setIsSaving(true); // Re-using isSaving as a loading indicator for now
+            try {
+                const res = await storage.uploadImage(file);
+                if (res) {
+                    updateBrandImage(index, 'url', res.url);
+                } else {
+                    alert('图片上传失败，请重试');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('图片上传出错');
+            } finally {
+                setIsSaving(false);
+            }
         }
     };
 

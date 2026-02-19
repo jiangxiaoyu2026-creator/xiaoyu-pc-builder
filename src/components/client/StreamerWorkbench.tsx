@@ -507,7 +507,7 @@ export default function StreamerWorkbench({
                 <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                     <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <Zap className="text-indigo-600" />
-                        极速录入模式
+                        智能装机平台
                     </h2>
                     <div className="flex gap-3">
                         <button onClick={onOpenLibrary} className="flex items-center gap-1.5 px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-full transition-colors active:scale-95 border border-slate-200">

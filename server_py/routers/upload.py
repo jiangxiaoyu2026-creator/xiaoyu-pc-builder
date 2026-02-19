@@ -8,7 +8,7 @@ from ..models import User
 router = APIRouter()
 
 # 获取项目根目录 (server_py 的上一级)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 
 # 确保上传目录存在

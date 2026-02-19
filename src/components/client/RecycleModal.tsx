@@ -17,14 +17,25 @@ export default function RecycleModal({ onClose, onSuccess, currentUser, showToas
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImage(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+            if (loading) return;
+
+            setLoading(true);
+            try {
+                const res = await storage.uploadImage(file);
+                if (res) {
+                    setImage(res.url);
+                } else {
+                    showToast('图片上传失败，请重试');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showToast('图片上传出错');
+            } finally {
+                setLoading(false);
+            }
         }
     };
 

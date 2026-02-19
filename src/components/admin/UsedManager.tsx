@@ -470,17 +470,29 @@ function OfficialPublishModal({ onClose, onSuccess }: { onClose: () => void; onS
     });
     const [loading, setLoading] = useState(false);
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData(prev => ({
-                    ...prev,
-                    images: [...(prev.images || []), reader.result as string]
-                }));
-            };
-            reader.readAsDataURL(file);
+            // Prevent double submission or interference
+            if (loading) return;
+
+            setLoading(true);
+            try {
+                const res = await storage.uploadImage(file);
+                if (res) {
+                    setFormData(prev => ({
+                        ...prev,
+                        images: [...(prev.images || []), res.url]
+                    }));
+                } else {
+                    alert('图片上传失败，请重试');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('图片上传出错');
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
