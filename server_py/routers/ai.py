@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlmodel import Session
-from db import get_session
-from services.ai_service import AiService
+from ..db import get_session
+from ..services.ai_service import AiService
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -25,10 +25,18 @@ async def generate_build_endpoint(
     
     full_prompt = f"{req.prompt}。预算约{req.budget}元，用于{req.usage}，偏好{req.appearance}风格。"
     
-    result = service.generate_build(full_prompt)
-    if "error" in result:
-        # Check if it's a configuration error
-        if "AI Service not configured" in result["error"]:
-             raise HTTPException(status_code=503, detail="AI Service not configured. Please check admin settings.")
-        return result # Return error-like object or raise exception? Frontend expects JSON.
-    return result
+    try:
+        result = service.generate_build(full_prompt)
+        
+        # Check for service-level errors that might be returned as dicts (legacy or specific checks)
+        if hasattr(result, "get") and result.get("error"):
+             if "AI Service not configured" in result["error"]:
+                 raise HTTPException(status_code=503, detail="AI Service not configured")
+             raise HTTPException(status_code=500, detail=result["error"])
+             
+        return result
+    except Exception as e:
+        # Check if it's the "not configured" error which might come from check at start of generate_build
+        if "AI Service not configured" in str(e):
+            raise HTTPException(status_code=503, detail="AI Service not configured. Please check admin settings.")
+        raise HTTPException(status_code=500, detail=f"AI Service Error: {str(e)}")

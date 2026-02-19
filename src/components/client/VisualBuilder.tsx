@@ -385,34 +385,34 @@ function VisualBuilder({
                 <div onClick={() => {
                     if (onAiCheck && !onAiCheck()) return;
                     setShowAiModal(true);
-                }} className="hidden lg:block group relative w-full cursor-pointer transition-all hover:scale-[1.02]">
-                    {/* Glowing Backdrop */}
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-500"></div>
+                }} className="hidden lg:block group relative w-full cursor-pointer transition-all hover:-translate-y-1">
+                    {/* Glowing Backdrop - Softer */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-3xl blur opacity-10 group-hover:opacity-30 transition duration-500"></div>
 
                     {/* Main Card */}
-                    <div className="relative flex items-center gap-4 bg-slate-950 rounded-xl p-5 border border-slate-800 shadow-2xl overflow-hidden ring-1 ring-white/10">
-                        {/* High-tech Background Grid */}
-                        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none"></div>
+                    <div className="relative flex items-center gap-4 bg-white rounded-[22px] p-5 border border-indigo-100/80 shadow-lg shadow-indigo-100/50 overflow-hidden">
+                        {/* Light High-tech Background Grid */}
+                        <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.03)_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_at_center,black_70%,transparent_100%)] pointer-events-none"></div>
 
                         {/* Icon Container */}
-                        <div className="relative z-10 w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
-                            <Sparkles size={24} className="text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.6)] animate-pulse-slow" />
+                        <div className="relative z-10 w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                            <Sparkles size={24} className="drop-shadow-sm animate-pulse-slow" />
                         </div>
 
                         {/* Text Content */}
                         <div className="relative z-10 flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-bold text-lg text-white tracking-wide font-sans">AI 智能装机</h3>
-                                <span className="text-[10px] font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(79,70,229,0.3)] border border-white/10">测试版</span>
+                                <h3 className="font-extrabold text-lg text-slate-800 tracking-tight">AI 智能装机</h3>
+                                <span className="text-[10px] font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-1.5 py-0.5 rounded shadow-sm shadow-indigo-200">测试版</span>
                             </div>
-                            <p className="text-slate-400 text-xs font-medium group-hover:text-slate-300 transition-colors leading-relaxed">
+                            <p className="text-slate-500 text-xs font-medium group-hover:text-indigo-600 transition-colors leading-relaxed">
                                 智能语义分析，一键生成配置
                             </p>
                         </div>
 
                         {/* Arrow Action */}
-                        <div className="relative z-10 w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-indigo-600 group-hover:border-indigo-500 transition-all duration-300 transform group-hover:translate-x-1 shadow-lg">
-                            <ArrowRight size={14} className="text-slate-500 group-hover:text-white" />
+                        <div className="relative z-10 w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-indigo-600 group-hover:border-indigo-500 transition-all duration-300 transform group-hover:translate-x-1 shadow-sm">
+                            <ArrowRight size={14} className="text-slate-400 group-hover:text-white" />
                         </div>
                     </div>
                 </div>

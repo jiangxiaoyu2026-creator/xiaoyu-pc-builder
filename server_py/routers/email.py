@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional
 from sqlmodel import Session
-from db import get_session
-from services.email_service import EmailService
-from models import EmailSettings, User
+from ..db import get_session
+from ..services.email_service import EmailService
+from ..models import EmailSettings, User
 from .auth import get_current_admin
 
 router = APIRouter()

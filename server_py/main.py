@@ -1,10 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from db import init_db
+from .db import init_db
 import logging
 
 
-from routers import auth, configs, used, payment, settings, sms, recycle, products, stats, email, invitations, chat, ai, articles, upload
+from .routers import auth, configs, used, payment, settings, sms, recycle, products, stats, email, invitations, chat, ai, articles, upload
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os

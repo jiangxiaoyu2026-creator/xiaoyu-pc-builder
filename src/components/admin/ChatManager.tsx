@@ -165,7 +165,7 @@ export default function ChatManager() {
                                             </span>
                                         </div>
                                         <p className={`text-xs truncate ${session.unreadCount > 0 ? 'text-slate-600 font-medium' : 'text-slate-400'}`}>
-                                            {(session.lastMessage && typeof session.lastMessage === 'object') ? (session.lastMessage as any).content : (session.lastMessage || '暂无消息')}
+                                            {(session.lastMessage && typeof session.lastMessage === 'object' && 'content' in session.lastMessage) ? (session.lastMessage as ChatMessage).content : (typeof session.lastMessage === 'string' ? session.lastMessage : '暂无消息')}
                                         </p>
                                     </div>
                                 </button>

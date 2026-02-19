@@ -632,7 +632,7 @@ export default function ClientApp() {
                             setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
                         }}
                         hasPermission={hasStreamerPermission}
-                        onApply={() => window.open('https://chat.xiaoyu.com', '_blank')}
+
                         onAiCheck={handleAiPermission}
                         onOpenLibrary={() => setShowLibraryModal(true)}
                     />

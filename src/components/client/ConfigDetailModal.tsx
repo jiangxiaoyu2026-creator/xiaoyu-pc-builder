@@ -69,7 +69,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
 
         textLines.push(`------------------`);
         textLines.push(`总价: ¥${config.price}`);
-        textLines.push(`详情: https://xiaoyu.pc/config/${config.id}`);
+        textLines.push(`详情: https://DIYXX.COM/config/${config.id}`);
 
         const shareText = textLines.join('\n');
 

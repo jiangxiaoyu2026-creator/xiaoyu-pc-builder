@@ -12,6 +12,8 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
     const [strategyLabel, setStrategyLabel] = useState('');
     const logEndRef = useRef<HTMLDivElement>(null);
 
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+
     // 加载 AI 设置中的性格和策略标签
     useEffect(() => {
         storage.getAISettings().then(s => {
@@ -19,6 +21,18 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
             setPersonaLabel(p === 'toxic' ? '毒舌 (讽刺)' : p === 'professional' ? '专业 (PRO)' : p === 'enthusiastic' ? '热情' : '平衡');
             const st = s.strategy || 'balanced';
             setStrategyLabel(st === 'performance' ? '性能优先' : st === 'aesthetic' ? '颜值优先' : st === 'budget' ? '预算优先' : '均衡策略');
+
+            if (s.suggestions && s.suggestions.length > 0) {
+                setSuggestions(s.suggestions);
+            } else {
+                setSuggestions([
+                    "3000元 办公主机",
+                    "5000元 性价比游戏主机",
+                    "8000元 直播主机",
+                    "15000元 极致游戏主机",
+                    "20000元 高端海景房主机"
+                ]);
+            }
         });
     }, []);
 
@@ -39,13 +53,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
         logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [thinkSteps]);
 
-    const SUGGESTIONS = [
-        "3000元 办公主机",
-        "5000元 性价比游戏主机",
-        "8000元 直播主机",
-        "15000元 极致游戏主机",
-        "20000元 高端海景房主机"
-    ];
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,7 +98,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
 
     return (
         <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center md:p-4 bg-slate-950/60 backdrop-blur-md animate-fade-in">
-            <div className="relative w-full md:max-w-3xl h-[90vh] md:h-auto bg-slate-900 rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden animate-slide-up md:animate-scale-up ring-1 ring-white/10 group">
+            <div className="relative w-full md:max-w-3xl h-[90vh] md:h-auto bg-slate-900 rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden animate-slide-up md:animate-scale-up ring-1 ring-white/10 group flex flex-col">
                 {/* Background Effects */}
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
                 <div className="absolute -top-32 -right-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none animate-pulse-slow"></div>
@@ -134,7 +142,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                 </div>
 
                 {/* Content Area */}
-                <div className="relative p-8 pt-6">
+                <div className="relative p-8 pt-6 flex-1 overflow-y-auto">
                     {isThinking ? (
                         <div className="flex flex-col gap-6">
                             {/* Metrics Dashboard */}
@@ -278,7 +286,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                     <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em]">启发式建议 Heuristics</span>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
-                                    {SUGGESTIONS.map((s, i) => (
+                                    {suggestions.map((s, i) => (
                                         <button
                                             key={i}
                                             type="button"

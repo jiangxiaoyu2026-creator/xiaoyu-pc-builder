@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from sqlmodel import Session, select
-from models import EmailVerification, EmailSettings
+from ..models import EmailVerification, EmailSettings
 import random
 import logging
 

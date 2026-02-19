@@ -3,6 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { storage } from '../../services/storage';
 import { Article } from '../../types/clientTypes';
 import { ArrowLeft, Calendar, Clock, Share2 } from 'lucide-react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 
 export default function ArticleDetail() {
     const { id } = useParams();
@@ -36,9 +40,7 @@ export default function ArticleDetail() {
         );
     }
 
-    // Simple auto-detect HTML
-    const isHtml = /<[a-z][\s\S]*>/i.test(article.content);
-    const contentHtml = isHtml ? article.content : article.content.replace(/\n/g, '<br/>');
+
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
@@ -80,10 +82,22 @@ export default function ArticleDetail() {
                     />
                 )}
 
-                <div
-                    className="prose prose-slate max-w-none prose-lg bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-100 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: contentHtml }}
-                />
+                <div className="prose prose-slate max-w-none prose-lg bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-100 leading-relaxed overflow-hidden">
+                    <Markdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                        components={{
+                            img: ({ node, ...props }: any) => (
+                                <img {...props} className="rounded-lg shadow-sm max-w-full h-auto" />
+                            ),
+                            a: ({ node, ...props }: any) => (
+                                <a {...props} className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer" />
+                            )
+                        }}
+                    >
+                        {article.content}
+                    </Markdown>
+                </div>
             </article>
         </div>
     );

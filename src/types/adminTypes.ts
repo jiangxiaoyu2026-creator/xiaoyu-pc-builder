@@ -90,6 +90,7 @@ export interface AISettings {
     severeBudgetIntros?: string[];
     verdicts?: string[];
     ctas?: string[];
+    suggestions?: string[]; // 启发式建议 (Heuristics)
 }
 
 // --- Chat System Types ---

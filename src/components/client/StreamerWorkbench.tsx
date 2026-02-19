@@ -12,7 +12,7 @@ import { ChatSettingsModal } from '../admin/ChatSettingsModal';
 
 
 
-export function StreamerPermissionDenied({ onApply }: { onApply: () => void }) {
+export function StreamerPermissionDenied() {
     return (
         <div className="flex items-center justify-center min-h-[60vh]">
             <div className="max-w-md w-full p-8 bg-white/80 backdrop-blur-xl rounded-[24px] shadow-2xl border border-white/50 text-center">
@@ -24,12 +24,7 @@ export function StreamerPermissionDenied({ onApply }: { onApply: () => void }) {
                     当前账号没有访问主播/商家工作台的权限。<br />
                     请联系管理员开通权限：<span className="font-bold text-slate-900 select-all">13793195989</span>
                 </p>
-                <button
-                    onClick={onApply}
-                    className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-black transition-all"
-                >
-                    在线咨询
-                </button>
+
             </div>
         </div>
     );
@@ -293,7 +288,6 @@ export default function StreamerWorkbench({
     handleSave,
     clearBuild,
     hasPermission,
-    onApply,
     onAiCheck,
     onOpenLibrary
 }: {
@@ -307,7 +301,6 @@ export default function StreamerWorkbench({
     handleSave: () => void,
     clearBuild: () => void,
     hasPermission: boolean,
-    onApply: () => void,
     onAiCheck?: () => boolean,
     onOpenLibrary: () => void
 
@@ -499,12 +492,7 @@ export default function StreamerWorkbench({
                             <p className="text-indigo-900 text-sm font-bold mb-1">联系管理员开通权限</p>
                             <p className="text-indigo-600 font-mono text-lg font-bold select-all">手机: 13793195989</p>
                         </div>
-                        <button
-                            onClick={onApply}
-                            className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all"
-                        >
-                            立即在线咨询
-                        </button>
+
                     </div>
                 </div>
             )}

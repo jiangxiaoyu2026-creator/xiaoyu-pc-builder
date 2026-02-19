@@ -5,11 +5,11 @@ from typing import List, Optional
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Request
 from pydantic import BaseModel
-from db import get_session
-from models import User
-from utils.auth import get_password_hash, verify_password, create_access_token, decode_access_token
-from services.sms_service import SMSService
-from services.email_service import EmailService
+from ..db import get_session
+from ..models import User
+from ..utils.auth import get_password_hash, verify_password, create_access_token, decode_access_token
+from ..services.sms_service import SMSService
+from ..services.email_service import EmailService
 import uuid
 from datetime import datetime
 
