@@ -232,10 +232,7 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
                         </p>
                     </div>
 
-                    {/* Helper Tip */}
-                    <div className="mt-6 pt-6 border-t border-slate-100 text-xs text-center text-slate-400">
-                        <p>默认账号: admin / admin123 或 DIYXX / jiangxiaoyu119</p>
-                    </div>
+
                 </div>
             </div>
         </div>
