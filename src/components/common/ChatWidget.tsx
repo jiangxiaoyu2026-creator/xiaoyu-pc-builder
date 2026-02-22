@@ -34,6 +34,8 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
     };
 
     useEffect(() => {
+        let pollInterval: ReturnType<typeof setInterval> | null = null;
+
         const initChat = async () => {
             const user = storage.getCurrentUser();
             const currentSession = await storage.getOrCreateCurrentUserSession(user);
@@ -60,25 +62,46 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
             window.addEventListener('xiaoyu-chat-message-update', handleMsgUpdate as EventListener);
             window.addEventListener('storage', handleStorageUpdate);
 
+            // Poll for new messages every 5 seconds (picks up admin replies)
+            pollInterval = setInterval(async () => {
+                try {
+                    const freshMsgs = await storage.getChatMessages(currentSession.id);
+                    setMessages(freshMsgs);
+                } catch (e) {
+                    // silently ignore polling errors
+                }
+            }, 5000);
+
             return () => {
                 window.removeEventListener('xiaoyu-chat-message-update', handleMsgUpdate as EventListener);
                 window.removeEventListener('storage', handleStorageUpdate);
             };
         };
         initChat();
+
+        return () => {
+            if (pollInterval) clearInterval(pollInterval);
+        };
     }, []);
 
     // Handle initial message when chat opens
     useEffect(() => {
         if (isOpen && initialMessage && session && !initialMessageSentRef.current) {
-            // Send the initial message
-            // Send the initial message
-            storage.addChatMessage(session.id, {
-                sender: 'user',
-                content: initialMessage
-            });
             initialMessageSentRef.current = true;
-            onInitialMessageSent?.();
+            const sendInitial = async () => {
+                try {
+                    await storage.addChatMessage(session.id, {
+                        sender: 'user',
+                        content: initialMessage
+                    });
+                    const freshMsgs = await storage.getChatMessages(session.id);
+                    setMessages(freshMsgs);
+                    onInitialMessageSent?.();
+                } catch (e) {
+                    console.error('Failed to send initial message', e);
+                }
+            };
+            sendInitial();
         }
     }, [isOpen, initialMessage, session, onInitialMessageSent]);
 
@@ -91,14 +114,25 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
         if (isOpen) scrollToBottom();
     }, [messages, isOpen]);
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!input.trim() || !session) return;
 
-        storage.addChatMessage(session.id, {
-            sender: 'user',
-            content: input.trim()
-        });
-        setInput('');
+        const currentInput = input.trim();
+        setInput(''); // Clear immediately for better UX
+
+        try {
+            await storage.addChatMessage(session.id, {
+                sender: 'user',
+                content: currentInput
+            });
+            // Re-fetch messages to get the auto-reply if there is any
+            const freshMsgs = await storage.getChatMessages(session.id);
+            setMessages(freshMsgs);
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            // Optionally restore input on failure
+            setInput(currentInput);
+        }
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {

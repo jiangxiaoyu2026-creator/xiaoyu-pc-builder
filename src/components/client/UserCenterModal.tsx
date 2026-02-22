@@ -6,6 +6,7 @@ import ConfirmModal from '../common/ConfirmModal';
 
 import { ConfigDetailModal } from './Modals';
 import SellModal from './SellModal';
+import ShowcaseModal from './ShowcaseModal';
 
 // 邀请好友卡片组件
 function InviteCard({ userId, showToast }: { userId: string; showToast: (msg: string) => void }) {
@@ -138,6 +139,7 @@ export function UserCenterModal({
     const [myUsedItems, setMyUsedItems] = useState<import('../../types/adminTypes').UsedItem[]>([]);
     const [selectedConfig, setSelectedConfig] = useState<ConfigTemplate | null>(null);
     const [editingItem, setEditingItem] = useState<import('../../types/adminTypes').UsedItem | null>(null);
+    const [editingShowcaseConfig, setEditingShowcaseConfig] = useState<ConfigTemplate | null>(null);
 
     // Confirm Modal States
     const [isActionLoading, setIsActionLoading] = useState(false);
@@ -172,7 +174,9 @@ export function UserCenterModal({
                     date: c.createdAt,
                     isLiked: userLikes.includes(c.id),
                     serialNumber: c.serialNumber,
-                    description: c.description
+                    description: c.description,
+                    showcaseImages: c.showcaseImages,
+                    showcaseStatus: c.showcaseStatus
                 });
 
                 const mappedAll = publishedConfigs.map(mapConfig);
@@ -489,9 +493,40 @@ export function UserCenterModal({
                                                     </div>
                                                 </div>
                                                 <h4 className="font-bold text-slate-900 truncate mb-1 group-hover:text-indigo-600 transition-colors">{config.title}</h4>
-                                                <div className="flex items-center justify-between text-xs text-slate-400">
+                                                <div className="flex items-center justify-between text-xs text-slate-400 mb-3">
                                                     <span>{new Date(config.date).toLocaleDateString()}</span>
                                                     <span className="flex items-center gap-1"><Heart size={12} /> {config.likes}</span>
+                                                </div>
+
+                                                {/* Edit Showcase Button */}
+                                                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                                                    <div className="flex items-center gap-1.5 max-w-[50%]">
+                                                        {config.showcaseStatus === 'approved' && (
+                                                            <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 truncate">
+                                                                <span>📸</span> 已晒单
+                                                            </span>
+                                                        )}
+                                                        {config.showcaseStatus === 'pending' && (
+                                                            <span className="text-[10px] bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-bold truncate">
+                                                                审核中
+                                                            </span>
+                                                        )}
+                                                        {config.showcaseStatus === 'rejected' && (
+                                                            <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold truncate">
+                                                                已拒绝
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setEditingShowcaseConfig(config);
+                                                        }}
+                                                        className="text-[10px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 shrink-0"
+                                                    >
+                                                        <Edit3 size={12} />
+                                                        {config.showcaseStatus === 'none' ? '上传晒单' : '修改晒单'}
+                                                    </button>
                                                 </div>
                                             </div>
                                         ))}
@@ -634,6 +669,20 @@ export function UserCenterModal({
                     }}
                     showToast={showToast}
                     initialData={editingItem}
+                />
+            )}
+
+            {/* Showcase Modal */}
+            {editingShowcaseConfig && (
+                <ShowcaseModal
+                    config={editingShowcaseConfig}
+                    onClose={() => setEditingShowcaseConfig(null)}
+                    onSuccess={() => {
+                        showToast('晒单提交成功，等待管理员审核');
+                        setEditingShowcaseConfig(null);
+                        // Storage update event will trigger reload
+                    }}
+                    showToast={showToast}
                 />
             )}
         </div>

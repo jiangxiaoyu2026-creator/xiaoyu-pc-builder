@@ -45,6 +45,28 @@ const CATEGORY_LABELS: Record<string, string> = {
     accessory: '配件', all: '全部品类'
 };
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 min-w-[150px]">
+                <p className="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2">{label}</p>
+                <div className="space-y-2">
+                    {payload.map((entry: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between gap-6 text-sm">
+                            <span className="flex items-center gap-2 font-medium" style={{ color: entry.color }}>
+                                <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
+                                {entry.name === 'upCount' ? '涨价数量' : '降价数量'}
+                            </span>
+                            <span className="font-bold text-slate-800">{entry.value}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
+
 export default function PriceTrendChart() {
     const [data, setData] = useState<PriceTrendData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -165,41 +187,38 @@ export default function PriceTrendChart() {
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                     <h3 className="font-bold text-slate-800 mb-4">价格变动趋势</h3>
                     <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }} barGap={8}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                             <XAxis
                                 dataKey="date"
-                                tick={{ fontSize: 11, fill: '#94a3b8' }}
+                                tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
                                 tickFormatter={(v: string) => v.slice(5)}
+                                axisLine={false}
+                                tickLine={false}
+                                dy={10}
                             />
-                            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                            <YAxis
+                                tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
+                                axisLine={false}
+                                tickLine={false}
+                                dx={-10}
+                            />
                             <Tooltip
-                                contentStyle={{
-                                    borderRadius: '12px',
-                                    border: '1px solid #e2e8f0',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                                    fontSize: '12px'
-                                }}
-                                formatter={((value: any, name: string) => {
-                                    const labels: Record<string, string> = {
-                                        upCount: '涨价数量',
-                                        downCount: '降价数量',
-                                        avgChange: '平均变动 (¥)'
-                                    };
-                                    return [value, labels[name] || name];
-                                }) as any}
+                                content={<CustomTooltip />}
+                                cursor={{ fill: '#f8fafc' }}
                             />
                             <Legend
+                                wrapperStyle={{ paddingTop: '20px' }}
                                 formatter={(value: string) => {
                                     const labels: Record<string, string> = {
-                                        upCount: '涨价',
-                                        downCount: '降价'
+                                        upCount: '涨价 (件)',
+                                        downCount: '降价 (件)'
                                     };
-                                    return labels[value] || value;
+                                    return <span className="text-sm font-medium text-slate-600 ml-1">{labels[value] || value}</span>;
                                 }}
                             />
-                            <Bar dataKey="upCount" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="downCount" fill="#10b981" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="upCount" fill="#f43f5e" maxBarSize={32} radius={[6, 6, 0, 0]} />
+                            <Bar dataKey="downCount" fill="#10b981" maxBarSize={32} radius={[6, 6, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

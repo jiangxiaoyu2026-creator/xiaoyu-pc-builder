@@ -12,6 +12,8 @@ class AiService:
         self.session = session
         self.client = None
         self.model = "gpt-3.5-turbo"
+        self.persona = "balanced"
+        self.strategy = "balanced"
         self._init_client()
 
     def _init_client(self):
@@ -24,6 +26,8 @@ class AiService:
                     api_key = config.get("apiKey")
                     base_url = config.get("baseUrl")
                     self.model = config.get("model", "deepseek-chat")
+                    self.persona = config.get("persona", "balanced")
+                    self.strategy = config.get("strategy", "balanced")
                     
                     if api_key:
                         self.client = OpenAI(
@@ -32,6 +36,21 @@ class AiService:
                         )
             except Exception as e:
                 print(f"Error loading AI settings: {e}")
+
+    def _parse_specs(self, specs_raw) -> str:
+        """将 specs JSON 字符串解析为可读文本"""
+        try:
+            if isinstance(specs_raw, str):
+                specs = json.loads(specs_raw)
+            elif isinstance(specs_raw, dict):
+                specs = specs_raw
+            else:
+                return ""
+            if not specs:
+                return ""
+            return ", ".join(f"{k}: {v}" for k, v in specs.items() if v)
+        except:
+            return str(specs_raw) if specs_raw else ""
 
     def retrieve_candidates(self, budget: int, usage: str) -> List[Dict]:
         """
@@ -88,13 +107,14 @@ class AiService:
                 selected = items
             
             for item in selected:
+                specs_text = self._parse_specs(item.specs)
                 final_list.append({
                     "id": item.id,
                     "category": item.category,
                     "brand": item.brand,
                     "model": item.model,
                     "price": item.price,
-                    "specs": item.specs
+                    "specs": specs_text
                 })
                 
         return final_list
@@ -138,8 +158,32 @@ class AiService:
         inventory = self.retrieve_candidates(budget, usage)
         references = self.find_reference_configs(budget, usage)
         
+        # Build persona instruction
+        persona_instructions = {
+            'toxic': '你说话风格犀利毒舌，带有幽默讽刺感。敢于吐槽用户的不合理需求，但最终会给出靠谱方案。评价中大胆指出不足，不要说废话套话。',
+            'professional': '你说话风格专业严谨，像一个资深硬件评测编辑。用数据和参数说话，给出客观冷静的分析。评价要有理有据。',
+            'enthusiastic': '你说话风格热情活泼，像一个真心帮忙的朋友。多用感叹号和语气词，让用户感受到你的热心。评价积极正面但也要说真话。',
+            'balanced': '你说话风格温和理性，用通俗易懂的语言解释专业内容。评价要公允中立，优缺点都要提到。'
+        }
+        
+        strategy_instructions = {
+            'performance': '配单策略：【性能至上】。在预算范围内最大化硬件性能，优先选择跑分更高、性能更强的配件。CPU和显卡占预算比例可以适当调高。',
+            'budget': '配单策略：【极致省钱】。在满足基本需求的前提下尽可能压低总价。优先选择性价比高的型号，可以选择稍旧一代但性价比更高的配件。',
+            'aesthetic': '配单策略：【颜值优先】。优先选择全白、RGB、海景房风格的配件。在预算允许的情况下选择外观设计出色的型号。',
+            'balanced': '配单策略：【均衡配置】。在性能、价格、品牌和散热之间取得平衡。优先选择大品牌、口碑好的型号。'
+        }
+        
+        persona_text = persona_instructions.get(self.persona, persona_instructions['balanced'])
+        strategy_text = strategy_instructions.get(self.strategy, strategy_instructions['balanced'])
+        
         system_prompt = f"""你是一个顶级的电脑装机大师（小鱼装机AI）。
-你的任务是根据用户的需求，从【库存清单】中精准勾选硬件，组成一台电脑主机。
+你的任务是根据用户的需求，从【库存清单】中精准勾选硬件，组成一台电脑主机，并给出专业评价。
+
+**你的说话风格：**
+{persona_text}
+
+**你的配单策略：**
+{strategy_text}
 
 **⚠️ 极其重要的铁律：**
 1. **严格预算控制**：总价【绝对不能】超过用户预算的 100%（即 {budget} 元）。除非你能在说明中给出极强的理由（如大幅提升性能），但即便如此也严禁超过 {budget * 1.1} 元。
@@ -170,7 +214,14 @@ class AiService:
     "monitor": "id (可选)"
   }},
   "totalPrice": (所有 items 真实单价之和),
-  "description": "配置分析文案。"
+  "description": "一段完整的配置总结文案，描述这套配置的整体定位和亮点。200字左右。",
+  "evaluation": {{
+    "score": (1-100 的整数评分),
+    "verdict": "一句话总结评价，20字以内",
+    "pros": ["优点1", "优点2", "优点3"],
+    "cons": ["不足1（如有）"],
+    "summary": "详细的专业点评，包括性能分析、兼容性说明、散热评估、升级建议等。300字左右。"
+  }}
 }}
 """
 

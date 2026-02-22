@@ -151,21 +151,28 @@ export default function UsedItemDetail({ item, onClose, currentUser, onLogin, on
                         </div>
                     </div>
 
-                    {/* Bottom Action */}
                     <div className="p-6 border-t border-slate-100 bg-white sticky bottom-0">
-                        {item.type === 'personal' && item.xianyuLink ? (
+                        {item.type === 'personal' ? (
                             <div className="space-y-3">
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={handleXianyuClick}
-                                        className="flex-1 py-4 bg-[#ffda44] hover:bg-[#ffe160] text-slate-900 rounded-xl font-bold transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2"
-                                    >
-                                        {copied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} />}
-                                        {copied ? '已复制' : '复制闲鱼链接'}
-                                    </button>
-                                </div>
+                                <button
+                                    onClick={() => {
+                                        if (item.xianyuLink) {
+                                            handleXianyuClick();
+                                        } else {
+                                            alert('卖家未提供购买链接，请通过其他方式联系或在二手平台搜索相关信息');
+                                        }
+                                    }}
+                                    disabled={!item.xianyuLink}
+                                    className={`w-full py-4 rounded-xl font-bold transition-all transform flex items-center justify-center gap-2 ${item.xianyuLink
+                                            ? 'bg-[#ffda44] hover:bg-[#ffe160] text-slate-900 shadow-lg hover:scale-[1.02] active:scale-[0.98] shadow-orange-500/20'
+                                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                        }`}
+                                >
+                                    {copied ? <Check size={18} className={item.xianyuLink ? "text-emerald-500" : ""} /> : <Copy size={18} />}
+                                    {item.xianyuLink ? (copied ? '已复制' : '复制二手平台链接') : '未提供购买链接'}
+                                </button>
                                 <p className="text-xs text-center text-slate-400">
-                                    点击复制链接后，请打开闲鱼APP查看
+                                    交易请通过第三方保证平台完成，本平台不承担担保责任
                                 </p>
                             </div>
                         ) : (

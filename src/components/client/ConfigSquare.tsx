@@ -65,7 +65,9 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                     date: c.createdAt,
                     isLiked: false,
                     serialNumber: c.serialNumber,
-                    description: c.description
+                    description: c.description,
+                    showcaseImages: c.showcaseImages,
+                    showcaseStatus: c.showcaseStatus
                     // isVip: handled if needed
                 };
             });
@@ -97,6 +99,7 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
 
     const TAG_OPTIONS = [
         { id: 'all', label: '全部' },
+        { id: 'showcase', label: '📸 玩家晒单' },
         ...TAGS_APPEARANCE.map(t => ({ id: t, label: t })),
         ...TAGS_USAGE.map(t => ({ id: t, label: t }))
     ];
@@ -242,20 +245,35 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                         const item = allProducts.find(p => p.id === itemId) || HARDWARE_DB.find(p => p.id === itemId);
                         if (item) base += (item as any).price || 0;
                     });
-                    // Wait, let's stick to 1.06 as in the previous file content I saw.
-                    // Actually, I'll use 1.06 to be consistent with the other parts of the app.
                     const finalPrice = Math.floor(base * 1.06);
+
+                    const hasShowcaseCover = cfg.showcaseStatus === 'approved' && cfg.showcaseImages && cfg.showcaseImages.length > 0;
+                    const coverImageUrl = hasShowcaseCover ? cfg.showcaseImages![0] : null;
 
                     return (
                         <div
                             key={cfg.id}
                             onClick={() => setSelectedConfigId(cfg.id)}
-                            className="group relative bg-white rounded-2xl border border-slate-200 hover:border-slate-300 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 cursor-pointer overflow-hidden flex flex-col ripple h-[320px]"
+                            className="group relative bg-white rounded-2xl border border-slate-200 hover:border-slate-300 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 cursor-pointer overflow-hidden flex flex-col ripple h-[340px]"
                         >
-                            {/* Corner Badge (Top Left) */}
+                            {/* Showcase Cover Background */}
+                            {coverImageUrl ? (
+                                <div className="absolute top-0 left-0 w-full h-[140px] z-0 overflow-hidden">
+                                    <img src={coverImageUrl} alt={cfg.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                </div>
+                            ) : null}
+
                             <div className={`absolute top-4 left-4 z-10 px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide uppercase border shadow-sm ${theme.style}`}>
                                 {theme.label}
                             </div>
+
+                            {/* Showcase Badge (Top Left, Below Theme Badge) */}
+                            {hasShowcaseCover && (
+                                <div className="absolute top-12 left-4 z-10 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-50/90 text-indigo-700 border border-indigo-200 shadow-sm flex items-center gap-1 backdrop-blur-md">
+                                    <span>📸</span> 实机晒单
+                                </div>
+                            )}
 
                             {/* Serial Number + VIP Badge (Top Right) */}
                             <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5">
@@ -265,15 +283,15 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                                         VIP
                                     </span>
                                 )}
-                                <span className="font-mono text-[9px] text-slate-400 bg-slate-50/80 backdrop-blur-sm px-1.5 py-1 rounded border border-slate-200/60 shadow-sm">
+                                <span className={`font-mono text-[9px] px-1.5 py-1 rounded border shadow-sm backdrop-blur-md ${coverImageUrl ? 'bg-black/40 border-white/20 text-white/90' : 'bg-slate-50/80 border-slate-200/60 text-slate-400'}`}>
                                     {cfg.serialNumber ? `NO.${cfg.serialNumber.split('-')[1]}` : `NO.${cfg.id.slice(-3)}`}
                                 </span>
                             </div>
 
                             {/* Card Header: Title Only */}
-                            <div className="p-5 pb-0 pt-14 flex justify-between items-start gap-3">
+                            <div className={`p-5 pb-0 flex justify-between items-start gap-3 relative z-10 ${coverImageUrl ? 'pt-24' : 'pt-14'}`}>
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="text-base font-bold text-slate-900 line-clamp-2 leading-snug group-hover:text-indigo-600 transition-colors">
+                                    <h3 className={`text-base font-bold line-clamp-2 leading-snug group-hover:text-indigo-500 transition-colors drop-shadow-sm ${coverImageUrl ? 'text-white' : 'text-slate-900'}`}>
                                         {cfg.title}
                                     </h3>
                                 </div>

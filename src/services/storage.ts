@@ -268,9 +268,31 @@ class StorageService {
     async getAISettings(): Promise<import('../types/adminTypes').AISettings> {
         try {
             const data = await ApiService.get('/settings');
-            return data.aiSettings || DEFAULT_AI_CONTENT;
+            return data.aiSettings || DEFAULT_AI_CONTENT as any;
         } catch (e) {
             return DEFAULT_AI_CONTENT as any;
+        }
+    }
+
+    async submitShowcase(configId: string, images: string[], message?: string): Promise<ConfigItem | null> {
+        try {
+            const res = await ApiService.put(`/configs/${configId}/showcase`, { images, message });
+            window.dispatchEvent(new Event('xiaoyu-storage-update'));
+            return res as ConfigItem;
+        } catch (e) {
+            console.error('Failed to submit showcase', e);
+            throw e;
+        }
+    }
+
+    async auditShowcase(configId: string, status: 'approved' | 'rejected'): Promise<ConfigItem | null> {
+        try {
+            const res = await ApiService.put(`/configs/admin/${configId}/showcase/audit`, { status });
+            window.dispatchEvent(new Event('xiaoyu-storage-update'));
+            return res as ConfigItem;
+        } catch (e) {
+            console.error('Failed to audit showcase', e);
+            throw e;
         }
     }
 

@@ -94,6 +94,9 @@ export default function ChatManager() {
             content: input.trim()
         });
         setInput('');
+        // Refresh messages so admin sees their own sent message immediately
+        const freshMsgs = await storage.getChatMessages(selectedSessionId);
+        setMessages(freshMsgs);
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -147,7 +150,7 @@ export default function ChatManager() {
                                 >
                                     <div className="relative shrink-0">
                                         <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
-                                            {session.username?.slice(0, 1) || '客'}
+                                            {(session.userName || session.username)?.slice(0, 1) || '客'}
                                         </div>
                                         {session.unreadCount > 0 && (
                                             <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white">
@@ -158,7 +161,7 @@ export default function ChatManager() {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between mb-1">
                                             <h3 className={`text-sm font-medium truncate ${session.unreadCount > 0 ? 'text-slate-900 font-bold' : 'text-slate-700'}`}>
-                                                {session.username}
+                                                {session.userName || session.username}
                                             </h3>
                                             <span className="text-[10px] text-slate-400 whitespace-nowrap">
                                                 {new Date(session.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -184,7 +187,7 @@ export default function ChatManager() {
                                     <User size={20} />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-slate-900">{selectedSession.username}</h3>
+                                    <h3 className="font-bold text-slate-900">{selectedSession.userName || selectedSession.username}</h3>
                                     <div className="flex items-center gap-2 text-xs text-slate-500">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                         ID: {selectedSession.userId}
@@ -227,7 +230,7 @@ export default function ChatManager() {
                                                 {msg.content}
                                             </div>
                                             <span className="text-[10px] text-slate-300 mt-1 px-1">
-                                                {new Date(msg.timestamp).toLocaleTimeString()}
+                                                {new Date(msg.createdAt || msg.timestamp).toLocaleTimeString()}
                                             </span>
                                         </div>
                                     </div>

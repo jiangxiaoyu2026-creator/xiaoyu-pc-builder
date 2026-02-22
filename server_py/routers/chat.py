@@ -215,4 +215,65 @@ async def send_message(
     session.commit()
     session.refresh(msg)
     
-    return msg
+    # Check if this is the first message from the user to trigger auto-reply
+    # Auto-reply triggers when:
+    # 1. Sender is 'user'
+    # 2. Chat settings have auto-reply enabled
+    # 3. Admin hasn't sent a message in the last 5 minutes (meaning they're away)
+    auto_reply_msg = None
+    if sender == 'user':
+        settings = session.get(ChatSettings, 1)
+        if settings and settings.enabled and settings.autoReply:
+            from datetime import timedelta
+            five_min_ago = (datetime.utcnow() - timedelta(minutes=5)).isoformat()
+            
+            # Check if admin has sent any messages recently
+            recent_admin_msg = session.exec(
+                select(ChatMessage).where(
+                    ChatMessage.sessionId == session_id,
+                    ChatMessage.sender == 'admin',
+                    ChatMessage.createdAt > five_min_ago
+                ).order_by(ChatMessage.createdAt.desc())
+            ).first()
+            
+            if not recent_admin_msg:
+                # Also avoid spamming: don't auto-reply if last message was already an auto-reply
+                last_msg_in_session = session.exec(
+                    select(ChatMessage).where(
+                        ChatMessage.sessionId == session_id,
+                        ChatMessage.sender.in_(['admin', 'system'])
+                    ).order_by(ChatMessage.createdAt.desc())
+                ).first()
+                
+                should_auto_reply = True
+                if last_msg_in_session and last_msg_in_session.content == settings.autoReply:
+                    # Check if this auto-reply was recent (within 2 minutes) - avoid spamming
+                    try:
+                        last_auto_time = datetime.fromisoformat(last_msg_in_session.createdAt)
+                        if datetime.utcnow() - last_auto_time < timedelta(minutes=2):
+                            should_auto_reply = False
+                    except:
+                        pass
+                
+                if should_auto_reply:
+                    # Use a slight timestamp offset so it appears after the user's message
+                    auto_reply_time = datetime.utcnow() + timedelta(seconds=1)
+                    auto_reply_msg = ChatMessage(
+                        sessionId=session_id,
+                        sender="admin",
+                        content=settings.autoReply,
+                        type="text",
+                        isRead=False,
+                        createdAt=auto_reply_time.isoformat()
+                    )
+                    session.add(auto_reply_msg)
+                    
+                    chat_session.lastMessage = settings.autoReply
+                    chat_session.lastMessageTime = auto_reply_time.isoformat()
+                    chat_session.updatedAt = auto_reply_time.isoformat()
+                    session.add(chat_session)
+                    session.commit()
+                    session.refresh(auto_reply_msg)
+            
+    return {"message": msg, "autoReply": auto_reply_msg}
+

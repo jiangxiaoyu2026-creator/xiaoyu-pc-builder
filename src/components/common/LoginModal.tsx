@@ -197,7 +197,7 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
                                             maxLength={6}
                                         />
                                     </div>
-                                    <p className="text-[10px] text-amber-600/80 mt-1 ml-1">目前仅限受邀用户注册。</p>
+                                    <p className="text-[10px] text-amber-600/80 mt-1 ml-1">没有邀请码？可以联系主播获取哦~</p>
                                 </div>
                             </>
                         )}

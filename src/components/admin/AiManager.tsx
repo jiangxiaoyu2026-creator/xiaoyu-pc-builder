@@ -307,6 +307,18 @@ export default function AiManager() {
                                     placeholder="输入带货/关注文案..."
                                 />
                             </div>
+                            <div className="grid grid-cols-1 gap-6">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-2">启发式建议 (Heuristics - 每行一条)</label>
+                                    <textarea
+                                        value={aiConfig.suggestions?.join('\n') || ''}
+                                        onChange={e => setAiConfig({ ...aiConfig, suggestions: e.target.value.split('\n').filter(s => s.trim() !== '') })}
+                                        className="w-full h-32 border border-slate-200 rounded-xl p-3 text-xs focus:ring-2 focus:ring-indigo-500 outline-none resize-y shadow-sm bg-emerald-50/30"
+                                        placeholder="3000元 办公主机&#10;5000元 性价比游戏主机&#10;10000元 高端直播主机"
+                                    />
+                                    <p className="text-[10px] text-slate-400 mt-1">显示在 C 端顾问面板下方的快速输入按钮，支持配置内容及数量。</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

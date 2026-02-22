@@ -7,6 +7,7 @@ import { SortIcon } from './Shared';
 import { ApiService } from '../../services/api';
 import { storage } from '../../services/storage';
 import Pagination from '../common/Pagination';
+import ShowcaseAuditModal from './ShowcaseAuditModal';
 
 export default function ConfigManager() {
     const [configs, setConfigs] = useState<ConfigItem[]>([]);
@@ -15,9 +16,10 @@ export default function ConfigManager() {
     const [page, setPage] = useState(1);
     const [pageSize] = useState(20);
     const [loading, setLoading] = useState(false);
-    const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'hidden'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'hidden' | 'pending_showcase' | 'approved_showcase' | 'rejected_showcase'>('all');
     const [sortConfig, setSortConfig] = useState<{ key: keyof ConfigItem, direction: 'asc' | 'desc' } | null>({ key: 'createdAt', direction: 'desc' });
     const [searchTerm, setSearchTerm] = useState('');
+    const [auditConfig, setAuditConfig] = useState<ConfigItem | null>(null);
     const loadData = async () => {
         setLoading(true);
         try {
@@ -56,6 +58,22 @@ export default function ConfigManager() {
         await storage.updateConfig(updated);
     };
 
+    const updateSortOrder = async (id: string, order: number) => {
+        const config = configs.find(c => c.id === id);
+        if (!config || config.sortOrder === order) return;
+
+        const updated = { ...config, sortOrder: order };
+        setConfigs(configs.map(c => c.id === id ? updated : c));
+        try {
+            await ApiService.put(`/configs/${id}`, { sortOrder: order });
+        } catch (error) {
+            console.error('Failed to update sort order:', error);
+            alert('更新排序失败');
+            // Revert on failure
+            setConfigs(configs.map(c => c.id === id ? config : c));
+        }
+    };
+
     const handleSort = (key: keyof ConfigItem) => {
         let direction: 'asc' | 'desc' = 'asc';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -65,7 +83,17 @@ export default function ConfigManager() {
     };
 
     const filtered = useMemo(() => {
-        let res = configs.filter(c => statusFilter === 'all' || c.status === statusFilter);
+        let res = configs;
+
+        if (statusFilter === 'pending_showcase') {
+            res = res.filter(c => c.showcaseStatus === 'pending');
+        } else if (statusFilter === 'approved_showcase') {
+            res = res.filter(c => c.showcaseStatus === 'approved');
+        } else if (statusFilter === 'rejected_showcase') {
+            res = res.filter(c => c.showcaseStatus === 'rejected');
+        } else if (statusFilter !== 'all') {
+            res = res.filter(c => c.status === statusFilter);
+        }
 
         if (searchTerm) {
             const lower = searchTerm.toLowerCase();
@@ -91,7 +119,7 @@ export default function ConfigManager() {
     const handleExportConfigs = () => {
         const hardwareCols: Category[] = ['cpu', 'mainboard', 'gpu', 'ram', 'disk', 'power', 'case'];
         const hwHeaders = hardwareCols.map(c => CATEGORY_MAP[c].label);
-        const headers = ['配置ID', '标题', '作者', '总价', '状态', '推荐', ...hwHeaders];
+        const headers = ['配置ID', '标题', '作者', '总价', '状态', '推荐', '排序权重', ...hwHeaders];
 
         const rows = filtered.map(c => {
             const hwData = hardwareCols.map(cat => {
@@ -107,6 +135,7 @@ export default function ConfigManager() {
                 c.totalPrice,
                 c.status === 'published' ? '已发布' : '隐藏',
                 c.isRecommended ? '是' : '否',
+                c.sortOrder || 0,
                 ...hwData
             ];
         });
@@ -138,16 +167,19 @@ export default function ConfigManager() {
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
                 <div className="flex items-center gap-4 flex-1 w-full">
                     {/* Status Tabs */}
-                    <div className="bg-slate-100 p-1 rounded-xl flex shrink-0">
-                        {['all', 'published', 'hidden'].map(status => (
+                    <div className="bg-slate-100 p-1 rounded-xl flex shrink-0 custom-scrollbar overflow-x-auto">
+                        {['all', 'published', 'hidden', 'pending_showcase', 'approved_showcase', 'rejected_showcase'].map(status => (
                             <button
                                 key={status}
                                 onClick={() => setStatusFilter(status as any)}
-                                className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${statusFilter === status ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`px-4 py-2 rounded-lg font-bold text-xs transition-all whitespace-nowrap ${statusFilter === status ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 {status === 'all' && '全部'}
                                 {status === 'published' && '已发布'}
                                 {status === 'hidden' && '已隐藏'}
+                                {status === 'pending_showcase' && '待审晒单'}
+                                {status === 'approved_showcase' && '过审晒单'}
+                                {status === 'rejected_showcase' && '打回晒单'}
                             </button>
                         ))}
                     </div>
@@ -179,6 +211,9 @@ export default function ConfigManager() {
                         </div>
                         <div className="w-32 text-right cursor-pointer hover:text-indigo-600 flex justify-end gap-1" onClick={() => handleSort('views')}>
                             浏览/赞 <SortIcon active={sortConfig?.key === 'views'} dir={sortConfig?.direction} />
+                        </div>
+                        <div className="w-24 text-right cursor-pointer hover:text-indigo-600 flex justify-end gap-1" onClick={() => handleSort('sortOrder')}>
+                            排序 <SortIcon active={sortConfig?.key === 'sortOrder'} dir={sortConfig?.direction} />
                         </div>
                         <div className="w-40 text-right cursor-pointer hover:text-indigo-600 flex justify-end gap-1" onClick={() => handleSort('createdAt')}>
                             提交时间 <SortIcon active={sortConfig?.key === 'createdAt'} dir={sortConfig?.direction} />
@@ -222,6 +257,17 @@ export default function ConfigManager() {
                                                 <div className="text-[10px] mt-1">浏览</div>
                                                 {/* <div><ThumbsUp size={12} className="inline mr-1" />{config.likes}</div> */}
                                             </div>
+                                            <div className="w-24 text-right flex flex-col items-end">
+                                                <div className="flex items-center gap-1 border border-slate-200 rounded px-1 w-16 bg-white">
+                                                    <input
+                                                        type="number"
+                                                        value={config.sortOrder || 0}
+                                                        onChange={(e) => updateSortOrder(config.id, parseInt(e.target.value) || 0)}
+                                                        className="w-full text-right text-xs font-bold text-slate-600 outline-none py-0.5"
+                                                    />
+                                                </div>
+                                                <div className="text-[10px] text-slate-400 mt-1">权重(大靠前)</div>
+                                            </div>
                                             <div className="w-40 text-right">
                                                 <div className="font-bold text-slate-600">{new Date(config.createdAt).toLocaleDateString()}</div>
                                                 <div className="text-[10px] mt-1">{new Date(config.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
@@ -247,6 +293,17 @@ export default function ConfigManager() {
                                     </div>
 
                                     <div className="mt-4 flex justify-end gap-3 pt-3 border-t border-slate-50">
+                                        {config.showcaseStatus && config.showcaseStatus !== 'none' && (
+                                            <button
+                                                onClick={() => setAuditConfig(config)}
+                                                className={`px-3 py-1 text-xs font-bold rounded border ${config.showcaseStatus === 'pending'
+                                                    ? 'border-amber-200 text-amber-600 bg-amber-50 animate-pulse'
+                                                    : 'border-slate-200 text-slate-500 hover:bg-slate-100'
+                                                    }`}
+                                            >
+                                                {config.showcaseStatus === 'pending' ? '审核晒单' : '查看晒单'}
+                                            </button>
+                                        )}
                                         <button onClick={() => toggleRecommend(config.id)} className={`px-3 py-1 text-xs font-bold rounded border ${config.isRecommended ? 'border-red-200 text-red-600 bg-red-50' : 'border-slate-200 text-slate-500 hover:bg-slate-100'}`}>
                                             {config.isRecommended ? '取消推荐' : '设为推荐'}
                                         </button>
@@ -276,6 +333,18 @@ export default function ConfigManager() {
                 pageSize={pageSize}
                 onPageChange={setPage}
             />
+
+            {auditConfig && (
+                <ShowcaseAuditModal
+                    config={auditConfig}
+                    onClose={() => setAuditConfig(null)}
+                    onSuccess={() => {
+                        setAuditConfig(null);
+                        loadData();
+                    }}
+                    showToast={(msg) => alert(msg)}
+                />
+            )}
         </div>
     )
 }

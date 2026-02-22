@@ -36,6 +36,10 @@ export interface ConfigItem {
     createdAt: string;
     serialNumber?: string; // e.g. 2026-000001
     description?: string;
+    showcaseImages?: string[];
+    showcaseMessage?: string;
+    showcaseStatus?: 'none' | 'pending' | 'approved' | 'rejected';
+    sortOrder?: number;
 }
 
 export interface UserItem {
@@ -101,6 +105,7 @@ export interface ChatMessage {
     content: string;
     type?: 'text' | 'image' | 'product' | 'order'; // Added type
     timestamp: number;
+    createdAt?: string;       // Backend returns this instead of timestamp
     isRead: boolean;
     isAdmin?: boolean;
 }
@@ -109,12 +114,14 @@ export interface ChatSession {
     id: string;
     userId: string; // 'guest-xxx' or 'user-id'
     userParserId?: string; // Added userParserId
-    username: string;
+    userName?: string;     // Backend field name
+    username?: string;     // Legacy frontend field name
     userAvatar?: string;
     lastMessage?: ChatMessage | string; // Compatible with string or object
+    lastMessageTime?: string; // Backend field
     unreadCount: number;
-    createdAt: number;
-    updatedAt: number;
+    createdAt: number | string;
+    updatedAt: number | string;
     status: 'active' | 'closed';
     context?: {
         currentPath?: string;

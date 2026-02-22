@@ -53,6 +53,12 @@ def _migrate_extra_columns():
             cursor.execute("ALTER TABLE configs ADD COLUMN title TEXT")
         if 'description' not in config_cols:
             cursor.execute("ALTER TABLE configs ADD COLUMN description TEXT")
+        if 'showcaseImages' not in config_cols:
+            cursor.execute("ALTER TABLE configs ADD COLUMN showcaseImages TEXT NOT NULL DEFAULT '[]'")
+        if 'showcaseMessage' not in config_cols:
+            cursor.execute("ALTER TABLE configs ADD COLUMN showcaseMessage TEXT")
+        if 'showcaseStatus' not in config_cols:
+            cursor.execute("ALTER TABLE configs ADD COLUMN showcaseStatus TEXT NOT NULL DEFAULT 'none'")
             
         conn.commit()
         conn.close()

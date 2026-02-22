@@ -202,3 +202,69 @@ async def get_price_trends(
         "recentChanges": recent,
         "categories": sorted([c for c in categories if c]),
     }
+
+@router.get("/public-price-trends")
+async def get_public_price_trends(
+    days: int = 14, # 默认给前台看14天的
+    session: Session = Depends(get_session)
+):
+    """前台获取公开价格变化趋势（所有人可用）"""
+    from datetime import timedelta
+    
+    cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
+    
+    # Get recent price changes
+    query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff).order_by(PriceHistory.changedAt.desc())
+    changes = session.exec(query.limit(200)).all() # 限制给前台的数据量
+    
+    # Today's summary
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today_changes = [c for c in changes if c.changedAt.startswith(today)]
+    today_up = [c for c in today_changes if c.changeAmount > 0]
+    today_down = [c for c in today_changes if c.changeAmount < 0]
+    
+    # Group by date for chart data
+    date_map = {}
+    for c in changes:
+        date_key = c.changedAt[:10]  # YYYY-MM-DD
+        if date_key not in date_map:
+            date_map[date_key] = {"date": date_key, "upCount": 0, "downCount": 0, "totalChanges": 0, "avgChange": 0, "changes": []}
+        entry = date_map[date_key]
+        entry["totalChanges"] += 1
+        if c.changeAmount > 0:
+            entry["upCount"] += 1
+        else:
+            entry["downCount"] += 1
+        entry["changes"].append(c.changeAmount)
+    
+    # Calculate averages
+    chart_data = []
+    for date_key in sorted(date_map.keys()):
+        entry = date_map[date_key]
+        entry["avgChange"] = round(sum(entry["changes"]) / len(entry["changes"]), 2) if entry["changes"] else 0
+        del entry["changes"]
+        chart_data.append(entry)
+    
+    # Recent changes list (latest 20 for public)
+    recent = []
+    for c in changes[:20]:
+        recent.append({
+            "id": c.id,
+            "hardwareName": c.hardwareName,
+            "category": c.category,
+            "oldPrice": c.oldPrice,
+            "newPrice": c.newPrice,
+            "changeAmount": c.changeAmount,
+            "changePercent": c.changePercent,
+            "changedAt": c.changedAt
+        })
+    
+    return {
+        "todaySummary": {
+            "upCount": len(today_up),
+            "downCount": len(today_down),
+            "totalChanges": len(today_changes),
+        },
+        "chartData": chart_data,
+        "recentChanges": recent,
+    }

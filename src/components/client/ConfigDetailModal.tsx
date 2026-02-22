@@ -323,6 +323,43 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                             {config.isLiked && <Heart size={20} className="text-pink-500 fill-pink-500" />}
                         </div>
 
+                        {/* Showcase Section */}
+                        {(config.showcaseStatus === 'approved' || (currentUser && (currentUser.id === config.userId || currentUser.username === config.author))) && config.showcaseImages && config.showcaseImages.length > 0 && (
+                            <div className="mb-4 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-1.5 text-indigo-700 font-bold text-sm">
+                                        <span>📸</span> 实机晒单
+                                    </div>
+                                    {config.showcaseStatus !== 'approved' && (
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${config.showcaseStatus === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                                            }`}>
+                                            {config.showcaseStatus === 'pending' ? '审核中' : '已拒绝'}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Image Gallery */}
+                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
+                                    {config.showcaseImages.map((img, idx) => (
+                                        <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-black/5 cursor-zoom-in hover:opacity-90 transition-opacity"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setPreviewImage(img);
+                                            }}>
+                                            <img src={img} className="w-full h-full object-cover" alt={`Showcase ${idx + 1}`} />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Showcase Message */}
+                                {config.showcaseMessage && (
+                                    <p className="text-sm text-slate-700 bg-white/60 p-2.5 rounded-lg text-justify leading-relaxed mt-2 border border-white">
+                                        "{config.showcaseMessage}"
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         {config.description && (
                             <p className="text-sm text-slate-600 leading-relaxed mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
                                 {config.description}

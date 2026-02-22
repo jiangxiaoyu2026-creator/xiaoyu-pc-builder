@@ -71,6 +71,10 @@ export interface ConfigTemplate {
     description?: string;
     userId?: string; // Author ID for checking roles/VIP
     isVip?: boolean; // Pre-calculated VIP status
+    showcaseImages?: string[];
+    showcaseMessage?: string;
+    showcaseStatus?: 'none' | 'pending' | 'approved' | 'rejected';
+    sortOrder?: number;
 }
 
 export interface AnnouncementItem {

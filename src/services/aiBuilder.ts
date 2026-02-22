@@ -15,10 +15,19 @@ export interface AIBuildLog {
     detail: string;
 }
 
+export interface AIEvaluation {
+    score: number;
+    verdict: string;
+    pros: string[];
+    cons: string[];
+    summary: string;
+}
+
 export interface AIBuildResult {
     items: Partial<Record<Category, HardwareItem>>;
     totalPrice: number;
     description: string;
+    evaluation?: AIEvaluation;
     logs: AIBuildLog[];
 }
 
@@ -120,6 +129,7 @@ export const aiBuilder = {
                 items: response.items || {},
                 totalPrice: response.totalPrice || 0,
                 description: response.description || "AI 未返回描述。",
+                evaluation: response.evaluation || undefined,
                 logs: logs
             };
 

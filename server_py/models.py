@@ -20,6 +20,7 @@ class User(SQLModel, table=True):
     invitedBy: Optional[str] = None
     inviteCount: int = Field(default=0)
     inviteVipDays: int = Field(default=0)
+    registerIp: Optional[str] = None
     createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
 class Hardware(SQLModel, table=True):
@@ -78,6 +79,10 @@ class Config(SQLModel, table=True):
     isRecommended: bool = Field(default=False)
     views: int = Field(default=0)
     likes: int = Field(default=0)
+    showcaseImages: str = Field(default="[]")  # Store as JSON string (List[str])
+    showcaseMessage: Optional[str] = None
+    showcaseStatus: str = Field(default="none") # 'none', 'pending', 'approved', 'rejected'
+    sortOrder: int = Field(default=0)
 
 class UsedItem(SQLModel, table=True):
     __tablename__ = "used_items"
@@ -167,6 +172,7 @@ class InvitationCode(SQLModel, table=True):
     maxUses: int = Field(default=3)
     usedCount: int = Field(default=0)
     createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    lastUsedAt: Optional[str] = None
     status: str = Field(default="active") # active, disabled
 
 class ChatSettings(SQLModel, table=True):

@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { storage } from '../../services/storage';
 import { Article } from '../../types/clientTypes';
-import { BookOpen, Sparkles, ArrowRight, Pin } from 'lucide-react';
+import { BookOpen, Sparkles, ArrowRight, Pin, TrendingUp } from 'lucide-react';
+import ClientPriceTrendModal from './ClientPriceTrendModal';
 
 
 export default function ArticleList() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showPriceTrendModal, setShowPriceTrendModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -40,13 +42,37 @@ export default function ArticleList() {
                         <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight">
                             装机<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">头条</span>
                         </h2>
-                        <p className="text-slate-400 text-lg max-w-xl leading-relaxed">
+                        <p className="text-slate-400 text-lg max-w-xl leading-relaxed mb-8">
                             获取最新的硬件资讯、深度的评测报告以及专业的装机指南。掌握硬件前沿资讯，助您打造性能之巅。
                         </p>
                     </div>
-                    {/* Decorative Icon */}
-                    <div className="hidden md:flex w-24 h-24 bg-white/5 rounded-2xl items-center justify-center border border-white/10 backdrop-blur-md rotate-3 group-hover:rotate-6 transition-transform duration-500">
-                        <BookOpen size={40} className="text-white/80" />
+                    {/* Price Trend Widget */}
+                    <div
+                        onClick={() => setShowPriceTrendModal(true)}
+                        className="w-full md:w-auto mt-6 md:mt-0 group relative cursor-pointer flex-shrink-0 animate-in fade-in slide-in-from-right-8 duration-700"
+                    >
+                        {/* Glowing effect */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-3xl blur opacity-30 group-hover:opacity-70 transition duration-500 group-hover:duration-200"></div>
+
+                        <div className="relative flex flex-col w-full md:w-[280px] bg-slate-900/80 border border-slate-700/50 p-6 rounded-[24px] hover:bg-slate-800 transition-all shadow-xl backdrop-blur-xl group-hover:-translate-y-1">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-emerald-400/20 to-cyan-500/20 text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-500/20 ring-1 ring-white/5 shadow-inner">
+                                    <TrendingUp size={24} className="group-hover:scale-110 transition-transform duration-300" />
+                                </div>
+                                <div className="flex h-2 w-2 relative">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </div>
+                            </div>
+                            <h3 className="text-white font-bold text-lg mb-2">今日行情雷达</h3>
+                            <p className="text-slate-400 text-xs leading-relaxed">
+                                实时监控硬件价格涨跌趋势，识别抄底时机，把握最佳装机时间节点。
+                            </p>
+                            <div className="mt-6 flex items-center justify-between text-emerald-400 text-sm font-bold bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors">
+                                <span>立即查看大盘</span>
+                                <ArrowRight size={16} className="group-hover:translate-x-1.5 transition-transform duration-300" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -134,6 +160,8 @@ export default function ArticleList() {
                     ))}
                 </div>
             )}
+
+            {showPriceTrendModal && <ClientPriceTrendModal onClose={() => setShowPriceTrendModal(false)} />}
         </div>
     );
 

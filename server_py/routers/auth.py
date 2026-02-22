@@ -68,7 +68,7 @@ async def get_current_admin(current_user: User = Depends(get_current_user)) -> U
     return current_user
 
 @router.post("/register")
-async def register(user_data: dict, session: Session = Depends(get_session)):
+async def register(request: Request, user_data: dict, session: Session = Depends(get_session)):
     username = user_data.get("username")
     password = user_data.get("password")
     invite_code = user_data.get("inviteCode")
@@ -92,6 +92,15 @@ async def register(user_data: dict, session: Session = Depends(get_session)):
     if code_record.usedCount >= code_record.maxUses:
         raise HTTPException(status_code=400, detail="邀请码使用次数已达上限")
     
+    from datetime import datetime, timedelta
+    
+    # IP-based registration limit: one account per IP
+    client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or request.client.host
+    if client_ip:
+        existing_ip_user = session.exec(select(User).where(User.registerIp == client_ip)).first()
+        if existing_ip_user:
+            raise HTTPException(status_code=400, detail="该网络环境已注册过账号，每个网络仅限注册一个账号")
+
     # Check if user exists
     existing_user = session.exec(select(User).where(User.username == username)).first()
     if existing_user:
@@ -101,6 +110,9 @@ async def register(user_data: dict, session: Session = Depends(get_session)):
     import random, string
     new_user_invite_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
     
+    # Grant 3 days VIP to new user
+    vip_expire = datetime.utcnow() + timedelta(days=3)
+
     new_user = User(
         id=str(uuid.uuid4()),
         username=username,
@@ -108,7 +120,9 @@ async def register(user_data: dict, session: Session = Depends(get_session)):
         role="user",
         status="active",
         invitedBy=code_record.creatorId,
-        inviteCode=new_user_invite_code
+        inviteCode=new_user_invite_code,
+        vipExpireAt=int(vip_expire.timestamp() * 1000),
+        registerIp=client_ip
     )
     session.add(new_user)
     
@@ -116,18 +130,32 @@ async def register(user_data: dict, session: Session = Depends(get_session)):
     new_code_record = InvitationCode(
         code=new_user_invite_code,
         creatorId=new_user.id,
-        maxUses=3
+        maxUses=50
     )
     session.add(new_code_record)
     
     # Update used count of the invitation code
     code_record.usedCount += 1
+    code_record.lastUsedAt = datetime.utcnow().isoformat()
     session.add(code_record)
     
-    # Update inviter stats (optional, if creatorId is a user)
+    # Update inviter stats (Grant 7 days VIP)
     inviter = session.get(User, code_record.creatorId)
     if inviter:
         inviter.inviteCount += 1
+        inviter.inviteVipDays += 7
+        
+        # Extend VIP
+        current_time = datetime.utcnow()
+        if inviter.vipExpireAt and inviter.vipExpireAt > current_time.timestamp() * 1000:
+            # Add to existing
+            existing_dt = datetime.fromtimestamp(inviter.vipExpireAt / 1000)
+            new_expire = existing_dt + timedelta(days=7)
+        else:
+            # Start from now
+            new_expire = current_time + timedelta(days=7)
+            
+        inviter.vipExpireAt = int(new_expire.timestamp() * 1000)
         session.add(inviter)
     
     session.commit()

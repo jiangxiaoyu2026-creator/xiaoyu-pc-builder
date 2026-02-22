@@ -519,7 +519,7 @@ export default function StreamerWorkbench({
                         }} className="flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-full shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0">
                             <Sparkles size={14} /> AI装机
                         </button>
-                        <div className="text-xs font-medium text-slate-500 bg-white text-indigo-700 px-3 py-1.5 rounded-full border border-indigo-100 shadow-sm">
+                        <div className="text-xs font-medium text-slate-500 bg-white text-indigo-700 px-3 py-1.5 rounded-full border border-indigo-100 shadow-sm hidden md:block">
                             按 Enter 跳过
                         </div>
                     </div>
@@ -587,25 +587,80 @@ export default function StreamerWorkbench({
                 {showAiModal && <AiGenerateModal onClose={() => setShowAiModal(false)} onSubmit={handleAiBuild} />}
                 {showChatSettings && <ChatSettingsModal onClose={() => setShowChatSettings(false)} />}
 
-                {/* AI Result Static Section */}
+                {/* AI Result Section */}
                 {
                     aiResult && (
                         <div className="mt-8 bg-white rounded-[24px] shadow-lg border border-purple-100 overflow-hidden animate-fade-in relative z-10 w-full mb-12">
                             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-white">
+                                <div className="flex items-center gap-3 text-white">
                                     <Sparkles size={18} className="animate-pulse" />
-                                    <h3 className="font-bold text-lg tracking-wide">AI 装机分析</h3>
+                                    <h3 className="font-bold text-lg tracking-wide">AI 装机评测报告</h3>
+                                    {aiResult.evaluation && (
+                                        <span className="ml-2 px-2.5 py-0.5 bg-white/20 rounded-full text-sm font-bold backdrop-blur-sm">
+                                            {aiResult.evaluation.verdict}
+                                        </span>
+                                    )}
                                 </div>
                                 <button onClick={() => setAiResult(null)} className="text-white/80 hover:text-white transition-colors">
                                     <X size={18} />
                                 </button>
                             </div>
-                            <div className="p-8">
-                                <div className="flex flex-col gap-6 items-start">
-                                    <div className="flex-1 w-full">
-                                        <p className="text-slate-700 text-base leading-relaxed font-medium">{aiResult.description}</p>
+                            <div className="p-6 space-y-5">
+                                {/* Score + Description */}
+                                <div className="flex gap-5 items-start">
+                                    {aiResult.evaluation && (
+                                        <div className="shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-50 to-indigo-50 shadow-md border border-slate-100 flex flex-col items-center justify-center">
+                                            <span className={`text-3xl font-black ${aiResult.evaluation.score >= 90 ? 'text-emerald-600' :
+                                                aiResult.evaluation.score >= 75 ? 'text-indigo-600' :
+                                                    aiResult.evaluation.score >= 60 ? 'text-amber-600' : 'text-rose-600'
+                                                }`}>{aiResult.evaluation.score}</span>
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">分</span>
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <p className="text-slate-700 text-sm leading-relaxed font-medium">{aiResult.description}</p>
                                     </div>
                                 </div>
+
+                                {/* Pros & Cons */}
+                                {aiResult.evaluation && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {aiResult.evaluation.pros?.length > 0 && (
+                                            <div className="bg-emerald-50/80 rounded-2xl p-4 border border-emerald-100">
+                                                <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2.5">✓ 优点</h4>
+                                                <ul className="space-y-1.5">
+                                                    {aiResult.evaluation.pros.map((p: string, i: number) => (
+                                                        <li key={i} className="text-sm text-emerald-800 font-medium flex items-start gap-2">
+                                                            <span className="text-emerald-500 mt-0.5 shrink-0">•</span> {p}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                        {aiResult.evaluation.cons?.length > 0 && (
+                                            <div className="bg-amber-50/80 rounded-2xl p-4 border border-amber-100">
+                                                <h4 className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2.5">⚠ 不足</h4>
+                                                <ul className="space-y-1.5">
+                                                    {aiResult.evaluation.cons.map((c: string, i: number) => (
+                                                        <li key={i} className="text-sm text-amber-800 font-medium flex items-start gap-2">
+                                                            <span className="text-amber-500 mt-0.5 shrink-0">•</span> {c}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Detailed Summary */}
+                                {aiResult.evaluation?.summary && (
+                                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">📋 详细点评</h4>
+                                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                            {aiResult.evaluation.summary}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )

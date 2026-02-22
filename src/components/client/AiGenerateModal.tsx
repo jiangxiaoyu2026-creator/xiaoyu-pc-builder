@@ -281,9 +281,15 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                             </div>
 
                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 px-1">
-                                    <div className="w-1 h-4 bg-indigo-500 rounded-full"></div>
-                                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em]">启发式建议 Heuristics</span>
+                                <div className="flex items-center gap-3 px-1 mb-2">
+                                    <div className="flex gap-1.5">
+                                        <div className="w-1 h-3 bg-indigo-500/40 rounded-full"></div>
+                                        <div className="w-1 h-3 bg-indigo-500/70 rounded-full"></div>
+                                        <div className="w-1 h-3 bg-indigo-500 rounded-full"></div>
+                                    </div>
+                                    <span className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] relative">
+                                        启发式快捷指令 <span className="opacity-50 ml-1 text-[10px]">HEURISTICS V2</span>
+                                    </span>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
                                     {suggestions.map((s, i) => (
@@ -291,10 +297,11 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                             key={i}
                                             type="button"
                                             onClick={() => setPrompt(s)}
-                                            className="px-4 py-2.5 bg-slate-900/40 hover:bg-indigo-600/10 hover:text-white text-slate-400 text-sm rounded-xl border border-white/5 hover:border-indigo-500/40 transition-all flex items-center gap-3 group/chip shadow-sm backdrop-blur-sm"
+                                            className="relative px-5 py-3 bg-slate-800/40 hover:bg-slate-700/60 text-slate-300 hover:text-white text-sm flex items-center gap-3 group/chip transition-all duration-300 rounded-2xl border border-white/5 hover:border-indigo-500/40 shadow-lg backdrop-blur-md overflow-hidden"
                                         >
-                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover/chip:bg-indigo-400 transition-colors group-hover/chip:scale-125 shadow-[0_0_8px_transparent] group-hover/chip:shadow-indigo-500/50"></div>
-                                            <span className="font-semibold tracking-wide">{s}</span>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent -translate-x-full group-hover/chip:translate-x-full transition-transform duration-700"></div>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover/chip:bg-indigo-400 transition-colors shadow-[0_0_10px_transparent] group-hover/chip:shadow-indigo-500"></div>
+                                            <span className="font-bold tracking-wide relative z-10">{s}</span>
                                         </button>
                                     ))}
                                 </div>
