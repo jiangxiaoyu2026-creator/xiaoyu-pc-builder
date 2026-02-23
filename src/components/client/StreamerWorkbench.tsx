@@ -276,15 +276,19 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
 
     const CATEGORY_STYLES: Record<string, { bg: string, text: string }> = {
         cpu: { bg: theme.bgLight, text: theme.primary },
-        gpu: { bg: theme.bgLight, text: 'text-purple-600' }, // Kept distinct if desired or use theme
-        mainboard: { bg: theme.bgLight, text: 'text-blue-600' },
-        ram: { bg: theme.bgLight, text: 'text-amber-600' },
-        disk: { bg: theme.bgLight, text: 'text-cyan-600' },
-        power: { bg: theme.bgLight, text: 'text-rose-600' },
-        cooling: { bg: theme.bgLight, text: 'text-sky-600' },
-        case: { bg: theme.bgLight, text: 'text-slate-600' },
-        monitor: { bg: theme.bgLight, text: 'text-emerald-600' },
-        default: { bg: theme.bgLight, text: 'text-slate-400' }
+        gpu: { bg: theme.bgLight, text: theme.primary },
+        mainboard: { bg: theme.bgLight, text: theme.primary },
+        ram: { bg: theme.bgLight, text: theme.primary },
+        disk: { bg: theme.bgLight, text: theme.primary },
+        power: { bg: theme.bgLight, text: theme.primary },
+        cooling: { bg: theme.bgLight, text: theme.primary },
+        case: { bg: theme.bgLight, text: theme.primary },
+        monitor: { bg: theme.bgLight, text: theme.primary },
+        mouse: { bg: theme.bgLight, text: theme.primary },
+        keyboard: { bg: theme.bgLight, text: theme.primary },
+        fan: { bg: theme.bgLight, text: theme.primary },
+        accessory: { bg: theme.bgLight, text: theme.primary },
+        default: { bg: theme.bgLight, text: theme.primary }
     };
 
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
