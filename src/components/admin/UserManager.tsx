@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { User, Shield, UserPlus, Trash2, Ban, CheckCircle2, Crown, Calendar, Lock } from 'lucide-react';
+import { User, Shield, UserPlus, Trash2, Ban, CheckCircle2, Crown, Calendar, Lock, Zap } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { UserItem } from '../../types/adminTypes';
 import ConfirmModal from '../common/ConfirmModal';
@@ -19,6 +19,7 @@ export default function UserManager() {
     const [newUser, setNewUser] = useState({ username: '', password: '', role: 'user' as UserItem['role'] });
     const [showVipModal, setShowVipModal] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [filterType, setFilterType] = useState<'all' | 'admin' | 'streamer' | 'vip' | 'banned'>('all');
 
     // Confirm Delete State
     const [deleteConfig, setDeleteConfig] = useState<{ id: string, isSelf: boolean } | null>(null);
@@ -131,6 +132,14 @@ export default function UserManager() {
     const isVip = (user: UserItem) => user.vipExpireAt && new Date(user.vipExpireAt).getTime() > Date.now();
     const vipUsers = users.filter(isVip);
 
+    const filteredUsers = users.filter(user => {
+        if (filterType === 'admin') return user.role === 'admin';
+        if (filterType === 'streamer') return user.role === 'streamer';
+        if (filterType === 'vip') return isVip(user);
+        if (filterType === 'banned') return user.status === 'banned';
+        return true;
+    });
+
     const formatVipExpire = (timestamp: number) => {
         const expireTime = new Date(timestamp).getTime();
         const days = Math.ceil((expireTime - Date.now()) / (24 * 60 * 60 * 1000));
@@ -142,17 +151,44 @@ export default function UserManager() {
     return (
         <div className="space-y-6">
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <User size={20} className="text-indigo-600" />
-                        用户与权限管理
-                    </h3>
-                    <div className="flex gap-2">
-                        <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded font-bold">总用户: {users.length}</span>
-                        <span className="text-xs bg-emerald-50 text-emerald-600 px-2 py-1 rounded font-bold">管理员: {users.filter(u => u.role === 'admin').length}</span>
-                        <span className="text-xs bg-amber-50 text-amber-600 px-2 py-1 rounded font-bold flex items-center gap-1">
-                            <Crown size={12} /> VIP: {vipUsers.length}
-                        </span>
+                <div className="flex flex-col gap-4 mb-6">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <User size={20} className="text-indigo-600" />
+                            用户与权限管理
+                        </h3>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            onClick={() => setFilterType('all')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterType === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+                        >
+                            总用户 {users.length}
+                        </button>
+                        <button
+                            onClick={() => setFilterType('admin')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${filterType === 'admin' ? 'bg-emerald-600 text-white shadow-md' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                        >
+                            <Shield size={12} /> 管理员 {users.filter(u => u.role === 'admin').length}
+                        </button>
+                        <button
+                            onClick={() => setFilterType('streamer')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${filterType === 'streamer' ? 'bg-purple-600 text-white shadow-md' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}
+                        >
+                            <Zap size={12} /> 主播 {users.filter(u => u.role === 'streamer').length}
+                        </button>
+                        <button
+                            onClick={() => setFilterType('vip')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${filterType === 'vip' ? 'bg-amber-500 text-white shadow-md' : 'bg-amber-50 text-amber-600 hover:bg-amber-100'}`}
+                        >
+                            <Crown size={12} /> VIP {vipUsers.length}
+                        </button>
+                        <button
+                            onClick={() => setFilterType('banned')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${filterType === 'banned' ? 'bg-slate-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                        >
+                            <Ban size={12} /> 已封禁 {users.filter(u => u.status === 'banned').length}
+                        </button>
                     </div>
                 </div>
 
@@ -204,129 +240,135 @@ export default function UserManager() {
                 ) : (
                     /* User List */
                     <div className="space-y-3">
-                        {users.map(user => {
-                            const userId = user.id || (user as any)._id;
-                            const currentId = storage.getCurrentUser()?.id || (storage.getCurrentUser() as any)?._id;
+                        {filteredUsers.length === 0 ? (
+                            <div className="text-center py-12 text-slate-400 text-sm">
+                                此分类下暂无用户
+                            </div>
+                        ) : (
+                            filteredUsers.map(user => {
+                                const userId = user.id || (user as any)._id;
+                                const currentId = storage.getCurrentUser()?.id || (storage.getCurrentUser() as any)?._id;
 
-                            return (
-                                <div key={userId} className="flex items-center justify-between p-4 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors group">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`relative w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-sm
+                                return (
+                                    <div key={userId} className="flex items-center justify-between p-4 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors group">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`relative w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-sm
                                             ${user.role === 'admin' ? 'bg-indigo-600' : user.role === 'streamer' ? 'bg-purple-500' : 'bg-slate-400'}
                                             ${user.status === 'banned' ? 'grayscale opacity-50' : ''}
                                         `}>
-                                            {user.username[0].toUpperCase()}
-                                            {isVip(user) && (
-                                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-md">
-                                                    <Crown size={10} className="text-white" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className={`font-bold ${user.status === 'banned' ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
-                                                    {user.username}
-                                                </span>
-                                                {user.role === 'admin' && <Shield size={12} className="text-indigo-600" />}
+                                                {user.username[0].toUpperCase()}
                                                 {isVip(user) && (
-                                                    <span className="text-[10px] bg-gradient-to-r from-amber-400 to-orange-500 text-white px-1.5 py-0.5 rounded-full font-bold">
-                                                        VIP
-                                                    </span>
-                                                )}
-                                                {userId === currentId && <span className="text-[10px] bg-slate-200 px-1.5 rounded text-slate-600">我</span>}
-                                            </div>
-                                            <div className="flex items-center gap-3 mt-1">
-                                                <select
-                                                    value={user.role}
-                                                    onChange={async (e) => {
-                                                        const newRole = e.target.value as UserItem['role'];
-                                                        if (userId === currentId && newRole !== 'admin') {
-                                                            alert('不能取消自己的管理员权限');
-                                                            return;
-                                                        }
-                                                        await storage.saveUser({ ...user, role: newRole });
-                                                        await fetchUsers();
-                                                    }}
-                                                    className="text-xs border border-slate-200 rounded px-1.5 py-0.5 bg-slate-50 text-slate-600 outline-none focus:border-indigo-500 cursor-pointer hover:bg-white transition-colors"
-                                                >
-                                                    <option value="user">普通用户</option>
-                                                    <option value="streamer">主播</option>
-                                                    <option value="admin">管理员</option>
-                                                </select>
-
-                                                <div className="h-3 w-[1px] bg-slate-200"></div>
-
-                                                {isVip(user) ? (
-                                                    <span className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                                                        <Calendar size={10} />
-                                                        {formatVipExpire(user.vipExpireAt!)}
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-xs text-slate-400">
-                                                        {user.lastLogin ? `登录: ${new Date(user.lastLogin).toLocaleDateString()}` : '从未登录'}
-                                                    </span>
+                                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-md">
+                                                        <Crown size={10} className="text-white" />
+                                                    </div>
                                                 )}
                                             </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        {/* VIP Button */}
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setShowVipModal(showVipModal === userId ? null : userId)}
-                                                className={`p-2 rounded-lg transition-colors ${isVip(user) ? 'text-amber-500 bg-amber-50' : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50'}`}
-                                                title="VIP 管理"
-                                            >
-                                                <Crown size={18} />
-                                            </button>
-
-                                            {/* VIP Dropdown */}
-                                            {showVipModal === userId && (
-                                                <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-10 p-2">
-                                                    <div className="text-xs font-bold text-slate-500 px-2 py-1 mb-1">设置 VIP 时长</div>
-                                                    {VIP_OPTIONS.map(opt => (
-                                                        <button
-                                                            key={opt.days}
-                                                            onClick={() => setVipDays(userId, opt.days)}
-                                                            className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-colors"
-                                                        >
-                                                            + {opt.label}
-                                                        </button>
-                                                    ))}
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`font-bold ${user.status === 'banned' ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
+                                                        {user.username}
+                                                    </span>
+                                                    {user.role === 'admin' && <Shield size={12} className="text-indigo-600" />}
                                                     {isVip(user) && (
-                                                        <>
-                                                            <div className="border-t border-slate-100 my-1"></div>
-                                                            <button
-                                                                onClick={() => removeVip(userId)}
-                                                                className="w-full text-left px-3 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                                                            >
-                                                                取消 VIP
-                                                            </button>
-                                                        </>
+                                                        <span className="text-[10px] bg-gradient-to-r from-amber-400 to-orange-500 text-white px-1.5 py-0.5 rounded-full font-bold">
+                                                            VIP
+                                                        </span>
+                                                    )}
+                                                    {userId === currentId && <span className="text-[10px] bg-slate-200 px-1.5 rounded text-slate-600">我</span>}
+                                                </div>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <select
+                                                        value={user.role}
+                                                        onChange={async (e) => {
+                                                            const newRole = e.target.value as UserItem['role'];
+                                                            if (userId === currentId && newRole !== 'admin') {
+                                                                alert('不能取消自己的管理员权限');
+                                                                return;
+                                                            }
+                                                            await storage.saveUser({ ...user, role: newRole });
+                                                            await fetchUsers();
+                                                        }}
+                                                        className="text-xs border border-slate-200 rounded px-1.5 py-0.5 bg-slate-50 text-slate-600 outline-none focus:border-indigo-500 cursor-pointer hover:bg-white transition-colors"
+                                                    >
+                                                        <option value="user">普通用户</option>
+                                                        <option value="streamer">主播</option>
+                                                        <option value="admin">管理员</option>
+                                                    </select>
+
+                                                    <div className="h-3 w-[1px] bg-slate-200"></div>
+
+                                                    {isVip(user) ? (
+                                                        <span className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                                                            <Calendar size={10} />
+                                                            {formatVipExpire(user.vipExpireAt!)}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs text-slate-400">
+                                                            {user.lastLogin ? `登录: ${new Date(user.lastLogin).toLocaleDateString()}` : '从未登录'}
+                                                        </span>
                                                     )}
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
 
-                                        <button
-                                            onClick={() => toggleStatus(user)}
-                                            className={`p-2 rounded-lg transition-colors ${user.status === 'active' ? 'text-slate-400 hover:text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
-                                            title={user.status === 'active' ? '封禁' : '解封'}
-                                        >
-                                            {user.status === 'active' ? <Ban size={18} /> : <CheckCircle2 size={18} />}
-                                        </button>
-                                        <button
-                                            onClick={() => confirmDelete(userId, userId === currentId)}
-                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="删除"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            {/* VIP Button */}
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setShowVipModal(showVipModal === userId ? null : userId)}
+                                                    className={`p-2 rounded-lg transition-colors ${isVip(user) ? 'text-amber-500 bg-amber-50' : 'text-slate-400 hover:text-amber-500 hover:bg-amber-50'}`}
+                                                    title="VIP 管理"
+                                                >
+                                                    <Crown size={18} />
+                                                </button>
+
+                                                {/* VIP Dropdown */}
+                                                {showVipModal === userId && (
+                                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-10 p-2">
+                                                        <div className="text-xs font-bold text-slate-500 px-2 py-1 mb-1">设置 VIP 时长</div>
+                                                        {VIP_OPTIONS.map(opt => (
+                                                            <button
+                                                                key={opt.days}
+                                                                onClick={() => setVipDays(userId, opt.days)}
+                                                                className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                                                            >
+                                                                + {opt.label}
+                                                            </button>
+                                                        ))}
+                                                        {isVip(user) && (
+                                                            <>
+                                                                <div className="border-t border-slate-100 my-1"></div>
+                                                                <button
+                                                                    onClick={() => removeVip(userId)}
+                                                                    className="w-full text-left px-3 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                                                                >
+                                                                    取消 VIP
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <button
+                                                onClick={() => toggleStatus(user)}
+                                                className={`p-2 rounded-lg transition-colors ${user.status === 'active' ? 'text-slate-400 hover:text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
+                                                title={user.status === 'active' ? '封禁' : '解封'}
+                                            >
+                                                {user.status === 'active' ? <Ban size={18} /> : <CheckCircle2 size={18} />}
+                                            </button>
+                                            <button
+                                                onClick={() => confirmDelete(userId, userId === currentId)}
+                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="删除"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })
+                        )}
                     </div>
                 )}
             </div>
