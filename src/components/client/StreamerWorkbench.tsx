@@ -21,7 +21,7 @@ export function StreamerPermissionDenied() {
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900 mb-2">访问被拒绝</h2>
                 <p className="text-slate-500 mb-8">
-                    当前账号没有访问主播/商家工作台的权限。<br />
+                    当前账号没有访问主播中心的权限。<br />
                     请联系管理员开通权限：<span className="font-bold text-slate-900 select-all">13793195989</span>
                 </p>
 
@@ -464,7 +464,7 @@ export default function StreamerWorkbench({
                         <div className="mb-6 inline-flex p-4 bg-indigo-50 rounded-full text-indigo-600 ring-4 ring-indigo-50/50">
                             <Zap size={40} />
                         </div>
-                        <h3 className="text-2xl font-extrabold text-slate-900 mb-2">专业装机工作台</h3>
+                        <h3 className="text-2xl font-extrabold text-slate-900 mb-2">专业装机中心</h3>
                         <p className="text-slate-500 mb-8 font-medium px-4">
                             专为高效装机打造的强大工具。
                         </p>

@@ -460,7 +460,7 @@ export default function ClientApp() {
                                 setViewMode('streamer');
                             }}
                             icon={<Zap size={16} />}
-                            label="主播工作台"
+                            label="主播中心"
                         />
                         <TabButton active={viewMode === 'visual'} onClick={() => setViewMode('visual')} icon={<LayoutGrid size={16} />} label="AI装机台" />
                         <TabButton active={viewMode === 'square'} onClick={() => setViewMode('square')} icon={<Share2 size={16} />} label="配置广场" />
@@ -617,72 +617,75 @@ export default function ClientApp() {
                 </div>
             )}
 
-            <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 pb-40 md:pb-32 view-transition-enter" key={viewMode}>
-                {viewMode === 'streamer' && (
-                    <StreamerWorkbench
-                        buildList={buildList}
-                        onUpdate={updateEntry}
-                        pricing={pricing}
-                        discountRate={discountRate}
-                        setDiscountRate={setDiscountRate}
-                        isSharing={isSharing}
-                        handleShareTrigger={handleShareTrigger}
-                        handleSave={handleSave}
-                        clearBuild={() => {
-                            setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
-                        }}
-                        hasPermission={hasStreamerPermission}
+            {/* Main Content Area with fluid animation */}
+            <main className="flex-1 w-full max-w-[1600px] mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-300" key={viewMode}>
+                <div className="h-full overflow-y-auto custom-scrollbar  pb-24 lg:pb-0" id="main-scroll-container">
+                    {viewMode === 'streamer' && (
+                        <StreamerWorkbench
+                            buildList={buildList}
+                            onUpdate={updateEntry}
+                            pricing={pricing}
+                            discountRate={discountRate}
+                            setDiscountRate={setDiscountRate}
+                            isSharing={isSharing}
+                            handleShareTrigger={handleShareTrigger}
+                            handleSave={handleSave}
+                            clearBuild={() => {
+                                setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
+                            }}
+                            hasPermission={hasStreamerPermission}
 
-                        onAiCheck={handleAiPermission}
-                        onOpenLibrary={() => setShowLibraryModal(true)}
-                    />
-                )}
-
-
-
-                {viewMode === 'visual' && (
-                    <VisualBuilder
-                        buildList={buildList}
-                        onUpdate={(id, data) => setBuildList(prev => prev.map(e => e.id === id ? { ...e, ...data } : e))}
-                        health={healthCheck}
-                        onOpenLibrary={() => setShowLibraryModal(true)}
-                        remark={remark}
-                        setRemark={setRemark}
-                        pricing={pricing}
-                        onAiCheck={handleAiPermission}
-                        openAiModal={triggerAiModal}
-                        onAiModalClose={() => setTriggerAiModal(false)}
-                        onSave={handleSave}
-                        onShare={handleShareTrigger}
-                        onReset={() => {
-                            setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
-                        }}
-                    />
-                )}
-
-                {viewMode === 'square' && (
-                    <ConfigSquare
-                        onLoadConfig={handleFork}
-                        showToast={showToast}
-                        onToggleLike={handleToggleLike}
-                        currentUser={currentUser}
-                    />
-                )}
-
-                {viewMode === 'used' && (
-                    <UsedMarket
-                        currentUser={currentUser}
-                        onLogin={() => setShowLoginModal(true)}
-                        onViewDetail={setSelectedUsedItem}
-                        onSell={() => setShowSellModal(true)}
-                        onRecycle={() => setShowRecycleModal(true)}
-                    />
-                )}
+                            onAiCheck={handleAiPermission}
+                            onOpenLibrary={() => setShowLibraryModal(true)}
+                        />
+                    )}
 
 
 
-                {viewMode === 'headlines' && <ArticleList />}
-                {viewMode === 'about' && <AboutUs />}
+                    {viewMode === 'visual' && (
+                        <VisualBuilder
+                            buildList={buildList}
+                            onUpdate={(id, data) => setBuildList(prev => prev.map(e => e.id === id ? { ...e, ...data } : e))}
+                            health={healthCheck}
+                            onOpenLibrary={() => setShowLibraryModal(true)}
+                            remark={remark}
+                            setRemark={setRemark}
+                            pricing={pricing}
+                            onAiCheck={handleAiPermission}
+                            openAiModal={triggerAiModal}
+                            onAiModalClose={() => setTriggerAiModal(false)}
+                            onSave={handleSave}
+                            onShare={handleShareTrigger}
+                            onReset={() => {
+                                setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
+                            }}
+                        />
+                    )}
+
+                    {viewMode === 'square' && (
+                        <ConfigSquare
+                            onLoadConfig={handleFork}
+                            showToast={showToast}
+                            onToggleLike={handleToggleLike}
+                            currentUser={currentUser}
+                        />
+                    )}
+
+                    {viewMode === 'used' && (
+                        <UsedMarket
+                            currentUser={currentUser}
+                            onLogin={() => setShowLoginModal(true)}
+                            onViewDetail={setSelectedUsedItem}
+                            onSell={() => setShowSellModal(true)}
+                            onRecycle={() => setShowRecycleModal(true)}
+                        />
+                    )}
+
+
+
+                    {viewMode === 'headlines' && <ArticleList />}
+                    {viewMode === 'about' && <AboutUs />}
+                </div>
             </main>
 
             {showPaymentModal && currentUser && (
@@ -866,11 +869,33 @@ export default function ClientApp() {
                 </footer>
             )}
 
-            {/* Mobile Bottom Navigation - Hidden per user request */}
-            {/* <MobileBottomNav
-                viewMode={viewMode}
-                setViewMode={setViewMode}
-            /> */}
+            {/* Mobile Bottom Navigation - Sticky with active scale feedback */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-2 z-40 safe-area-bottom shadow-[0_-4px_24px_rgba(0,0,0,0.06)] animate-in slide-in-from-bottom-8 duration-500 pb-safe">
+                <div className="flex justify-around items-center max-w-md mx-auto">
+                    {[
+                        { id: 'visual', icon: LayoutGrid, label: 'AI装机' },
+                        { id: 'square', icon: Share2, label: '广场' },
+                        { id: 'streamer', icon: Zap, label: '主播' },
+                        { id: 'used', icon: ShoppingBag, label: '二手' },
+                        { id: 'headlines', icon: BookOpen, label: '头条' },
+                    ].map((item) => {
+                        const Icon = item.icon;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => setViewMode(item.id as any)}
+                                className={`flex-1 flex flex-col items-center justify-center p-2 rounded-xl transition-all active:scale-95 duration-200 ${viewMode === item.id
+                                    ? 'text-indigo-600 bg-indigo-50/80 font-bold scale-[1.02] shadow-sm'
+                                    : 'text-slate-500 hover:bg-slate-50'
+                                    }`}
+                            >
+                                <Icon size={20} />
+                                <span className="text-[10px] mt-1">{item.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
 
             {/* Discount Action Sheet (Mobile) */}
             {/* Backdrop */}

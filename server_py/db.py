@@ -20,7 +20,17 @@ if not os.path.exists(data_dir):
 
 DATABASE_URL = f"sqlite:///{FULL_DB_PATH}"
 
-engine = create_engine(DATABASE_URL, echo=True, connect_args={"check_same_thread": False})
+engine = create_engine(DATABASE_URL, echo=False, connect_args={"check_same_thread": False})
+
+from sqlalchemy import event
+
+@event.listens_for(engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.execute("PRAGMA cache_size=-64000") # 64MB cache max
+    cursor.close()
 
 def init_db():
     # 先运行 SQLModel 的基础创建
@@ -59,6 +69,17 @@ def _migrate_extra_columns():
             cursor.execute("ALTER TABLE configs ADD COLUMN showcaseMessage TEXT")
         if 'showcaseStatus' not in config_cols:
             cursor.execute("ALTER TABLE configs ADD COLUMN showcaseStatus TEXT NOT NULL DEFAULT 'none'")
+            
+        # Add Indexes for performance optimization
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_configs_userId ON configs(userId)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_configs_status ON configs(status)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_used_sellerId ON used_items(sellerId)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_used_category ON used_items(category)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_used_status ON used_items(status)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hardware_category ON hardware(category)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hardware_status ON hardware(status)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_userId ON orders(userId)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)")
             
         conn.commit()
         conn.close()
