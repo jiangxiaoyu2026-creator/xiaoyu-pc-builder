@@ -1,10 +1,6 @@
-from sqlmodel import Session, select
-from server_py.db import engine
-from server_py.models import ChatSettings, ChatSession
+import requests
+import sqlite3
 
-with Session(engine) as session:
-    settings = session.exec(select(ChatSettings)).first()
-    print(f"Chat settings: {settings}")
-    
-    sessions = session.exec(select(ChatSession).limit(1)).all()
-    print(f"Chat sessions: {len(sessions)}")
+response = requests.post("http://localhost:8000/api/v1/chat/session/init", json={"userParserId": "test"})
+print(response.status_code)
+print(response.text)
