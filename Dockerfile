@@ -1,6 +1,7 @@
 # Stage 1: Build Frontend
-FROM docker.1ms.run/node:20.18-alpine AS frontend-builder
+FROM docker.1ms.run/node:20.18-slim AS frontend-builder
 WORKDIR /app
+RUN apt-get update && apt-get install -y python3 build-essential
 COPY package*.json ./
 RUN npm install
 COPY . .
