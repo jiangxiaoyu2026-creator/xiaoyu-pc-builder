@@ -288,19 +288,18 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     };
 
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
-    const isMainPart = ['cpu', 'gpu', 'mainboard'].includes(entry.category);
 
     return (
         <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-2.5 items-center group transition-colors ${entry.item ? theme.bgLight.replace('bg-', 'bg-').concat('/30') : 'hover:bg-slate-50'}`}>
 
-            <div className={`flex items-center gap-3 font-medium text-sm transition-all ${theme.primary}`}>
+            <div className={`flex items-center gap-3 font-bold text-sm transition-all ${theme.primary}`}>
                 <div
                     className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${style.bg} ${style.text} ${!entry.item && 'group-hover:bg-white group-hover:shadow-md'}`}
                     onClick={() => entry.item?.image && onPreview(entry.item.image)}
                 >
                     {getIconByCategory(entry.category)}
                 </div>
-                <span className={isMainPart ? 'font-bold' : ''}>{CATEGORY_MAP[entry.category]}</span>
+                <span>{CATEGORY_MAP[entry.category]}</span>
             </div>
 
             <div className="relative">
