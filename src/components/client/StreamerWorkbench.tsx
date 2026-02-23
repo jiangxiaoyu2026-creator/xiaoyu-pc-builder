@@ -25,6 +25,9 @@ interface ThemeConfig {
     divider: string;
     footerBg: string;
     borderColor: string;
+    textTitle: string;
+    textMuted: string;
+    rowBg: string;
 }
 
 export const THEMES: Record<ThemeColor, ThemeConfig> = {
@@ -40,7 +43,10 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         tableHeaderBg: 'bg-slate-50',
         divider: 'divide-slate-100',
         footerBg: 'bg-white/90',
-        borderColor: 'border-slate-200/60'
+        borderColor: 'border-slate-200/60',
+        textTitle: 'text-slate-800',
+        textMuted: 'text-slate-400',
+        rowBg: 'bg-white'
     },
     cosmic: {
         name: '星空紫',
@@ -49,12 +55,15 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-violet-600',
         gradient: 'from-violet-600 via-purple-600 to-fuchsia-500',
         ring: 'ring-violet-500',
-        cardBg: 'bg-gradient-to-br from-violet-50/40 to-fuchsia-50/30',
-        headerBg: 'bg-gradient-to-r from-violet-50/80 to-fuchsia-50/60',
-        tableHeaderBg: 'bg-violet-50/50',
-        divider: 'divide-violet-100/60',
-        footerBg: 'bg-gradient-to-r from-violet-50/40 to-fuchsia-50/30',
-        borderColor: 'border-violet-200/50'
+        cardBg: 'bg-gradient-to-br from-violet-100 to-fuchsia-50',
+        headerBg: 'bg-gradient-to-r from-violet-100 to-purple-100',
+        tableHeaderBg: 'bg-violet-100/80',
+        divider: 'divide-violet-200',
+        footerBg: 'bg-gradient-to-r from-violet-100 to-fuchsia-50',
+        borderColor: 'border-violet-300/60',
+        textTitle: 'text-violet-900',
+        textMuted: 'text-violet-400',
+        rowBg: 'bg-white/60'
     },
     jade: {
         name: '翡翠青',
@@ -63,12 +72,15 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-emerald-600',
         gradient: 'from-emerald-500 via-green-500 to-teal-500',
         ring: 'ring-emerald-500',
-        cardBg: 'bg-gradient-to-br from-emerald-50/40 to-teal-50/30',
-        headerBg: 'bg-gradient-to-r from-emerald-50/80 to-teal-50/60',
-        tableHeaderBg: 'bg-emerald-50/50',
-        divider: 'divide-emerald-100/60',
-        footerBg: 'bg-gradient-to-r from-emerald-50/40 to-teal-50/30',
-        borderColor: 'border-emerald-200/50'
+        cardBg: 'bg-gradient-to-br from-emerald-100 to-teal-50',
+        headerBg: 'bg-gradient-to-r from-emerald-100 to-teal-100',
+        tableHeaderBg: 'bg-emerald-100/80',
+        divider: 'divide-emerald-200',
+        footerBg: 'bg-gradient-to-r from-emerald-100 to-teal-50',
+        borderColor: 'border-emerald-300/60',
+        textTitle: 'text-emerald-900',
+        textMuted: 'text-emerald-400',
+        rowBg: 'bg-white/60'
     },
     rosegold: {
         name: '玫瑰金',
@@ -77,12 +89,15 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-rose-500',
         gradient: 'from-rose-400 via-pink-500 to-amber-400',
         ring: 'ring-rose-400',
-        cardBg: 'bg-gradient-to-br from-rose-50/40 to-amber-50/30',
-        headerBg: 'bg-gradient-to-r from-rose-50/80 to-amber-50/60',
-        tableHeaderBg: 'bg-rose-50/50',
-        divider: 'divide-rose-100/60',
-        footerBg: 'bg-gradient-to-r from-rose-50/40 to-amber-50/30',
-        borderColor: 'border-rose-200/50'
+        cardBg: 'bg-gradient-to-br from-rose-100 to-amber-50',
+        headerBg: 'bg-gradient-to-r from-rose-100 to-amber-100',
+        tableHeaderBg: 'bg-rose-100/80',
+        divider: 'divide-rose-200',
+        footerBg: 'bg-gradient-to-r from-rose-100 to-amber-50',
+        borderColor: 'border-rose-300/60',
+        textTitle: 'text-rose-900',
+        textMuted: 'text-rose-400',
+        rowBg: 'bg-white/60'
     },
     ocean: {
         name: '深海蓝',
@@ -91,26 +106,32 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-blue-600',
         gradient: 'from-blue-500 via-cyan-500 to-sky-400',
         ring: 'ring-blue-500',
-        cardBg: 'bg-gradient-to-br from-blue-50/40 to-cyan-50/30',
-        headerBg: 'bg-gradient-to-r from-blue-50/80 to-cyan-50/60',
-        tableHeaderBg: 'bg-blue-50/50',
-        divider: 'divide-blue-100/60',
-        footerBg: 'bg-gradient-to-r from-blue-50/40 to-cyan-50/30',
-        borderColor: 'border-blue-200/50'
+        cardBg: 'bg-gradient-to-br from-blue-100 to-cyan-50',
+        headerBg: 'bg-gradient-to-r from-blue-100 to-cyan-100',
+        tableHeaderBg: 'bg-blue-100/80',
+        divider: 'divide-blue-200',
+        footerBg: 'bg-gradient-to-r from-blue-100 to-cyan-50',
+        borderColor: 'border-blue-300/60',
+        textTitle: 'text-blue-900',
+        textMuted: 'text-blue-400',
+        rowBg: 'bg-white/60'
     },
     midnight: {
         name: '暗夜黑',
         primary: 'text-amber-400',
         bgLight: 'bg-zinc-800',
         bgPrimary: 'bg-zinc-900',
-        gradient: 'from-zinc-700 via-zinc-800 to-black',
+        gradient: 'from-amber-500 via-amber-400 to-yellow-400',
         ring: 'ring-amber-500',
         cardBg: 'bg-gradient-to-br from-zinc-900 to-zinc-800',
-        headerBg: 'bg-gradient-to-r from-zinc-800 to-zinc-900',
+        headerBg: 'bg-gradient-to-r from-zinc-800/90 to-zinc-900/90',
         tableHeaderBg: 'bg-zinc-800/80',
-        divider: 'divide-zinc-700/60',
-        footerBg: 'bg-gradient-to-r from-zinc-900 to-zinc-800',
-        borderColor: 'border-zinc-700/60'
+        divider: 'divide-zinc-700',
+        footerBg: 'bg-gradient-to-r from-zinc-800/90 to-zinc-900/90',
+        borderColor: 'border-zinc-600/60',
+        textTitle: 'text-white',
+        textMuted: 'text-zinc-400',
+        rowBg: 'bg-zinc-800/50'
     }
 };
 
@@ -624,11 +645,11 @@ function StreamerWorkbench({
                 )}
                 <div className={`p-6 border-b ${theme.borderColor} ${theme.headerBg} flex items-center justify-between transition-colors duration-300`}>
                     <div className="flex items-center gap-4">
-                        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <h2 className={`text-xl font-bold ${theme.textTitle} flex items-center gap-2`}>
                             <Zap className={theme.primary} />
                             智能装机平台
                         </h2>
-                        <div className="hidden md:flex items-center gap-1.5 bg-white px-2 py-1 rounded-full border border-slate-200 shadow-sm ml-4">
+                        <div className={`hidden md:flex items-center gap-1.5 ${currentThemeKey === 'midnight' ? 'bg-zinc-700' : 'bg-white'} px-2 py-1 rounded-full border ${theme.borderColor} shadow-sm ml-4`}>
                             {(Object.keys(THEMES) as ThemeColor[]).map((tKey) => (
                                 <button
                                     key={tKey}
@@ -657,7 +678,7 @@ function StreamerWorkbench({
 
                 <div className="overflow-x-auto">
                     <div className="min-w-[600px]">
-                        <div className={`grid grid-cols-[80px_1fr_80px_100px_50px] gap-4 px-6 py-3 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold text-slate-400 uppercase tracking-wider transition-colors duration-300`}>
+                        <div className={`grid grid-cols-[80px_1fr_80px_100px_50px] gap-4 px-6 py-3 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.textMuted} uppercase tracking-wider transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
@@ -676,9 +697,9 @@ function StreamerWorkbench({
                 <div className={`${theme.footerBg} border-t ${theme.borderColor} px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4 transition-colors duration-300`}>
                     <div className="flex flex-col gap-0.5">
                         <div className="flex items-baseline gap-2">
-                            <span className="text-xl text-slate-400 font-bold whitespace-nowrap line-through decoration-2 decoration-slate-300">¥{Math.floor(pricing.standardPrice)}</span>
+                            <span className={`text-xl ${theme.textMuted} font-bold whitespace-nowrap line-through decoration-2`}>¥{Math.floor(pricing.standardPrice)}</span>
                             <div className="flex items-baseline gap-0.5">
-                                <span className="text-xl font-bold text-slate-900">¥</span>
+                                <span className={`text-xl font-bold ${theme.textTitle}`}>¥</span>
                                 <span className={`text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r ${theme.gradient} font-mono tracking-tight`}>
                                     <RollingPrice value={pricing.finalPrice} />
                                 </span>
@@ -692,7 +713,7 @@ function StreamerWorkbench({
                                 <ChevronDown className="absolute right-2 top-1.5 text-slate-400 pointer-events-none" size={12} />
                             </div>
                         </div>
-                        <div className="text-[10px] text-slate-400 font-medium pl-0.5">标准价格包含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 服务费</div>
+                        <div className={`text-[10px] ${theme.textMuted} font-medium pl-0.5`}>标准价格包含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 服务费</div>
                     </div>
 
                     <div className="flex flex-col items-center justify-center">
