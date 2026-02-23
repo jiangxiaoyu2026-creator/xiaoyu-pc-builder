@@ -439,7 +439,13 @@ async def update_user(
 
     for key, value in user_data.items():
         if key == "password" and value:
-            value = get_password_hash(value)
+            # If the password already looks like a bcrypt hash ($2b$ or $2a$), DO NOT re-hash it.
+            # This prevents double-hashing when the frontend sends the whole user object back.
+            if isinstance(value, str) and (value.startswith("$2b$") or value.startswith("$2a$")):
+                pass # Already hashed, keep the existing value
+            else:
+                value = get_password_hash(value)
+                
         if hasattr(user, key) and key != "id":
             setattr(user, key, value)
 

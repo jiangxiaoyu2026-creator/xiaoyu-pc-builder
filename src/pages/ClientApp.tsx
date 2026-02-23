@@ -65,7 +65,26 @@ export default function ClientApp() {
                 storage.getProducts(1, 1000)
             ]);
 
-            setCurrentUser(user);
+            // --- Sync Current User Object from All Users ---
+            // Zero-cost sync: Instead of a new API call, we use the allUsers list we just fetched 
+            // to update the current user's role and VIP status in case it was changed by an admin.
+            let activeUser = user;
+            if (activeUser) {
+                const updatedUser = allUsers.find(u => u.id === activeUser?.id || (u as any)._id === activeUser?.id);
+                if (updatedUser) {
+                    const needsUpdate =
+                        updatedUser.role !== activeUser.role ||
+                        updatedUser.vipExpireAt !== activeUser.vipExpireAt;
+
+                    if (needsUpdate) {
+                        activeUser = { ...activeUser, role: updatedUser.role, vipExpireAt: updatedUser.vipExpireAt };
+                        // Silently update local storage without triggering another loadData loop
+                        localStorage.setItem('xiaoyu_current_user', JSON.stringify(activeUser));
+                    }
+                }
+            }
+            setCurrentUser(activeUser);
+            // ----------------------------------------------
             setSettings(s);
             setAllProducts(productsRes.items);
 

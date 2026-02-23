@@ -70,6 +70,19 @@ export default function AdminApp() {
     useEffect(() => {
         if (!currentUser || !['admin', 'sub_admin'].includes(currentUser.role)) {
             // Login handled by LoginModal below
+        } else {
+            // Verify admin status on load to prevent downgraded users from staying in the penal
+            const verifyAdmin = async () => {
+                const users = await storage.getUsers();
+                const freshUser = users.find(u => u.id === currentUser.id || (u as any)._id === currentUser.id);
+                if (freshUser && freshUser.role !== currentUser.role) {
+                    // Role was changed (e.g., downgraded)
+                    const updatedUser = { ...currentUser, role: freshUser.role };
+                    localStorage.setItem('xiaoyu_current_user', JSON.stringify(updatedUser));
+                    setCurrentUser(updatedUser); // This will trigger the login modal if no longer admin
+                }
+            };
+            verifyAdmin();
         }
     }, [currentUser]);
 
