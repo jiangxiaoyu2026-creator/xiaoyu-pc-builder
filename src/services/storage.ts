@@ -181,6 +181,16 @@ class StorageService {
         }
     }
 
+    async getSpecValues(category: string, key: string): Promise<string[]> {
+        try {
+            const result = await ApiService.get(`/products/specs/values?category=${category}&key=${key}`);
+            return Array.isArray(result) ? result : [];
+        } catch (e) {
+            console.error('Failed to load spec values', e);
+            return [];
+        }
+    }
+
     async saveProducts(products: HardwareItem[]) {
         for (const p of products) {
             await ApiService.post('/products', p);

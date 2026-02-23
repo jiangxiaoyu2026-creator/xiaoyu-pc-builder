@@ -351,6 +351,35 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
         product || { category: 'cpu', brand: '', model: '', price: 0, sortOrder: 99, status: 'active', specs: {} }
     );
 
+    const [brandSuggestions, setBrandSuggestions] = useState<string[]>([]);
+    const [specSuggestions, setSpecSuggestions] = useState<Record<string, string[]>>({});
+
+    useEffect(() => {
+        if (formData.category) {
+            loadSuggestions();
+        }
+    }, [formData.category]);
+
+    const loadSuggestions = async () => {
+        if (!formData.category) return;
+
+        // Load brands for this category
+        const brands = await storage.getBrands(formData.category);
+        setBrandSuggestions(brands);
+
+        // Load suggestions for text-type specs
+        const fields = COMPATIBILITY_FIELDS[formData.category] || [];
+        const newSpecSuggestions: Record<string, string[]> = {};
+
+        for (const field of fields) {
+            if (field.type === 'text') {
+                const values = await storage.getSpecValues(formData.category, field.key);
+                newSpecSuggestions[field.key] = values;
+            }
+        }
+        setSpecSuggestions(newSpecSuggestions);
+    };
+
     const handleSpecChange = (key: string, value: any) => {
         setFormData(prev => ({
             ...prev,
@@ -442,7 +471,17 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 mb-1">品牌</label>
-                                        <input className="w-full border border-slate-200 rounded-lg p-2 text-sm" value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} required placeholder="例如：Intel" />
+                                        <input
+                                            className="w-full border border-slate-200 rounded-lg p-2 text-sm"
+                                            value={formData.brand}
+                                            onChange={e => setFormData({ ...formData, brand: e.target.value })}
+                                            required
+                                            placeholder="例如：Intel"
+                                            list="brand-suggestions"
+                                        />
+                                        <datalist id="brand-suggestions">
+                                            {brandSuggestions.map(b => <option key={b} value={b} />)}
+                                        </datalist>
                                     </div>
                                 </div>
                                 <div>
@@ -503,13 +542,21 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                                 {field.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                                             </select>
                                         ) : (
-                                            <input
-                                                type={field.type}
-                                                className="w-full border border-slate-200 rounded-lg p-2 text-xs"
-                                                value={formData.specs?.[field.key] || ''}
-                                                onChange={e => handleSpecChange(field.key, field.type === 'number' ? Number(e.target.value) : e.target.value)}
-                                                placeholder={`输入${field.label}`}
-                                            />
+                                            <>
+                                                <input
+                                                    type={field.type}
+                                                    className="w-full border border-slate-200 rounded-lg p-2 text-xs"
+                                                    value={formData.specs?.[field.key] || ''}
+                                                    onChange={e => handleSpecChange(field.key, field.type === 'number' ? Number(e.target.value) : e.target.value)}
+                                                    placeholder={`输入${field.label}`}
+                                                    list={field.type === 'text' ? `spec-list-${field.key}` : undefined}
+                                                />
+                                                {field.type === 'text' && specSuggestions[field.key] && (
+                                                    <datalist id={`spec-list-${field.key}`}>
+                                                        {specSuggestions[field.key].map(val => <option key={val} value={val} />)}
+                                                    </datalist>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 ))}

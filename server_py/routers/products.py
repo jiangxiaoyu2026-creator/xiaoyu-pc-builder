@@ -167,6 +167,36 @@ async def get_brands(
     # Filter out empty strings if any and sort
     return sorted([b for b in brands if b])
 
+@router.get("/specs/values", response_model=List[str])
+async def get_spec_values(
+    category: str,
+    key: str,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """Admin only: Get all distinct values for a specific spec key in a category"""
+    # SQLite doesn't have a simple way to distinct on JSON keys via SQLModel easily without raw SQL
+    # Since the product count is usually small, we can fetch and process in Python
+    # or use SQLAlchemy's func.json_extract if we want to be more efficient.
+    from sqlalchemy import func
+    
+    # Using json_extract for efficiency if supported by the DB (SQLite/MariaDB/Postgres all support it)
+    # Hardware.specs is a string, so we might need to cast or use specific JSON functions
+    statement = select(Hardware).where(Hardware.category == category)
+    products = session.exec(statement).all()
+    
+    values = set()
+    for p in products:
+        try:
+            specs = json.loads(p.specs) if isinstance(p.specs, str) else (p.specs or {})
+            val = specs.get(key)
+            if val is not None and val != "":
+                values.add(str(val))
+        except:
+            continue
+            
+    return sorted(list(values))
+
 def _serialize_specs(specs) -> str:
     """将 specs 转换为 JSON 字符串"""
     if specs is None:

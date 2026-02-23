@@ -438,7 +438,9 @@ async def update_user(
         raise HTTPException(status_code=404, detail="未找到该用户")
 
     for key, value in user_data.items():
-        if key == "password" and value:
+        if key == "password":
+            if not value:
+                continue # Skip empty password update
             # If the password already looks like a bcrypt hash ($2b$ or $2a$), DO NOT re-hash it.
             # This prevents double-hashing when the frontend sends the whole user object back.
             if isinstance(value, str) and (value.startswith("$2b$") or value.startswith("$2a$")):
