@@ -279,7 +279,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const isMainPart = ['cpu', 'gpu', 'mainboard'].includes(entry.category);
 
     return (
-        <div className={`grid grid-cols-[80px_1fr_80px_100px_50px] gap-4 px-6 py-2.5 items-center group transition-colors ${entry.item ? theme.bgLight.replace('bg-', 'bg-').concat('/30') : 'hover:bg-slate-50'}`}>
+        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-2.5 items-center group transition-colors ${entry.item ? theme.bgLight.replace('bg-', 'bg-').concat('/30') : 'hover:bg-slate-50'}`}>
 
             <div className={`flex items-center gap-3 font-medium text-sm transition-all ${isMainPart ? 'text-slate-800' : 'text-slate-500'}`}>
                 <div
@@ -292,7 +292,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 font-medium placeholder-slate-300 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 font-semibold text-[15px] placeholder-slate-300 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
                 {entry.item && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
                         {entry.item.isRecommended && <span className="bg-orange-50 text-orange-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 flex items-center gap-0.5 whitespace-nowrap"><Sparkles size={10} /> 推荐</span>}
@@ -643,7 +643,7 @@ function StreamerWorkbench({
 
                 <div className="overflow-x-auto">
                     <div className="min-w-[600px]">
-                        <div className={`grid grid-cols-[80px_1fr_80px_100px_50px] gap-4 px-6 py-3 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.textMuted} uppercase tracking-wider transition-colors duration-300`}>
+                        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-3 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.textMuted} uppercase tracking-wider transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
