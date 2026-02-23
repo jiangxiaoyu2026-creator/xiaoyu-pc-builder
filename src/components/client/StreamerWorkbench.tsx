@@ -650,9 +650,6 @@ function StreamerWorkbench({
                         }} className={`flex items-center gap-1 px-3 py-1 bg-gradient-to-r ${theme.gradient} text-white text-[11px] font-bold rounded-full shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0`}>
                             <Sparkles size={12} /> AI装机
                         </button>
-                        <div className={`text-[11px] font-medium bg-white ${theme.primary} px-2.5 py-1 rounded-full border ${theme.bgLight.replace('bg-', 'border-')} shadow-sm hidden md:block`}>
-                            按 Enter 跳过
-                        </div>
                     </div>
                 </div>
 
