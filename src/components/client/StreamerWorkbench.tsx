@@ -51,7 +51,9 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-indigo-600',
         gradient: 'from-indigo-600 to-purple-600',
         ring: 'ring-indigo-500',
-        ...BASE_BG
+        ...BASE_BG,
+        divider: 'divide-indigo-100/50',
+        tableHeaderBg: 'bg-indigo-50/40',
     },
     cosmic: {
         name: '星空紫',
@@ -60,7 +62,9 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-violet-600',
         gradient: 'from-violet-600 via-purple-600 to-fuchsia-500',
         ring: 'ring-violet-500',
-        ...BASE_BG
+        ...BASE_BG,
+        divider: 'divide-violet-100/50',
+        tableHeaderBg: 'bg-violet-50/40',
     },
     jade: {
         name: '翡翠青',
@@ -69,7 +73,9 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-emerald-600',
         gradient: 'from-emerald-500 via-green-500 to-teal-500',
         ring: 'ring-emerald-500',
-        ...BASE_BG
+        ...BASE_BG,
+        divider: 'divide-emerald-100/50',
+        tableHeaderBg: 'bg-emerald-50/40',
     },
     rosegold: {
         name: '玫瑰金',
@@ -78,7 +84,9 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-rose-500',
         gradient: 'from-rose-400 via-pink-500 to-amber-400',
         ring: 'ring-rose-400',
-        ...BASE_BG
+        ...BASE_BG,
+        divider: 'divide-rose-100/50',
+        tableHeaderBg: 'bg-rose-50/40',
     },
     ocean: {
         name: '深海蓝',
@@ -87,7 +95,9 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-blue-600',
         gradient: 'from-blue-500 via-cyan-500 to-sky-400',
         ring: 'ring-blue-500',
-        ...BASE_BG
+        ...BASE_BG,
+        divider: 'divide-blue-100/50',
+        tableHeaderBg: 'bg-blue-50/40',
     },
     midnight: {
         name: '暗金',
@@ -96,7 +106,9 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-amber-500',
         gradient: 'from-amber-500 via-orange-500 to-yellow-500',
         ring: 'ring-amber-500',
-        ...BASE_BG
+        ...BASE_BG,
+        divider: 'divide-amber-100/50',
+        tableHeaderBg: 'bg-amber-50/40',
     }
 };
 
@@ -281,7 +293,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     return (
         <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-2.5 items-center group transition-colors ${entry.item ? theme.bgLight.replace('bg-', 'bg-').concat('/30') : 'hover:bg-slate-50'}`}>
 
-            <div className={`flex items-center gap-3 font-medium text-sm transition-all ${isMainPart ? 'text-slate-800' : 'text-slate-500'}`}>
+            <div className={`flex items-center gap-3 font-medium text-sm transition-all ${theme.primary}`}>
                 <div
                     className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${style.bg} ${style.text} ${!entry.item && 'group-hover:bg-white group-hover:shadow-md'}`}
                     onClick={() => entry.item?.image && onPreview(entry.item.image)}
@@ -643,7 +655,7 @@ function StreamerWorkbench({
 
                 <div className="overflow-x-auto">
                     <div className="min-w-[600px]">
-                        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-3 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.textMuted} uppercase tracking-wider transition-colors duration-300`}>
+                        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-3 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.primary} uppercase tracking-wider transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
