@@ -30,23 +30,28 @@ interface ThemeConfig {
     rowBg: string;
 }
 
+// Shared base — clean white background for all themes
+const BASE_BG = {
+    cardBg: 'bg-white',
+    headerBg: 'bg-slate-50/50',
+    tableHeaderBg: 'bg-slate-50',
+    divider: 'divide-slate-100',
+    footerBg: 'bg-white/90',
+    borderColor: 'border-slate-200/60',
+    textTitle: 'text-slate-800',
+    textMuted: 'text-slate-400',
+    rowBg: 'bg-white'
+};
+
 export const THEMES: Record<ThemeColor, ThemeConfig> = {
     default: {
-        name: '经典白',
-        primary: 'text-slate-700',
-        bgLight: 'bg-slate-50',
-        bgPrimary: 'bg-slate-800',
-        gradient: 'from-slate-700 to-slate-900',
-        ring: 'ring-slate-400',
-        cardBg: 'bg-white',
-        headerBg: 'bg-slate-50/50',
-        tableHeaderBg: 'bg-slate-50',
-        divider: 'divide-slate-100',
-        footerBg: 'bg-white/90',
-        borderColor: 'border-slate-200/60',
-        textTitle: 'text-slate-800',
-        textMuted: 'text-slate-400',
-        rowBg: 'bg-white'
+        name: '经典',
+        primary: 'text-indigo-600',
+        bgLight: 'bg-indigo-50',
+        bgPrimary: 'bg-indigo-600',
+        gradient: 'from-indigo-600 to-purple-600',
+        ring: 'ring-indigo-500',
+        ...BASE_BG
     },
     cosmic: {
         name: '星空紫',
@@ -55,15 +60,7 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-violet-600',
         gradient: 'from-violet-600 via-purple-600 to-fuchsia-500',
         ring: 'ring-violet-500',
-        cardBg: 'bg-gradient-to-br from-violet-100 to-fuchsia-50',
-        headerBg: 'bg-gradient-to-r from-violet-100 to-purple-100',
-        tableHeaderBg: 'bg-violet-100/80',
-        divider: 'divide-violet-200',
-        footerBg: 'bg-gradient-to-r from-violet-100 to-fuchsia-50',
-        borderColor: 'border-violet-300/60',
-        textTitle: 'text-violet-900',
-        textMuted: 'text-violet-400',
-        rowBg: 'bg-white/60'
+        ...BASE_BG
     },
     jade: {
         name: '翡翠青',
@@ -72,15 +69,7 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-emerald-600',
         gradient: 'from-emerald-500 via-green-500 to-teal-500',
         ring: 'ring-emerald-500',
-        cardBg: 'bg-gradient-to-br from-emerald-100 to-teal-50',
-        headerBg: 'bg-gradient-to-r from-emerald-100 to-teal-100',
-        tableHeaderBg: 'bg-emerald-100/80',
-        divider: 'divide-emerald-200',
-        footerBg: 'bg-gradient-to-r from-emerald-100 to-teal-50',
-        borderColor: 'border-emerald-300/60',
-        textTitle: 'text-emerald-900',
-        textMuted: 'text-emerald-400',
-        rowBg: 'bg-white/60'
+        ...BASE_BG
     },
     rosegold: {
         name: '玫瑰金',
@@ -89,15 +78,7 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-rose-500',
         gradient: 'from-rose-400 via-pink-500 to-amber-400',
         ring: 'ring-rose-400',
-        cardBg: 'bg-gradient-to-br from-rose-100 to-amber-50',
-        headerBg: 'bg-gradient-to-r from-rose-100 to-amber-100',
-        tableHeaderBg: 'bg-rose-100/80',
-        divider: 'divide-rose-200',
-        footerBg: 'bg-gradient-to-r from-rose-100 to-amber-50',
-        borderColor: 'border-rose-300/60',
-        textTitle: 'text-rose-900',
-        textMuted: 'text-rose-400',
-        rowBg: 'bg-white/60'
+        ...BASE_BG
     },
     ocean: {
         name: '深海蓝',
@@ -106,32 +87,16 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgPrimary: 'bg-blue-600',
         gradient: 'from-blue-500 via-cyan-500 to-sky-400',
         ring: 'ring-blue-500',
-        cardBg: 'bg-gradient-to-br from-blue-100 to-cyan-50',
-        headerBg: 'bg-gradient-to-r from-blue-100 to-cyan-100',
-        tableHeaderBg: 'bg-blue-100/80',
-        divider: 'divide-blue-200',
-        footerBg: 'bg-gradient-to-r from-blue-100 to-cyan-50',
-        borderColor: 'border-blue-300/60',
-        textTitle: 'text-blue-900',
-        textMuted: 'text-blue-400',
-        rowBg: 'bg-white/60'
+        ...BASE_BG
     },
     midnight: {
-        name: '暗夜黑',
-        primary: 'text-amber-400',
-        bgLight: 'bg-zinc-800',
-        bgPrimary: 'bg-zinc-900',
-        gradient: 'from-amber-500 via-amber-400 to-yellow-400',
+        name: '暗金',
+        primary: 'text-amber-500',
+        bgLight: 'bg-amber-50',
+        bgPrimary: 'bg-amber-500',
+        gradient: 'from-amber-500 via-orange-500 to-yellow-500',
         ring: 'ring-amber-500',
-        cardBg: 'bg-gradient-to-br from-zinc-900 to-zinc-800',
-        headerBg: 'bg-gradient-to-r from-zinc-800/90 to-zinc-900/90',
-        tableHeaderBg: 'bg-zinc-800/80',
-        divider: 'divide-zinc-700',
-        footerBg: 'bg-gradient-to-r from-zinc-800/90 to-zinc-900/90',
-        borderColor: 'border-zinc-600/60',
-        textTitle: 'text-white',
-        textMuted: 'text-zinc-400',
-        rowBg: 'bg-zinc-800/50'
+        ...BASE_BG
     }
 };
 
@@ -649,7 +614,7 @@ function StreamerWorkbench({
                             <Zap className={theme.primary} />
                             智能装机平台
                         </h2>
-                        <div className={`hidden md:flex items-center gap-1.5 ${currentThemeKey === 'midnight' ? 'bg-zinc-700' : 'bg-white'} px-2 py-1 rounded-full border ${theme.borderColor} shadow-sm ml-4`}>
+                        <div className="hidden md:flex items-center gap-1.5 bg-white px-2 py-1 rounded-full border border-slate-200 shadow-sm ml-4">
                             {(Object.keys(THEMES) as ThemeColor[]).map((tKey) => (
                                 <button
                                     key={tKey}
