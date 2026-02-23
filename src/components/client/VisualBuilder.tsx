@@ -322,7 +322,7 @@ function VisualBuilder({
                                 />
                             ) : entry.item ? (
                                 <div>
-                                    <div className="font-extrabold text-slate-800 text-base lg:text-lg group-hover:text-indigo-600 transition-colors tracking-tight truncate">{entry.item.brand} {entry.item.model}</div>
+                                    <div className="font-extrabold text-slate-800 text-[15px] lg:text-lg group-hover:text-indigo-600 transition-colors tracking-wide truncate">{entry.item.brand} {entry.item.model}</div>
                                 </div>
                             ) : entry.category === aiActiveCategory ? (
                                 <div className="text-indigo-500 font-medium flex items-center gap-2 animate-pulse">

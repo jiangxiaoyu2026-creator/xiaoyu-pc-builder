@@ -294,7 +294,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
 
             <div className={`flex items-center gap-3 font-bold text-sm transition-all ${theme.primary}`}>
                 <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${style.bg} ${style.text} ${!entry.item && 'group-hover:bg-white group-hover:shadow-md'}`}
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? `bg-gradient-to-br ${theme.gradient} text-white shadow-md` : `${style.bg} ${style.text}`} ${!entry.item && 'group-hover:bg-white group-hover:shadow-md'}`}
                     onClick={() => entry.item?.image && onPreview(entry.item.image)}
                 >
                     {getIconByCategory(entry.category)}
@@ -303,7 +303,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 font-semibold text-[15px] placeholder-slate-300 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 font-semibold text-[16px] tracking-wide placeholder-slate-300 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
                 {entry.item && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
                         {entry.item.isRecommended && <span className="bg-orange-50 text-orange-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 flex items-center gap-0.5 whitespace-nowrap"><Sparkles size={10} /> 推荐</span>}
