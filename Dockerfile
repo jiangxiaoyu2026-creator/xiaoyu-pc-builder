@@ -1,6 +1,8 @@
 # Stage 1: Build Frontend
 FROM docker.1ms.run/node:20.18-slim AS frontend-builder
 WORKDIR /app
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources \
+    && sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
 RUN apt-get update && apt-get install -y python3 build-essential
 COPY package*.json ./
 RUN npm install
