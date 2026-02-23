@@ -33,6 +33,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
+          command_timeout: 30m
           script: |
             cd /root/pcbuilder
             # 如果存在老旧的打包镜像，清理一下节约空间
