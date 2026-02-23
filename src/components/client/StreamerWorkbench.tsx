@@ -294,7 +294,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
 
     return (
-        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-2.5 items-center group transition-colors ${entry.item ? theme.bgLight.replace('bg-', 'bg-').concat('/30') : 'hover:bg-slate-50'}`}>
+        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-2 items-center group transition-colors ${entry.item ? theme.bgLight.replace('bg-', 'bg-').concat('/30') : 'hover:bg-slate-50'}`}>
 
             <div className={`flex items-center gap-3 font-bold text-sm transition-all ${theme.primary}`}>
                 <div
@@ -623,34 +623,34 @@ function StreamerWorkbench({
                         <div className={`h-full ${theme.bgPrimary} animate-[loading_2s_ease-in-out_infinite]`}></div>
                     </div>
                 )}
-                <div className={`p-6 border-b ${theme.borderColor} ${theme.headerBg} flex items-center justify-between transition-colors duration-300`}>
-                    <div className="flex items-center gap-4">
-                        <h2 className={`text-xl font-bold ${theme.textTitle} flex items-center gap-2`}>
-                            <Zap className={theme.primary} />
+                <div className={`px-5 py-2.5 border-b ${theme.borderColor} ${theme.headerBg} flex items-center justify-between transition-colors duration-300`}>
+                    <div className="flex items-center gap-3">
+                        <h2 className={`text-base font-bold ${theme.textTitle} flex items-center gap-1.5`}>
+                            <Zap className={theme.primary} size={18} />
                             智能装机平台
                         </h2>
-                        <div className="hidden md:flex items-center gap-1.5 bg-white px-2 py-1 rounded-full border border-slate-200 shadow-sm ml-4">
+                        <div className="hidden md:flex items-center gap-1.5 bg-white px-2 py-0.5 rounded-full border border-slate-200 shadow-sm">
                             {(Object.keys(THEMES) as ThemeColor[]).map((tKey) => (
                                 <button
                                     key={tKey}
                                     onClick={() => setCurrentThemeKey(tKey)}
-                                    className={`w-4 h-4 rounded-full transition-all ${currentThemeKey === tKey ? 'scale-125 ring-2 ring-offset-1 ' + THEMES[tKey].bgLight.replace('bg-', 'ring-') : 'hover:scale-110 grayscale-[0.3] hover:grayscale-0'} ${THEMES[tKey].bgPrimary}`}
+                                    className={`w-3.5 h-3.5 rounded-full transition-all ${currentThemeKey === tKey ? 'scale-125 ring-2 ring-offset-1 ' + THEMES[tKey].bgLight.replace('bg-', 'ring-') : 'hover:scale-110 grayscale-[0.3] hover:grayscale-0'} ${THEMES[tKey].bgPrimary}`}
                                     title={THEMES[tKey].name}
                                 />
                             ))}
                         </div>
                     </div>
-                    <div className="flex gap-3">
-                        <button onClick={onOpenLibrary} className="flex items-center gap-1.5 px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-full transition-colors active:scale-95 border border-slate-200">
-                            <Zap size={14} className="text-amber-500" /> 快速装机
+                    <div className="flex gap-2">
+                        <button onClick={onOpenLibrary} className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full transition-colors active:scale-95 border border-slate-200">
+                            <Zap size={12} className="text-amber-500" /> 快速装机
                         </button>
                         <button onClick={() => {
                             if (onAiCheck && !onAiCheck()) return;
                             setShowAiModal(true);
-                        }} className={`flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r ${theme.gradient} text-white text-xs font-bold rounded-full shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0`}>
-                            <Sparkles size={14} /> AI装机
+                        }} className={`flex items-center gap-1 px-3 py-1 bg-gradient-to-r ${theme.gradient} text-white text-[11px] font-bold rounded-full shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0`}>
+                            <Sparkles size={12} /> AI装机
                         </button>
-                        <div className={`text-xs font-medium bg-white ${theme.primary} px-3 py-1.5 rounded-full border ${theme.bgLight.replace('bg-', 'border-')} shadow-sm hidden md:block`}>
+                        <div className={`text-[11px] font-medium bg-white ${theme.primary} px-2.5 py-1 rounded-full border ${theme.bgLight.replace('bg-', 'border-')} shadow-sm hidden md:block`}>
                             按 Enter 跳过
                         </div>
                     </div>
@@ -658,7 +658,7 @@ function StreamerWorkbench({
 
                 <div className="overflow-x-auto">
                     <div className="min-w-[600px]">
-                        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-3 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.primary} uppercase tracking-wider transition-colors duration-300`}>
+                        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-1.5 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-[11px] font-bold ${theme.primary} uppercase tracking-wider transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
