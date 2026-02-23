@@ -451,8 +451,7 @@ function StreamerWorkbench({
     const [aiResult, setAiResult] = useState<AIBuildResult | null>(null);
     const [ghostPos, setGhostPos] = useState({ x: 0, y: 0 });
     const [ghostStatus, setGhostStatus] = useState('');
-    const [currentThemeKey, setCurrentThemeKey] = useState<ThemeColor>('default');
-    const theme = THEMES[currentThemeKey];
+    const { theme, currentThemeKey, setTheme: setCurrentThemeKey } = React.useContext(ThemeContext);
 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const rowInputRefs = useRef<(StreamerRowHandle | null)[]>([]);
