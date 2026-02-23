@@ -638,7 +638,7 @@ export default function ClientApp() {
 
             {/* Main Content Area with fluid animation */}
             <main className="flex-1 w-full max-w-7xl mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-300" key={viewMode}>
-                <div className="h-full overflow-y-auto custom-scrollbar  pb-24 lg:pb-0" id="main-scroll-container">
+                <div className="h-full overflow-y-auto custom-scrollbar pb-0" id="main-scroll-container">
                     {viewMode === 'streamer' && (
                         <StreamerWorkbench
                             buildList={buildList}
@@ -888,33 +888,7 @@ export default function ClientApp() {
                 </footer>
             )}
 
-            {/* Mobile Bottom Navigation - Sticky with active scale feedback */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-2 z-40 safe-area-bottom shadow-[0_-4px_24px_rgba(0,0,0,0.06)] animate-in slide-in-from-bottom-8 duration-500 pb-safe">
-                <div className="flex justify-around items-center max-w-md mx-auto">
-                    {[
-                        { id: 'visual', icon: LayoutGrid, label: 'AI装机' },
-                        { id: 'square', icon: Share2, label: '广场' },
-                        { id: 'streamer', icon: Zap, label: '主播' },
-                        { id: 'used', icon: ShoppingBag, label: '二手' },
-                        { id: 'headlines', icon: BookOpen, label: '头条' },
-                    ].map((item) => {
-                        const Icon = item.icon;
-                        return (
-                            <button
-                                key={item.id}
-                                onClick={() => setViewMode(item.id as any)}
-                                className={`flex-1 flex flex-col items-center justify-center p-2 rounded-xl transition-all active:scale-95 duration-200 ${viewMode === item.id
-                                    ? 'text-indigo-600 bg-indigo-50/80 font-bold scale-[1.02] shadow-sm'
-                                    : 'text-slate-500 hover:bg-slate-50'
-                                    }`}
-                            >
-                                <Icon size={20} />
-                                <span className="text-[10px] mt-1">{item.label}</span>
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
+
 
             {/* Discount Action Sheet (Mobile) */}
             {/* Backdrop */}
