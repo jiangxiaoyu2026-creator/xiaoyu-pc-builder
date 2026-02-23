@@ -637,7 +637,7 @@ export default function ClientApp() {
             )}
 
             {/* Main Content Area with fluid animation */}
-            <main className="flex-1 w-full max-w-[1600px] mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-300" key={viewMode}>
+            <main className="flex-1 w-full max-w-7xl mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-300" key={viewMode}>
                 <div className="h-full overflow-y-auto custom-scrollbar  pb-24 lg:pb-0" id="main-scroll-container">
                     {viewMode === 'streamer' && (
                         <StreamerWorkbench
