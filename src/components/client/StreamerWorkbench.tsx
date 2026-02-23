@@ -9,8 +9,59 @@ import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
 
+// --- Theme System ---
+export type ThemeColor = 'indigo' | 'emerald' | 'rose' | 'slate';
 
+interface ThemeConfig {
+    name: string;
+    primary: string; // Taildwind text color
+    bgLight: string; // Tailwind 50/100 bg
+    bgPrimary: string; // Tailwind 600 bg
+    gradient: string; // Tailwind gradient from/to
+    ring: string; // Tailwind ring 500
+}
 
+export const THEMES: Record<ThemeColor, ThemeConfig> = {
+    indigo: {
+        name: '星空紫',
+        primary: 'text-indigo-600',
+        bgLight: 'bg-indigo-50',
+        bgPrimary: 'bg-indigo-600',
+        gradient: 'from-indigo-600 to-purple-600',
+        ring: 'ring-indigo-500'
+    },
+    emerald: {
+        name: '极光绿',
+        primary: 'text-emerald-600',
+        bgLight: 'bg-emerald-50',
+        bgPrimary: 'bg-emerald-600',
+        gradient: 'from-emerald-500 to-teal-600',
+        ring: 'ring-emerald-500'
+    },
+    rose: {
+        name: '日落橘',
+        primary: 'text-rose-600',
+        bgLight: 'bg-rose-50',
+        bgPrimary: 'bg-rose-600',
+        gradient: 'from-rose-500 to-orange-500',
+        ring: 'ring-rose-500'
+    },
+    slate: {
+        name: '暗影灰',
+        primary: 'text-slate-700',
+        bgLight: 'bg-slate-100',
+        bgPrimary: 'bg-slate-700',
+        gradient: 'from-slate-600 to-slate-800',
+        ring: 'ring-slate-500'
+    }
+};
+
+const ThemeContext = React.createContext<{ theme: ThemeConfig, currentThemeKey: ThemeColor, setTheme: (t: ThemeColor) => void }>({
+    theme: THEMES.indigo,
+    currentThemeKey: 'indigo',
+    setTheme: () => { }
+});
+// --------------------
 
 export function StreamerPermissionDenied() {
     return (
@@ -43,7 +94,7 @@ function GhostCursor({ x, y, active, status }: { x: number, y: number, active: b
             }}
         >
             <div className="relative">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-xl text-black fill-black">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={`drop-shadow-xl text-black fill-black`}>
                     <path d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z" fill="currentColor" stroke="white" strokeWidth="1" />
                 </svg>
                 {status && (
@@ -67,6 +118,7 @@ export interface StreamerRowHandle {
 }
 
 const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPreview: (img: string) => void }>(({ entry, onUpdate, onEnter, onPreview }, ref) => {
+    const { theme } = React.useContext(ThemeContext);
     const [query, setQuery] = useState(entry.customName || entry.item?.model || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [highlightIndex, setHighlightIndex] = useState(0);
@@ -167,23 +219,23 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const displayPrice = entry.customPrice ?? entry.item?.price ?? 0;
 
     const CATEGORY_STYLES: Record<string, { bg: string, text: string }> = {
-        cpu: { bg: 'bg-indigo-50', text: 'text-indigo-600' },
-        gpu: { bg: 'bg-indigo-50', text: 'text-purple-600' },
-        mainboard: { bg: 'bg-indigo-50', text: 'text-blue-600' },
-        ram: { bg: 'bg-indigo-50', text: 'text-amber-600' },
-        disk: { bg: 'bg-indigo-50', text: 'text-cyan-600' },
-        power: { bg: 'bg-indigo-50', text: 'text-rose-600' },
-        cooling: { bg: 'bg-indigo-50', text: 'text-sky-600' },
-        case: { bg: 'bg-indigo-50', text: 'text-slate-600' },
-        monitor: { bg: 'bg-indigo-50', text: 'text-emerald-600' },
-        default: { bg: 'bg-indigo-50', text: 'text-slate-400' }
+        cpu: { bg: theme.bgLight, text: theme.primary },
+        gpu: { bg: theme.bgLight, text: 'text-purple-600' }, // Kept distinct if desired or use theme
+        mainboard: { bg: theme.bgLight, text: 'text-blue-600' },
+        ram: { bg: theme.bgLight, text: 'text-amber-600' },
+        disk: { bg: theme.bgLight, text: 'text-cyan-600' },
+        power: { bg: theme.bgLight, text: 'text-rose-600' },
+        cooling: { bg: theme.bgLight, text: 'text-sky-600' },
+        case: { bg: theme.bgLight, text: 'text-slate-600' },
+        monitor: { bg: theme.bgLight, text: 'text-emerald-600' },
+        default: { bg: theme.bgLight, text: 'text-slate-400' }
     };
 
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
     const isMainPart = ['cpu', 'gpu', 'mainboard'].includes(entry.category);
 
     return (
-        <div className={`grid grid-cols-[80px_1fr_80px_100px_50px] gap-4 px-6 py-2.5 items-center group transition-colors ${entry.item ? 'bg-indigo-50/30' : 'hover:bg-slate-50'}`}>
+        <div className={`grid grid-cols-[80px_1fr_80px_100px_50px] gap-4 px-6 py-2.5 items-center group transition-colors ${entry.item ? theme.bgLight.replace('bg-', 'bg-').concat('/30') : 'hover:bg-slate-50'}`}>
 
             <div className={`flex items-center gap-3 font-medium text-sm transition-all ${isMainPart ? 'text-slate-800' : 'text-slate-500'}`}>
                 <div
@@ -206,7 +258,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
                 {showSuggestions && (
                     <div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-xl border border-slate-100 z-50 mt-2 overflow-hidden max-h-[300px] overflow-y-auto">
                         {suggestions.map((item, idx) => (
-                            <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? 'bg-indigo-50 text-indigo-700 transition-colors' : 'text-slate-600 hover:bg-slate-50'}`} onMouseDown={() => selectItem(item)}>
+                            <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? `${theme.bgLight} ${theme.primary} transition-colors` : 'text-slate-600 hover:bg-slate-50'}`} onMouseDown={() => selectItem(item)}>
                                 <span className="flex items-center">
                                     {item.brand} {item.model}
                                     {item.isRecommended && <span className="ml-1.5 bg-orange-50 text-orange-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 shrink-0 scale-90 origin-left flex items-center gap-0.5"><Sparkles size={10} /> 推荐</span>}
@@ -224,9 +276,9 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
                 {entry.category === 'accessory' ? null : (
                     entry.isLockedQty ? <span className="text-slate-400 text-sm">× 1</span> : (
                         <div className="flex items-center bg-white rounded border border-slate-200">
-                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="text-slate-400 hover:text-indigo-600 transition-colors px-1">-</button>
+                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className={`text-slate-400 hover:${theme.primary} transition-colors px-1`}>-</button>
                             <span className="w-8 text-center text-sm">{entry.quantity}</span>
-                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="text-slate-400 hover:text-indigo-600 transition-colors px-1">+</button>
+                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className={`text-slate-400 hover:${theme.primary} transition-colors px-1`}>+</button>
                         </div>
                     )
                 )}
@@ -234,7 +286,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
 
             <div className="flex items-center gap-1 justify-end">
                 <span className="text-slate-300 text-sm">¥</span>
-                <input type="text" className={`w-16 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none transition-colors ${entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700'}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} />
+                <input type="text" className={`w-16 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700'}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} />
             </div>
 
             <div className="flex justify-end">
@@ -283,8 +335,7 @@ function RollingPrice({ value }: { value: number }) {
     return <span>{display}</span>;
 }
 
-
-export default function StreamerWorkbench({
+function StreamerWorkbench({
     buildList,
     onUpdate,
     pricing,
@@ -341,6 +392,8 @@ export default function StreamerWorkbench({
     const [aiResult, setAiResult] = useState<AIBuildResult | null>(null);
     const [ghostPos, setGhostPos] = useState({ x: 0, y: 0 });
     const [ghostStatus, setGhostStatus] = useState('');
+    const [currentThemeKey, setCurrentThemeKey] = useState<ThemeColor>('indigo');
+    const theme = THEMES[currentThemeKey];
 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const rowInputRefs = useRef<(StreamerRowHandle | null)[]>([]);
@@ -466,9 +519,9 @@ export default function StreamerWorkbench({
             {/* Permission Overlay */}
             {!hasPermission && (
                 <div className="absolute inset-0 z-50 bg-white/40 backdrop-blur-sm flex items-center justify-center">
-                    <div className="bg-white p-8 rounded-3xl shadow-2xl border border-indigo-100 text-center max-w-md mx-4 transform scale-100 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
-                        <div className="mb-6 inline-flex p-4 bg-indigo-50 rounded-full text-indigo-600 ring-4 ring-indigo-50/50">
+                    <div className={`bg-white p-8 rounded-3xl shadow-2xl border ${theme.bgLight.replace('bg-', 'border-')} text-center max-w-md mx-4 transform scale-100 relative overflow-hidden`}>
+                        <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${theme.gradient}`}></div>
+                        <div className={`mb-6 inline-flex p-4 ${theme.bgLight} rounded-full ${theme.primary} ring-4 ${theme.bgLight.replace('bg-', 'ring-')}/50`}>
                             <Zap size={40} />
                         </div>
                         <h3 className="text-2xl font-extrabold text-slate-900 mb-2">专业装机中心</h3>
@@ -507,15 +560,27 @@ export default function StreamerWorkbench({
             <div className={!hasPermission ? 'filter blur-[2px] opacity-60 pointer-events-none select-none' : ''}>
                 <GhostCursor x={ghostPos.x} y={ghostPos.y} active={isAiTyping} status={ghostStatus} />
                 {isAiTyping && (
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-indigo-100 z-50">
-                        <div className="h-full bg-indigo-600 animate-[loading_2s_ease-in-out_infinite]"></div>
+                    <div className={`absolute top-0 left-0 right-0 h-1 ${theme.bgLight} z-50`}>
+                        <div className={`h-full ${theme.bgPrimary} animate-[loading_2s_ease-in-out_infinite]`}></div>
                     </div>
                 )}
                 <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <Zap className="text-indigo-600" />
-                        智能装机平台
-                    </h2>
+                    <div className="flex items-center gap-4">
+                        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <Zap className={theme.primary} />
+                            智能装机平台
+                        </h2>
+                        <div className="hidden md:flex items-center gap-1.5 bg-white px-2 py-1 rounded-full border border-slate-200 shadow-sm ml-4">
+                            {(Object.keys(THEMES) as ThemeColor[]).map((tKey) => (
+                                <button
+                                    key={tKey}
+                                    onClick={() => setCurrentThemeKey(tKey)}
+                                    className={`w-4 h-4 rounded-full transition-all ${currentThemeKey === tKey ? 'scale-125 ring-2 ring-offset-1 ' + THEMES[tKey].bgLight.replace('bg-', 'ring-') : 'hover:scale-110 grayscale-[0.3] hover:grayscale-0'} ${THEMES[tKey].bgPrimary}`}
+                                    title={THEMES[tKey].name}
+                                />
+                            ))}
+                        </div>
+                    </div>
                     <div className="flex gap-3">
                         <button onClick={onOpenLibrary} className="flex items-center gap-1.5 px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-full transition-colors active:scale-95 border border-slate-200">
                             <Zap size={14} className="text-amber-500" /> 快速装机
@@ -523,10 +588,10 @@ export default function StreamerWorkbench({
                         <button onClick={() => {
                             if (onAiCheck && !onAiCheck()) return;
                             setShowAiModal(true);
-                        }} className="flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-full shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0">
+                        }} className={`flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r ${theme.gradient} text-white text-xs font-bold rounded-full shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0`}>
                             <Sparkles size={14} /> AI装机
                         </button>
-                        <div className="text-xs font-medium text-slate-500 bg-white text-indigo-700 px-3 py-1.5 rounded-full border border-indigo-100 shadow-sm hidden md:block">
+                        <div className={`text-xs font-medium bg-white ${theme.primary} px-3 py-1.5 rounded-full border ${theme.bgLight.replace('bg-', 'border-')} shadow-sm hidden md:block`}>
                             按 Enter 跳过
                         </div>
                     </div>
@@ -556,14 +621,14 @@ export default function StreamerWorkbench({
                             <span className="text-xl text-slate-400 font-bold whitespace-nowrap line-through decoration-2 decoration-slate-300">¥{Math.floor(pricing.standardPrice)}</span>
                             <div className="flex items-baseline gap-0.5">
                                 <span className="text-xl font-bold text-slate-900">¥</span>
-                                <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 font-mono tracking-tight">
+                                <span className={`text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r ${theme.gradient} font-mono tracking-tight`}>
                                     <RollingPrice value={pricing.finalPrice} />
                                 </span>
                             </div>
                             <span className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap self-start mt-1.5">省 ¥{pricing.savedAmount}</span>
 
                             <div className="relative group w-[100px] ml-1 self-center">
-                                <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="w-full appearance-none bg-slate-100 border border-slate-200 hover:border-indigo-300 text-slate-700 text-[10px] font-bold py-1 pl-2 pr-6 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer text-center">
+                                <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className={`w-full appearance-none bg-slate-100 border border-slate-200 hover:border-slate-300 text-slate-700 text-[10px] font-bold py-1 pl-2 pr-6 rounded-md focus:outline-none focus:ring-2 ${theme.ring}/20 transition-all cursor-pointer text-center`}>
                                     {strategies.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                 </select>
                                 <ChevronDown className="absolute right-2 top-1.5 text-slate-400 pointer-events-none" size={12} />
@@ -583,7 +648,7 @@ export default function StreamerWorkbench({
                         <button onClick={handleSave} className="h-full aspect-square flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all active:scale-95 border border-slate-200" title="保存配置">
                             <Save size={18} />
                         </button>
-                        <button onClick={handleShareTrigger} disabled={isSharing} className="h-full aspect-square flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg shadow-md shadow-indigo-200 transition-all active:scale-95" title="分享配置">
+                        <button onClick={handleShareTrigger} disabled={isSharing} className={`h-full aspect-square flex items-center justify-center ${theme.bgPrimary} hover:opacity-90 disabled:opacity-50 text-white rounded-lg shadow-md transition-all active:scale-95`} title="分享配置">
                             {isSharing ? <RefreshCw size={18} className="animate-spin" /> : <Share2 size={18} />}
                         </button>
                     </div>
@@ -597,8 +662,8 @@ export default function StreamerWorkbench({
                 {/* AI Result Section */}
                 {
                     aiResult && (
-                        <div className="mt-8 bg-white rounded-[24px] shadow-lg border border-purple-100 overflow-hidden animate-fade-in relative z-10 w-full mb-12">
-                            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
+                        <div className={`mt-8 bg-white rounded-[24px] shadow-lg border ${theme.bgLight.replace('bg-', 'border-')} overflow-hidden animate-fade-in relative z-10 w-full mb-12`}>
+                            <div className={`bg-gradient-to-r ${theme.gradient} px-6 py-4 flex items-center justify-between`}>
                                 <div className="flex items-center gap-3 text-white">
                                     <Sparkles size={18} className="animate-pulse" />
                                     <h3 className="font-bold text-lg tracking-wide">AI 装机评测报告</h3>
@@ -616,9 +681,9 @@ export default function StreamerWorkbench({
                                 {/* Score + Description */}
                                 <div className="flex gap-5 items-start">
                                     {aiResult.evaluation && (
-                                        <div className="shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-50 to-indigo-50 shadow-md border border-slate-100 flex flex-col items-center justify-center">
+                                        <div className="shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 shadow-md border border-slate-200 flex flex-col items-center justify-center">
                                             <span className={`text-3xl font-black ${aiResult.evaluation.score >= 90 ? 'text-emerald-600' :
-                                                aiResult.evaluation.score >= 75 ? 'text-indigo-600' :
+                                                aiResult.evaluation.score >= 75 ? theme.primary :
                                                     aiResult.evaluation.score >= 60 ? 'text-amber-600' : 'text-rose-600'
                                                 }`}>{aiResult.evaluation.score}</span>
                                             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">分</span>
@@ -685,6 +750,16 @@ export default function StreamerWorkbench({
                 )}
             </div >
         </div>
+    );
+}
+
+// Wrapper to provide context
+export default function StreamerWorkbenchWrapper(props: any) {
+    const [themeKey, setThemeKey] = useState<ThemeColor>('indigo');
+    return (
+        <ThemeContext.Provider value={{ theme: THEMES[themeKey], currentThemeKey: themeKey, setTheme: setThemeKey }}>
+            <StreamerWorkbench {...props} />
+        </ThemeContext.Provider>
     );
 }
 
