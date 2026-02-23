@@ -10,7 +10,7 @@ import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
 
 // --- Theme System ---
-export type ThemeColor = 'indigo' | 'emerald' | 'rose' | 'slate';
+export type ThemeColor = 'default' | 'cosmic' | 'jade' | 'rosegold' | 'ocean' | 'midnight';
 
 interface ThemeConfig {
     name: string;
@@ -28,67 +28,95 @@ interface ThemeConfig {
 }
 
 export const THEMES: Record<ThemeColor, ThemeConfig> = {
-    indigo: {
-        name: '星空紫',
-        primary: 'text-indigo-600',
-        bgLight: 'bg-indigo-50',
-        bgPrimary: 'bg-indigo-600',
-        gradient: 'from-indigo-600 to-purple-600',
-        ring: 'ring-indigo-500',
-        cardBg: 'bg-indigo-50/30',
-        headerBg: 'bg-gradient-to-r from-indigo-50 to-purple-50',
-        tableHeaderBg: 'bg-indigo-50/60',
-        divider: 'divide-indigo-100',
-        footerBg: 'bg-indigo-50/50',
-        borderColor: 'border-indigo-200/60'
+    default: {
+        name: '经典白',
+        primary: 'text-slate-700',
+        bgLight: 'bg-slate-50',
+        bgPrimary: 'bg-slate-800',
+        gradient: 'from-slate-700 to-slate-900',
+        ring: 'ring-slate-400',
+        cardBg: 'bg-white',
+        headerBg: 'bg-slate-50/50',
+        tableHeaderBg: 'bg-slate-50',
+        divider: 'divide-slate-100',
+        footerBg: 'bg-white/90',
+        borderColor: 'border-slate-200/60'
     },
-    emerald: {
-        name: '极光绿',
+    cosmic: {
+        name: '星空紫',
+        primary: 'text-violet-600',
+        bgLight: 'bg-violet-50',
+        bgPrimary: 'bg-violet-600',
+        gradient: 'from-violet-600 via-purple-600 to-fuchsia-500',
+        ring: 'ring-violet-500',
+        cardBg: 'bg-gradient-to-br from-violet-50/40 to-fuchsia-50/30',
+        headerBg: 'bg-gradient-to-r from-violet-50/80 to-fuchsia-50/60',
+        tableHeaderBg: 'bg-violet-50/50',
+        divider: 'divide-violet-100/60',
+        footerBg: 'bg-gradient-to-r from-violet-50/40 to-fuchsia-50/30',
+        borderColor: 'border-violet-200/50'
+    },
+    jade: {
+        name: '翡翠青',
         primary: 'text-emerald-600',
         bgLight: 'bg-emerald-50',
         bgPrimary: 'bg-emerald-600',
-        gradient: 'from-emerald-500 to-teal-600',
+        gradient: 'from-emerald-500 via-green-500 to-teal-500',
         ring: 'ring-emerald-500',
-        cardBg: 'bg-emerald-50/30',
-        headerBg: 'bg-gradient-to-r from-emerald-50 to-teal-50',
-        tableHeaderBg: 'bg-emerald-50/60',
-        divider: 'divide-emerald-100',
-        footerBg: 'bg-emerald-50/50',
-        borderColor: 'border-emerald-200/60'
+        cardBg: 'bg-gradient-to-br from-emerald-50/40 to-teal-50/30',
+        headerBg: 'bg-gradient-to-r from-emerald-50/80 to-teal-50/60',
+        tableHeaderBg: 'bg-emerald-50/50',
+        divider: 'divide-emerald-100/60',
+        footerBg: 'bg-gradient-to-r from-emerald-50/40 to-teal-50/30',
+        borderColor: 'border-emerald-200/50'
     },
-    rose: {
-        name: '日落橘',
-        primary: 'text-rose-600',
+    rosegold: {
+        name: '玫瑰金',
+        primary: 'text-rose-500',
         bgLight: 'bg-rose-50',
-        bgPrimary: 'bg-rose-600',
-        gradient: 'from-rose-500 to-orange-500',
-        ring: 'ring-rose-500',
-        cardBg: 'bg-rose-50/30',
-        headerBg: 'bg-gradient-to-r from-rose-50 to-orange-50',
-        tableHeaderBg: 'bg-rose-50/60',
-        divider: 'divide-rose-100',
-        footerBg: 'bg-rose-50/50',
-        borderColor: 'border-rose-200/60'
+        bgPrimary: 'bg-rose-500',
+        gradient: 'from-rose-400 via-pink-500 to-amber-400',
+        ring: 'ring-rose-400',
+        cardBg: 'bg-gradient-to-br from-rose-50/40 to-amber-50/30',
+        headerBg: 'bg-gradient-to-r from-rose-50/80 to-amber-50/60',
+        tableHeaderBg: 'bg-rose-50/50',
+        divider: 'divide-rose-100/60',
+        footerBg: 'bg-gradient-to-r from-rose-50/40 to-amber-50/30',
+        borderColor: 'border-rose-200/50'
     },
-    slate: {
-        name: '暗影灰',
-        primary: 'text-slate-700',
-        bgLight: 'bg-slate-100',
-        bgPrimary: 'bg-slate-700',
-        gradient: 'from-slate-600 to-slate-800',
-        ring: 'ring-slate-500',
-        cardBg: 'bg-slate-100/40',
-        headerBg: 'bg-gradient-to-r from-slate-100 to-slate-50',
-        tableHeaderBg: 'bg-slate-100/60',
-        divider: 'divide-slate-200',
-        footerBg: 'bg-slate-100/50',
-        borderColor: 'border-slate-300/60'
+    ocean: {
+        name: '深海蓝',
+        primary: 'text-blue-600',
+        bgLight: 'bg-blue-50',
+        bgPrimary: 'bg-blue-600',
+        gradient: 'from-blue-500 via-cyan-500 to-sky-400',
+        ring: 'ring-blue-500',
+        cardBg: 'bg-gradient-to-br from-blue-50/40 to-cyan-50/30',
+        headerBg: 'bg-gradient-to-r from-blue-50/80 to-cyan-50/60',
+        tableHeaderBg: 'bg-blue-50/50',
+        divider: 'divide-blue-100/60',
+        footerBg: 'bg-gradient-to-r from-blue-50/40 to-cyan-50/30',
+        borderColor: 'border-blue-200/50'
+    },
+    midnight: {
+        name: '暗夜黑',
+        primary: 'text-amber-400',
+        bgLight: 'bg-zinc-800',
+        bgPrimary: 'bg-zinc-900',
+        gradient: 'from-zinc-700 via-zinc-800 to-black',
+        ring: 'ring-amber-500',
+        cardBg: 'bg-gradient-to-br from-zinc-900 to-zinc-800',
+        headerBg: 'bg-gradient-to-r from-zinc-800 to-zinc-900',
+        tableHeaderBg: 'bg-zinc-800/80',
+        divider: 'divide-zinc-700/60',
+        footerBg: 'bg-gradient-to-r from-zinc-900 to-zinc-800',
+        borderColor: 'border-zinc-700/60'
     }
 };
 
 const ThemeContext = React.createContext<{ theme: ThemeConfig, currentThemeKey: ThemeColor, setTheme: (t: ThemeColor) => void }>({
-    theme: THEMES.indigo,
-    currentThemeKey: 'indigo',
+    theme: THEMES.default,
+    currentThemeKey: 'default',
     setTheme: () => { }
 });
 // --------------------
@@ -422,7 +450,7 @@ function StreamerWorkbench({
     const [aiResult, setAiResult] = useState<AIBuildResult | null>(null);
     const [ghostPos, setGhostPos] = useState({ x: 0, y: 0 });
     const [ghostStatus, setGhostStatus] = useState('');
-    const [currentThemeKey, setCurrentThemeKey] = useState<ThemeColor>('indigo');
+    const [currentThemeKey, setCurrentThemeKey] = useState<ThemeColor>('default');
     const theme = THEMES[currentThemeKey];
 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -785,7 +813,7 @@ function StreamerWorkbench({
 
 // Wrapper to provide context
 export default function StreamerWorkbenchWrapper(props: any) {
-    const [themeKey, setThemeKey] = useState<ThemeColor>('indigo');
+    const [themeKey, setThemeKey] = useState<ThemeColor>('default');
     return (
         <ThemeContext.Provider value={{ theme: THEMES[themeKey], currentThemeKey: themeKey, setTheme: setThemeKey }}>
             <StreamerWorkbench {...props} />
