@@ -14,11 +14,17 @@ export type ThemeColor = 'indigo' | 'emerald' | 'rose' | 'slate';
 
 interface ThemeConfig {
     name: string;
-    primary: string; // Taildwind text color
-    bgLight: string; // Tailwind 50/100 bg
-    bgPrimary: string; // Tailwind 600 bg
-    gradient: string; // Tailwind gradient from/to
-    ring: string; // Tailwind ring 500
+    primary: string;
+    bgLight: string;
+    bgPrimary: string;
+    gradient: string;
+    ring: string;
+    cardBg: string;
+    headerBg: string;
+    tableHeaderBg: string;
+    divider: string;
+    footerBg: string;
+    borderColor: string;
 }
 
 export const THEMES: Record<ThemeColor, ThemeConfig> = {
@@ -28,7 +34,13 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgLight: 'bg-indigo-50',
         bgPrimary: 'bg-indigo-600',
         gradient: 'from-indigo-600 to-purple-600',
-        ring: 'ring-indigo-500'
+        ring: 'ring-indigo-500',
+        cardBg: 'bg-indigo-50/30',
+        headerBg: 'bg-gradient-to-r from-indigo-50 to-purple-50',
+        tableHeaderBg: 'bg-indigo-50/60',
+        divider: 'divide-indigo-100',
+        footerBg: 'bg-indigo-50/50',
+        borderColor: 'border-indigo-200/60'
     },
     emerald: {
         name: '极光绿',
@@ -36,7 +48,13 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgLight: 'bg-emerald-50',
         bgPrimary: 'bg-emerald-600',
         gradient: 'from-emerald-500 to-teal-600',
-        ring: 'ring-emerald-500'
+        ring: 'ring-emerald-500',
+        cardBg: 'bg-emerald-50/30',
+        headerBg: 'bg-gradient-to-r from-emerald-50 to-teal-50',
+        tableHeaderBg: 'bg-emerald-50/60',
+        divider: 'divide-emerald-100',
+        footerBg: 'bg-emerald-50/50',
+        borderColor: 'border-emerald-200/60'
     },
     rose: {
         name: '日落橘',
@@ -44,7 +62,13 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgLight: 'bg-rose-50',
         bgPrimary: 'bg-rose-600',
         gradient: 'from-rose-500 to-orange-500',
-        ring: 'ring-rose-500'
+        ring: 'ring-rose-500',
+        cardBg: 'bg-rose-50/30',
+        headerBg: 'bg-gradient-to-r from-rose-50 to-orange-50',
+        tableHeaderBg: 'bg-rose-50/60',
+        divider: 'divide-rose-100',
+        footerBg: 'bg-rose-50/50',
+        borderColor: 'border-rose-200/60'
     },
     slate: {
         name: '暗影灰',
@@ -52,7 +76,13 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
         bgLight: 'bg-slate-100',
         bgPrimary: 'bg-slate-700',
         gradient: 'from-slate-600 to-slate-800',
-        ring: 'ring-slate-500'
+        ring: 'ring-slate-500',
+        cardBg: 'bg-slate-100/40',
+        headerBg: 'bg-gradient-to-r from-slate-100 to-slate-50',
+        tableHeaderBg: 'bg-slate-100/60',
+        divider: 'divide-slate-200',
+        footerBg: 'bg-slate-100/50',
+        borderColor: 'border-slate-300/60'
     }
 };
 
@@ -514,7 +544,7 @@ function StreamerWorkbench({
     };
 
     return (
-        <div className="bg-white rounded-[32px] shadow-xl border border-slate-200/60 overflow-hidden relative">
+        <div className={`${theme.cardBg} rounded-[32px] shadow-xl ${theme.borderColor} border overflow-hidden relative transition-colors duration-300`}>
 
             {/* Permission Overlay */}
             {!hasPermission && (
@@ -564,7 +594,7 @@ function StreamerWorkbench({
                         <div className={`h-full ${theme.bgPrimary} animate-[loading_2s_ease-in-out_infinite]`}></div>
                     </div>
                 )}
-                <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                <div className={`p-6 border-b ${theme.borderColor} ${theme.headerBg} flex items-center justify-between transition-colors duration-300`}>
                     <div className="flex items-center gap-4">
                         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                             <Zap className={theme.primary} />
@@ -599,7 +629,7 @@ function StreamerWorkbench({
 
                 <div className="overflow-x-auto">
                     <div className="min-w-[600px]">
-                        <div className="grid grid-cols-[80px_1fr_80px_100px_50px] gap-4 px-6 py-3 bg-slate-50 border-b border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <div className={`grid grid-cols-[80px_1fr_80px_100px_50px] gap-4 px-6 py-3 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold text-slate-400 uppercase tracking-wider transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
@@ -607,7 +637,7 @@ function StreamerWorkbench({
                             <div></div>
                         </div>
 
-                        <div className="divide-y divide-slate-100">
+                        <div className={`divide-y ${theme.divider} transition-colors duration-300`}>
                             {buildList.map((entry, index) => (
                                 <StreamerRow key={entry.id} index={index} entry={entry} onUpdate={onUpdate} ref={(el) => (rowInputRefs.current[index] = el)} onEnter={() => handleNextFocus(index)} onPreview={setPreviewImage} />
                             ))}
@@ -615,7 +645,7 @@ function StreamerWorkbench({
                     </div>
                 </div>
 
-                <div className="bg-white/90 border-t border-slate-100 px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className={`${theme.footerBg} border-t ${theme.borderColor} px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4 transition-colors duration-300`}>
                     <div className="flex flex-col gap-0.5">
                         <div className="flex items-baseline gap-2">
                             <span className="text-xl text-slate-400 font-bold whitespace-nowrap line-through decoration-2 decoration-slate-300">¥{Math.floor(pricing.standardPrice)}</span>
