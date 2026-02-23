@@ -81,6 +81,22 @@ export default function ProductManager() {
         await storage.saveProduct(updated);
     };
 
+    const toggleRecommended = async (id: string, current: boolean) => {
+        const p = products.find(x => x.id === id);
+        if (!p) return;
+        const updated = { ...p, isRecommended: !current };
+        setProducts(products.map(x => x.id === id ? updated : x));
+        await storage.saveProduct(updated);
+    };
+
+    const toggleDiscount = async (id: string, current: boolean) => {
+        const p = products.find(x => x.id === id);
+        if (!p) return;
+        const updated = { ...p, isDiscount: !current };
+        setProducts(products.map(x => x.id === id ? updated : x));
+        await storage.saveProduct(updated);
+    };
+
     const handleSort = (key: keyof HardwareItem) => {
         let direction: 'asc' | 'desc' = 'asc';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -229,14 +245,14 @@ export default function ProductManager() {
                                             </button>
                                             <div className="flex gap-1">
                                                 <button
-                                                    onClick={() => setProducts(products.map(x => x.id === p.id ? { ...x, isRecommended: !x.isRecommended } : x))}
+                                                    onClick={() => toggleRecommended(p.id, !!p.isRecommended)}
                                                     className={`p-1 rounded ${p.isRecommended ? 'text-orange-500 bg-orange-50' : 'text-slate-300 hover:text-slate-500'}`}
                                                     title="设为推荐"
                                                 >
                                                     <Sparkles size={14} fill={p.isRecommended ? "currentColor" : "none"} />
                                                 </button>
                                                 <button
-                                                    onClick={() => setProducts(products.map(x => x.id === p.id ? { ...x, isDiscount: !x.isDiscount } : x))}
+                                                    onClick={() => toggleDiscount(p.id, !!p.isDiscount)}
                                                     className={`p-1 rounded ${p.isDiscount ? 'text-rose-500 bg-rose-50' : 'text-slate-300 hover:text-slate-500'}`}
                                                     title="设为折扣"
                                                 >

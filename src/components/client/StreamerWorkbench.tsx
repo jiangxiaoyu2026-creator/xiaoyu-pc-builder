@@ -196,13 +196,20 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className="w-full bg-transparent border-none p-0 text-slate-800 font-medium placeholder-slate-300 focus:ring-0 focus:outline-none" placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 font-medium placeholder-slate-300 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                {entry.item && (
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
+                        {entry.item.isRecommended && <span className="bg-orange-50 text-orange-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 flex items-center gap-0.5 whitespace-nowrap"><Sparkles size={10} /> 推荐</span>}
+                        {entry.item.isDiscount && <span className="bg-rose-50 text-rose-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 whitespace-nowrap">特惠</span>}
+                    </div>
+                )}
                 {showSuggestions && (
                     <div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-xl border border-slate-100 z-50 mt-2 overflow-hidden max-h-[300px] overflow-y-auto">
                         {suggestions.map((item, idx) => (
                             <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? 'bg-indigo-50 text-indigo-700 transition-colors' : 'text-slate-600 hover:bg-slate-50'}`} onMouseDown={() => selectItem(item)}>
                                 <span className="flex items-center">
                                     {item.brand} {item.model}
+                                    {item.isRecommended && <span className="ml-1.5 bg-orange-50 text-orange-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 shrink-0 scale-90 origin-left flex items-center gap-0.5"><Sparkles size={10} /> 推荐</span>}
                                     {item.isDiscount && <span className="ml-1.5 bg-rose-50 text-rose-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 shrink-0 scale-90 origin-left">特惠</span>}
                                 </span>
                                 <span className="font-bold">¥{item.price}</span>
