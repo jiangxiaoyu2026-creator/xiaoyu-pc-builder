@@ -1024,6 +1024,12 @@ class StorageService {
     }
 
     async logAiGeneration() {
+        try {
+            await ApiService.post('/stats/log', { type: 'ai_generation' });
+        } catch (e) {
+            console.error('Failed to log AI generation to API:', e);
+        }
+
         const today = new Date().toISOString().split('T')[0];
         const stats = await this.getSystemStats();
         stats.totalAiGenerations += 1;

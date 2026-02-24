@@ -81,6 +81,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
             await new Promise(r => setTimeout(r, 600));
 
             // 3. Submit
+            await storage.logAiGeneration();
             onSubmit(prompt, result);
         } catch (error) {
             console.error(error);
