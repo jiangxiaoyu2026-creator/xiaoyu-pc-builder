@@ -167,12 +167,17 @@ async def get_admin_products(
     
     # Sort Logic
     sort_column = getattr(Hardware, sort_key) if hasattr(Hardware, sort_key) else Hardware.sortOrder
+    
+    # 组合排序：主排序 -> 权重排序 -> ID（确保分页稳定）
     if sort_dir == "desc":
         query = query.order_by(desc(sort_column))
     else:
         query = query.order_by(asc(sort_column))
     
-    # Secondary sort by ID to ensure stable pagination
+    # 始终将权重作为第二排序（除非权重本身就是主排序），ID 作为最后保底
+    if sort_key != "sortOrder":
+        query = query.order_by(asc(Hardware.sortOrder))
+    
     query = query.order_by(Hardware.id)
 
     offset = (page - 1) * page_size

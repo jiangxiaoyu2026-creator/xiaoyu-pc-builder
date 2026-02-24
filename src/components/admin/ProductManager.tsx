@@ -88,6 +88,12 @@ export default function ProductManager() {
         await storage.saveProduct(p);
     };
 
+    const handleSortOrderBlur = async (id: string) => {
+        const p = products.find(x => x.id === id);
+        if (!p) return;
+        await storage.saveProduct(p);
+    };
+
     const toggleStatus = async (id: string) => {
         const p = products.find(x => x.id === id);
         if (!p) return;
@@ -310,6 +316,7 @@ export default function ProductManager() {
                                                 onChange={(e) => {
                                                     setProducts(products.map(item => item.id === p.id ? { ...item, sortOrder: Number(e.target.value) } : item));
                                                 }}
+                                                onBlur={() => handleSortOrderBlur(p.id)}
                                             />
                                         </div>
                                     </td>
