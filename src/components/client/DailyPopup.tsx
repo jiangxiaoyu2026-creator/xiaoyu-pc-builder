@@ -51,7 +51,6 @@ export default function DailyPopup() {
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
-                onClick={handleClose}
             />
 
             {/* Modal Content */}

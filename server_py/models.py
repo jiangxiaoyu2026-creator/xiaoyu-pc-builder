@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from sqlmodel import SQLModel, Field, create_engine, Session, select
+from sqlmodel import SQLModel, Field, create_engine, Session, select, Column, JSON
 import json
 
 # --- Models ---
@@ -33,7 +33,7 @@ class Hardware(SQLModel, table=True):
     previousPrice: Optional[float] = None
     status: str = Field(default="active")
     sortOrder: int = Field(default=100)
-    specs: str = Field(default="{}")  # Store as JSON string
+    specs: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     image: Optional[str] = None # Matches frontend 'image'
     createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     isDiscount: bool = Field(default=False)
@@ -69,13 +69,13 @@ class Config(SQLModel, table=True):
     monId: Optional[str] = None
     totalPrice: float
     status: str = Field(default="draft")
-    evaluation: str = Field(default="{}")  # Store as JSON string
+    evaluation: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     updatedAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     title: Optional[str] = None
     description: Optional[str] = None
-    items: str = Field(default="{}") # Added to store hardware IDs as JSON
-    tags: str = Field(default="[]") # Added to store tags as JSON
+    items: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    tags: List[str] = Field(default_factory=list, sa_column=Column(JSON))
     isRecommended: bool = Field(default=False)
     views: int = Field(default=0)
     likes: int = Field(default=0)
@@ -97,10 +97,10 @@ class UsedItem(SQLModel, table=True):
     price: float
     originalPrice: Optional[float] = None
     condition: str
-    images: str = Field(default="[]")  # Store as JSON string (List[str])
+    images: List[str] = Field(default_factory=list, sa_column=Column(JSON))
     description: str
     status: str = Field(default="pending")
-    inspectionReport: Optional[str] = Field(default="null")  # Store as JSON string
+    inspectionReport: Optional[Dict[str, Any]] = Field(default=None, sa_column=Column(JSON))
     createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     soldAt: Optional[int] = None
 

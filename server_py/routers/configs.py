@@ -10,15 +10,6 @@ from datetime import datetime
 
 router = APIRouter()
 
-def _parse_config(config: Config, current_user: Optional[User] = None, session: Session = None) -> dict:
-    c_dict = config.model_dump()
-    for field in ["tags", "items", "evaluation", "showcaseImages"]:
-        if isinstance(c_dict.get(field), str):
-            try:
-                c_dict[field] = json.loads(c_dict[field])
-            except:
-                c_dict[field] = [] if field in ["tags", "showcaseImages"] else {}
-                
     # Filter showcase if not approved and not owner/admin
     is_owner = current_user and current_user.id == config.userId
     is_admin = current_user and current_user.role == "admin"
@@ -68,11 +59,7 @@ async def get_configs(
         if tag == "showcase":
             query = query.where(Config.showcaseStatus == "approved")
         else:
-            escaped_tag = json.dumps(tag, ensure_ascii=True).strip('"')
-            query = query.where(
-                (Config.tags.like(f'%"{tag}"%')) | 
-                (Config.tags.like(f'%"{escaped_tag}"%'))
-            )
+            query = query.where(Config.tags.like(f'%"{tag}"%'))
     if search:
         query = query.where(
             (Config.title.like(f"%{search}%")) | 

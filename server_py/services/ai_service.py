@@ -37,77 +37,45 @@ class AiService:
             except Exception as e:
                 print(f"Error loading AI settings: {e}")
 
-    def _parse_specs(self, specs_raw) -> str:
-        """将 specs JSON 字符串解析为可读文本"""
-        try:
-            if isinstance(specs_raw, str):
-                specs = json.loads(specs_raw)
-            elif isinstance(specs_raw, dict):
-                specs = specs_raw
-            else:
-                return ""
-            if not specs:
-                return ""
-            return ", ".join(f"{k}: {v}" for k, v in specs.items() if v)
-        except:
-            return str(specs_raw) if specs_raw else ""
-
     def retrieve_candidates(self, budget: int, usage: str) -> List[Dict]:
         """
         根据预算和用途从数据库中检索相关的硬件候选列表。
-        收缩过滤范围，防止 AI 选择超出预算过多的硬件。
         """
-        # 硬件预算比例分配参考
         ratios = {
-            'gpu': (0.3, 0.5), # 显卡占比 30%-50%
-            'cpu': (0.15, 0.3), # CPU 占比 15%-30%
-            'mainboard': (0.08, 0.15),
-            'ram': (0.05, 0.1),
-            'disk': (0.05, 0.1),
-            'power': (0.05, 0.1),
-            'cooling': (0.03, 0.08),
-            'case': (0.03, 0.08)
+            'gpu': (0.3, 0.5), 'cpu': (0.15, 0.3), 'mainboard': (0.08, 0.15),
+            'ram': (0.05, 0.1), 'disk': (0.05, 0.1), 'power': (0.05, 0.1),
+            'cooling': (0.03, 0.08), 'case': (0.03, 0.08)
         }
         
-        # 获取所有上架硬件
         statement = select(Hardware).where(Hardware.status == "active")
         all_hardware = self.session.exec(statement).all()
         
-        candidates = []
         categories = {}
         for item in all_hardware:
             cat = item.category
             if cat not in categories: categories[cat] = []
             
-            # 根据比例初步过滤，允许一定的上下浮动
             if cat in ratios:
                 min_ratio, max_ratio = ratios[cat]
                 tolerance = 1.3 if cat in ['gpu', 'cpu'] else 1.1
-                if item.price > (budget * max_ratio * tolerance):
-                    continue
-                if item.price < (budget * min_ratio * 0.4):
-                    continue
+                if item.price > (budget * max_ratio * tolerance): continue
+                if item.price < (budget * min_ratio * 0.4): continue
                 
             categories[cat].append(item)
             
         final_list = []
         for cat, items in categories.items():
-            # 兜底逻辑：如果该类别过滤后为空，则提供该类别最便宜的 2 个硬件
             if not items:
                 all_cat_items = [i for i in all_hardware if i.category == cat]
                 all_cat_items.sort(key=lambda x: x.price)
                 items = all_cat_items[:2]
 
             items.sort(key=lambda x: x.price)
-            # 每个类别最多提供 8 个候选，涵盖不同价位段
-            if len(items) > 8:
-                step = len(items) // 8
-                selected = [items[i] for i in range(0, len(items), step)][:8]
-            else:
-                selected = items
+            selected = items[::len(items)//8 + 1][:8] if len(items) > 8 else items
             
             for item in selected:
-                specs_text = self._parse_specs(item.specs)
+                # 架构升级后 item.specs 已经是 dict
+                specs_text = ", ".join(f"{k}: {v}" for k, v in item.specs.items() if v) if isinstance(item.specs, dict) else str(item.specs)
                 final_list.append({
                     "id": item.id,
                     "category": item.category,
@@ -116,16 +84,13 @@ class AiService:
                     "price": item.price,
                     "specs": specs_text
                 })
-                
         return final_list
 
     def find_reference_configs(self, budget: int, usage: str) -> List[Dict]:
         """
-        寻找相似的高质量社区配置。
+        寻找并解析相似的高质量社区配置，提取“装机逻辑”供 AI 学习。
         """
-        min_price = budget * 0.8
-        max_price = budget * 1.2
-        
+        min_price, max_price = budget * 0.8, budget * 1.2
         statement = select(Config).where(
             Config.status == "published",
             Config.isRecommended == True,
@@ -134,13 +99,21 @@ class AiService:
         ).order_by(Config.likes.desc()).limit(3)
         
         configs = self.session.exec(statement).all()
-        
         refs = []
         for c in configs:
+            # 强化 RAG：提取推荐配置的核心硬件型号文字，让 AI 理解“搭配精髓”
+            comp_details = []
+            if isinstance(c.items, dict):
+                for cat, item_id in c.items.items():
+                    if item_id:
+                        hw = self.session.get(Hardware, item_id)
+                        if hw: comp_details.append(f"{cat}: {hw.brand} {hw.model}")
+            
             refs.append({
                 "title": c.title,
                 "price": c.totalPrice,
-                "components": c.items
+                "tags": c.tags,
+                "logic": ", ".join(comp_details) if comp_details else "通用搭配"
             })
         return refs
 
@@ -177,7 +150,11 @@ class AiService:
         strategy_text = strategy_instructions.get(self.strategy, strategy_instructions['balanced'])
         
         system_prompt = f"""你是一个顶级的电脑装机大师（小鱼装机AI）。
-你的任务是根据用户的需求，从【库存清单】中精准勾选硬件，组成一台电脑主机，并给出专业评价。
+你的任务是根据用户的需求，从【库存清单】中精准勾选硬件，组成一台电脑主机。
+
+**重要学习任务：**
+- 参考【推荐方案】中的搭配逻辑（例如 CPU 与显卡的档次比例、散热器的选择）。
+- 注意【推荐方案】可能使用旧型号或已下架产品，请在【库存清单】中寻找当前最合适的替代品，保持配单的“灵魂”一致。
 
 **你的说话风格：**
 {persona_text}
@@ -185,42 +162,34 @@ class AiService:
 **你的配单策略：**
 {strategy_text}
 
-**⚠️ 极其重要的铁律：**
-1. **严格预算控制**：总价【绝对不能】超过用户预算的 100%（即 {budget} 元）。除非你能在说明中给出极强的理由（如大幅提升性能），但即便如此也严禁超过 {budget * 1.1} 元。
-2. **价格真实性**：必须直接使用【库存清单】中给出的 `price` 进行计算。严禁自己编造或假设价格。
-3. **计算准确性**：你必须在回复前仔细心算所有配件的总价。如果你的 JSON 中 `totalPrice` 与配件单价之和不符，系统会报错。
-4. **ID 唯一性**：只能使用清单中的 `id`。
-5. **硬件完整性**：必须包含 CPU、主板、显卡、内存、硬盘、电源、散热、机箱。
+**⚠️ 兼容性铁律（输出前请务必自检）：**
+1. **接口匹配**：CPU 的 Socket 必须与主板一致。
+2. **频率/类型匹配**：主板支持的内存类型（如 DDR4/DDR5）必须与内存条一致。
+3. **功耗冗余**：电源额定功率必须大于 (CPU功耗 + 显卡功耗 + 100W) 的 1.2 倍。
+4. **物理限制**：机箱必须能装下主板及其选定的散热器高度。
+
+**⚠️ 预算与业务红线：**
+1. **严格预算控制**：总价【绝对不能】超过用户预算 ({budget} 元)。
+2. **价格真实性**：直接使用清单中的 `price`。
+3. **ID 唯一性**：只能使用清单中的 `id`。
 
 【库存清单】：
 {json.dumps(inventory, ensure_ascii=False)}
 
-【参考方案】：
+【推荐参考方案】：
 {json.dumps(references, ensure_ascii=False)}
 
-输出格式：
-严格输出 JSON 格式（不要包含 markdown 代码块）：
+输出严格 JSON 格式：
 {{
-  "items": {{
-    "cpu": "id",
-    "mainboard": "id",
-    "gpu": "id",
-    "ram": "id",
-    "disk": "id",
-    "power": "id",
-    "cooling": "id",
-    "case": "id",
-    "fan": "id (可选)",
-    "monitor": "id (可选)"
-  }},
-  "totalPrice": (所有 items 真实单价之和),
-  "description": "一段完整的配置总结文案，描述这套配置的整体定位和亮点。200字左右。",
+  "items": {{ "cpu": "id", "mainboard": "id", "gpu": "id", "ram": "id", "disk": "id", "power": "id", "cooling": "id", "case": "id", "fan": "id", "monitor": "id" }},
+  "totalPrice": (数字),
+  "description": "200字配单心路历程，解释你如何参考推荐方案并结合当前预算做出的调整。",
   "evaluation": {{
-    "score": (1-100 的整数评分),
-    "verdict": "一句话总结评价，20字以内",
-    "pros": ["优点1", "优点2", "优点3"],
-    "cons": ["不足1（如有）"],
-    "summary": "详细的专业点评，包括性能分析、兼容性说明、散热评估、升级建议等。300字左右。"
+    "score": (1-100),
+    "verdict": "一句话神评",
+    "pros": ["优点"],
+    "cons": ["不足"],
+    "summary": "专业点评。必须包含对兼容性（接口、功耗、散热）的确认。"
   }}
 }}
 """

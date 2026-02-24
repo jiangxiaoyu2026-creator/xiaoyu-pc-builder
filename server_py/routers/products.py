@@ -63,16 +63,7 @@ async def get_products(
     offset = (page - 1) * page_size
     results = session.exec(query.order_by(Hardware.sortOrder).offset(offset).limit(page_size)).all()
     
-    # Manual conversion to ensure specs is parsed as JSON object
-    products = []
-    for hw in results:
-        hw_dict = hw.model_dump()
-        if isinstance(hw.specs, str):
-            try:
-                hw_dict["specs"] = json.loads(hw.specs)
-            except:
-                hw_dict["specs"] = {}
-        products.append(hw_dict)
+    products = [hw.model_dump() for hw in results]
         
     return {
         "items": products,
@@ -97,15 +88,7 @@ async def get_products_batch(
     query = select(Hardware).where(Hardware.id.in_(request.ids))
     results = session.exec(query).all()
     
-    products = []
-    for hw in results:
-        hw_dict = hw.model_dump()
-        if isinstance(hw.specs, str):
-            try:
-                hw_dict["specs"] = json.loads(hw.specs)
-            except:
-                hw_dict["specs"] = {}
-        products.append(hw_dict)
+    products = [hw.model_dump() for hw in results]
     
     # 保持请求中的顺序
     id_map = {p["id"]: p for p in products}
@@ -183,15 +166,7 @@ async def get_admin_products(
     offset = (page - 1) * page_size
     results = session.exec(query.offset(offset).limit(page_size)).all()
     
-    products = []
-    for hw in results:
-        hw_dict = hw.model_dump()
-        if isinstance(hw.specs, str):
-            try:
-                hw_dict["specs"] = json.loads(hw.specs)
-            except:
-                hw_dict["specs"] = {}
-        products.append(hw_dict)
+    products = [hw.model_dump() for hw in results]
         
     return {
         "items": products,
