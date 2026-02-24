@@ -79,43 +79,43 @@ export default function ProductManager() {
 
     // 价格编辑：onChange 只更新本地状态，onBlur 时才保存到后端
     const handlePriceChange = (id: string, newPrice: number) => {
-        setProducts(products.map(x => x.id === id ? { ...x, price: newPrice } : x));
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? { ...x, price: newPrice } : x));
     };
 
     const handlePriceBlur = async (id: string) => {
-        const p = products.find(x => x.id === id);
+        const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
         await storage.saveProduct(p);
     };
 
     const handleSortOrderBlur = async (id: string) => {
-        const p = products.find(x => x.id === id);
+        const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
         await storage.saveProduct(p);
     };
 
     const toggleStatus = async (id: string) => {
-        const p = products.find(x => x.id === id);
+        const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
         const updated = { ...p, status: (p.status === 'active' ? 'archived' : 'active') as any };
-        setProducts(products.map(x => x.id === id ? updated : x));
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
         await storage.saveProduct(updated);
         loadCategoryCounts();
     };
 
     const toggleRecommended = async (id: string, current: boolean) => {
-        const p = products.find(x => x.id === id);
+        const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
         const updated = { ...p, isRecommended: !current };
-        setProducts(products.map(x => x.id === id ? updated : x));
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
         await storage.saveProduct(updated);
     };
 
     const toggleDiscount = async (id: string, current: boolean) => {
-        const p = products.find(x => x.id === id);
+        const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
         const updated = { ...p, isDiscount: !current };
-        setProducts(products.map(x => x.id === id ? updated : x));
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
         await storage.saveProduct(updated);
     };
 
@@ -314,7 +314,8 @@ export default function ProductManager() {
                                                 className="w-16 text-center font-mono text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
                                                 value={p.sortOrder}
                                                 onChange={(e) => {
-                                                    setProducts(products.map(item => item.id === p.id ? { ...item, sortOrder: Number(e.target.value) } : item));
+                                                    const newVal = Number(e.target.value);
+                                                    setProducts(prev => prev.map(item => String(item.id) === String(p.id) ? { ...item, sortOrder: newVal } : item));
                                                 }}
                                                 onBlur={() => handleSortOrderBlur(p.id)}
                                             />
