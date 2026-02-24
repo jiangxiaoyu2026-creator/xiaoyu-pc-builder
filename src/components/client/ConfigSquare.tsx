@@ -44,8 +44,14 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
             const mappedList: ConfigTemplate[] = cRes.items.map(c => {
                 const authorName = c.userName || c.authorName || 'Unknown User';
                 let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
-                if (authorName.includes('官方')) type = 'official';
-                if (authorName.includes('主播')) type = 'streamer';
+
+                // Prioritize role-based identification
+                if (c.authorRole === 'streamer') type = 'streamer';
+                else if (['admin', 'sub_admin'].includes(c.authorRole)) type = 'official';
+                // Fallback to keyword matching and other flags
+                else if (authorName.includes('官方')) type = 'official';
+                else if (authorName.includes('主播')) type = 'streamer';
+
                 if (c.tags.includes('求助')) type = 'help';
                 if (c.isRecommended) type = 'official';
 

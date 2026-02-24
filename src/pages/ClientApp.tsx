@@ -93,8 +93,14 @@ export default function ClientApp() {
             const mappedList: ConfigTemplate[] = visibleConfigs.map((c: any) => {
                 const authorName = c.userName || c.authorName || '未知用户';
                 let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
-                if (authorName.includes('官方')) type = 'official';
-                if (authorName.includes('主播')) type = 'streamer';
+
+                // Prioritize role-based identification
+                if (c.authorRole === 'streamer') type = 'streamer';
+                else if (['admin', 'sub_admin'].includes(c.authorRole)) type = 'official';
+                // Fallback to keyword matching and other flags
+                else if (authorName.includes('官方')) type = 'official';
+                else if (authorName.includes('主播')) type = 'streamer';
+
                 if (c.tags.includes('求助')) type = 'help';
                 if (c.isRecommended) type = 'official'; // Override if recommended
                 // Check VIP status
@@ -315,14 +321,18 @@ export default function ClientApp() {
     };
 
     const handleFork = async (config: ConfigTemplate) => {
-        // ... implementation of handleFork
-        const products = await storage.getProducts();
+        // Extract all hardware IDs from the config
+        const productIds = Object.values(config.items).filter(id => id && typeof id === 'string') as string[];
+
+        // Fetch specific products by IDs
+        const productsList = await storage.getProductsByIds(productIds);
+
         const newList = DEFAULT_BUILD_TEMPLATE.map(entry => {
             // @ts-ignore
             const itemId = config.items?.[entry.category] || config.items?.[entry.id]; // Try both
             if (itemId) {
-                // Find in storage
-                const adminItem = products.items.find((h: any) => h.id === itemId);
+                // Find in fetched products
+                const adminItem = productsList.find((h: any) => h.id === itemId);
                 let clientItem = null;
                 if (adminItem) {
                     clientItem = {
@@ -345,8 +355,9 @@ export default function ClientApp() {
         showToast(`✅ 已载入配置：${config.title} `);
     };
 
-    const handlePublishToSquare = async (data: { title: string, tags: string[], desc: string }) => {
+    const handlePublishToSquare = async (data: { title: string, tags: string[], desc: string, status?: 'published' | 'draft' }) => {
         try {
+            const saveStatus = data.status || 'published';
             // Create Client Template (for local optimistic UI)
             const newTemplate: ConfigTemplate = {
                 id: `user - ${Date.now()} `,
@@ -382,7 +393,7 @@ export default function ClientApp() {
                 totalPrice: newTemplate.price,
                 items: newTemplate.items,
                 tags: data.tags,
-                status: 'published',
+                status: saveStatus,
                 isRecommended: false,
                 views: 0,
                 likes: 0,
@@ -393,17 +404,19 @@ export default function ClientApp() {
             await storage.saveConfig(adminConfig);
 
             // Reload data to reflect changes
-            // Instead of complex mapping here, we can trigger the loadData effect
-            // But to be sure, let's manually fetch fresh data like before to update the list immediately
-
             const freshConfigs = await storage.getConfigs();
             const visibleConfigs = freshConfigs.items.filter((c: any) => c.status === 'published');
             const newConfigList = visibleConfigs.map((c: any) => {
                 const authorName = c.userName || c.authorName || '未知用户';
                 let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
-                if (authorName.includes('官方')) type = 'official';
-                if (authorName.includes('主播')) type = 'streamer';
-                if (c.tags.includes('求助')) type = 'help';
+
+                // Prioritize role-based identification (Improved Logic)
+                if (c.authorRole === 'streamer') type = 'streamer';
+                else if (['admin', 'sub_admin'].includes(c.authorRole)) type = 'official';
+                else if (authorName.includes('官方')) type = 'official';
+                else if (authorName.includes('主播')) type = 'streamer';
+
+                if (c.tags?.includes('求助')) type = 'help';
 
                 return {
                     id: c.id,
@@ -411,7 +424,7 @@ export default function ClientApp() {
                     author: authorName,
                     avatarColor: 'bg-zinc-500',
                     type: type,
-                    tags: c.tags.map((t: string) => ({ type: 'usage' as const, label: t })),
+                    tags: (c.tags || []).map((t: string) => ({ type: 'usage' as const, label: t })),
                     price: c.totalPrice,
                     items: c.items,
                     likes: c.likes,
@@ -425,19 +438,18 @@ export default function ClientApp() {
             });
             setConfigList(newConfigList);
             setShowShareModal(false);
-            // showToast removed to avoid duplicate/conflicting messages
-
 
             if (viewMode === 'streamer') {
-                showToast(`✅ 发布成功！已准备好下一单`);
+                showToast(`✅ ${saveStatus === 'draft' ? '保存' : '发布'}成功！已准备好下一单`);
             } else {
-                // Determine toast message based on login status
                 if (currentUser) {
-                    showToast(`✅ 已保存到个人中心！`);
+                    showToast(saveStatus === 'draft' ? `✅ 已保存到个人中心！` : `✅ 已发布并保存到个人中心！`);
                 } else {
                     showToast(`✅ 已发布并保存！`);
                 }
-                setViewMode('square');
+                if (saveStatus === 'published') {
+                    setViewMode('square');
+                }
             }
             clearBuild();
 
@@ -731,11 +743,12 @@ export default function ClientApp() {
                     pricing={pricing}
                     onClose={() => setShowSaveModal(false)}
                     onSave={() => {
-                        // Quick save logic
+                        // Quick save logic - Save as DRAFT (private)
                         handlePublishToSquare({
                             title: `我的装机单 ${new Date().toLocaleDateString()} `,
                             tags: ['我的收藏'],
-                            desc: '从保存预览快速保存'
+                            desc: '从保存预览快速保存',
+                            status: 'draft'
                         });
                         setShowSaveModal(false);
                     }}
