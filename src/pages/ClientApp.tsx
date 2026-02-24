@@ -489,7 +489,7 @@ export default function ClientApp() {
                         <div className="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200">
                             <Monitor className="text-white" size={20} />
                         </div>
-                        <span className="text-xl font-extrabold text-slate-900 tracking-tight">小鱼装机平台</span>
+                        <span className="text-xl font-extrabold text-slate-900 tracking-tight">蒋小鱼装机平台</span>
                     </div>
                     {/* Navigation Tabs - Hidden on mobile, visible on tablet/desktop */}
                     <div className="hidden md:flex bg-slate-50/90 p-2 rounded-2xl border border-slate-200/80 backdrop-blur-xl shadow-inner overflow-x-auto no-scrollbar max-w-none gap-1">

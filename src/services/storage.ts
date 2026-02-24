@@ -48,7 +48,7 @@ const DEFAULT_SMS_SETTINGS: SMSSettings = {
     provider: 'mock',
     accessKeyId: '',
     accessKeySecret: '',
-    signName: '小鱼装机平台',
+    signName: '蒋小鱼装机平台',
     templateCode: 'SMS_123456789',
     enabled: false
 };
