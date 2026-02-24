@@ -168,6 +168,16 @@ class StorageService {
         }
     }
 
+    async getCategoryCounts(): Promise<Record<string, number>> {
+        try {
+            const result = await ApiService.get('/products/counts/admin');
+            return result || {};
+        } catch (e) {
+            console.error('Failed to get category counts', e);
+            return {};
+        }
+    }
+
     async getBrands(category: string = 'all'): Promise<string[]> {
         try {
             const params = new URLSearchParams();

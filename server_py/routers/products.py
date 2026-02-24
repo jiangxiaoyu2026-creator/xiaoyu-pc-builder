@@ -150,6 +150,25 @@ async def get_admin_products(
         "page_size": page_size
     }
 
+@router.get("/counts/admin", response_model=dict)
+async def get_admin_product_counts(
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """Admin only: Get counts of products grouped by category"""
+    from sqlalchemy import func
+    query = select(Hardware.category, func.count()).select_from(Hardware).group_by(Hardware.category)
+    results = session.exec(query).all()
+    
+    counts = {category: count for category, count in results if category}
+    
+    # Also get total count
+    total_query = select(func.count()).select_from(Hardware)
+    total = session.scalar(total_query)
+    counts['total'] = total or 0
+    
+    return counts
+
 @router.get("/brands", response_model=List[str])
 async def get_brands(
     category: Optional[str] = None,

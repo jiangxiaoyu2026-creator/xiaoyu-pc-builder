@@ -20,6 +20,7 @@ export default function ProductManager() {
     const [filterBrand, setFilterBrand] = useState('all');
     const [brands, setBrands] = useState<string[]>([]);
     const [sortConfig, setSortConfig] = useState<{ key: keyof HardwareItem, direction: 'asc' | 'desc' } | null>({ key: 'sortOrder', direction: 'asc' });
+    const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
     const loadProducts = async () => {
         setLoading(true);
@@ -36,6 +37,11 @@ export default function ProductManager() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const loadCategoryCounts = async () => {
+        const counts = await storage.getCategoryCounts();
+        setCategoryCounts(counts);
     };
 
     // Debounce search
@@ -60,6 +66,7 @@ export default function ProductManager() {
 
     useEffect(() => {
         loadProducts();
+        loadCategoryCounts();
     }, [page]);
 
     // 价格编辑：onChange 只更新本地状态，onBlur 时才保存到后端
@@ -79,6 +86,7 @@ export default function ProductManager() {
         const updated = { ...p, status: (p.status === 'active' ? 'archived' : 'active') as any };
         setProducts(products.map(x => x.id === id ? updated : x));
         await storage.saveProduct(updated);
+        loadCategoryCounts();
     };
 
     const toggleRecommended = async (id: string, current: boolean) => {
@@ -156,6 +164,7 @@ export default function ProductManager() {
     const handleSaveProduct = async (product: HardwareItem, keepOpen = false) => {
         await storage.saveProduct(product);
         loadProducts(); // Re-fetch to see changes
+        loadCategoryCounts(); // Update counts
         if (!keepOpen) {
             setIsEditModalOpen(false);
         }
@@ -172,6 +181,7 @@ export default function ProductManager() {
         try {
             await ApiService.delete(`/products/${deleteId}`);
             loadProducts(); // Re-fetch
+            loadCategoryCounts(); // Update counts
             setIsDeleteModalOpen(false);
             setDeleteId(null);
         } catch (error) {
@@ -187,9 +197,9 @@ export default function ProductManager() {
             <div className="flex justify-between items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
                 <div className="flex-1 min-w-0 flex flex-col gap-2">
                     <div className="flex gap-2 overflow-x-auto pb-1 mask-gradient-right">
-                        <button onClick={() => setFilterCat('all')} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>全部</button>
+                        <button onClick={() => setFilterCat('all')} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>全部 ({categoryCounts['total'] || 0})</button>
                         {Object.entries(CATEGORY_MAP).map(([k, v]) => (
-                            <button key={k} onClick={() => setFilterCat(k)} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === k ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{v.label}</button>
+                            <button key={k} onClick={() => setFilterCat(k)} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === k ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{v.label} ({categoryCounts[k] || 0})</button>
                         ))}
                     </div>
                     {/* Brand Filter */}
