@@ -230,6 +230,10 @@ def _log_price_change(session: Session, product: Hardware, old_price: float, new
     """智能记录价格变动：2小时内的变动合并为一条记录"""
     if old_price == new_price or old_price is None:
         return
+        
+    # 如果价格是 0（例如新建未定价、或者暂未明确售价），不进行价格变动统计
+    if old_price == 0 or new_price == 0:
+        return
     
     product.previousPrice = old_price
     change_pct = ((new_price - old_price) / old_price * 100) if old_price > 0 else 0
