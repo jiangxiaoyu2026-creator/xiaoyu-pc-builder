@@ -10,6 +10,14 @@ from datetime import datetime
 
 router = APIRouter()
 
+def _parse_config(config: Config, current_user: Optional[User] = None, session: Session = None):
+    c_dict = config.model_dump()
+    # Parse JSON strings if they are not already dicts/lists
+    for key in ["items", "tags", "evaluation"]:
+        if isinstance(c_dict.get(key), str):
+            try: c_dict[key] = json.loads(c_dict[key])
+            except: c_dict[key] = [] if key == "tags" else {}
+
     # Filter showcase if not approved and not owner/admin
     is_owner = current_user and current_user.id == config.userId
     is_admin = current_user and current_user.role == "admin"
@@ -23,9 +31,6 @@ router = APIRouter()
         author = session.get(User, config.userId)
         if author:
             c_dict["authorRole"] = author.role
-            # Optional: sync to model if missing for future performance
-            # config.authorRole = author.role
-            # session.add(config)
         
     return c_dict
 
