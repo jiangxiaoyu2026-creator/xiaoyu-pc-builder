@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Heart, FileText, Calendar, LogOut, Edit3, Gift, Copy, Crown, Share2, ShoppingBag } from 'lucide-react';
+import { X, User, Heart, FileText, Calendar, LogOut, Edit3, Gift, Copy, Crown, Share2, ShoppingBag, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { UserItem, ConfigTemplate } from '../../types/clientTypes';
 import ConfirmModal from '../common/ConfirmModal';
@@ -7,6 +7,123 @@ import ConfirmModal from '../common/ConfirmModal';
 import { ConfigDetailModal } from './Modals';
 import SellModal from './SellModal';
 import ShowcaseModal from './ShowcaseModal';
+
+// 修改密码弹窗组件
+function ChangePasswordModal({ onClose, showToast }: { onClose: () => void; showToast: (msg: string) => void }) {
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (newPassword.length < 6) {
+            setError('新密码长度不能少于6位');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setError('两次输入的新密码不一致');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await storage.changePassword(oldPassword, newPassword);
+            showToast('密码修改成功，请妥善保管新密码！');
+            onClose();
+        } catch (err: any) {
+            setError(err.message || '修改失败，请检查旧密码是否正确');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-scale-up border border-white/20">
+                <div className="p-6 relative">
+                    <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                        <X size={20} />
+                    </button>
+
+                    <div className="flex flex-col items-center mb-6">
+                        <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-4">
+                            <Lock size={28} />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900">修改密码</h3>
+                        <p className="text-sm text-slate-500 mt-1">为了您的账号安全，请定期更改密码</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {error && (
+                            <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm flex items-start gap-2 animate-shake">
+                                <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                                <span>{error}</span>
+                            </div>
+                        )}
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">当前密码</label>
+                            <input
+                                type="password"
+                                required
+                                value={oldPassword}
+                                onChange={e => setOldPassword(e.target.value)}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400"
+                                placeholder="请输入当前使用的密码"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">新密码</label>
+                            <input
+                                type="password"
+                                required
+                                value={newPassword}
+                                onChange={e => setNewPassword(e.target.value)}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400"
+                                placeholder="至少6位字符"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-1.5 ml-1">确认新密码</label>
+                            <input
+                                type="password"
+                                required
+                                value={confirmPassword}
+                                onChange={e => setConfirmPassword(e.target.value)}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400"
+                                placeholder="请再次输入新密码"
+                            />
+                        </div>
+
+                        <div className="pt-2">
+                            <button
+                                type="submit"
+                                disabled={isLoading || !oldPassword || !newPassword || !confirmPassword}
+                                className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                            >
+                                {isLoading ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                ) : (
+                                    <>
+                                        <CheckCircle size={18} />
+                                        确认修改
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 // 邀请好友卡片组件
 function InviteCard({ userId, showToast }: { userId: string; showToast: (msg: string) => void }) {
@@ -140,6 +257,7 @@ export function UserCenterModal({
     const [selectedConfig, setSelectedConfig] = useState<ConfigTemplate | null>(null);
     const [editingItem, setEditingItem] = useState<import('../../types/adminTypes').UsedItem | null>(null);
     const [editingShowcaseConfig, setEditingShowcaseConfig] = useState<ConfigTemplate | null>(null);
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
     // Confirm Modal States
     const [isActionLoading, setIsActionLoading] = useState(false);
@@ -319,10 +437,18 @@ export function UserCenterModal({
                                         </div>
                                     </div>
 
-                                    {/* Placeholder for editing */}
-                                    <button className="w-full py-3 border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
-                                        <Edit3 size={16} /> 编辑资料 (暂未开放)
-                                    </button>
+                                    {/* Action Buttons */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <button className="w-full py-3 border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                                            <Edit3 size={16} /> 编辑资料 (暂未开放)
+                                        </button>
+                                        <button
+                                            onClick={() => setIsPasswordModalOpen(true)}
+                                            className="w-full py-3 border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Lock size={16} /> 修改密码
+                                        </button>
+                                    </div>
 
                                     {/* VIP 特权卡片 - 仅VIP显示 */}
                                     {isVip && (
@@ -682,6 +808,14 @@ export function UserCenterModal({
                         setEditingShowcaseConfig(null);
                         // Storage update event will trigger reload
                     }}
+                    showToast={showToast}
+                />
+            )}
+
+            {/* Change Password Modal */}
+            {isPasswordModalOpen && (
+                <ChangePasswordModal
+                    onClose={() => setIsPasswordModalOpen(false)}
                     showToast={showToast}
                 />
             )}

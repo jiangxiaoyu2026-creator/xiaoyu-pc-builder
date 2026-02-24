@@ -4,6 +4,7 @@ from typing import List, Optional
 from ..db import get_session
 from ..models import Hardware, User, PriceHistory
 from .auth import get_current_admin
+from pydantic import BaseModel
 import uuid
 import json
 from datetime import datetime, timedelta
@@ -80,6 +81,38 @@ async def get_products(
         "page_size": page_size
     }
 
+class BatchProductsRequest(BaseModel):
+    ids: List[str]
+
+@router.post("/batch", response_model=List[dict])
+async def get_products_batch(
+    request: BatchProductsRequest,
+    session: Session = Depends(get_session)
+):
+    """批量获取指定 ID 的产品详情（用于配置单展示）"""
+    if not request.ids:
+        return []
+        
+    from sqlmodel import select
+    query = select(Hardware).where(Hardware.id.in_(request.ids))
+    results = session.exec(query).all()
+    
+    products = []
+    for hw in results:
+        hw_dict = hw.model_dump()
+        if isinstance(hw.specs, str):
+            try:
+                hw_dict["specs"] = json.loads(hw.specs)
+            except:
+                hw_dict["specs"] = {}
+        products.append(hw_dict)
+    
+    # 保持请求中的顺序
+    id_map = {p["id"]: p for p in products}
+    ordered_products = [id_map[pid] for pid in request.ids if pid in id_map]
+    
+    return ordered_products
+
 @router.get("/admin", response_model=dict)
 async def get_admin_products(
     page: int = 1,
@@ -87,11 +120,13 @@ async def get_admin_products(
     category: Optional[str] = None,
     brand: Optional[str] = None,
     search: Optional[str] = None,
+    sort_key: Optional[str] = "sortOrder",
+    sort_dir: Optional[str] = "asc",
     session: Session = Depends(get_session), 
     admin: User = Depends(get_current_admin)
 ):
     """Admin only: Get all products including archived ones with pagination and filtering"""
-    from sqlalchemy import func, or_
+    from sqlalchemy import func, or_, asc, desc
     
     query = select(Hardware)
     
@@ -130,8 +165,18 @@ async def get_admin_products(
         
     total = session.scalar(count_query)
     
+    # Sort Logic
+    sort_column = getattr(Hardware, sort_key) if hasattr(Hardware, sort_key) else Hardware.sortOrder
+    if sort_dir == "desc":
+        query = query.order_by(desc(sort_column))
+    else:
+        query = query.order_by(asc(sort_column))
+    
+    # Secondary sort by ID to ensure stable pagination
+    query = query.order_by(Hardware.id)
+
     offset = (page - 1) * page_size
-    results = session.exec(query.order_by(Hardware.sortOrder).offset(offset).limit(page_size)).all()
+    results = session.exec(query.offset(offset).limit(page_size)).all()
     
     products = []
     for hw in results:

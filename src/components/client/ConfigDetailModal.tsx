@@ -22,13 +22,16 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
     // Initial Load
     React.useEffect(() => {
         const loadInitialData = async () => {
+            // Extract all hardware IDs from the config
+            const productIds = Object.values(config.items).filter(id => id && typeof id === 'string') as string[];
+
             const [fetchedComments, fetchedProducts, fetchedUsers] = await Promise.all([
                 storage.getComments(config.id),
-                storage.getProducts(),
+                storage.getProductsByIds(productIds), // Fetch only the products in this config
                 storage.getUsers()
             ]);
             setComments(fetchedComments);
-            setAllProducts(fetchedProducts.items);
+            setAllProducts(fetchedProducts);
             setUsers(fetchedUsers);
         };
         loadInitialData();

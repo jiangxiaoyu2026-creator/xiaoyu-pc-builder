@@ -455,3 +455,29 @@ async def update_user(
     session.commit()
     session.refresh(user)
     return user
+
+@router.post("/change-password")
+async def change_password(
+    data: dict,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    old_password = data.get("oldPassword")
+    new_password = data.get("newPassword")
+    
+    if not old_password or not new_password:
+        raise HTTPException(status_code=400, detail="旧密码和新密码均为必填项")
+        
+    password_valid = verify_password(old_password, current_user.password)
+    
+    if not password_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="旧密码错误"
+        )
+        
+    current_user.password = get_password_hash(new_password)
+    session.add(current_user)
+    session.commit()
+    
+    return {"message": "密码修改成功"}

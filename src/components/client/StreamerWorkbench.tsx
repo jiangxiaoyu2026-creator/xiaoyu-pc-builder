@@ -181,10 +181,32 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const inputRef = useRef<HTMLInputElement>(null);
 
     const [hardwareList, setHardwareList] = useState<HardwareItem[]>([]);
+    const suggestionsRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         storage.getProducts(1, 1000).then(res => setHardwareList(res.items));
     }, []);
+
+    // Auto-scroll suggestions list when highlightIndex changes
+    useEffect(() => {
+        if (showSuggestions && suggestionsRef.current) {
+            const container = suggestionsRef.current;
+            const highlightedItem = container.children[highlightIndex] as HTMLElement;
+            if (highlightedItem) {
+                // Ensure the item is visible within the container
+                const containerTop = container.scrollTop;
+                const containerBottom = containerTop + container.clientHeight;
+                const itemTop = highlightedItem.offsetTop;
+                const itemBottom = itemTop + highlightedItem.clientHeight;
+
+                if (itemTop < containerTop) {
+                    container.scrollTop = itemTop;
+                } else if (itemBottom > containerBottom) {
+                    container.scrollTop = itemBottom - container.clientHeight;
+                }
+            }
+        }
+    }, [highlightIndex, showSuggestions]);
 
     const suggestions = useMemo(() => {
         const searchStr = query.toLowerCase().trim();
@@ -315,7 +337,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
                     </div>
                 )}
                 {showSuggestions && (
-                    <div className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-xl border border-slate-100 z-50 mt-2 overflow-hidden max-h-[300px] overflow-y-auto">
+                    <div ref={suggestionsRef} className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-xl border border-slate-100 z-50 mt-2 overflow-hidden max-h-[300px] overflow-y-auto">
                         {suggestions.map((item, idx) => (
                             <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? `${theme.bgLight} ${theme.primary} transition-colors` : 'text-slate-600 hover:bg-slate-50'}`} onMouseDown={() => selectItem(item)}>
                                 <span className="flex items-center">

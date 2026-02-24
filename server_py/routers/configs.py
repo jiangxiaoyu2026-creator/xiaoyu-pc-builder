@@ -10,7 +10,7 @@ from datetime import datetime
 
 router = APIRouter()
 
-def _parse_config(config: Config, current_user: Optional[User] = None) -> dict:
+def _parse_config(config: Config, current_user: Optional[User] = None, session: Session = None) -> dict:
     c_dict = config.model_dump()
     for field in ["tags", "items", "evaluation", "showcaseImages"]:
         if isinstance(c_dict.get(field), str):
@@ -25,6 +25,13 @@ def _parse_config(config: Config, current_user: Optional[User] = None) -> dict:
     if c_dict.get("showcaseStatus") not in ["approved", "none"] and not is_owner and not is_admin:
         c_dict["showcaseImages"] = []
         c_dict["showcaseMessage"] = None
+
+    # Attach author role for frontend type mapping
+    c_dict["authorRole"] = "user"  # default
+    if session and config.userId:
+        author = session.get(User, config.userId)
+        if author:
+            c_dict["authorRole"] = author.role
         
     return c_dict
 
@@ -110,7 +117,7 @@ async def get_configs(
     configs = session.exec(query.offset(offset).limit(page_size)).all()
     
     return {
-        "items": [_parse_config(c, current_user) for c in configs],
+        "items": [_parse_config(c, current_user, session) for c in configs],
         "total": total,
         "page": page,
         "page_size": page_size
@@ -134,13 +141,13 @@ async def share_config(
     session.add(config)
     session.commit()
     session.refresh(config)
-    return _parse_config(config)
+    return _parse_config(config, session=session)
 
 @router.get("/admin", response_model=List[dict])
 async def get_admin_configs(session: Session = Depends(get_session), admin: User = Depends(get_current_admin)):
     """Admin only: Get all configs"""
     configs = session.exec(select(Config).order_by(Config.createdAt.desc())).all()
-    return [_parse_config(c, admin) for c in configs]
+    return [_parse_config(c, admin, session) for c in configs]
 
 @router.get("/user/{user_id}", response_model=dict)
 async def get_user_configs(
@@ -157,7 +164,7 @@ async def get_user_configs(
     configs = session.exec(select(Config).where(Config.userId == user_id).order_by(Config.createdAt.desc()).offset(offset).limit(page_size)).all()
     
     return {
-        "items": [_parse_config(c, current_user) for c in configs],
+        "items": [_parse_config(c, current_user, session) for c in configs],
         "total": total,
         "page": page,
         "page_size": page_size
@@ -204,7 +211,7 @@ async def create_config(
     session.add(new_config)
     session.commit()
     session.refresh(new_config)
-    return _parse_config(new_config, user)
+    return _parse_config(new_config, user, session)
 
 @router.get("/{config_id}", response_model=dict)
 async def get_config(
@@ -215,7 +222,7 @@ async def get_config(
     config = session.get(Config, config_id)
     if not config:
         raise HTTPException(status_code=404, detail="配置未找到")
-    return _parse_config(config, current_user)
+    return _parse_config(config, current_user, session)
 
 @router.put("/{config_id}", response_model=dict)
 async def update_config(
@@ -241,7 +248,7 @@ async def update_config(
     session.add(config)
     session.commit()
     session.refresh(config)
-    return _parse_config(config, user)
+    return _parse_config(config, user, session)
 
 @router.delete("/{config_id}")
 async def delete_config(
@@ -290,7 +297,7 @@ async def submit_showcase(
     session.add(config)
     session.commit()
     session.refresh(config)
-    return _parse_config(config, user)
+    return _parse_config(config, user, session)
 
 class ShowcaseAuditRequest(BaseModel):
     status: str # 'approved', 'rejected'
@@ -316,5 +323,5 @@ async def audit_showcase(
     session.add(config)
     session.commit()
     session.refresh(config)
-    return _parse_config(config, admin)
+    return _parse_config(config, admin, session)
 

@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Download, Plus, ListFilter, Package, Edit3, Trash2, X, Sparkles, Image as ImageIcon, Upload } from 'lucide-react';
 import { HardwareItem, Category } from '../../types/adminTypes';
 import { CATEGORY_MAP, COMPATIBILITY_FIELDS } from '../../data/adminData';
@@ -25,7 +25,15 @@ export default function ProductManager() {
     const loadProducts = async () => {
         setLoading(true);
         try {
-            const result = await storage.getAdminProducts(page, pageSize, filterCat, filterBrand, search);
+            const result = await storage.getAdminProducts(
+                page,
+                pageSize,
+                filterCat,
+                filterBrand,
+                search,
+                sortConfig?.key,
+                sortConfig?.direction
+            );
             setProducts(result.items);
             setTotal(result.total);
 
@@ -67,7 +75,7 @@ export default function ProductManager() {
     useEffect(() => {
         loadProducts();
         loadCategoryCounts();
-    }, [page]);
+    }, [page, sortConfig]);
 
     // 价格编辑：onChange 只更新本地状态，onBlur 时才保存到后端
     const handlePriceChange = (id: string, newPrice: number) => {
@@ -110,23 +118,11 @@ export default function ProductManager() {
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
             direction = 'desc';
         }
+        setPage(1); // Reset to first page when sort changes
         setSortConfig({ key, direction });
     };
 
-    // Client-side sorting on the current page (optional, but good for UX)
-    const filtered = useMemo(() => {
-        let sorted = [...products];
-        if (sortConfig) {
-            sorted.sort((a, b) => {
-                const aValue = a[sortConfig.key] ?? '';
-                const bValue = b[sortConfig.key] ?? '';
-                if (aValue === bValue) return 0;
-                const result = aValue > bValue ? 1 : -1;
-                return sortConfig.direction === 'asc' ? result : -result;
-            });
-        }
-        return sorted;
-    }, [products, sortConfig]);
+    const filtered = products; // Sorting is now handled on the server
 
     const handleExportHardware = () => {
         const headers = ['ID', '分类', '品牌', '型号', '售价', '状态', '排序', '规格参数'];

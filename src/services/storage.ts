@@ -147,7 +147,17 @@ class StorageService {
         }
     }
 
-    async getAdminProducts(page: number = 1, pageSize: number = 20, category: string = 'all', brand: string = 'all', search: string = ''): Promise<{ items: HardwareItem[], total: number }> {
+    async getProductsByIds(ids: string[]): Promise<HardwareItem[]> {
+        if (!ids || ids.length === 0) return [];
+        try {
+            return await ApiService.post('/products/batch', { ids });
+        } catch (e) {
+            console.error('Failed to load batch products', e);
+            return [];
+        }
+    }
+
+    async getAdminProducts(page: number = 1, pageSize: number = 20, category: string = 'all', brand: string = 'all', search: string = '', sortKey: string = '', sortDir: string = ''): Promise<{ items: HardwareItem[], total: number }> {
         try {
             const params = new URLSearchParams({
                 page: page.toString(),
@@ -156,6 +166,11 @@ class StorageService {
             if (category && category !== 'all') params.append('category', category);
             if (brand && brand !== 'all') params.append('brand', brand);
             if (search) params.append('search', search);
+
+            if (sortKey) {
+                params.append('sort_key', sortKey);
+                params.append('sort_dir', sortDir || 'asc');
+            }
 
             const result = await ApiService.get(`/products/admin?${params.toString()}`);
             return {
@@ -624,6 +639,10 @@ class StorageService {
     }
 
     // --- Auth ---
+    async changePassword(oldPassword: string, newPassword: string) {
+        return await ApiService.post('/auth/change-password', { oldPassword, newPassword });
+    }
+
     getCurrentUser(): UserItem | null {
         try {
             const data = localStorage.getItem(KEYS.CURRENT_USER);
