@@ -36,6 +36,7 @@ export interface ConfigItem {
     createdAt: string;
     serialNumber?: string; // e.g. 2026-000001
     description?: string;
+    authorRole?: string; // 用户角色 (admin, streamer, etc.)
     showcaseImages?: string[];
     showcaseMessage?: string;
     showcaseStatus?: 'none' | 'pending' | 'approved' | 'rejected';

@@ -27,11 +27,14 @@ def _parse_config(config: Config, current_user: Optional[User] = None, session: 
         c_dict["showcaseMessage"] = None
 
     # Attach author role for frontend type mapping
-    c_dict["authorRole"] = "user"  # default
-    if session and config.userId:
+    c_dict["authorRole"] = config.authorRole if hasattr(config, "authorRole") and config.authorRole else "user"
+    if session and config.userId and c_dict.get("authorRole") == "user":
         author = session.get(User, config.userId)
         if author:
             c_dict["authorRole"] = author.role
+            # Optional: sync to model if missing for future performance
+            # config.authorRole = author.role
+            # session.add(config)
         
     return c_dict
 

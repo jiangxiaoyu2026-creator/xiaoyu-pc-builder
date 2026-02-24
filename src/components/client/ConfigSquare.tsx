@@ -47,12 +47,12 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
 
                 // Prioritize role-based identification
                 if (c.authorRole === 'streamer') type = 'streamer';
-                else if (['admin', 'sub_admin'].includes(c.authorRole)) type = 'official';
+                else if (c.authorRole && ['admin', 'sub_admin'].includes(c.authorRole)) type = 'official';
                 // Fallback to keyword matching and other flags
-                else if (authorName.includes('官方')) type = 'official';
-                else if (authorName.includes('主播')) type = 'streamer';
+                else if (authorName.includes('官方') || authorName.toLowerCase().includes('admin')) type = 'official';
+                else if (authorName.includes('主播') || authorName.includes('分享者') === false && c.title.includes('主播')) type = 'streamer';
 
-                if (c.tags.includes('求助')) type = 'help';
+                if (c.tags?.includes('求助')) type = 'help';
                 if (c.isRecommended) type = 'official';
 
                 return {

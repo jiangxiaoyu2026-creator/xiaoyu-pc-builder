@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight } from 'lucide-react';
 import { BuildEntry, ConfigTemplate, Category, UserItem } from '../types/clientTypes';
-import { DEFAULT_BUILD_TEMPLATE } from '../data/clientData';
+import { DEFAULT_BUILD_TEMPLATE, HARDWARE_DB } from '../data/clientData';
 import { storage } from '../services/storage';
 import LoginModal from '../components/common/LoginModal';
 import { TabButton } from '../components/client/Shared';
@@ -60,7 +60,7 @@ export default function ClientApp() {
             const [user, s, configs, allUsers, productsRes] = await Promise.all([
                 storage.getCurrentUser(),
                 storage.getPricingStrategy(),
-                storage.getConfigs(),
+                storage.getConfigs({ pageSize: 1000 }),
                 storage.getUsers(),
                 storage.getProducts(1, 1000)
             ]);
@@ -88,46 +88,49 @@ export default function ClientApp() {
             setSettings(s);
             setAllProducts(productsRes.items);
 
-            const visibleConfigs = configs.items.filter((c: any) => c.status === 'published');
+            const visibleConfigs = configs.items.filter((c: any) => c.status === 'published' || c.status === 'active');
             // Map admin configs to client template
             const mappedList: ConfigTemplate[] = visibleConfigs.map((c: any) => {
-                const authorName = c.userName || c.authorName || '未知用户';
+                const authorUser = allUsers.find((u: any) => u.id === c.userId);
+                const authorName = c.userName || (authorUser?.username) || '匿名';
+
+                // Unified type logic consistent with ConfigSquare
                 let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
-
-                // Prioritize role-based identification
                 if (c.authorRole === 'streamer') type = 'streamer';
-                else if (['admin', 'sub_admin'].includes(c.authorRole)) type = 'official';
-                // Fallback to keyword matching and other flags
-                else if (authorName.includes('官方')) type = 'official';
-                else if (authorName.includes('主播')) type = 'streamer';
+                else if (c.authorRole && ['admin', 'sub_admin'].includes(c.authorRole)) type = 'official';
+                else if (authorName.includes('官方') || authorName.toLowerCase().includes('admin')) type = 'official';
+                else if (authorName.includes('主播') || (c.title && c.title.includes('主播'))) type = 'streamer';
 
-                if (c.tags.includes('求助')) type = 'help';
-                if (c.isRecommended) type = 'official'; // Override if recommended
-                // Check VIP status
-                const author = allUsers.find((u: any) => u.id === c.userId);
-                const isVip = author ? (
-                    ['admin', 'streamer', 'sub_admin'].includes(author.role) ||
-                    !!(author.vipExpireAt && author.vipExpireAt > Date.now())
+                if (Array.isArray(c.tags) && c.tags.some((t: any) => (typeof t === 'string' ? t : t.label) === '求助')) type = 'help';
+                if (c.isRecommended) type = 'official';
+
+                const isVip = authorUser ? (
+                    ['admin', 'streamer', 'sub_admin'].includes(authorUser.role) ||
+                    !!(authorUser.vipExpireAt && authorUser.vipExpireAt > Date.now())
                 ) : false;
 
                 return {
                     id: c.id,
                     userId: c.userId,
-                    title: c.title,
+                    title: c.title || '未命名配置',
                     author: authorName,
-                    avatarColor: 'bg-zinc-500',
+                    avatarColor: c.userId === 'admin' ? 'bg-zinc-900' : 'bg-blue-500',
                     type: type,
-                    tags: c.tags.map((t: string) => ({ type: 'usage' as const, label: t })),
+                    tags: Array.isArray(c.tags) ? c.tags.map((t: any) =>
+                        typeof t === 'string' ? { type: 'usage' as const, label: t } : t
+                    ) : [],
                     price: c.totalPrice,
-                    items: c.items,
-                    likes: c.likes,
-                    views: c.views,
+                    items: typeof c.items === 'string' ? JSON.parse(c.items) : (c.items || {}),
+                    likes: c.likes || 0,
+                    views: c.views || 0,
                     comments: 0,
-                    date: c.createdAt,
+                    date: c.createdAt ? c.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
                     isLiked: false,
                     serialNumber: c.serialNumber,
                     description: c.description,
-                    isVip: isVip // Added VIP flag
+                    isVip: isVip,
+                    showcaseStatus: c.showcaseStatus,
+                    showcaseImages: typeof c.showcaseImages === 'string' ? JSON.parse(c.showcaseImages) : (c.showcaseImages || [])
                 };
             });
             setConfigList(mappedList);
@@ -321,38 +324,43 @@ export default function ClientApp() {
     };
 
     const handleFork = async (config: ConfigTemplate) => {
-        // Extract all hardware IDs from the config
-        const productIds = Object.values(config.items).filter(id => id && typeof id === 'string') as string[];
+        try {
+            // Extract all hardware IDs from the config
+            const productIds = Object.values(config.items).filter(id => id && typeof id === 'string') as string[];
 
-        // Fetch specific products by IDs
-        const productsList = await storage.getProductsByIds(productIds);
+            // Fetch specific products by IDs from server
+            const productsList = await storage.getProductsByIds(productIds);
 
-        const newList = DEFAULT_BUILD_TEMPLATE.map(entry => {
-            // @ts-ignore
-            const itemId = config.items?.[entry.category] || config.items?.[entry.id]; // Try both
-            if (itemId) {
-                // Find in fetched products
-                const adminItem = productsList.find((h: any) => h.id === itemId);
-                let clientItem = null;
-                if (adminItem) {
-                    clientItem = {
-                        id: adminItem.id,
-                        category: adminItem.category,
-                        brand: adminItem.brand,
-                        model: adminItem.model,
-                        price: adminItem.price,
-                        specs: adminItem.specs,
-                        image: adminItem.image
-                    };
+            const newList = DEFAULT_BUILD_TEMPLATE.map(entry => {
+                // @ts-ignore
+                const itemId = config.items?.[entry.category] || config.items?.[entry.id]; // Try both
+                if (itemId) {
+                    // Find in fetched products OR fallback to HARDWARE_DB
+                    const adminItem = productsList.find((h: any) => h.id === itemId) || HARDWARE_DB.find(h => h.id === itemId);
+                    let clientItem = null;
+                    if (adminItem) {
+                        clientItem = {
+                            id: adminItem.id,
+                            category: adminItem.category,
+                            brand: adminItem.brand,
+                            model: adminItem.model,
+                            price: adminItem.price,
+                            specs: adminItem.specs,
+                            image: adminItem.image
+                        };
+                    }
+                    return { ...entry, item: clientItem || null, customPrice: undefined, quantity: 1 };
                 }
-                return { ...entry, item: clientItem || null, customPrice: undefined, quantity: 1 };
-            }
-            return { ...entry, item: null, quantity: 1 };
-        });
-        setBuildList(newList);
-        setViewMode('visual');
-        setShowLibraryModal(false);
-        showToast(`✅ 已载入配置：${config.title} `);
+                return { ...entry, item: null, quantity: 1 };
+            });
+            setBuildList(newList);
+            setViewMode('visual');
+            setShowLibraryModal(false);
+            showToast(`✅ 已载入配置：${config.title} `);
+        } catch (err) {
+            console.error("Failed to load config:", err);
+            showToast("❌ 载入配置失败，请稍后重试");
+        }
     };
 
     const handlePublishToSquare = async (data: { title: string, tags: string[], desc: string, status?: 'published' | 'draft' }) => {
