@@ -1,5 +1,5 @@
 # Stage 1: Build Frontend
-FROM docker.1ms.run/node:20.18-slim AS frontend-builder
+FROM node:20.18-slim AS frontend-builder
 WORKDIR /app
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources \
     && sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
@@ -10,7 +10,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Build Backend & Final Image
-FROM docker.1ms.run/python:3.12-slim
+FROM python:3.12-slim
 WORKDIR /app
 
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources \
