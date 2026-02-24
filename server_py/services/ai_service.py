@@ -57,9 +57,10 @@ class AiService:
             
             if cat in ratios:
                 min_ratio, max_ratio = ratios[cat]
-                tolerance = 1.3 if cat in ['gpu', 'cpu'] else 1.1
+                # Relaxed tolerance (1.5x) to allow high-end parts in inventory even for tight budgets
+                tolerance = 1.6 if cat in ['gpu', 'cpu'] else 1.4
                 if item.price > (budget * max_ratio * tolerance): continue
-                if item.price < (budget * min_ratio * 0.4): continue
+                if item.price < (budget * min_ratio * 0.3): continue
                 
             categories[cat].append(item)
             
@@ -74,15 +75,35 @@ class AiService:
             selected = items[::len(items)//8 + 1][:8] if len(items) > 8 else items
             
             for item in selected:
-                # 架构升级后 item.specs 已经是 dict
-                specs_text = ", ".join(f"{k}: {v}" for k, v in item.specs.items() if v) if isinstance(item.specs, dict) else str(item.specs)
+                # Ensure specs is a dict
+                specs = item.specs
+                if isinstance(specs, str):
+                    try: specs = json.loads(specs)
+                    except: specs = {}
+                
+                # Inference helper (reusing logic from generator but for inventory prep)
+                model_upper = item.model.upper()
+                memory_type = specs.get('memoryType')
+                socket = specs.get('socket')
+                
+                if not memory_type:
+                    if 'DDR5' in model_upper or 'D5' in model_upper: memory_type = 'DDR5'
+                    elif 'DDR4' in model_upper or 'D4' in model_upper: memory_type = 'DDR4'
+                
+                if item.category == 'mainboard' and not socket:
+                    if any(chip in model_upper for chip in ['X870', 'B650', 'X670', 'A620']): socket = 'AM5'
+                    elif any(chip in model_upper for chip in ['B550', 'X570', 'B450', 'A320']): socket = 'AM4'
+                    elif any(chip in model_upper for chip in ['Z790', 'B760', 'Z690', 'B660']): socket = 'LGA1700'
+
                 final_list.append({
                     "id": item.id,
                     "category": item.category,
                     "brand": item.brand,
                     "model": item.model,
                     "price": item.price,
-                    "specs": specs_text
+                    "memoryType": memory_type, # Top level for AI clarity
+                    "socket": socket,           # Top level for AI clarity
+                    "specs": ", ".join(f"{k}: {v}" for k, v in specs.items() if v)
                 })
         return final_list
 
@@ -107,13 +128,16 @@ class AiService:
                 for cat, item_id in c.items.items():
                     if item_id:
                         hw = self.session.get(Hardware, item_id)
-                        if hw: comp_details.append(f"{cat}: {hw.brand} {hw.model}")
+                        if hw:
+                            hw_specs = self._get_inferred_specs(hw)
+                            spec_str = f"({hw_specs.get('socket', '')}, {hw_specs.get('memoryType', '')})" if hw_specs else ""
+                            comp_details.append(f"{cat}: {hw.brand} {hw.model} {spec_str}")
             
             refs.append({
                 "title": c.title,
                 "price": c.totalPrice,
                 "tags": c.tags,
-                "logic": ", ".join(comp_details) if comp_details else "通用搭配"
+                "logic": "; ".join(comp_details) if comp_details else "通用搭配"
             })
         return refs
 
@@ -154,7 +178,7 @@ class AiService:
 
 **重要学习任务：**
 - 参考【推荐方案】中的搭配逻辑（例如 CPU 与显卡的档次比例、散热器的选择）。
-- 注意【推荐方案】可能使用旧型号或已下架产品，请在【库存清单】中寻找当前最合适的替代品，保持配单的“灵魂”一致。
+- 注意【推荐方案】可能使用旧型号或已下架产品，请在【库存清单】中寻找当前最合适的替代品。
 
 **你的说话风格：**
 {persona_text}
@@ -162,16 +186,10 @@ class AiService:
 **你的配单策略：**
 {strategy_text}
 
-**⚠️ 兼容性铁律（输出前请务必自检）：**
-1. **接口匹配**：CPU 的 Socket 必须与主板一致。
-2. **频率/类型匹配**：主板支持的内存类型（如 DDR4/DDR5）必须与内存条一致。
-3. **功耗冗余**：电源额定功率必须大于 (CPU功耗 + 显卡功耗 + 100W) 的 1.2 倍。
-4. **物理限制**：机箱必须能装下主板及其选定的散热器高度。
-
-**⚠️ 预算与业务红线：**
-1. **严格预算控制**：总价【绝对不能】超过用户预算 ({budget} 元)。
-2. **价格真实性**：直接使用清单中的 `price`。
-3. **ID 唯一性**：只能使用清单中的 `id`。
+**⚠️ 兼容性指令（强制执行）：**
+1. **核对 socket**：CPU 的 `socket` 必须与主板的 `socket` 完全一致。
+2. **核对 memoryType**：主板的 `memoryType` 必须与内存的 `memoryType` 完全一致。如果不一致，优先保证主板，更换内存型号。
+3. **核对功耗**：电源功率需留有冗余。
 
 【库存清单】：
 {json.dumps(inventory, ensure_ascii=False)}
@@ -183,14 +201,8 @@ class AiService:
 {{
   "items": {{ "cpu": "id", "mainboard": "id", "gpu": "id", "ram": "id", "disk": "id", "power": "id", "cooling": "id", "case": "id", "fan": "id", "monitor": "id" }},
   "totalPrice": (数字),
-  "description": "200字配单心路历程，解释你如何参考推荐方案并结合当前预算做出的调整。",
-  "evaluation": {{
-    "score": (1-100),
-    "verdict": "一句话神评",
-    "pros": ["优点"],
-    "cons": ["不足"],
-    "summary": "专业点评。必须包含对兼容性（接口、功耗、散热）的确认。"
-  }}
+  "description": "200字配单思路。",
+  "evaluation": {{ "score": 90, "verdict": "神评", "pros": [], "cons": [], "summary": "点评" }}
 }}
 """
 
@@ -203,41 +215,58 @@ class AiService:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_msg}
                 ],
-                temperature=0.3, # 降低随机性，提高逻辑严谨性
+                temperature=0.3,
                 response_format={"type": "json_object"}
             )
             
             content = response.choices[0].message.content
             raw_result = json.loads(content)
             
-            # 强制后端核算价格，不信 AI 的口算
+            # --- 后端自动修正逻辑 (Auto-Fix) ---
             actual_total = 0
             resolved_items = {}
             if "items" in raw_result:
+                # 1. 第一遍解析
                 for cat, item_id in raw_result["items"].items():
                     if not item_id or not isinstance(item_id, str):
                         resolved_items[cat] = None
                         continue
-                        
-                    hardware = self.session.get(Hardware, item_id)
-                    if hardware:
-                        actual_total += hardware.price
+                    
+                    hw = self.session.get(Hardware, item_id)
+                    if hw:
+                        # 注入推断逻辑得到的 specs
+                        hw.specs = self._get_inferred_specs(hw)
                         resolved_items[cat] = {
-                            "id": hardware.id,
-                            "category": hardware.category,
-                            "brand": hardware.brand,
-                            "model": hardware.model,
-                            "price": hardware.price,
-                            "specs": hardware.specs,
-                            "image": hardware.image,
-                            "status": hardware.status,
-                            "isRecommended": hardware.isRecommended,
-                            "isDiscount": hardware.isDiscount,
-                            "isNew": hardware.isNew
+                            "id": hw.id, "category": hw.category, "brand": hw.brand, "model": hw.model, 
+                            "price": hw.price, "specs": hw.specs, "image": hw.image
                         }
                     else:
                         resolved_items[cat] = None
+
+                # 2. 兼容性校验与自动替换 (X870 + DDR4 终结者)
+                cpu = resolved_items.get('cpu')
+                mb = resolved_items.get('mainboard')
+                ram = resolved_items.get('ram')
                 
+                # 检查插槽
+                if cpu and mb and cpu['specs'].get('socket') != mb['specs'].get('socket'):
+                    # 尝试寻找兼容当前主板的备选 CPU
+                    alt_cpu = self._find_compatible_hardware('cpu', {'socket': mb['specs'].get('socket')}, budget*0.3)
+                    if alt_cpu: 
+                        resolved_items['cpu'] = alt_cpu
+                        raw_result['description'] += " (注意：原选 CPU 接口不匹配，已自动更换为兼容型号)"
+
+                # 检查内存 (用户主要痛点)
+                if ram and mb and ram['specs'].get('memoryType') != mb['specs'].get('memoryType'):
+                    # 尝试寻找兼容当前主板的备选内存
+                    target_type = mb['specs'].get('memoryType')
+                    alt_ram = self._find_compatible_hardware('ram', {'memoryType': target_type}, budget*0.1)
+                    if alt_ram:
+                        resolved_items['ram'] = alt_ram
+                        raw_result['description'] += f" (注意：主板支持 {target_type}，已自动将内存更换为兼容型号)"
+
+                # 重新计算总价
+                actual_total = sum(i['price'] for i in resolved_items.values() if i)
                 raw_result["items"] = resolved_items
                 raw_result["totalPrice"] = actual_total
                 
@@ -246,3 +275,50 @@ class AiService:
         except Exception as e:
             print(f"LLM Error: {e}")
             raise e
+
+    def _get_inferred_specs(self, hardware: Hardware) -> Dict:
+        """Helper to get specs with name-based inference"""
+        specs = hardware.specs
+        if isinstance(specs, str):
+            try: specs = json.loads(specs)
+            except: specs = {}
+        
+        specs = {**specs}
+        model_upper = hardware.model.upper()
+        
+        if not specs.get('memoryType'):
+            if 'DDR5' in model_upper or 'D5' in model_upper: specs['memoryType'] = 'DDR5'
+            elif 'DDR4' in model_upper or 'D4' in model_upper: specs['memoryType'] = 'DDR4'
+        
+        if hardware.category == 'mainboard' and not specs.get('socket'):
+            if any(chip in model_upper for chip in ['X870', 'B650', 'X670', 'A620']): specs['socket'] = 'AM5'
+            elif any(chip in model_upper for chip in ['B550', 'X570', 'B450', 'A320']): specs['socket'] = 'AM4'
+            elif any(chip in model_upper for chip in ['Z790', 'B760', 'Z690', 'B660']): specs['socket'] = 'LGA1700'
+        return specs
+
+    def _find_compatible_hardware(self, category: str, criteria: Dict[str, Any], max_price: float) -> Optional[Dict]:
+        """寻找满足特定条件的硬件"""
+        # 获取所有该类别的激活硬件
+        stmt = select(Hardware).where(Hardware.category == category, Hardware.status == "active")
+        candidates = self.session.exec(stmt).all()
+        
+        eligible = []
+        for cand in candidates:
+            cand_specs = self._get_inferred_specs(cand)
+            match = True
+            for k, v in criteria.items():
+                if cand_specs.get(k) != v:
+                    match = False
+                    break
+            if match:
+                eligible.append(cand)
+        
+        if not eligible: return None
+        
+        # 选个价格接近或低于 max_price 的
+        eligible.sort(key=lambda x: abs(x.price - max_price))
+        best = eligible[0]
+        return {
+            "id": best.id, "category": best.category, "brand": best.brand, "model": best.model, 
+            "price": best.price, "specs": self._get_inferred_specs(best), "image": best.image
+        }
