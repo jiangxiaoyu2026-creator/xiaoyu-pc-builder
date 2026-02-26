@@ -634,7 +634,7 @@ function VisualBuilder({
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-black tracking-tight leading-none">选择 {CATEGORY_MAP[modalCategory]}</h2>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Product Selection</p>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">产品选择</p>
                                     </div>
                                 </div>
                                 <button
@@ -666,8 +666,8 @@ function VisualBuilder({
                                             }`}
                                     >
                                         <ArrowRight size={16} className={`transition-transform duration-500 ${sortOrder === 'asc' ? '-rotate-90' : sortOrder === 'desc' ? 'rotate-90' : 'rotate-0'}`} />
-                                        <span className="uppercase tracking-wider">
-                                            {sortOrder === 'default' ? 'Price Sort' : sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                                        <span className="tracking-wider">
+                                            {sortOrder === 'default' ? '价格排序' : sortOrder === 'asc' ? '价格最低' : '价格最高'}
                                         </span>
                                     </button>
                                 </div>
@@ -683,7 +683,7 @@ function VisualBuilder({
                                                     : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
                                                     }`}
                                             >
-                                                {brand === 'all' ? 'All Brands' : brand}
+                                                {brand === 'all' ? '全部品牌' : brand}
                                             </button>
                                         ))}
                                     </div>
@@ -707,7 +707,7 @@ function VisualBuilder({
                                         <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-4 ring-1 ring-slate-100">
                                             <div className="animate-spin rounded-full h-5 w-5 border-2 border-slate-200 border-t-indigo-600"></div>
                                         </div>
-                                        <p className="text-xs font-black uppercase tracking-widest text-slate-300">Synchronizing Database...</p>
+                                        <p className="text-xs font-black uppercase tracking-widest text-slate-300">正在同步数据库...</p>
                                     </div>
                                 ) : (
                                     <>
@@ -749,10 +749,10 @@ function VisualBuilder({
                                                             <span className="text-[9px] font-black uppercase text-indigo-500 tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">
                                                                 {item.brand}
                                                             </span>
-                                                            {isOutOfStock && <span className="text-[9px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded-md font-black uppercase">Out of Stock</span>}
-                                                            {item.isDiscount && <span className="text-[9px] bg-rose-500 text-white px-2 py-0.5 rounded-md font-black uppercase shadow-sm shadow-rose-200">Sale</span>}
+                                                            {isOutOfStock && <span className="text-[9px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded-md font-black uppercase">暂无现货</span>}
+                                                            {item.isDiscount && <span className="text-[9px] bg-rose-500 text-white px-2 py-0.5 rounded-md font-black uppercase shadow-sm shadow-rose-200">特价</span>}
                                                             {item.createdAt && (new Date().getTime() - new Date(item.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000) && (
-                                                                <span className="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-md font-black uppercase shadow-sm shadow-emerald-200">New</span>
+                                                                <span className="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-md font-black uppercase shadow-sm shadow-emerald-200">新品</span>
                                                             )}
                                                         </div>
                                                         <h4 className="font-extrabold text-slate-900 text-[15px] group-hover:text-indigo-600 transition-colors leading-snug tracking-tight mb-2">
@@ -787,8 +787,8 @@ function VisualBuilder({
                                                 <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 opacity-50">
                                                     <Search size={32} strokeWidth={1.5} />
                                                 </div>
-                                                <p className="text-sm font-black uppercase tracking-widest italic">No matches found</p>
-                                                <button onClick={() => { setModalSearch(''); setModalBrand('all'); }} className="mt-4 text-xs font-bold text-indigo-500 hover:text-indigo-700 underline underline-offset-4">Reset Research Filters</button>
+                                                <p className="text-sm font-black uppercase tracking-widest italic">未找到匹配的产品</p>
+                                                <button onClick={() => { setModalSearch(''); setModalBrand('all'); }} className="mt-4 text-xs font-bold text-indigo-500 hover:text-indigo-700 underline underline-offset-4">重置筛选条件</button>
                                             </div>
                                         )}
                                     </>
