@@ -221,16 +221,30 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
 
     const suggestions = useMemo(() => {
         const searchStr = query.toLowerCase().trim();
-        if (!searchStr) {
-            return hardwareList.filter(item => item.category === entry.category).slice(0, 20);
-        }
+        const searchTerms = searchStr ? searchStr.split(/\s+/) : [];
 
-        const searchTerms = searchStr.split(/\s+/);
-        return hardwareList.filter(item => {
+        const filtered = hardwareList.filter(item => {
             if (item.category !== entry.category) return false;
+            if (!searchStr) return true;
             const searchableText = `${item.brand} ${item.model} ${CATEGORY_MAP[item.category] || item.category}`.toLowerCase();
             return searchTerms.every(term => searchableText.includes(term));
         });
+
+        // 复合排序逻辑
+        return filtered.sort((a, b) => {
+            // 1. 价格为 0 的排在最后
+            if (a.price === 0 && b.price !== 0) return 1;
+            if (a.price !== 0 && b.price === 0) return -1;
+
+            // 2. 推荐或折扣置顶
+            const aIsSpecial = a.isRecommended || a.isDiscount;
+            const bIsSpecial = b.isRecommended || b.isDiscount;
+            if (aIsSpecial && !bIsSpecial) return -1;
+            if (!aIsSpecial && bIsSpecial) return 1;
+
+            // 3. 价格从低到高
+            return a.price - b.price;
+        }).slice(0, 20);
     }, [query, entry.category, hardwareList]);
 
     useEffect(() => {

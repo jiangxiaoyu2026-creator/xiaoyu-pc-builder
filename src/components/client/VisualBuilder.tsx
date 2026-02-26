@@ -230,26 +230,42 @@ function VisualBuilder({
 
     const filteredItems = useMemo(() => {
         if (!modalCategory) return [];
+
+        const searchStr = modalSearch.toLowerCase().trim();
+        const searchTerms = searchStr ? searchStr.split(/\s+/) : [];
+
         let items = modalItems.filter(i =>
             i.category === modalCategory &&
             (modalBrand === 'all' || i.brand === modalBrand) &&
             (() => {
-                const searchStr = modalSearch.toLowerCase().trim();
                 if (!searchStr) return true;
-                const searchTerms = searchStr.split(/\s+/);
                 const searchableText = `${i.brand} ${i.model} ${CATEGORY_MAP[i.category] || i.category}`.toLowerCase();
                 return searchTerms.every(term => searchableText.includes(term));
             })()
         );
 
-        if (sortOrder === 'asc') {
-            items.sort((a, b) => a.price - b.price);
-        } else if (sortOrder === 'desc') {
-            items.sort((a, b) => b.price - a.price);
-        }
+        // 核心排序逻辑
+        items.sort((a, b) => {
+            // 1. 价格为 0 的排在最后（不论那种排序模式）
+            if (a.price === 0 && b.price !== 0) return 1;
+            if (a.price !== 0 && b.price === 0) return -1;
+
+            if (sortOrder === 'asc') {
+                return a.price - b.price;
+            } else if (sortOrder === 'desc') {
+                return b.price - a.price;
+            } else {
+                // 默认排序：推荐/折扣 置顶
+                const aIsSpecial = a.isRecommended || a.isDiscount;
+                const bIsSpecial = b.isRecommended || b.isDiscount;
+                if (aIsSpecial && !bIsSpecial) return -1;
+                if (!aIsSpecial && bIsSpecial) return 1;
+                return a.price - b.price; // 特殊标签内也按价格升序
+            }
+        });
 
         return items;
-    }, [modalCategory, modalBrand, modalSearch, modalItems, sortOrder]);
+    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder]);
 
     const availableBrands = useMemo(() => {
         if (!modalCategory) return [];
