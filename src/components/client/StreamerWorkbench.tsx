@@ -183,9 +183,20 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const [hardwareList, setHardwareList] = useState<HardwareItem[]>([]);
     const suggestionsRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        storage.getProducts(1, 1000).then(res => setHardwareList(res.items));
-    }, []);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const loadCategoryProducts = async () => {
+        if (hardwareList.length > 0 || isLoading) return;
+        setIsLoading(true);
+        try {
+            const res = await storage.getProducts(1, 200, entry.category);
+            setHardwareList(res.items);
+        } catch (error) {
+            console.error("Failed to load products for category:", entry.category, error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Auto-scroll suggestions list when highlightIndex changes
     useEffect(() => {
@@ -329,7 +340,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 font-semibold text-[16px] tracking-wide placeholder-slate-300 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 font-semibold text-[16px] tracking-wide placeholder-slate-300 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
                 {entry.item && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
                         {entry.item.isRecommended && <span className="bg-orange-50 text-orange-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 flex items-center gap-0.5 whitespace-nowrap"><Sparkles size={10} /> 推荐</span>}
@@ -338,7 +349,8 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
                 )}
                 {showSuggestions && (
                     <div ref={suggestionsRef} className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-xl border border-slate-100 z-50 mt-2 overflow-hidden max-h-[300px] overflow-y-auto">
-                        {suggestions.map((item, idx) => (
+                        {isLoading && <div className="px-4 py-3 text-xs text-slate-400 text-center flex items-center justify-center gap-2"><RefreshCw size={12} className="animate-spin" /> 正在加载产品库...</div>}
+                        {!isLoading && suggestions.map((item, idx) => (
                             <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? `${theme.bgLight} ${theme.primary} transition-colors` : 'text-slate-600 hover:bg-slate-50'}`} onMouseDown={() => selectItem(item)}>
                                 <span className="flex items-center">
                                     {item.brand} {item.model}
@@ -348,7 +360,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
                                 <span className="font-bold">¥{item.price}</span>
                             </div>
                         ))}
-                        {suggestions.length === 0 && <div className="px-4 py-3 text-xs text-slate-400 text-center">未找到匹配项</div>}
+                        {!isLoading && suggestions.length === 0 && <div className="px-4 py-3 text-xs text-slate-400 text-center">未找到匹配项</div>}
                     </div>
                 )}
             </div>
@@ -711,7 +723,9 @@ function StreamerWorkbench({
                                 <ChevronDown className="absolute right-2 top-1.5 text-slate-400 pointer-events-none" size={12} />
                             </div>
                         </div>
-                        <div className={`text-[10px] ${theme.textMuted} font-medium pl-0.5`}>标准价格包含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 服务费</div>
+                        <div className={`text-[10px] ${theme.textMuted} font-black pl-0.5 uppercase tracking-tight`}>
+                            标准价格包含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 装机售后服务费
+                        </div>
                     </div>
 
                     <div className="flex flex-col items-center justify-center">
