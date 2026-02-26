@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { ArrowRight, CreditCard, FileText, CheckCircle2, AlertCircle, X, Search, Sparkles, Share2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, Zap, CreditCard, FileText, CheckCircle2, AlertCircle, X, Search, Sparkles, Share2, ChevronDown, ChevronUp } from 'lucide-react';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
@@ -68,6 +68,10 @@ function VisualBuilder({
     const [isBrandsExpanded, setIsBrandsExpanded] = useState(false);
     const [showAiModal, setShowAiModal] = useState(false);
 
+    // Category-specific items for the selector
+    const [modalItems, setModalItems] = useState<HardwareItem[]>([]);
+    const [isModalLoading, setIsModalLoading] = useState(false);
+
     // Handle external trigger for AI Modal
     useEffect(() => {
         if (openAiModal) {
@@ -96,16 +100,6 @@ function VisualBuilder({
         }
     };
 
-    // Fetch hardware list from storage
-    const [hardwareList, setHardwareList] = useState<HardwareItem[]>([]);
-
-    useEffect(() => {
-        const loadHardware = async () => {
-            const list = await storage.getProducts(1, 1000);
-            setHardwareList(list.items);
-        };
-        loadHardware();
-    }, []);
 
     const [sysAnnouncement, setSysAnnouncement] = useState<SystemAnnouncementSettings | null>(null);
 
@@ -119,13 +113,25 @@ function VisualBuilder({
         return () => window.removeEventListener('xiaoyu-announcement-update', handleUpdate);
     }, []);
 
-    const openSelector = (entry: BuildEntry) => {
+    const openSelector = async (entry: BuildEntry) => {
         setModalCategory(entry.category);
         setModalEntryId(entry.id);
         setModalSearch('');
         setModalBrand('all');
         setSortOrder('default');
         setIsBrandsExpanded(false);
+
+        // Fetch items for this specific category
+        setIsModalLoading(true);
+        try {
+            const res = await storage.getProducts(1, 200, entry.category);
+            setModalItems(res.items);
+        } catch (e) {
+            console.error('Failed to load category products', e);
+            setModalItems([]);
+        } finally {
+            setIsModalLoading(false);
+        }
     };
 
     const handleSelect = (item: HardwareItem) => {
@@ -164,7 +170,7 @@ function VisualBuilder({
                         await new Promise(r => setTimeout(r, 300));
 
                         openSelector(entry);
-                        await new Promise(r => setTimeout(r, 300));
+                        await new Promise(r => setTimeout(r, 800)); // Increased wait for category fetch
 
                         const searchEl = modalSearchInputRef.current;
                         if (searchEl) {
@@ -224,7 +230,7 @@ function VisualBuilder({
 
     const filteredItems = useMemo(() => {
         if (!modalCategory) return [];
-        let items = hardwareList.filter(i =>
+        let items = modalItems.filter(i =>
             i.category === modalCategory &&
             (modalBrand === 'all' || i.brand === modalBrand) &&
             (() => {
@@ -243,13 +249,13 @@ function VisualBuilder({
         }
 
         return items;
-    }, [modalCategory, modalBrand, modalSearch, hardwareList, sortOrder]);
+    }, [modalCategory, modalBrand, modalSearch, modalItems, sortOrder]);
 
     const availableBrands = useMemo(() => {
         if (!modalCategory) return [];
-        const brands = new Set(hardwareList.filter(i => i.category === modalCategory).map(i => i.brand));
+        const brands = new Set(modalItems.filter(i => i.category === modalCategory).map(i => i.brand));
         return ['all', ...Array.from(brands)];
-    }, [modalCategory, hardwareList]);
+    }, [modalCategory, modalItems]);
 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -269,103 +275,113 @@ function VisualBuilder({
 
             <GhostCursor x={ghostPos.x} y={ghostPos.y} active={isAiExecuting} status={ghostStatus} />
 
-            {/* Mobile Compact View (Visible only on small screens) */}
-            <div className="lg:hidden flex flex-col gap-0 bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200 mb-6 animate-fade-in">
-                {/* Mobile Header: Functional Buttons */}
-                <div className="bg-gradient-to-r from-sky-400 to-blue-500 p-2 flex gap-2">
+            {/* Mobile Column View (Compact & Premium) */}
+            <div className="lg:hidden flex flex-col bg-slate-50 min-h-screen">
+                {/* Premium Mobile Header: Functional Buttons */}
+                <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 p-3 flex gap-2 shadow-sm">
                     <button
                         onClick={() => { if (onAiCheck && !onAiCheck()) return; setShowAiModal(true); }}
-                        className="flex-1 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold py-1.5 px-3 rounded text-sm shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1"
+                        className="flex-1 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-900 font-bold py-2.5 px-4 rounded-2xl shadow-lg shadow-orange-200/50 active:scale-95 transition-all flex items-center justify-center gap-2 border border-amber-300"
                     >
-                        <Sparkles size={14} /> 写配置 (AI)
+                        <Sparkles size={16} className="animate-pulse" /> 智能装机 (AI)
                     </button>
                     <button
                         onClick={onOpenLibrary}
-                        className="flex-1 bg-white/20 hover:bg-white/30 text-white font-bold py-1.5 px-3 rounded text-sm border border-white/30 active:scale-95 transition-all"
+                        className="flex-1 bg-white hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-4 rounded-2xl border border-slate-200 shadow-sm active:scale-95 transition-all text-sm"
                     >
-                        推荐配置
+                        推荐方案
                     </button>
                 </div>
 
-                {/* Table Header Labels (Simplified) */}
-                <div className="flex bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-400">
-                    <div className="w-[60px] px-2 py-1 border-r border-slate-200">类别</div>
-                    <div className="flex-1 px-2 py-1 border-r border-slate-200">型号</div>
-                    <div className="w-[70px] px-2 py-1 text-right">价格</div>
-                </div>
-
-                {/* Mobile List Items */}
-                <div className="flex flex-col">
+                {/* Elegant Mobile List Items */}
+                <div className="p-4 space-y-3 pb-32">
                     {buildList.map((entry) => (
                         <div
                             key={entry.id}
                             ref={(el) => { if (el) rowRefs[entry.id] = el; }}
                             onClick={() => openSelector(entry)}
-                            className="flex border-b border-slate-100 last:border-b-0 active:bg-slate-50 transition-colors"
+                            className={`relative group bg-white rounded-2xl border transition-all duration-300 active:scale-[0.98] flex items-center p-3 gap-3 ${entry.item || entry.customName
+                                ? 'border-indigo-100 shadow-md shadow-indigo-500/5'
+                                : 'border-slate-100 border-dashed bg-slate-50/50'
+                                }`}
                         >
-                            <div className="w-[60px] bg-sky-500 text-white flex items-center justify-center py-2 shrink-0">
-                                <span className="text-xs font-black tracking-tighter">{CATEGORY_MAP[entry.category]}</span>
+                            {/* Icon Column (Tech Style) */}
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500 ${entry.item ? 'bg-indigo-50 text-indigo-600 shadow-inner' : 'bg-white text-slate-300 border border-slate-100 shadow-sm'
+                                }`}>
+                                {getIconByCategory(entry.category)}
                             </div>
 
-                            <div className="flex-1 min-w-0 bg-white px-2 py-1.5 flex items-center border-r border-slate-100">
-                                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                    {entry.category === 'accessory' ? (
-                                        <input
-                                            type="text"
-                                            className="w-full bg-transparent border-none p-0 text-[13px] text-slate-800 font-bold placeholder-slate-300 focus:ring-0 truncate"
-                                            placeholder="输入配件名称..."
-                                            value={entry.customName || ''}
-                                            onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
-                                    ) : entry.item ? (
-                                        <div className="text-[13px] font-bold text-slate-800 truncate leading-tight">
-                                            {entry.item.brand} {entry.item.model}
-                                        </div>
-                                    ) : (
-                                        <div className="text-[13px] text-sky-500/60 font-medium">选择 {CATEGORY_MAP[entry.category]}</div>
-                                    )}
+                            {/* Content Column */}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 mb-0.5">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                                        {CATEGORY_MAP[entry.category]}
+                                    </span>
+                                </div>
+                                {entry.category === 'accessory' ? (
+                                    <input
+                                        type="text"
+                                        className="w-full bg-transparent border-none p-0 text-sm text-slate-800 font-bold placeholder-slate-300 focus:ring-0 truncate"
+                                        placeholder={`输入配件名称...`}
+                                        value={entry.customName || ''}
+                                        onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                ) : entry.item ? (
+                                    <div className="text-[14px] font-bold text-slate-800 truncate leading-tight tracking-tight">
+                                        {entry.item.brand} {entry.item.model}
+                                    </div>
+                                ) : (
+                                    <div className="text-[14px] text-slate-300 font-medium italic">未配备</div>
+                                )}
+                            </div>
+
+                            {/* Price & Actions Column */}
+                            <div className="flex flex-col items-end gap-1.5">
+                                <div className={`text-[14px] font-black font-mono italic transition-colors ${entry.item ? 'text-slate-900' : 'text-slate-300'}`}>
+                                    {(entry.item || entry.customName) ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : '—'}
                                 </div>
 
-                                {/* Fan Quantity & Delete Action */}
-                                <div className="flex items-center gap-2 ml-1" onClick={e => e.stopPropagation()}>
+                                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                                     {entry.category === 'fan' && entry.item && (
-                                        <div className="flex items-center bg-slate-100 rounded-md p-0.5 border border-slate-200">
-                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded text-slate-500 font-bold transition-all text-xs">-</button>
-                                            <span className="w-5 text-center text-[10px] font-bold text-slate-700">{entry.quantity}</span>
-                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded text-slate-500 font-bold transition-all text-xs">+</button>
+                                        <div className="flex items-center bg-slate-50 rounded-lg p-0.5 border border-slate-100 scale-90 origin-right shadow-inner">
+                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold transition-all">-</button>
+                                            <span className="w-6 text-center text-xs font-bold text-slate-600">{entry.quantity}</span>
+                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold transition-all">+</button>
                                         </div>
                                     )}
                                     {(entry.item || entry.customName) && (
                                         <button
-                                            className="p-1 text-slate-300 hover:text-red-500 active:scale-90 transition-all"
+                                            className="w-6 h-6 flex items-center justify-center bg-rose-50 text-rose-400 rounded-lg hover:bg-rose-100 active:scale-90 transition-all border border-rose-100 shadow-sm"
                                             onClick={() => onUpdate(entry.id, { item: null, customName: '', customPrice: undefined, quantity: 1 })}
                                         >
-                                            <X size={14} strokeWidth={3} />
+                                            <X size={12} strokeWidth={3} />
                                         </button>
                                     )}
                                 </div>
-                            </div>
-
-                            <div className="w-[70px] flex items-center justify-end px-2 bg-white shrink-0">
-                                <span className="text-[13px] font-black text-slate-900 font-mono italic">
-                                    {(entry.item || entry.customName) ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : '0'}
-                                </span>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Total Bar */}
-                <div className="bg-black text-white p-2.5 flex justify-between items-center shadow-inner">
-                    <div className="flex flex-col">
-                        <div className="flex items-center gap-1.5">
-                            <span className="bg-sky-500 text-[10px] font-black px-1 rounded">合计</span>
-                            <span className="text-[10px] font-medium text-slate-300">含装机+走线+三年售后+利润{Math.round(pricing.serviceFeeRate * 100 || 6)}%</span>
+                {/* Floating Glass Summary Bar (High-End Style) */}
+                <div className="fixed bottom-24 left-4 right-4 z-30">
+                    <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 p-4 rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex justify-between items-center ring-1 ring-black/5 animate-in slide-in-from-bottom-5 duration-500">
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-slate-900 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase">Total Estimation</span>
+                                <span className="text-[9px] font-medium text-slate-400">含组装+售后+利润</span>
+                            </div>
+                            <div className="text-white/30 text-[9px] tracking-widest font-mono uppercase">Performance & Quality First</div>
                         </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <span className="text-lg font-black tracking-tighter">¥ {pricing.finalPrice}</span>
+                        <div className="flex items-center gap-3">
+                            <div className="text-right">
+                                <span className="text-white text-2xl font-black tracking-tighter font-mono italic">¥{pricing.finalPrice}</span>
+                            </div>
+                            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 active:scale-90 transition-all cursor-pointer">
+                                <CheckCircle2 size={20} className="text-slate-900" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -533,134 +549,171 @@ function VisualBuilder({
                                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors" size={18} />
                             </div>
 
-                            <div className="grid grid-cols-3 gap-2 mb-2">
-                                <button onClick={onShare} className="py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[13px] sm:text-sm rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-1.5 tap-active">
-                                    <Share2 size={14} /> 分享
+                            <div className="flex flex-wrap gap-2 mb-6">
+                                <button onClick={onSave} className="flex-1 bg-slate-900 shadow-xl shadow-slate-200 text-white font-bold py-3.5 px-4 rounded-[22px] active:scale-95 hover:bg-black transition-all flex items-center justify-center gap-2 border border-white/10 group">
+                                    <FileText size={18} className="group-hover:translate-x-0.5 transition-transform" /> 保存配置
                                 </button>
-                                <button onClick={onSave} className="py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-[13px] sm:text-sm rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-1.5 tap-active">
-                                    <FileText size={14} /> 保存
+                                <button onClick={onShare} className="flex-1 bg-white border border-slate-200 shadow-sm text-slate-700 font-bold py-3.5 px-4 rounded-[22px] active:scale-95 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 group">
+                                    <Share2 size={18} className="group-hover:rotate-12 transition-transform text-indigo-500" /> 分享配置
                                 </button>
-                                <button onClick={onReset} className="py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-red-500 font-bold text-[13px] sm:text-sm rounded-xl border border-slate-200 transition-colors flex items-center justify-center gap-1.5 tap-active group">
-                                    <X size={14} className="group-hover:rotate-90 transition-transform" /> 重置
+                                <button onClick={onReset} className="bg-rose-50 border border-rose-100 text-rose-500 font-bold p-3.5 rounded-[22px] active:scale-95 hover:bg-rose-100 transition-all group">
+                                    <X size={18} className="group-hover:rotate-90 transition-transform" />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Sys Announcements */}
-                        <>
-                            <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-                            <div>
-                                <h3 className="font-extrabold text-slate-800 mb-4 flex items-center gap-2"><FileText size={18} className="text-sky-500" /> 系统公告</h3>
-                                <div className="space-y-3">
+                        {/* Premium Announcements and Health */}
+                        <div className="space-y-6 mt-2">
+                            <div className="relative p-6 rounded-[30px] bg-gradient-to-br from-white to-slate-50/50 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)] overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                                <h3 className="font-extrabold text-slate-900 mb-5 flex items-center gap-2.5 text-base tracking-tight">
+                                    <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center">
+                                        <FileText size={16} className="text-sky-500" />
+                                    </div>
+                                    系统公告
+                                </h3>
+
+                                <div className="space-y-3 relative z-10">
                                     {sysAnnouncement?.items && sysAnnouncement.items.length > 0 ? (
                                         sysAnnouncement.items.map((item: any) => (
-                                            <div key={item.id} className={`w-full border rounded-xl p-3 text-sm font-medium leading-relaxed flex gap-3 ${item.type === 'warning' ? 'bg-red-50/80 text-red-900 border-red-100' :
-                                                item.type === 'promo' ? 'bg-amber-50/80 text-amber-900 border-amber-100' :
-                                                    'bg-sky-50/50 text-sky-900 border-sky-100'
+                                            <div key={item.id} className={`group w-full border rounded-2xl p-4 transition-all hover:translate-x-1 ${item.type === 'warning' ? 'bg-red-50/40 text-red-900 border-red-100/60' :
+                                                item.type === 'promo' ? 'bg-amber-50/40 text-amber-900 border-amber-100/60' :
+                                                    'bg-white text-slate-900 border-slate-100 group-hover:border-sky-100 shadow-sm'
                                                 }`}>
-                                                <div className="shrink-0 mt-0.5">
-                                                    {item.pinned && <span className="mr-1 text-indigo-600">📌</span>}
-                                                    {item.type === 'warning' ? '⚠️' : item.type === 'promo' ? '🎉' : '📢'}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="whitespace-pre-wrap text-[13px] text-slate-700">{item.content}</div>
-                                                    {item.linkUrl && (
-                                                        <a href={item.linkUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:text-indigo-800 mt-1.5 inline-block font-bold">
-                                                            查看详情 &rarr;
-                                                        </a>
-                                                    )}
+                                                <div className="flex gap-3">
+                                                    <div className="shrink-0 text-base">
+                                                        {item.pinned && <span className="mr-1 shadow-sm">📌</span>}
+                                                        {item.type === 'warning' ? '⚠️' : item.type === 'promo' ? '🎉' : '📢'}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-[13px] leading-relaxed text-slate-600 font-medium whitespace-pre-wrap">{item.content}</div>
+                                                        {item.linkUrl && (
+                                                            <a href={item.linkUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-indigo-500 hover:text-indigo-700 mt-2 inline-flex items-center gap-1 font-black uppercase tracking-wider">
+                                                                更多详情 <ArrowRight size={10} />
+                                                            </a>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-[13px] text-slate-600 font-medium leading-relaxed whitespace-pre-wrap">
-                                            {sysAnnouncement?.content || '暂无系统公告'}
+                                        <div className="w-full bg-slate-50/50 border border-slate-100 border-dashed rounded-2xl p-6 text-center text-slate-400 font-medium italic text-[13px]">
+                                            {sysAnnouncement?.content || '暂无发布公告'}
                                         </div>
                                     )}
                                 </div>
                             </div>
-                        </>
 
-                        {/* System Health */}
-                        <>
-                            <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-                            <div className={`rounded-2xl p-4 border transition-colors ${health.status === 'perfect' ? 'bg-emerald-50/50 border-emerald-100/60' : 'bg-amber-50/50 border-amber-200/60'}`}>
-                                <div className="flex items-center justify-between mb-3">
-                                    <h3 className="font-extrabold text-slate-800 text-sm flex items-center gap-2">
-                                        系统健康状态
+                            <div className={`relative p-6 rounded-[30px] border transition-all duration-500 ${health.status === 'perfect'
+                                ? 'bg-gradient-to-br from-emerald-50/50 to-white border-emerald-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.02)]'
+                                : 'bg-gradient-to-br from-amber-50/50 to-white border-amber-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.02)]'
+                                }`}>
+                                <div className="flex items-center justify-between mb-5">
+                                    <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2.5 tracking-tight">
+                                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${health.status === 'perfect' ? 'bg-emerald-50' : 'bg-amber-50'}`}>
+                                            <Zap size={16} className={health.status === 'perfect' ? 'text-emerald-500' : 'text-amber-500'} />
+                                        </div>
+                                        兼容性实验室检测
                                     </h3>
-                                    {health.status === 'perfect' ? <CheckCircle2 size={18} className="text-emerald-500" /> : <AlertCircle size={18} className="text-amber-500 animate-pulse" />}
+                                    {health.status === 'perfect' ? (
+                                        <div className="px-3 py-1 rounded-full bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">Passed</div>
+                                    ) : (
+                                        <div className="px-3 py-1 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 animate-pulse">Review</div>
+                                    )}
                                 </div>
-                                {health.status === 'perfect' ? (
-                                    <div className="text-[13px] text-emerald-700 font-bold flex items-center gap-2 bg-emerald-100/50 px-3 py-2 rounded-lg">
-                                        <Sparkles size={14} className="text-emerald-500" /> 配置完美兼容，未发现问题
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        {health.issues.map((issue: string, idx: number) => (
-                                            <div key={idx} className="text-xs text-amber-800 font-bold bg-amber-100/50 p-2.5 rounded-lg flex gap-2">
-                                                <div className="shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400"></div>
-                                                <div className="leading-snug">{issue}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                <div className="relative z-10">
+                                    {health.status === 'perfect' ? (
+                                        <div className="text-[13px] text-emerald-700 font-bold flex items-center gap-3 bg-white/60 border border-emerald-100/50 px-4 py-3 rounded-2xl shadow-sm">
+                                            <CheckCircle2 size={16} className="text-emerald-500" />
+                                            <span className="leading-none">核心算法检测通过：配置完美兼容</span>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {health.issues.map((issue: string, idx: number) => (
+                                                <div key={idx} className="group text-[13px] text-amber-800 font-bold bg-white/60 border border-amber-100/50 p-4 rounded-2xl flex gap-3 shadow-sm hover:translate-x-1 transition-transform">
+                                                    <AlertCircle size={16} className="text-amber-500 shrink-0 mt-0.5" />
+                                                    <div className="leading-relaxed">{issue}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Modal Category Selector */}
+            {/* Premium Modal Category Selector */}
             {modalCategory && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
-                    <div className="bg-white rounded-[32px] w-full max-w-3xl h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-scale-up">
-                        <div className="p-5 border-b border-slate-100 flex flex-col gap-4 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
-                            <div className="flex justify-between items-center"><h2 className="text-xl font-bold text-slate-800">选择 {CATEGORY_MAP[modalCategory]}</h2><button onClick={() => setModalCategory(null)} className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors text-slate-500"><X size={20} /></button></div>
-                            <div className="flex flex-col gap-3">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+                    <div className="bg-slate-50 rounded-[36px] w-full max-w-3xl h-[88vh] flex flex-col shadow-[0_32px_120px_rgba(0,0,0,0.5)] overflow-hidden animate-scale-up border border-white/20">
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-slate-200/60 flex flex-col gap-5 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
+                            <div className="flex justify-between items-center text-slate-900">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg shadow-slate-200">
+                                        {getIconByCategory(modalCategory)}
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-black tracking-tight leading-none">选择 {CATEGORY_MAP[modalCategory]}</h2>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Product Selection</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setModalCategory(null)}
+                                    className="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all text-slate-400 hover:text-slate-900 active:scale-90"
+                                >
+                                    <X size={20} strokeWidth={2.5} />
+                                </button>
+                            </div>
+
+                            <div className="flex flex-col gap-4">
                                 <div className="flex gap-3 items-center">
-                                    <div className="relative flex-1">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                    <div className="relative flex-1 group">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
                                         <input
                                             ref={(el) => modalSearchInputRef.current = el}
                                             type="text"
                                             value={modalSearch}
                                             onChange={(e) => setModalSearch(e.target.value)}
-                                            placeholder={`搜索 ${CATEGORY_MAP[modalCategory]}...`}
-                                            className="w-full bg-slate-50 border-none rounded-xl py-3 pl-10 pr-4 text-sm font-medium focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-inner"
+                                            placeholder={`在 ${CATEGORY_MAP[modalCategory]} 中搜寻方案...`}
+                                            className="w-full bg-white border border-slate-200/60 rounded-[22px] py-3.5 pl-12 pr-4 text-sm font-bold placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all shadow-sm"
                                         />
                                     </div>
                                     <button
                                         onClick={() => setSortOrder(prev => prev === 'default' ? 'asc' : prev === 'asc' ? 'desc' : 'default')}
-                                        className={`h-11 px-4 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shrink-0 ${sortOrder !== 'default'
-                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                                            : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                                        className={`h-[52px] px-5 rounded-[22px] font-black text-xs flex items-center gap-2 transition-all shrink-0 active:scale-95 ${sortOrder !== 'default'
+                                            ? 'bg-slate-900 text-white shadow-xl shadow-slate-200 border border-slate-800'
+                                            : 'bg-white text-slate-500 border border-slate-200/60 shadow-sm hover:bg-slate-50'
                                             }`}
                                     >
-                                        <ArrowRight size={14} className={`transition-transform duration-300 ${sortOrder === 'asc' ? '-rotate-90' : sortOrder === 'desc' ? 'rotate-90' : 'rotate-0'}`} />
-                                        {sortOrder === 'default' ? '价格排序' : sortOrder === 'asc' ? '价格：从低到高' : '价格：从高到低'}
+                                        <ArrowRight size={16} className={`transition-transform duration-500 ${sortOrder === 'asc' ? '-rotate-90' : sortOrder === 'desc' ? 'rotate-90' : 'rotate-0'}`} />
+                                        <span className="uppercase tracking-wider">
+                                            {sortOrder === 'default' ? 'Price Sort' : sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                                        </span>
                                     </button>
                                 </div>
-                                <div className="flex items-start gap-2">
-                                    <div className={`flex-1 flex gap-2 ${isBrandsExpanded ? 'flex-wrap' : 'overflow-x-auto no-scrollbar'} items-center pb-1 transition-all`}>
+
+                                <div className="flex items-start gap-3">
+                                    <div className={`flex-1 flex gap-2 ${isBrandsExpanded ? 'flex-wrap' : 'overflow-x-auto no-scrollbar scroll-smooth'} items-center pb-2 px-1 mask-linear-fade`}>
                                         {availableBrands.map(brand => (
                                             <button
                                                 key={brand}
                                                 onClick={() => setModalBrand(brand)}
-                                                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all border shrink-0 tap-active ${modalBrand === brand
-                                                    ? 'bg-slate-800 text-white border-slate-800 shadow-md'
-                                                    : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
+                                                className={`px-4 py-2 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 tap-active uppercase ${modalBrand === brand
+                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
+                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
                                                     }`}
                                             >
-                                                {brand === 'all' ? '全部品牌' : brand}
+                                                {brand === 'all' ? 'All Brands' : brand}
                                             </button>
                                         ))}
                                     </div>
                                     {availableBrands.length > 5 && (
                                         <button
                                             onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
-                                            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors shrink-0 mt-0.5"
-                                            title={isBrandsExpanded ? "Collapse" : "Expand More"}
+                                            className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all shrink-0 mt-0.5 shadow-sm border ${isBrandsExpanded ? 'bg-slate-100 text-slate-900 border-slate-200' : 'bg-white text-slate-400 border-slate-100'}`}
                                         >
                                             {isBrandsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                         </button>
@@ -668,61 +721,101 @@ function VisualBuilder({
                                 </div>
                             </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-4 bg-slate-50/50">
-                            <div className="grid gap-3">
-                                {filteredItems.map(item => {
-                                    const isOutOfStock = item.price === 0;
-                                    return (
-                                        <div
-                                            key={item.id}
-                                            ref={(el) => { if (el) modalItemRefs[item.id] = el; }}
-                                            onClick={() => !isOutOfStock && handleSelect(item)}
-                                            className={`bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center group transition-all duration-200 relative overflow-hidden ${isOutOfStock ? 'opacity-60 cursor-not-allowed grayscale-[0.5]' : 'hover:border-indigo-500 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer'}`}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-16 h-16 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-indigo-500 group-hover:bg-indigo-50 transition-colors overflow-hidden border border-slate-100 relative shrink-0">
-                                                    {item.image ? (
-                                                        <img
-                                                            src={item.image}
-                                                            alt={item.model}
-                                                            className="w-full h-full object-cover hover:scale-110 transition-transform cursor-zoom-in"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setPreviewImage(item.image!);
-                                                            }}
-                                                        />
-                                                    ) : (
-                                                        getIconByCategory(modalCategory)
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="font-bold text-slate-800 text-lg group-hover:text-indigo-600 transition-colors flex items-center gap-2 truncate">
-                                                        {item.model}
-                                                        {isOutOfStock && <span className="text-[10px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded font-bold">缺货</span>}
+
+                        {/* Product List Content */}
+                        <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+                            <div className="grid gap-4">
+                                {isModalLoading ? (
+                                    <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-4 ring-1 ring-slate-100">
+                                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-slate-200 border-t-indigo-600"></div>
+                                        </div>
+                                        <p className="text-xs font-black uppercase tracking-widest text-slate-300">Synchronizing Database...</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {filteredItems.map(item => {
+                                            const isOutOfStock = item.price === 0;
+                                            return (
+                                                <div
+                                                    key={item.id}
+                                                    ref={(el) => { if (el) modalItemRefs[item.id] = el; }}
+                                                    onClick={() => !isOutOfStock && handleSelect(item)}
+                                                    className={`group relative flex items-center gap-5 p-4 rounded-[28px] bg-white border border-slate-100/80 transition-all duration-300 active:scale-[0.98] ${isOutOfStock
+                                                            ? 'opacity-50 grayscale cursor-not-allowed'
+                                                            : 'hover:border-indigo-100 hover:shadow-[0_12px_40px_rgba(79,70,229,0.06)] cursor-pointer'
+                                                        }`}
+                                                >
+                                                    {/* Product Image Wrapper */}
+                                                    <div className="w-20 h-20 bg-slate-50 rounded-[22px] flex items-center justify-center text-slate-200 group-hover:bg-indigo-50/50 group-hover:text-indigo-300 transition-all overflow-hidden border border-slate-100/60 shadow-inner shrink-0 relative">
+                                                        {item.image ? (
+                                                            <img
+                                                                src={item.image}
+                                                                alt={item.model}
+                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setPreviewImage(item.image!);
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <div className="opacity-40">{getIconByCategory(modalCategory)}</div>
+                                                        )}
+                                                        {item.isRecommended && (
+                                                            <div className="absolute top-0 left-0 bg-orange-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-br-lg shadow-sm">TOP</div>
+                                                        )}
                                                     </div>
-                                                    <div className="text-xs text-slate-400 mt-1 font-medium flex items-center gap-2 flex-wrap">
-                                                        <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 shrink-0">{item.brand}</span>
-                                                        {Object.entries(item.specs).slice(0, 3).map(([key, val]) => (<span key={key} className="hidden sm:inline opacity-75 truncate max-w-[100px]">• {val}</span>))}
-                                                        {item.isRecommended && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold">推荐</span>}
-                                                        {item.isDiscount && <span className="text-[10px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded font-bold">特价</span>}
-                                                        {item.createdAt && (new Date().getTime() - new Date(item.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000) && (
-                                                            <span className="text-[10px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded font-bold">新品</span>
+
+                                                    {/* Product Info */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1.5">
+                                                            <span className="text-[9px] font-black uppercase text-indigo-500 tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">
+                                                                {item.brand}
+                                                            </span>
+                                                            {isOutOfStock && <span className="text-[9px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded-md font-black uppercase">Out of Stock</span>}
+                                                            {item.isDiscount && <span className="text-[9px] bg-rose-500 text-white px-2 py-0.5 rounded-md font-black uppercase shadow-sm shadow-rose-200">Sale</span>}
+                                                            {item.createdAt && (new Date().getTime() - new Date(item.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000) && (
+                                                                <span className="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-md font-black uppercase shadow-sm shadow-emerald-200">New</span>
+                                                            )}
+                                                        </div>
+                                                        <h4 className="font-extrabold text-slate-900 text-[15px] group-hover:text-indigo-600 transition-colors leading-snug tracking-tight mb-2">
+                                                            {item.model}
+                                                        </h4>
+                                                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-400 font-bold">
+                                                            {Object.entries(item.specs).slice(0, 2).map(([key, val]) => (
+                                                                <div key={key} className="flex items-center gap-1">
+                                                                    <div className="w-1 h-1 rounded-full bg-slate-200"></div>
+                                                                    <span className="truncate max-w-[120px]">{val}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Price Tag */}
+                                                    <div className="flex flex-col items-end gap-3 shrink-0 ml-2">
+                                                        <div className={`font-black font-mono tracking-tighter transition-all ${isOutOfStock ? 'text-slate-300 text-base' : 'text-xl text-slate-900 italic group-hover:scale-105'}`}>
+                                                            {isOutOfStock ? '—' : `¥${item.price}`}
+                                                        </div>
+                                                        {!isOutOfStock && (
+                                                            <div className="w-8 h-8 rounded-xl bg-slate-50 group-hover:bg-slate-900 text-slate-300 group-hover:text-white flex items-center justify-center transition-all shadow-sm group-hover:shadow-lg group-hover:shadow-slate-200 border border-slate-100 group-hover:border-slate-800">
+                                                                <ArrowRight size={16} />
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="flex flex-col items-end gap-1 shrink-0 ml-4">
-                                                <div className={`font-bold font-mono ${isOutOfStock ? 'text-slate-400 text-base' : 'text-xl text-slate-900'}`}>
-                                                    {isOutOfStock ? '无库存' : `¥${item.price}`}
+                                            );
+                                        })}
+                                        {filteredItems.length === 0 && (
+                                            <div className="flex flex-col items-center justify-center py-20 text-slate-300">
+                                                <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 opacity-50">
+                                                    <Search size={32} strokeWidth={1.5} />
                                                 </div>
-                                                {!isOutOfStock && (
-                                                    <button className="text-xs font-bold text-white bg-slate-900 px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg shadow-indigo-200/50">选择</button>
-                                                )}
+                                                <p className="text-sm font-black uppercase tracking-widest italic">No matches found</p>
+                                                <button onClick={() => { setModalSearch(''); setModalBrand('all'); }} className="mt-4 text-xs font-bold text-indigo-500 hover:text-indigo-700 underline underline-offset-4">Reset Research Filters</button>
                                             </div>
-                                        </div>
-                                    );
-                                })}
-                                {filteredItems.length === 0 && <div className="flex flex-col items-center justify-center py-20 text-slate-400"><Search size={48} className="mb-4 opacity-20" /><p>未找到结果，请尝试其他关键词？</p></div>}
+                                        )}
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
