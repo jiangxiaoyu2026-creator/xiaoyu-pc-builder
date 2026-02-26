@@ -197,7 +197,12 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
                                             maxLength={6}
                                         />
                                     </div>
-                                    <p className="text-[10px] text-amber-600/80 mt-1 ml-1">没有邀请码？可以联系主播获取哦~</p>
+                                    <div className="text-[10px] text-amber-600/80 mt-1 ml-1 flex items-center justify-between">
+                                        <span>没有邀请码？可以联系主播获取哦~</span>
+                                        <div className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-black text-xs border border-amber-200 shadow-sm animate-pulse flex items-center gap-1">
+                                            公开邀请码：<span className="select-all">6I0CQZ</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </>
                         )}
