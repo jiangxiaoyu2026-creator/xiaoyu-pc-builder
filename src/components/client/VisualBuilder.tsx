@@ -276,7 +276,7 @@ function VisualBuilder({
             <GhostCursor x={ghostPos.x} y={ghostPos.y} active={isAiExecuting} status={ghostStatus} />
 
             {/* Mobile Column View (Compact & Premium) */}
-            <div className="lg:hidden flex flex-col bg-slate-50 min-h-screen">
+            <div className="lg:hidden flex flex-col bg-slate-50 relative">
                 {/* Premium Mobile Header: Functional Buttons */}
                 <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 p-3 flex gap-2 shadow-sm">
                     <button
@@ -294,7 +294,7 @@ function VisualBuilder({
                 </div>
 
                 {/* Elegant Mobile List Items */}
-                <div className="p-2 space-y-1 pb-20">
+                <div className="p-2 space-y-1">
                     {buildList.map((entry) => (
                         <div
                             key={entry.id}
@@ -448,11 +448,11 @@ function VisualBuilder({
 
             {/* Merged Sidebar */}
             <div className="w-full lg:w-[380px] shrink-0">
-                <div className="bg-white/90 backdrop-blur-2xl rounded-[32px] border border-white/60 shadow-2xl shadow-indigo-100/50 flex flex-col relative overflow-hidden">
+                <div className="bg-white/90 backdrop-blur-2xl rounded-[32px] border border-white/60 shadow-2xl shadow-indigo-100/50 flex flex-col relative overflow-hidden mt-2 lg:mt-0 mb-28 lg:mb-0">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
-                    <div className="p-6 md:p-8 flex flex-col gap-8 relative z-10">
+                    <div className="p-4 md:p-8 flex flex-col gap-4 lg:gap-8 relative z-10">
                         {/* Box 1: AI & Quick Build (Hidden on Mobile as it's in the list header) */}
                         <div className="hidden lg:flex flex-col gap-5">
                             <div onClick={() => {
