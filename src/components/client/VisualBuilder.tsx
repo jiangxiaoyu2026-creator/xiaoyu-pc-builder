@@ -526,16 +526,21 @@ function VisualBuilder({
                                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors" size={18} />
                             </div>
 
-                            <div className="flex flex-wrap gap-2 mb-6">
-                                <button onClick={onSave} className="flex-1 bg-slate-900 shadow-xl shadow-slate-200 text-white font-bold py-3.5 px-4 rounded-[22px] active:scale-95 hover:bg-black transition-all flex items-center justify-center gap-2 border border-white/10 group">
-                                    <FileText size={18} className="group-hover:translate-x-0.5 transition-transform" /> 保存配置
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                <button onClick={onSave} className="bg-slate-900 shadow-xl shadow-slate-200 text-white font-bold h-[52px] px-4 rounded-[22px] active:scale-95 hover:bg-black transition-all flex items-center justify-center gap-2 border border-white/10 group">
+                                    <FileText size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                                    <span className="text-sm">保存配置</span>
                                 </button>
-                                <button onClick={onShare} className="flex-1 bg-white border border-slate-200 shadow-sm text-slate-700 font-bold py-3.5 px-4 rounded-[22px] active:scale-95 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 group">
-                                    <Share2 size={18} className="group-hover:rotate-12 transition-transform text-indigo-500" /> 分享配置
+                                <button onClick={onShare} className="bg-white border border-slate-200 shadow-sm text-slate-700 font-bold h-[52px] px-4 rounded-[22px] active:scale-95 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 group relative">
+                                    <Share2 size={18} className="group-hover:rotate-12 transition-transform text-indigo-500" />
+                                    <span className="text-sm">分享配置</span>
                                 </button>
-                                <button onClick={onReset} className="bg-rose-50 border border-rose-100 text-rose-500 font-bold p-3.5 rounded-[22px] active:scale-95 hover:bg-rose-100 transition-all group">
-                                    <X size={18} className="group-hover:rotate-90 transition-transform" />
-                                </button>
+                                <div className="col-span-2 mt-1">
+                                    <button onClick={onReset} className="w-full bg-rose-50 border border-rose-100 text-rose-500 font-bold h-[52px] rounded-[22px] active:scale-95 hover:bg-rose-100 transition-all flex items-center justify-center gap-2 group">
+                                        <X size={18} className="group-hover:rotate-90 transition-transform" />
+                                        <span className="text-sm">清空配置</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
