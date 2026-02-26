@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { ArrowRight, CreditCard, FileText, CheckCircle2, AlertCircle, X, Search, Sparkles, Share2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, CreditCard, FileText, CheckCircle2, AlertCircle, X, Search, Sparkles, Share2, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
@@ -294,7 +294,113 @@ function VisualBuilder({
 
             <GhostCursor x={ghostPos.x} y={ghostPos.y} active={isAiExecuting} status={ghostStatus} />
 
-            <div className="flex-1 space-y-2 pb-20">
+            {/* Mobile Compact View (Visible only on small screens) */}
+            <div className="lg:hidden flex flex-col gap-0 bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200 mb-20 animate-fade-in">
+                {/* Mobile Header: Functional Buttons */}
+                <div className="bg-gradient-to-r from-sky-400 to-blue-500 p-2 flex gap-2">
+                    <button
+                        onClick={() => { if (onAiCheck && !onAiCheck()) return; setShowAiModal(true); }}
+                        className="flex-1 bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold py-1.5 px-3 rounded text-sm shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1"
+                    >
+                        <Sparkles size={14} /> 写配置 (AI)
+                    </button>
+                    <button
+                        onClick={onOpenLibrary}
+                        className="flex-1 bg-white/20 hover:bg-white/30 text-white font-bold py-1.5 px-3 rounded text-sm border border-white/30 active:scale-95 transition-all"
+                    >
+                        推荐配置
+                    </button>
+                    <button
+                        onClick={onOpenLibrary}
+                        className="flex-1 bg-white/10 hover:bg-white/20 text-white font-bold py-1.5 px-3 rounded text-sm active:scale-95 transition-all"
+                    >
+                        粉丝配置
+                    </button>
+                </div>
+
+                {/* Table Header Labels (Simplified) */}
+                <div className="flex bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-400">
+                    <div className="w-[60px] px-2 py-1 border-r border-slate-200">类别</div>
+                    <div className="flex-1 px-2 py-1 border-r border-slate-200">型号</div>
+                    <div className="w-[70px] px-2 py-1 text-right">价格</div>
+                </div>
+
+                {/* Mobile List Items */}
+                <div className="flex flex-col">
+                    {buildList.map((entry) => (
+                        <div
+                            key={entry.id}
+                            ref={(el) => { if (el) rowRefs[entry.id] = el; }}
+                            onClick={() => openSelector(entry)}
+                            className="flex border-b border-slate-100 last:border-b-0 active:bg-slate-50 transition-colors"
+                        >
+                            {/* Blue Category Column */}
+                            <div className="w-[60px] bg-sky-500 text-white flex items-center justify-center py-2 shrink-0">
+                                <span className="text-xs font-black tracking-tighter">{CATEGORY_MAP[entry.category]}</span>
+                            </div>
+
+                            {/* Center Section: Model/Brand */}
+                            <div className="flex-1 min-w-0 bg-white px-2 py-1.5 flex flex-col justify-center border-r border-slate-100">
+                                {entry.category === 'accessory' ? (
+                                    <input
+                                        type="text"
+                                        className="w-full bg-transparent border-none p-0 text-[13px] text-slate-800 font-bold placeholder-slate-300 focus:ring-0 truncate"
+                                        placeholder="输入配件名称..."
+                                        value={entry.customName || ''}
+                                        onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                ) : entry.item ? (
+                                    <div className="text-[13px] font-bold text-slate-800 truncate leading-tight">
+                                        {entry.item.brand} {entry.item.model}
+                                    </div>
+                                ) : (
+                                    <div className="text-[13px] text-sky-500/60 font-medium">选择 {CATEGORY_MAP[entry.category]}</div>
+                                )}
+                            </div>
+
+                            {/* Price Column */}
+                            <div className="w-[70px] flex items-center justify-end px-2 bg-white shrink-0">
+                                <span className="text-[13px] font-black text-slate-900 font-mono italic">
+                                    {(entry.item || entry.customName) ? `¥${entry.customPrice ?? entry.item?.price ?? 0}` : '0'}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Total Bar */}
+                <div className="bg-black text-white p-2.5 flex justify-between items-center shadow-inner">
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-1.5">
+                            <span className="bg-sky-500 text-[10px] font-black px-1 rounded">合计</span>
+                            <span className="text-[10px] font-medium text-slate-300">含装机+走线+三年售后+利润{Math.round(pricing.serviceFeeRate * 100 || 6)}%</span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <span className="text-lg font-black tracking-tighter">¥ {pricing.finalPrice}</span>
+                    </div>
+                </div>
+
+                {/* Mini Action Buttons */}
+                <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 border-t border-slate-200">
+                    <button
+                        onClick={onSave}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-sm shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                    >
+                        <Save size={16} /> 保存
+                    </button>
+                    <button
+                        onClick={onReset}
+                        className="bg-rose-500 hover:bg-rose-600 text-white font-bold py-2 rounded-xl text-sm shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                    >
+                        <X size={16} /> 清空
+                    </button>
+                </div>
+            </div>
+
+            {/* Desktop List View (Hidden on mobile) */}
+            <div className="hidden lg:flex flex-1 flex-col space-y-2 pb-20">
                 {buildList.map((entry) => (
                     <div
                         key={entry.id}
@@ -365,9 +471,7 @@ function VisualBuilder({
                 {/* AI Analysis Report Card - Moved to Bottom & Enlarged */}
                 {aiResult && (
                     <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-3xl p-8 border border-indigo-100 relative overflow-hidden animate-fade-in mt-6 shadow-lg shadow-indigo-100/50">
-                        {/* ... (existing content) ... */}
                         <div className="relative z-10">
-                            {/* ... */}
                             <div className="prose prose-indigo max-w-none">
                                 <p className="text-slate-700 leading-loose text-base font-medium whitespace-pre-wrap">
                                     {aiResult.description}
@@ -376,8 +480,6 @@ function VisualBuilder({
                         </div>
                     </div>
                 )}
-
-
             </div>
             {/* Merged Sidebar */}
             <div className="w-full lg:w-[380px] shrink-0">
@@ -387,13 +489,13 @@ function VisualBuilder({
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
                     <div className="p-6 md:p-8 flex flex-col gap-8 relative z-10">
-                        {/* Box 1: AI & Quick Build */}
-                        <div className="flex flex-col gap-5">
+                        {/* Box 1: AI & Quick Build (Hidden on Mobile as it's in the list header) */}
+                        <div className="hidden lg:flex flex-col gap-5">
                             {/* Prominent AI Button */}
                             <div onClick={() => {
                                 if (onAiCheck && !onAiCheck()) return;
                                 setShowAiModal(true);
-                            }} className="hidden lg:block group relative w-full cursor-pointer transition-all hover:-translate-y-1">
+                            }} className="group relative w-full cursor-pointer transition-all hover:-translate-y-1">
                                 {/* Glowing Backdrop - Softer */}
                                 <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-3xl blur opacity-15 group-hover:opacity-30 transition duration-500"></div>
 
@@ -426,7 +528,7 @@ function VisualBuilder({
                             </div>
 
                             {/* Quick Build */}
-                            <div onClick={onOpenLibrary} className="hidden lg:flex bg-slate-50/80 hover:bg-indigo-50/50 rounded-[20px] p-4 border border-slate-100 cursor-pointer group hover:border-indigo-200 transition-all items-center gap-4">
+                            <div onClick={onOpenLibrary} className="bg-slate-50/80 hover:bg-indigo-50/50 rounded-[20px] p-4 border border-slate-100 cursor-pointer group hover:border-indigo-200 transition-all items-center gap-4">
                                 <div className="w-10 h-10 bg-white shadow-sm text-indigo-500 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110">
                                     <FileText size={18} />
                                 </div>
@@ -440,10 +542,10 @@ function VisualBuilder({
                             </div>
                         </div>
 
-                        <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+                        <div className="hidden lg:block h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
 
-                        {/* Box 2: Price Details */}
-                        <div>
+                        {/* Box 2: Price Details (Hidden on Mobile) */}
+                        <div className="hidden lg:block">
                             <h3 className="font-extrabold text-slate-800 mb-5 flex items-center gap-2"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
                             <div className="space-y-4 mb-6">
                                 <div className="flex justify-between items-center text-sm font-medium">
