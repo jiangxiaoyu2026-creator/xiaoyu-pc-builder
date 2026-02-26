@@ -171,13 +171,7 @@ export default function ClientApp() {
     // Chat control for consult purchase
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [chatInitialMessage, setChatInitialMessage] = useState('');
-    const [remark, setRemark] = useState(() => {
-        return localStorage.getItem('xiaoyu_remark') || '';
-    });
 
-    useEffect(() => {
-        localStorage.setItem('xiaoyu_remark', remark);
-    }, [remark]);
 
 
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -295,7 +289,6 @@ export default function ClientApp() {
 
     const clearBuild = () => {
         setBuildList(DEFAULT_BUILD_TEMPLATE.map(i => ({ ...i, item: null, customPrice: undefined, customName: undefined })));
-        setRemark('');
     };
 
     const updateEntry = (id: string, updates: Partial<BuildEntry>) => setBuildList(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
@@ -727,8 +720,6 @@ export default function ClientApp() {
                             onUpdate={(id, data) => setBuildList(prev => prev.map(e => e.id === id ? { ...e, ...data } : e))}
                             health={healthCheck}
                             onOpenLibrary={() => setShowLibraryModal(true)}
-                            remark={remark}
-                            setRemark={setRemark}
                             pricing={pricing}
                             onAiCheck={handleAiPermission}
                             openAiModal={triggerAiModal}
