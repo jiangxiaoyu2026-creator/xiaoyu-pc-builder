@@ -294,65 +294,63 @@ function VisualBuilder({
                 </div>
 
                 {/* Elegant Mobile List Items */}
-                <div className="p-4 space-y-3 pb-32">
+                <div className="p-2 space-y-1 pb-20">
                     {buildList.map((entry) => (
                         <div
                             key={entry.id}
                             ref={(el) => { if (el) rowRefs[entry.id] = el; }}
                             onClick={() => openSelector(entry)}
-                            className={`relative group bg-white rounded-2xl border transition-all duration-300 active:scale-[0.98] flex items-center p-3 gap-3 ${entry.item || entry.customName
-                                ? 'border-indigo-100 shadow-md shadow-indigo-500/5'
+                            className={`relative group bg-white rounded-xl border transition-all duration-300 active:scale-[0.98] flex items-center p-2 gap-2 ${entry.item || entry.customName
+                                ? 'border-indigo-100 shadow-sm'
                                 : 'border-slate-100 border-dashed bg-slate-50/50'
                                 }`}
                         >
-                            {/* Icon Column (Tech Style) */}
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500 ${entry.item ? 'bg-indigo-50 text-indigo-600 shadow-inner' : 'bg-white text-slate-300 border border-slate-100 shadow-sm'
-                                }`}>
-                                {getIconByCategory(entry.category)}
+                            {/* Category Text Column */}
+                            <div className="w-12 shrink-0">
+                                <span className="text-[11px] font-black tracking-tight text-slate-400">
+                                    {CATEGORY_MAP[entry.category]}
+                                </span>
                             </div>
 
                             {/* Content Column */}
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5 mb-0.5">
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                                        {CATEGORY_MAP[entry.category]}
-                                    </span>
-                                </div>
                                 {entry.category === 'accessory' ? (
                                     <input
                                         type="text"
-                                        className="w-full bg-transparent border-none p-0 text-sm text-slate-800 font-bold placeholder-slate-300 focus:ring-0 truncate"
-                                        placeholder={`输入配件名称...`}
+                                        className="w-full bg-transparent border-none p-0 text-[13px] text-slate-800 font-bold placeholder-slate-300 focus:ring-0 truncate"
+                                        placeholder={`配件名称...`}
                                         value={entry.customName || ''}
                                         onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : entry.item ? (
-                                    <div className="text-[14px] font-bold text-slate-800 truncate leading-tight tracking-tight">
+                                    <div className="text-[13px] font-bold text-slate-700 truncate leading-tight tracking-tight">
                                         {entry.item.brand} {entry.item.model}
                                     </div>
                                 ) : (
-                                    <div className="text-[14px] text-slate-300 font-medium italic">未配备</div>
+                                    <div className="text-[12px] text-slate-300 font-medium italic">未配备</div>
                                 )}
                             </div>
 
                             {/* Price & Actions Column */}
-                            <div className="flex flex-col items-end gap-1.5">
-                                <div className={`text-[14px] font-black font-mono italic transition-colors ${entry.item ? 'text-slate-900' : 'text-slate-300'}`}>
-                                    {(entry.item || entry.customName) ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : '—'}
-                                </div>
+                            <div className="flex items-center gap-2">
+                                {(entry.item || entry.customName) && (
+                                    <div className="text-[13px] font-black font-mono text-slate-900">
+                                        ¥{(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}
+                                    </div>
+                                )}
 
-                                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                                     {entry.category === 'fan' && entry.item && (
-                                        <div className="flex items-center bg-slate-50 rounded-lg p-0.5 border border-slate-100 scale-90 origin-right shadow-inner">
-                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold transition-all">-</button>
-                                            <span className="w-6 text-center text-xs font-bold text-slate-600">{entry.quantity}</span>
-                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold transition-all">+</button>
+                                        <div className="flex items-center bg-slate-50 rounded-lg p-0.5 border border-slate-100 scale-90 origin-right">
+                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-4 h-4 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold transition-all text-[10px]">-</button>
+                                            <span className="w-4 text-center text-[10px] font-bold text-slate-600">{entry.quantity}</span>
+                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-4 h-4 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold transition-all text-[10px]">+</button>
                                         </div>
                                     )}
                                     {(entry.item || entry.customName) && (
                                         <button
-                                            className="w-6 h-6 flex items-center justify-center bg-rose-50 text-rose-400 rounded-lg hover:bg-rose-100 active:scale-90 transition-all border border-rose-100 shadow-sm"
+                                            className="w-5 h-5 flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors"
                                             onClick={() => onUpdate(entry.id, { item: null, customName: '', customPrice: undefined, quantity: 1 })}
                                         >
                                             <X size={12} strokeWidth={3} />
@@ -362,27 +360,6 @@ function VisualBuilder({
                             </div>
                         </div>
                     ))}
-                </div>
-
-                {/* Floating Glass Summary Bar (High-End Style) */}
-                <div className="fixed bottom-24 left-4 right-4 z-30">
-                    <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 p-4 rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex justify-between items-center ring-1 ring-black/5 animate-in slide-in-from-bottom-5 duration-500">
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-slate-900 text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase">Total Estimation</span>
-                                <span className="text-[9px] font-medium text-slate-400">含组装+售后+利润</span>
-                            </div>
-                            <div className="text-white/30 text-[9px] tracking-widest font-mono uppercase">Performance & Quality First</div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="text-right">
-                                <span className="text-white text-2xl font-black tracking-tighter font-mono italic">¥{pricing.finalPrice}</span>
-                            </div>
-                            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20 active:scale-90 transition-all cursor-pointer">
-                                <CheckCircle2 size={20} className="text-slate-900" />
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -742,8 +719,8 @@ function VisualBuilder({
                                                     ref={(el) => { if (el) modalItemRefs[item.id] = el; }}
                                                     onClick={() => !isOutOfStock && handleSelect(item)}
                                                     className={`group relative flex items-center gap-5 p-4 rounded-[28px] bg-white border border-slate-100/80 transition-all duration-300 active:scale-[0.98] ${isOutOfStock
-                                                            ? 'opacity-50 grayscale cursor-not-allowed'
-                                                            : 'hover:border-indigo-100 hover:shadow-[0_12px_40px_rgba(79,70,229,0.06)] cursor-pointer'
+                                                        ? 'opacity-50 grayscale cursor-not-allowed'
+                                                        : 'hover:border-indigo-100 hover:shadow-[0_12px_40px_rgba(79,70,229,0.06)] cursor-pointer'
                                                         }`}
                                                 >
                                                     {/* Product Image Wrapper */}
