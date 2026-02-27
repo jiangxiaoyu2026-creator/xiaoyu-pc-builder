@@ -4,6 +4,10 @@ on:
   push:
     branches: [ "main", "master" ]
 
+concurrency:
+  group: deploy-to-aliyun
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -38,5 +42,5 @@ jobs:
             cd /root/pcbuilder
             # 如果存在老旧的打包镜像，清理一下节约空间
             docker system prune -f
-            docker-compose build --no-cache
+            docker-compose build
             docker-compose up -d --force-recreate
