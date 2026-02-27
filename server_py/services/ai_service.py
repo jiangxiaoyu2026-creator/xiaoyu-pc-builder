@@ -53,21 +53,35 @@ class AiService:
         
         # 提取用户可能点名的硬件
         user_prompt_lower = user_prompt.lower()
+        import re
+        # 提取用户输入中的“纯字母数字”片段作为强匹配因子
+        prompt_segments = set(re.findall(r'[a-zA-Z0-9]{3,}', user_prompt_lower))
+        
         forced_items = []
         for item in all_hardware:
-            # 如果用户的提示词包含了该硬件的型号（需大于3个字符避免误杀）或品牌+部分型号
-            model_clean = item.model.lower().replace(" ", "")
-            if len(model_clean) > 3 and model_clean in user_prompt_lower:
+            model_lower = item.model.lower()
+            model_clean = model_lower.replace(" ", "").replace("-", "")
+            brand_lower = item.brand.lower()
+            
+            # 1. 完整型号名包含匹配
+            prompt_clean = user_prompt_lower.replace(" ", "").replace("-", "")
+            if len(model_clean) > 4 and model_clean in prompt_clean:
                 forced_items.append(item)
                 continue
-            # 处理例如 "七彩虹 5050" 的模糊匹配
-            brand_lower = item.brand.lower()
-            if brand_lower in user_prompt_lower:
-                # 检查型号中的关键词是否也在提示词中
-                keywords = item.model.lower().split()
-                if keywords and all(kw in user_prompt_lower for kw in keywords if len(kw) > 2):
+                
+            # 2. 品牌匹配 + 关键型号匹配
+            if brand_lower in user_prompt_lower or (len(brand_lower) > 2 and brand_lower in prompt_clean):
+                # 提取型号中的数字或英文核心代号
+                model_segments = re.findall(r'[a-zA-Z0-9]{3,}', model_lower)
+                # 如果这些代号出现在用户的提示词中，则认为命中（比如 5600X, 4060, A520）
+                if any(seg in user_prompt_lower for seg in model_segments):
                     forced_items.append(item)
-        
+                    continue
+            
+            # 3. 如果用户输入了极其具体的片段（如 Ti600），哪怕品牌没写对也算
+            if any(seg in model_lower for seg in prompt_segments if len(seg) >= 4):
+                forced_items.append(item)
+
         categories = {}
         for item in all_hardware:
             cat = item.category
@@ -80,10 +94,10 @@ class AiService:
                 
             if cat in ratios:
                 min_ratio, max_ratio = ratios[cat]
-                # Relaxed tolerance (1.5x) to allow high-end parts in inventory even for tight budgets
-                tolerance = 1.6 if cat in ['gpu', 'cpu'] else 1.4
+                # 稍微放宽容差以支持更高预算
+                tolerance = 1.8 if cat in ['gpu', 'cpu'] else 1.5
                 if item.price > (budget * max_ratio * tolerance): continue
-                if item.price < (budget * min_ratio * 0.3): continue
+                if item.price < (budget * min_ratio * 0.2): continue
                 
             categories[cat].append(item)
             
@@ -95,47 +109,37 @@ class AiService:
                 items = all_cat_items[:2]
 
             # 分离出用户强制点名的和普通的
-            forced_cat_items = [i for i in items if i in forced_items]
-            normal_cat_items = [i for i in items if i not in forced_items]
-
+            forced_cat_items = []
+            seen_ids = set()
+            for i in items:
+                if i in forced_items and i.id not in seen_ids:
+                    forced_cat_items.append(i)
+                    seen_ids.add(i.id)
+            
+            normal_cat_items = [i for i in items if i.id not in seen_ids]
             normal_cat_items.sort(key=lambda x: x.price)
-            # 给每个类别留8个空位，优先塞入点名的硬件
-            spots_left = 8 - len(forced_cat_items)
+            
+            # 每个类别最多扩充到 12 个候选项，确保 AI 有得选
+            spots_left = 12 - len(forced_cat_items)
             selected = forced_cat_items.copy()
             
             if spots_left > 0 and normal_cat_items:
-                selected.extend(normal_cat_items[::len(normal_cat_items)//spots_left + 1][:spots_left] if len(normal_cat_items) > spots_left else normal_cat_items)
+                # 均匀采样
+                step = max(1, len(normal_cat_items) // spots_left)
+                sampled_normals = normal_cat_items[::step][:spots_left]
+                selected.extend(sampled_normals)
             
             for item in selected:
-                # Ensure specs is a dict
-                specs = item.specs
-                if isinstance(specs, str):
-                    try: specs = json.loads(specs)
-                    except: specs = {}
-                
-                # Inference helper (reusing logic from generator but for inventory prep)
-                model_upper = item.model.upper()
-                memory_type = specs.get('memoryType')
-                socket = specs.get('socket')
-                
-                if not memory_type:
-                    if 'DDR5' in model_upper or 'D5' in model_upper: memory_type = 'DDR5'
-                    elif 'DDR4' in model_upper or 'D4' in model_upper: memory_type = 'DDR4'
-                
-                if item.category == 'mainboard' and not socket:
-                    if any(chip in model_upper for chip in ['X870', 'B650', 'X670', 'A620']): socket = 'AM5'
-                    elif any(chip in model_upper for chip in ['B550', 'X570', 'B450', 'A320']): socket = 'AM4'
-                    elif any(chip in model_upper for chip in ['Z790', 'B760', 'Z690', 'B660']): socket = 'LGA1700'
-
+                hw_specs = self._get_inferred_specs(item)
                 final_list.append({
                     "id": item.id,
                     "category": item.category,
                     "brand": item.brand,
                     "model": item.model,
                     "price": item.price,
-                    "memoryType": memory_type, # Top level for AI clarity
-                    "socket": socket,           # Top level for AI clarity
-                    "specs": ", ".join(f"{k}: {v}" for k, v in specs.items() if v)
+                    "memoryType": hw_specs.get('memoryType'),
+                    "socket": hw_specs.get('socket'),
+                    "specs": ", ".join(f"{k}: {v}" for k, v in hw_specs.items() if v and k not in ['memoryType', 'socket'])
                 })
         return final_list
 
@@ -264,9 +268,10 @@ class AiService:
 模板风扇数：{best_template['fan_count']} 把。
 
 **你必须将这套模板作为基础骨架（优先抄作业）：**
-1. 仅当用户点名要求某个模板中没有的配件时，才去替换它（例如模板是13400F，用户非要13600K）。
+1. **最高优先级**：如果用户点名要求了具体的配件（哪怕只有一个），你**必须优先满足用户的点名**，而不是盲从模板（例如模板是13400F，用户点名5600X，你必须换成5600X）。
 2. 如果模板中的某个配件在当前的【库存清单】中找不到原型号，请在库存中寻找同级别的平替。
 3. 如果模板包含明确的风扇数量，请你在库存中选一款合适的机箱风扇并将数量设为 {best_template['fan_count']}。
+4. **一致性检查**：你输出的 `description` 描述文字中提到的型号，必须和你 `items` JSON 字段中返回的 `id` 对应的型号**完全一致**。禁止说一套做一套！
 """
         else:
             system_prompt += "没有找到任何相似的完美模板，请遵循下方的【专家级装机规则】，自行从库存中搭配出最优解。"
@@ -294,7 +299,7 @@ class AiService:
 {{
   "items": {{ "cpu": "id", "mainboard": "id", "gpu": "id", "ram": "id", "disk": "id", "power": "id", "cooling": "id", "case": "id", "fan": {{ "id": "fan_id_or_null", "count": 数字 }}, "monitor": "id_or_null" }},
   "totalPrice": (数字),
-  "description": "200字配单详细思路。必须向用户解释清楚【为什么】这样选（比如为什么要选这么大功率的电源，为什么给 i5 选用风冷省钱买显卡）。如果使用了配置广场的骨架，也提一嘴参考了高分作业。体现你的专业性。",
+  "description": "200字配单详细思路。必须向用户解释清楚【为什么】这样选。如果用户有点名需求，请在描述开头明确表示‘已按照您的要求选择了XXX’。如果使用了配置广场的骨架，也提一嘴参考了高分作业。体现你的专业性。如果是为了兼容性做了自动替换（如主板插槽不匹配），也请详细说明。",
   "evaluation": {{ "score": 90, "verdict": "神评总结词", "pros": [], "cons": [], "summary": "一句话点评" }}
 }}
 """
@@ -394,14 +399,25 @@ class AiService:
         specs = {**specs}
         model_upper = hardware.model.upper()
         
+        # 1. 插槽推断
+        if hardware.category == 'mainboard' and not specs.get('socket'):
+            if any(chip in model_upper for chip in ['X870', 'B650', 'X670', 'A620']): specs['socket'] = 'AM5'
+            elif any(chip in model_upper for chip in ['B550', 'X570', 'B450', 'A520', 'A320']): specs['socket'] = 'AM4'
+            elif any(chip in model_upper for chip in ['Z790', 'B760', 'Z690', 'B660', 'H610', 'Z590', 'B560', 'H510']): specs['socket'] = 'LGA1700'
+            elif any(chip in model_upper for chip in ['Z490', 'B460', 'H410']): specs['socket'] = 'LGA1200'
+        
+        # 2. 内存类型推断
         if not specs.get('memoryType'):
             if 'DDR5' in model_upper or 'D5' in model_upper: specs['memoryType'] = 'DDR5'
             elif 'DDR4' in model_upper or 'D4' in model_upper: specs['memoryType'] = 'DDR4'
-        
-        if hardware.category == 'mainboard' and not specs.get('socket'):
-            if any(chip in model_upper for chip in ['X870', 'B650', 'X670', 'A620']): specs['socket'] = 'AM5'
-            elif any(chip in model_upper for chip in ['B550', 'X570', 'B450', 'A320']): specs['socket'] = 'AM4'
-            elif any(chip in model_upper for chip in ['Z790', 'B760', 'Z690', 'B660']): specs['socket'] = 'LGA1700'
+            elif hardware.category == 'mainboard':
+                # 根据插槽兜底推断
+                soc = specs.get('socket')
+                if soc == 'AM5': specs['memoryType'] = 'DDR5'
+                elif soc in ['AM4', 'LGA1200']: specs['memoryType'] = 'DDR4'
+                # LGA1700 比较尴尬，既有 D4 也有 D5，如果不带 D5 标识通常默认为 D4 (或由具体品牌决定)
+                elif soc == 'LGA1700' and 'D5' not in model_upper: specs['memoryType'] = 'DDR4'
+
         return specs
 
     def _find_compatible_hardware(self, category: str, criteria: Dict[str, Any], max_price: float) -> Optional[Dict]:
@@ -415,6 +431,7 @@ class AiService:
             cand_specs = self._get_inferred_specs(cand)
             match = True
             for k, v in criteria.items():
+                if not v: continue # 假如某项标准是 None，不参与强杀
                 if cand_specs.get(k) != v:
                     match = False
                     break
@@ -423,7 +440,7 @@ class AiService:
         
         if not eligible: return None
         
-        # 选个价格接近或低于 max_price 的
+        # 选个价格价格差距最小的
         eligible.sort(key=lambda x: abs(x.price - max_price))
         best = eligible[0]
         return {
