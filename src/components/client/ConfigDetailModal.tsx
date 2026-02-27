@@ -343,7 +343,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
 
                                 {/* Image Gallery */}
                                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
-                                    {config.showcaseImages.map((img, idx) => (
+                                    {(Array.isArray(config.showcaseImages) ? config.showcaseImages : (typeof config.showcaseImages === 'string' ? JSON.parse(config.showcaseImages || '[]') : [])).map((img: string, idx: number) => (
                                         <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-black/5 cursor-zoom-in hover:opacity-90 transition-opacity"
                                             onClick={(e) => {
                                                 e.stopPropagation();
