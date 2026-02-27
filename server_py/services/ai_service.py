@@ -1,5 +1,6 @@
 import json
 import random
+from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from sqlmodel import Session, select, col
 from ..models import Hardware, Config, Setting, ChatSettings
@@ -107,39 +108,86 @@ class AiService:
                 })
         return final_list
 
-    def find_reference_configs(self, budget: int, usage: str) -> List[Dict]:
+    def find_reference_configs(self, budget: int, user_prompt: str) -> Optional[Dict]:
         """
-        寻找并解析相似的高质量社区配置，提取“装机逻辑”供 AI 学习。
+        寻找匹配的最佳单套神评配置作为模板
         """
+        # 1. 标签映射
+        mapped_tags = []
+        prompt_lower = user_prompt.lower()
+        if any(kw in prompt_lower for kw in ["实用", "便宜", "划算", "有限", "性价比"]):
+            mapped_tags.extend(["性价比", "性价比策略"])
+        if any(kw in prompt_lower for kw in ["小钢炮", "桌面台式机", "小主机", "占空间", "itx"]):
+            mapped_tags.extend(["ITX", "办公"])
+        if any(kw in prompt_lower for kw in ["生产力", "视频剪辑", "编程", "设计", "工作"]):
+            mapped_tags.extend(["设计", "剪辑", "工作"])
+        if any(kw in prompt_lower for kw in ["海景房", "好看", "发光", "白"]):
+            mapped_tags.extend(["海景房", "白色"])
+
         min_price, max_price = budget * 0.8, budget * 1.2
+        now = datetime.utcnow()
+        thirty_days_ago = now - timedelta(days=30)
+        
         statement = select(Config).where(
             Config.status == "published",
             Config.isRecommended == True,
             Config.totalPrice >= min_price,
-            Config.totalPrice <= max_price
-        ).order_by(Config.likes.desc()).limit(3)
+            Config.totalPrice <= max_price,
+            Config.createdAt >= thirty_days_ago
+        ).order_by(Config.likes.desc()).limit(20)
         
-        configs = self.session.exec(statement).all()
-        refs = []
-        for c in configs:
-            # 强化 RAG：提取推荐配置的核心硬件型号文字，让 AI 理解“搭配精髓”
-            comp_details = []
-            if isinstance(c.items, dict):
-                for cat, item_id in c.items.items():
-                    if item_id:
-                        hw = self.session.get(Hardware, item_id)
-                        if hw:
-                            hw_specs = self._get_inferred_specs(hw)
-                            spec_str = f"({hw_specs.get('socket', '')}, {hw_specs.get('memoryType', '')})" if hw_specs else ""
-                            comp_details.append(f"{cat}: {hw.brand} {hw.model} {spec_str}")
+        recent_configs = self.session.exec(statement).all()
+        if not recent_configs:
+            return None
+
+        # 评分机制挑选最符合的模板
+        best_config = None
+        best_score = -1
+
+        for c in recent_configs:
+            score = c.likes
+            config_text = f"{c.title} {c.tags}".lower()
             
-            refs.append({
-                "title": c.title,
-                "price": c.totalPrice,
-                "tags": c.tags,
-                "logic": "; ".join(comp_details) if comp_details else "通用搭配"
-            })
-        return refs
+            for tag in mapped_tags:
+                if tag.lower() in config_text:
+                    score += 20
+            
+            for word in user_prompt.split():
+                if len(word) > 1 and word.lower() in config_text:
+                    score += 10
+
+            if score > best_score:
+                best_score = score
+                best_config = c
+                
+        if not best_config:
+            return None
+
+        comp_details = []
+        fan_count = 0
+        if isinstance(best_config.items, dict):
+            for cat, item_data in best_config.items.items():
+                if cat == 'fan':
+                    if isinstance(item_data, dict) and 'count' in item_data:
+                        fan_count = item_data['count']
+                    elif isinstance(item_data, list):
+                        fan_count = sum(i.get('count', 1) if isinstance(i, dict) else 1 for i in item_data)
+
+                item_id = item_data.get('id') if isinstance(item_data, dict) else item_data
+                if item_id and isinstance(item_id, str):
+                    hw = self.session.get(Hardware, item_id)
+                    if hw:
+                        hw_specs = self._get_inferred_specs(hw)
+                        spec_str = f"({hw_specs.get('socket', '')}, {hw_specs.get('memoryType', '')})" if hw_specs else ""
+                        comp_details.append(f"{cat}: {hw.brand} {hw.model} {spec_str}")
+        
+        return {
+            "title": best_config.title,
+            "price": best_config.totalPrice,
+            "tags": best_config.tags,
+            "logic": "; ".join(comp_details) if comp_details else "通用搭配",
+            "fan_count": fan_count
+        }
 
     def generate_build(self, user_prompt: str) -> Dict:
         if not self.client:
@@ -153,7 +201,7 @@ class AiService:
         if any(kw in user_prompt for kw in ["办公", "生产力", "剪辑", "设计", "代码"]): usage = 'work'
             
         inventory = self.retrieve_candidates(budget, usage)
-        references = self.find_reference_configs(budget, usage)
+        best_template = self.find_reference_configs(budget, user_prompt)
         
         # Build persona instruction
         persona_instructions = {
@@ -174,11 +222,25 @@ class AiService:
         strategy_text = strategy_instructions.get(self.strategy, strategy_instructions['balanced'])
         
         system_prompt = f"""你是一个顶级的电脑装机大师（小鱼装机AI）。
-你的任务是根据用户的需求，从【库存清单】中精准勾选硬件，组成一台电脑主机。
+你的任务是根据用户的需求，从【库存清单】中精准挑选硬件，组成一台电脑主机。
 
-**重要学习任务：**
-- 参考【推荐方案】中的搭配逻辑（例如 CPU 与显卡的档次比例、散热器的选择）。
-- 注意【推荐方案】可能使用旧型号或已下架产品，请在【库存清单】中寻找当前最合适的替代品。
+**【当前配单匹配策略】：**
+"""
+        if best_template:
+            system_prompt += f"""我已经在【高分配置广场】中找到了最符合用户需求的满分模板配置单：
+模板名称：{best_template['title']}
+骨架组合：{best_template['logic']}
+模板风扇数：{best_template['fan_count']} 把。
+
+**你必须将这套模板作为基础骨架（优先抄作业）：**
+1. 仅当用户点名要求某个模板中没有的配件时，才去替换它（例如模板是13400F，用户非要13600K）。
+2. 如果模板中的某个配件在当前的【库存清单】中找不到原型号，请在库存中寻找同级别的平替。
+3. 如果模板包含明确的风扇数量，请你在库存中选一款合适的机箱风扇并将数量设为 {best_template['fan_count']}。
+"""
+        else:
+            system_prompt += "没有找到任何相似的完美模板，请遵循下方的【专家级装机规则】，自行从库存中搭配出最优解。"
+
+        system_prompt += f"""
 
 **你的说话风格：**
 {persona_text}
@@ -186,23 +248,23 @@ class AiService:
 **你的配单策略：**
 {strategy_text}
 
-**⚠️ 兼容性指令（强制执行）：**
-1. **核对 socket**：CPU 的 `socket` 必须与主板的 `socket` 完全一致。
-2. **核对 memoryType**：主板的 `memoryType` 必须与内存的 `memoryType` 完全一致。如果不一致，优先保证主板，更换内存型号。
-3. **核对功耗**：电源功率需留有冗余。
+**⚠️ 专家级装机指令（强制红线规则）：**
+1. **基础兼容**：CPU 的 socket 必须与主板的 socket 匹配。主板支持 DDR4 就必须搭 DDR4 内存，DDR5 同理。
+2. **严禁机械硬盘**：禁止使用机械硬盘(HDD)做系统主盘。预算 > 3000 元必须优先选择 1TB 及以上的 NVMe PCIe 固态硬盘(SSD)。
+3. **电源冗余底线**：电源额定功率必须大于 `(CPU TDP功耗 + GPU TDP功耗) * 1.5 + 50W`，绝不选刚好压线的电源！不确定具体数值就往上多留 100W。
+4. **散热器精准化**：中低端 CPU（如 i3/i5/i7非K/R5非X）强制首选【风冷散热器】以节省预算；只有遇到高端高发热 CPU（i7-K/i9/R9），或是客户明确要求“海景房/全白/必须上水冷”时，才可使用【240/360 水冷】。
+5. **显示器去留**：默认情况**绝对不选显示器**(将 monitor 返回 null)。唯一的例外是用户在需求里明确说出“包含一台电脑屏幕”之类的需求。
+6. **满足点名要求**：哪怕客户的要求很不合理，只要他在需求里说了要用具体的哪个配置（如“给我上块 4090”），只要库存里有，你必须无脑选进去。
 
 【库存清单】：
 {json.dumps(inventory, ensure_ascii=False)}
 
-【推荐参考方案】：
-{json.dumps(references, ensure_ascii=False)}
-
 输出严格 JSON 格式：
 {{
-  "items": {{ "cpu": "id", "mainboard": "id", "gpu": "id", "ram": "id", "disk": "id", "power": "id", "cooling": "id", "case": "id", "fan": "id", "monitor": "id" }},
+  "items": {{ "cpu": "id", "mainboard": "id", "gpu": "id", "ram": "id", "disk": "id", "power": "id", "cooling": "id", "case": "id", "fan": {{ "id": "fan_id_or_null", "count": 数字 }}, "monitor": "id_or_null" }},
   "totalPrice": (数字),
-  "description": "200字配单思路。",
-  "evaluation": {{ "score": 90, "verdict": "神评", "pros": [], "cons": [], "summary": "点评" }}
+  "description": "200字配单详细思路。必须向用户解释清楚【为什么】这样选（比如为什么要选这么大功率的电源，为什么给 i5 选用风冷省钱买显卡）。如果使用了配置广场的骨架，也提一嘴参考了高分作业。体现你的专业性。",
+  "evaluation": {{ "score": 90, "verdict": "神评总结词", "pros": [], "cons": [], "summary": "一句话点评" }}
 }}
 """
 
@@ -227,19 +289,34 @@ class AiService:
             resolved_items = {}
             if "items" in raw_result:
                 # 1. 第一遍解析
-                for cat, item_id in raw_result["items"].items():
+                for cat, item_data in raw_result["items"].items():
+                    if not item_data:
+                        resolved_items[cat] = None
+                        continue
+                        
+                    item_id = item_data
+                    fan_count = 1
+                    
+                    if cat == 'fan' and isinstance(item_data, dict):
+                        item_id = item_data.get('id')
+                        fan_count = item_data.get('count', 1)
+                        
                     if not item_id or not isinstance(item_id, str):
                         resolved_items[cat] = None
                         continue
-                    
+
                     hw = self.session.get(Hardware, item_id)
                     if hw:
                         # 注入推断逻辑得到的 specs
                         hw.specs = self._get_inferred_specs(hw)
-                        resolved_items[cat] = {
+                        resolved_item = {
                             "id": hw.id, "category": hw.category, "brand": hw.brand, "model": hw.model, 
                             "price": hw.price, "specs": hw.specs, "image": hw.image
                         }
+                        if cat == 'fan':
+                            resolved_item['count'] = fan_count
+                            resolved_item['price'] = hw.price * fan_count
+                        resolved_items[cat] = resolved_item
                     else:
                         resolved_items[cat] = None
 

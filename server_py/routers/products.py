@@ -241,15 +241,18 @@ async def get_spec_values(
             
     return sorted(list(values))
 
-def _serialize_specs(specs) -> str:
-    """将 specs 转换为 JSON 字符串"""
+def _serialize_specs(specs) -> dict:
+    """确保 specs 是字典（适应 JSON 字段）"""
     if specs is None:
-        return "{}"
-    if isinstance(specs, str):
-        return specs
+        return {}
     if isinstance(specs, dict):
-        return json.dumps(specs, ensure_ascii=False)
-    return "{}"
+        return specs
+    if isinstance(specs, str):
+        try:
+            return json.loads(specs)
+        except Exception:
+            return {}
+    return {}
 
 def _log_price_change(session: Session, product: Hardware, old_price: float, new_price: float):
     """智能记录价格变动：2小时内的变动合并为一条记录"""

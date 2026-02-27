@@ -141,6 +141,10 @@ export interface ChatSettings {
     autoReplyContent?: string;
 }
 
+export interface AuthSettings {
+    inviteCodeEnabled: boolean;
+}
+
 export interface SMSSettings {
     provider: 'aliyun' | 'tencent' | 'mock';
     accessKeyId: string;

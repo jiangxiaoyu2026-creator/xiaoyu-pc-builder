@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, User, Lock, ArrowRight, Gift } from 'lucide-react';
 import { UserItem } from '../../types/adminTypes';
 import { storage } from '../../services/storage';
@@ -20,10 +20,19 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
     // Captcha State (Removed)
 
 
-    // Invite Code State - Mandatory
+    // Invite Code State - Mandatory when enabled
     const [inviteCode, setInviteCode] = useState(initialInviteCode || '');
+    const [inviteCodeEnabled, setInviteCodeEnabled] = useState(true);
 
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            const settings = await storage.getAuthSettings();
+            setInviteCodeEnabled(settings.inviteCodeEnabled);
+        };
+        loadSettings();
+    }, []);
 
 
 
@@ -61,7 +70,7 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
 
             if (password !== confirmPassword) { setError('两次输入的密码不一致'); return; }
 
-            if (!inviteCode) { setError('请输入邀请码'); return; }
+            if (inviteCodeEnabled && !inviteCode) { setError('请输入邀请码'); return; }
 
             // Call Backend API to register
             try {
@@ -164,7 +173,7 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
                             </div>
                         </div>
 
-                        {mode === 'register' && (
+                        {mode === 'register' && inviteCodeEnabled && (
                             <>
                                 <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">
                                     <label className="text-sm font-medium text-slate-700 ml-1">确认密码</label>
@@ -175,7 +184,7 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
                                         <input
                                             type="password"
                                             value={confirmPassword}
-                                            onChange={e => setConfirmPassword(e.target.value)}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
                                             className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-slate-700"
                                             placeholder="请再次输入密码"
                                         />
@@ -205,6 +214,23 @@ export default function LoginModal({ onClose, onLoginSuccess, initialInviteCode 
                                     </div>
                                 </div>
                             </>
+                        )}
+                        {mode === 'register' && !inviteCodeEnabled && (
+                            <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">
+                                <label className="text-sm font-medium text-slate-700 ml-1">确认密码</label>
+                                <div className="relative">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                        <Lock size={18} />
+                                    </div>
+                                    <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-slate-700"
+                                        placeholder="请再次输入密码"
+                                    />
+                                </div>
+                            </div>
                         )}
 
                         {error && (

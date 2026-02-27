@@ -143,10 +143,10 @@ async def create_used_item(
         price=item_data.get("price"),
         originalPrice=item_data.get("originalPrice"),
         condition=item_data.get("condition"),
-        images=json.dumps(item_data.get("images", [])),
+        images=item_data.get("images", []),
         description=item_data.get("description"),
         status=item_data.get("status", "pending") if user.role == "admin" else "pending",
-        inspectionReport=json.dumps(item_data.get("inspectionReport")) if item_data.get("inspectionReport") else "null"
+        inspectionReport=item_data.get("inspectionReport")
     )
     session.add(new_item)
     session.commit()
@@ -170,10 +170,6 @@ async def update_used_item(
     
     for key, value in item_data.items():
         if hasattr(item, key):
-            if key == "images" and isinstance(value, list):
-                value = json.dumps(value)
-            if key == "inspectionReport" and value is not None:
-                value = json.dumps(value)
             setattr(item, key, value)
             
     session.add(item)

@@ -73,24 +73,38 @@ async def register(request: Request, user_data: dict, session: Session = Depends
     password = user_data.get("password")
     invite_code = user_data.get("inviteCode")
     
+    # Check registration settings
+    from ..models import Setting
+    import json
+    auth_setting_record = session.get(Setting, "authSettings")
+    invite_code_enabled = True
+    if auth_setting_record:
+        try:
+            auth_settings = json.loads(auth_setting_record.value)
+            invite_code_enabled = auth_settings.get("inviteCodeEnabled", True)
+        except:
+            pass
+    
     if not username or not password:
         raise HTTPException(status_code=400, detail="用户名和密码均为必填项")
     
-    if not invite_code:
-        raise HTTPException(status_code=400, detail="请输入邀请码")
+    code_record = None
+    if invite_code_enabled:
+        if not invite_code:
+            raise HTTPException(status_code=400, detail="请输入邀请码")
+            
+        # Validate Invitation Code
+        from ..models import InvitationCode
+        code_record = session.get(InvitationCode, invite_code)
         
-    # Validate Invitation Code
-    from ..models import InvitationCode
-    code_record = session.get(InvitationCode, invite_code)
-    
-    if not code_record:
-        raise HTTPException(status_code=400, detail="邀请码无效")
-        
-    if code_record.status != "active":
-        raise HTTPException(status_code=400, detail="邀请码已禁用")
-        
-    if code_record.usedCount >= code_record.maxUses:
-        raise HTTPException(status_code=400, detail="邀请码使用次数已达上限")
+        if not code_record:
+            raise HTTPException(status_code=400, detail="邀请码无效")
+            
+        if code_record.status != "active":
+            raise HTTPException(status_code=400, detail="邀请码已禁用")
+            
+        if code_record.usedCount >= code_record.maxUses:
+            raise HTTPException(status_code=400, detail="邀请码使用次数已达上限")
     
     from datetime import datetime, timedelta
     
@@ -119,13 +133,14 @@ async def register(request: Request, user_data: dict, session: Session = Depends
         password=get_password_hash(password),
         role="user",
         status="active",
-        invitedBy=code_record.creatorId,
+        invitedBy=code_record.creatorId if code_record else None,
         inviteCode=new_user_invite_code,
         vipExpireAt=int(vip_expire.timestamp() * 1000),
         registerIp=client_ip
     )
     session.add(new_user)
     
+    from ..models import InvitationCode
     # Assign a new invitation code to the new user
     new_code_record = InvitationCode(
         code=new_user_invite_code,
@@ -134,29 +149,30 @@ async def register(request: Request, user_data: dict, session: Session = Depends
     )
     session.add(new_code_record)
     
-    # Update used count of the invitation code
-    code_record.usedCount += 1
-    code_record.lastUsedAt = datetime.utcnow().isoformat()
-    session.add(code_record)
-    
-    # Update inviter stats (Grant 7 days VIP)
-    inviter = session.get(User, code_record.creatorId)
-    if inviter:
-        inviter.inviteCount += 1
-        inviter.inviteVipDays += 7
+    if invite_code_enabled and code_record:
+        # Update used count of the invitation code
+        code_record.usedCount += 1
+        code_record.lastUsedAt = datetime.utcnow().isoformat()
+        session.add(code_record)
         
-        # Extend VIP
-        current_time = datetime.utcnow()
-        if inviter.vipExpireAt and inviter.vipExpireAt > current_time.timestamp() * 1000:
-            # Add to existing
-            existing_dt = datetime.fromtimestamp(inviter.vipExpireAt / 1000)
-            new_expire = existing_dt + timedelta(days=7)
-        else:
-            # Start from now
-            new_expire = current_time + timedelta(days=7)
+        # Update inviter stats (Grant 7 days VIP)
+        inviter = session.get(User, code_record.creatorId)
+        if inviter:
+            inviter.inviteCount += 1
+            inviter.inviteVipDays += 7
             
-        inviter.vipExpireAt = int(new_expire.timestamp() * 1000)
-        session.add(inviter)
+            # Extend VIP
+            current_time = datetime.utcnow()
+            if inviter.vipExpireAt and inviter.vipExpireAt > current_time.timestamp() * 1000:
+                # Add to existing
+                existing_dt = datetime.fromtimestamp(inviter.vipExpireAt / 1000)
+                new_expire = existing_dt + timedelta(days=7)
+            else:
+                # Start from now
+                new_expire = current_time + timedelta(days=7)
+                
+            inviter.vipExpireAt = int(new_expire.timestamp() * 1000)
+            session.add(inviter)
     
     session.commit()
     session.refresh(new_user)

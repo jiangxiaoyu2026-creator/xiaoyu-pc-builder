@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Calculator, Tag, Trash2, Plus, Download, Upload, Pin, Sparkles, X } from 'lucide-react';
-import { PricingStrategy, DiscountTier, PopupSettings, SystemAnnouncementSettings, AnnouncementItem } from '../../types/adminTypes';
+import { PricingStrategy, DiscountTier, PopupSettings, SystemAnnouncementSettings, AnnouncementItem, AuthSettings } from '../../types/adminTypes';
 import { storage } from '../../services/storage';
 import ConfirmModal from '../common/ConfirmModal';
 
@@ -22,6 +22,10 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
         theme: 'default'
     });
 
+    const [authSettings, setAuthSettings] = useState<AuthSettings>({
+        inviteCodeEnabled: true
+    });
+
     const [announcementSettings, setAnnouncementSettings] = useState<SystemAnnouncementSettings>({
         enabled: true,
         items: []
@@ -31,6 +35,7 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
 
     useEffect(() => {
         storage.getPopupSettings().then(setPopupSettings);
+        storage.getAuthSettings().then(setAuthSettings);
         storage.getSystemAnnouncement().then(s => {
             setAnnouncementSettings(s);
             // Small delay to allow initial render before enabling auto-save
@@ -61,6 +66,17 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
 
         return () => clearTimeout(timer);
     }, [popupSettings]);
+
+    // Debounced auto-save for auth settings
+    useEffect(() => {
+        if (!isLoadedRef.current) return;
+
+        const timer = setTimeout(() => {
+            storage.saveAuthSettings(authSettings);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [authSettings]);
 
 
 
@@ -197,6 +213,37 @@ export default function SettingsView({ strategy, setStrategy }: { strategy: Pric
                             <input type="text" placeholder="名称 (如: 老板价)" className="flex-1 border border-slate-200 rounded-lg p-2 text-sm" value={newTier.name} onChange={e => setNewTier({ ...newTier, name: e.target.value })} />
                             <input type="number" placeholder="系数 (0.9)" className="w-20 border border-slate-200 rounded-lg p-2 text-sm" value={newTier.multiplier} onChange={e => setNewTier({ ...newTier, multiplier: parseFloat(e.target.value) })} />
                             <button onClick={addTier} className="bg-slate-900 text-white p-2 rounded-lg hover:bg-indigo-600"><Plus size={20} /></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 注册设置 */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span className="text-2xl">🛡️</span> 注册安全设置
+                    </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <div>
+                            <h4 className="font-bold text-slate-700">注册强制输入邀请码</h4>
+                            <p className="text-xs text-slate-500 mt-1">
+                                开启后，新用户注册必须填写有效且未过期的邀请码。关闭后所有人均可直接注册。
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-3 ml-4">
+                            <span className={`text-sm font-bold ${authSettings.inviteCodeEnabled ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                {authSettings.inviteCodeEnabled ? '已开启' : '已关闭'}
+                            </span>
+                            <button
+                                onClick={() => setAuthSettings({ ...authSettings, inviteCodeEnabled: !authSettings.inviteCodeEnabled })}
+                                className={`w-12 h-6 rounded-full transition-colors relative flex-shrink-0 ${authSettings.inviteCodeEnabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                            >
+                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${authSettings.inviteCodeEnabled ? 'left-7' : 'left-1'}`} />
+                            </button>
                         </div>
                     </div>
                 </div>

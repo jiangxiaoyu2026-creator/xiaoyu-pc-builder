@@ -198,9 +198,9 @@ async def create_config(
         title=config_data.get("title", "未命名配置"),
         description=config_data.get("description", ""),
         status=config_data.get("status", "draft"),
-        evaluation=json.dumps(config_data.get("evaluation", {}), ensure_ascii=False) if isinstance(config_data.get("evaluation"), dict) else config_data.get("evaluation", "{}"),
-        items=json.dumps(config_data.get("items", {}), ensure_ascii=False),
-        tags=json.dumps(config_data.get("tags", []), ensure_ascii=False),
+        evaluation=config_data.get("evaluation", {}) if isinstance(config_data.get("evaluation"), dict) else {},
+        items=config_data.get("items", {}),
+        tags=config_data.get("tags", []),
         isRecommended=config_data.get("isRecommended", False)
     )
     session.add(new_config)
@@ -235,8 +235,6 @@ async def update_config(
 
     for key, value in config_data.items():
         if hasattr(config, key):
-            if key in ["items", "tags", "evaluation"] and isinstance(value, (dict, list)):
-                value = json.dumps(value, ensure_ascii=False)
             setattr(config, key, value)
 
     config.updatedAt = datetime.utcnow().isoformat()

@@ -380,73 +380,107 @@ function VisualBuilder({
             </div>
 
             {/* Desktop List View (Hidden on mobile) */}
-            <div className="hidden lg:flex flex-1 flex-col space-y-2 pb-20">
-                {buildList.map((entry) => (
-                    <div
-                        key={entry.id}
-                        ref={(el) => { if (el) rowRefs[entry.id] = el; }}
-                        onClick={() => openSelector(entry)}
-                        className={`relative rounded-3xl p-3 border transition-all duration-300 cursor-pointer group flex items-center gap-4 ${entry.item || entry.customName
-                            ? 'bg-gradient-to-r from-white to-slate-50/80 border-slate-200/60 shadow-md hover:shadow-xl hover:border-indigo-300 hover:-translate-y-1'
-                            : 'bg-white/60 backdrop-blur-sm border-dashed border-slate-300 hover:bg-white hover:border-indigo-400 hover:shadow-md hover:-translate-y-0.5'
-                            }`}
-                    >
-                        <div className={`w-12 h-12 rounded-[18px] flex items-center justify-center text-2xl shrink-0 transition-all duration-500 shadow-sm ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-200/50 group-hover:shadow-indigo-300 group-hover:scale-105' : 'bg-slate-100/80 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-400 group-hover:scale-105'}`}>
-                            {getIconByCategory(entry.category)}
+            <div className="hidden lg:flex flex-1 flex-col pb-20">
+                {/* Brand New Feature Header: AI & Quick Build */}
+                <div className="flex gap-4 mb-6">
+                    <div onClick={() => {
+                        if (onAiCheck && !onAiCheck()) return;
+                        setShowAiModal(true);
+                    }} className="flex-1 group relative cursor-pointer transition-all hover:-translate-y-1">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-2xl blur opacity-10 group-hover:opacity-25 transition duration-500"></div>
+                        <div className="relative flex items-center gap-3 bg-white/90 backdrop-blur-sm rounded-2xl p-4 border border-indigo-100/50 shadow-sm overflow-hidden">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                <Sparkles size={20} className="animate-pulse-slow" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <h3 className="font-extrabold text-sm text-slate-900">AI 智能装机</h3>
+                                    <span className="text-[8px] font-bold bg-indigo-600 text-white px-1 py-0.5 rounded uppercase">Experimental</span>
+                                </div>
+                                <p className="text-slate-500 text-[11px] font-medium leading-none">智能语义分析，一键生成配置单</p>
+                            </div>
+                            <ArrowRight size={14} className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
                         </div>
-                        <div className={`text-sm font-extrabold w-12 ${entry.item ? 'text-indigo-900' : 'text-slate-400 group-hover:text-slate-600 transition-colors'}`}>{CATEGORY_MAP[entry.category]}</div>
+                    </div>
 
-                        <div className="flex-1 min-w-0 flex flex-col justify-center">
-                            {entry.category === 'accessory' ? (
-                                <input
-                                    type="text"
-                                    className="w-full bg-transparent border-none p-0 text-slate-800 font-bold placeholder-slate-400 focus:ring-0 truncate"
-                                    placeholder="输入配件名称..."
-                                    value={entry.customName || ''}
-                                    onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                            ) : entry.item ? (
-                                <div>
-                                    <div className="font-extrabold text-slate-800 text-base lg:text-lg group-hover:text-indigo-600 transition-colors tracking-tight truncate">{entry.item.brand} {entry.item.model}</div>
-                                </div>
-                            ) : entry.category === aiActiveCategory ? (
-                                <div className="text-indigo-500 font-medium flex items-center gap-2 animate-pulse">
-                                    <Sparkles size={14} className="animate-spin-slow" />
-                                    AI 正在挑选...
-                                </div>
-                            ) : (
-                                <div className="text-slate-400 font-medium">选择 {CATEGORY_MAP[entry.category]}</div>
-                            )}
+                    <div onClick={onOpenLibrary} className="flex-1 group relative cursor-pointer transition-all hover:-translate-y-1">
+                        <div className="relative flex items-center gap-3 bg-white/90 backdrop-blur-sm rounded-2xl p-4 border border-slate-200/60 shadow-sm hover:border-indigo-200 transition-all">
+                            <div className="w-10 h-10 bg-slate-50 text-indigo-500 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                <FileText size={20} />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="font-extrabold text-slate-800 text-sm mb-0.5">快速装机</h3>
+                                <p className="text-slate-500 text-[11px] font-medium leading-none">浏览社区精选优质配置单</p>
+                            </div>
+                            <ArrowRight size={14} className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
                         </div>
-                        <div className="flex items-center gap-2 md:gap-8 md:w-48 justify-end shrink-0">
-                            <div className="hidden md:flex w-20 justify-center" onClick={e => e.stopPropagation()}>
-                                {entry.category === 'accessory' ? null : (
-                                    !entry.isLockedQty ? (
-                                        <div className="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200">
-                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded text-slate-500 font-bold transition-all">-</button>
-                                            <span className="w-6 text-center text-xs font-bold text-slate-700">{entry.quantity}</span>
-                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded text-slate-500 font-bold transition-all">+</button>
-                                        </div>
-                                    ) : (
-                                        (entry.item || entry.customName) && <span className="text-xs text-slate-300 font-medium">x 1</span>
-                                    )
+                    </div>
+                </div>
+
+                <div className="flex flex-col space-y-1.5">
+                    {buildList.map((entry) => (
+                        <div
+                            key={entry.id}
+                            ref={(el) => { if (el) rowRefs[entry.id] = el; }}
+                            onClick={() => openSelector(entry)}
+                            className={`relative rounded-2xl p-2.5 border transition-all duration-300 cursor-pointer group flex items-center gap-3 ${entry.item || entry.customName
+                                ? 'bg-gradient-to-r from-white to-slate-50/50 border-slate-200/40 shadow-sm hover:shadow-md hover:border-indigo-200 hover:-translate-y-0.5'
+                                : 'bg-white/40 backdrop-blur-sm border-dashed border-slate-200 hover:bg-white hover:border-indigo-300 hover:shadow-sm'
+                                }`}
+                        >
+                            <div className={`w-9 h-9 rounded-[14px] flex items-center justify-center text-xl shrink-0 transition-all duration-500 shadow-sm ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white group-hover:scale-105' : 'bg-slate-50 text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-400'}`}>
+                                {getIconByCategory(entry.category)}
+                            </div>
+                            <div className={`text-[13px] font-black w-12 ${entry.item ? 'text-indigo-900' : 'text-slate-300 group-hover:text-slate-400'}`}>{CATEGORY_MAP[entry.category]}</div>
+
+                            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                {entry.category === 'accessory' ? (
+                                    <input
+                                        type="text"
+                                        className="w-full bg-transparent border-none p-0 text-slate-800 font-bold placeholder-slate-300 focus:ring-0 truncate text-sm"
+                                        placeholder="快捷输入附件..."
+                                        value={entry.customName || ''}
+                                        onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                ) : entry.item ? (
+                                    <div className="font-bold text-slate-700 text-sm group-hover:text-indigo-600 transition-colors truncate tracking-tight">{entry.item.brand} {entry.item.model}</div>
+                                ) : entry.category === aiActiveCategory ? (
+                                    <div className="text-indigo-400 text-xs font-medium flex items-center gap-2 animate-pulse">
+                                        <Sparkles size={12} className="animate-spin-slow" />
+                                        AI 正在挑选...
+                                    </div>
+                                ) : (
+                                    <div className="text-slate-200 text-xs font-medium italic">未选择 {CATEGORY_MAP[entry.category]}</div>
                                 )}
                             </div>
-                            <div className="w-auto md:w-20 text-right font-black text-slate-800 text-base md:text-xl tracking-tight">
-                                {entry.item || entry.customName ? `¥${entry.customPrice ?? entry.item?.price ?? 0}` : <span className="text-slate-300 font-medium">-</span>}
+                            <div className="flex items-center gap-4 w-40 justify-end shrink-0">
+                                <div className="hidden md:flex" onClick={e => e.stopPropagation()}>
+                                    {entry.category === 'accessory' ? null : (
+                                        !entry.isLockedQty ? (
+                                            <div className="flex items-center bg-slate-50 rounded-lg p-0.5 border border-slate-100 scale-90">
+                                                <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold">-</button>
+                                                <span className="w-5 text-center text-[10px] font-bold text-slate-600">{entry.quantity}</span>
+                                                <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold">+</button>
+                                            </div>
+                                        ) : null
+                                    )}
+                                </div>
+                                <div className="text-right font-black text-slate-900 text-sm font-mono tracking-tight">
+                                    {entry.item || entry.customName ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : <span className="text-slate-200">-</span>}
+                                </div>
                             </div>
+                            {(entry.item || (entry.category === 'accessory' && entry.customName)) && (
+                                <button
+                                    className="absolute -top-1.5 -right-1.5 p-1 bg-white text-slate-200 hover:text-red-500 hover:bg-red-50 border border-slate-100 rounded-full transition-all opacity-0 group-hover:opacity-100 shadow-sm"
+                                    onClick={(e) => { e.stopPropagation(); onUpdate(entry.id, { item: null, customName: '', customPrice: undefined, quantity: 1 }); }}
+                                >
+                                    <X size={10} strokeWidth={3} />
+                                </button>
+                            )}
                         </div>
-                        {(entry.item || (entry.category === 'accessory' && entry.customName)) && (
-                            <button
-                                className="absolute -top-2 -right-2 p-1.5 bg-white text-slate-300 hover:text-red-500 hover:bg-red-50 border border-slate-100 rounded-full transition-all opacity-0 group-hover:opacity-100 shadow-sm"
-                                onClick={(e) => { e.stopPropagation(); onUpdate(entry.id, { item: null, customName: '', customPrice: undefined, quantity: 1 }); }}
-                            >
-                                <X size={14} strokeWidth={3} />
-                            </button>
-                        )}
-                    </div>
-                ))}
+                    ))}
+                </div>
 
                 {/* AI Analysis Report Card - Moved to Bottom & Enlarged */}
                 {aiResult && (
@@ -461,181 +495,105 @@ function VisualBuilder({
                     </div>
                 )}
             </div>
-
             {/* Merged Sidebar */}
             <div className="w-full lg:w-[380px] shrink-0">
                 <div className="bg-white/90 backdrop-blur-2xl rounded-[32px] border border-white/60 shadow-2xl shadow-indigo-100/50 flex flex-col relative overflow-hidden mt-2 lg:mt-0 mb-28 lg:mb-0">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
-                    <div className="p-4 md:p-8 flex flex-col gap-4 lg:gap-8 relative z-10">
-                        {/* Box 1: AI & Quick Build (Hidden on Mobile as it's in the list header) */}
-                        <div className="hidden lg:flex flex-col gap-5">
-                            <div onClick={() => {
-                                if (onAiCheck && !onAiCheck()) return;
-                                setShowAiModal(true);
-                            }} className="group relative w-full cursor-pointer transition-all hover:-translate-y-1">
-                                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-3xl blur opacity-15 group-hover:opacity-30 transition duration-500"></div>
-                                <div className="relative flex items-center gap-4 bg-white/90 backdrop-blur-sm rounded-[22px] p-5 border border-indigo-100/80 shadow-lg shadow-indigo-100/50 overflow-hidden">
-                                    <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.03)_1px,transparent_1px)] bg-[size:20px_20px] [mask-image:radial-gradient(ellipse_at_center,black_70%,transparent_100%)] pointer-events-none"></div>
-                                    <div className="relative z-10 w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-200 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                                        <Sparkles size={24} className="drop-shadow-sm animate-pulse-slow" />
-                                    </div>
-                                    <div className="relative z-10 flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-extrabold text-lg text-slate-900 tracking-tight">AI 智能装机</h3>
-                                            <span className="text-[10px] font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-1.5 py-0.5 rounded shadow-sm shadow-indigo-200">体验版</span>
+                    <div className="p-4 md:p-8 flex flex-col gap-4 lg:gap-6 relative z-10">
+                        {/* Box 0: Announcements (Newly Moved to Top) */}
+                        <div className="relative p-6 rounded-[28px] bg-sky-50/30 border border-sky-100 shadow-sm overflow-hidden mb-2">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full blur-3xl -mr-12 -mt-12"></div>
+                            <h3 className="font-extrabold text-slate-900 mb-4 flex items-center gap-2 text-sm">
+                                <FileText size={16} className="text-sky-500" />
+                                系统公告
+                            </h3>
+                            <div className="space-y-3">
+                                {sysAnnouncement?.items && sysAnnouncement.items.length > 0 ? (
+                                    sysAnnouncement.items.map((item: any) => (
+                                        <div key={item.id} className="text-[12px] leading-relaxed text-slate-600 bg-white border border-slate-100 p-3 rounded-xl shadow-sm">
+                                            {item.content}
                                         </div>
-                                        <p className="text-slate-500 text-xs font-medium group-hover:text-indigo-600 transition-colors leading-relaxed">
-                                            智能语义分析，一键生成配置
-                                        </p>
-                                    </div>
-                                    <div className="relative z-10 w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-600 transition-all duration-300 transform group-hover:translate-x-1 shadow-sm">
-                                        <ArrowRight size={14} className="text-indigo-600 group-hover:text-white" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div onClick={onOpenLibrary} className="bg-slate-50/80 hover:bg-indigo-50/50 rounded-[20px] p-4 border border-slate-100 cursor-pointer group hover:border-indigo-200 transition-all flex items-center gap-4">
-                                <div className="w-10 h-10 bg-white shadow-sm text-indigo-500 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110">
-                                    <FileText size={18} />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="font-extrabold text-slate-800 text-[15px]">快速装机</h3>
-                                        <ArrowRight className="text-slate-300 group-hover:text-indigo-500 transition-colors" size={16} />
-                                    </div>
-                                    <p className="text-slate-500 text-xs mt-0.5 font-medium">浏览精选配置，一键引用。</p>
-                                </div>
+                                    ))
+                                ) : (
+                                    <div className="text-[12px] text-slate-400 italic py-2 text-center">{sysAnnouncement?.content || '暂无发布公告'}</div>
+                                )}
                             </div>
                         </div>
-
-                        <div className="hidden lg:block h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
 
                         {/* Box 2: Price Details (Hidden on Mobile) */}
                         <div className="hidden lg:block">
-                            <h3 className="font-extrabold text-slate-800 mb-5 flex items-center gap-2"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
-                            <div className="space-y-4 mb-6">
-                                <div className="flex justify-between items-center text-sm font-medium">
-                                    <span className="text-slate-500">基础总价 <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-400 ml-1">含6%服务费</span></span>
+                            <h3 className="font-extrabold text-slate-800 mb-4 flex items-center gap-2 text-sm"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
+                            <div className="space-y-3 mb-5">
+                                <div className="flex justify-between items-center text-xs font-medium">
+                                    <span className="text-slate-500">基础总价</span>
                                     <span className="font-black text-slate-700">¥{pricing.totalHardware}</span>
                                 </div>
-                                {pricing.savedAmount > 0 && (<div className="flex justify-between text-emerald-600 font-bold text-sm bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-100/50"><span>已优惠</span><span>- ¥{pricing.savedAmount}</span></div>)}
-                                <div className="flex justify-between items-end bg-slate-50 rounded-2xl border border-slate-100 p-4 shadow-inner">
-                                    <span className="text-slate-600 font-extrabold text-sm mb-1">预估到手价</span>
-                                    <span className="text-4xl font-black text-indigo-600 tracking-tight">¥{pricing.finalPrice}</span>
+                                <div className="flex justify-between items-end bg-slate-50 rounded-2xl border border-slate-100 p-4 shadow-sm">
+                                    <span className="text-slate-600 font-extrabold text-[13px] mb-1">实付预估</span>
+                                    <span className="text-3xl font-black text-indigo-600 tracking-tight">¥{pricing.finalPrice}</span>
                                 </div>
                             </div>
 
-                            <div className="relative mb-6 group">
+                            <div className="relative mb-5">
                                 <select
                                     value={pricing.discountRate}
                                     onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
-                                    className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all cursor-pointer hover:border-indigo-300"
+                                    className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
                                 >
                                     {pricing.discountTiers?.map((tier: any) => (
                                         <option key={tier.id} value={tier.multiplier}>
-                                            {tier.name.replace(/\s*\(.*?\)/g, '')}
+                                            {tier.name}
                                         </option>
                                     ))}
                                 </select>
-                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors" size={18} />
+                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 mb-6">
-                                <button onClick={onSave} className="bg-slate-900 shadow-xl shadow-slate-200 text-white font-bold h-[52px] px-4 rounded-[22px] active:scale-95 hover:bg-black transition-all flex items-center justify-center gap-2 border border-white/10 group">
-                                    <FileText size={18} className="group-hover:translate-x-0.5 transition-transform" />
-                                    <span className="text-sm">保存配置</span>
+                            <div className="grid grid-cols-2 gap-2 mb-6">
+                                <button onClick={onSave} className="bg-slate-900 text-white font-bold h-12 rounded-[18px] active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
+                                    <FileText size={16} /> 保存
                                 </button>
-                                <button onClick={onShare} className="bg-white border border-slate-200 shadow-sm text-slate-700 font-bold h-[52px] px-4 rounded-[22px] active:scale-95 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 group relative">
-                                    <Share2 size={18} className="group-hover:rotate-12 transition-transform text-indigo-500" />
-                                    <span className="text-sm">分享配置</span>
+                                <button onClick={onShare} className="bg-white border border-slate-200 text-slate-700 font-bold h-12 rounded-[18px] active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
+                                    <Share2 size={16} className="text-indigo-500" /> 分享
                                 </button>
-                                <div className="col-span-2 mt-1">
-                                    <button onClick={onReset} className="w-full bg-rose-50 border border-rose-100 text-rose-500 font-bold h-[52px] rounded-[22px] active:scale-95 hover:bg-rose-100 transition-all flex items-center justify-center gap-2 group">
-                                        <X size={18} className="group-hover:rotate-90 transition-transform" />
-                                        <span className="text-sm">清空配置</span>
-                                    </button>
-                                </div>
+                                <button onClick={onReset} className="col-span-2 bg-rose-50 text-rose-500 font-bold h-10 rounded-[14px] active:scale-95 hover:bg-rose-100 transition-all flex items-center justify-center gap-2 text-xs border border-rose-100">
+                                    <X size={14} /> 清空配置
+                                </button>
                             </div>
                         </div>
 
-                        {/* Premium Announcements and Health */}
-                        <div className="space-y-6 mt-2">
-                            <div className="relative p-6 rounded-[30px] bg-gradient-to-br from-white to-slate-50/50 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)] overflow-hidden">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                                <h3 className="font-extrabold text-slate-900 mb-5 flex items-center gap-2.5 text-base tracking-tight">
-                                    <div className="w-8 h-8 rounded-xl bg-sky-50 flex items-center justify-center">
-                                        <FileText size={16} className="text-sky-500" />
-                                    </div>
-                                    系统公告
+                        {/* Health Check */}
+                        <div className={`relative p-5 rounded-[28px] border transition-all duration-500 ${health.status === 'perfect'
+                            ? 'bg-emerald-50/30 border-emerald-100/60'
+                            : 'bg-amber-50/30 border-amber-100/60'
+                            }`}>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                                    <Zap size={16} className={health.status === 'perfect' ? 'text-emerald-500' : 'text-amber-500'} />
+                                    兼容性检测
                                 </h3>
-
-                                <div className="space-y-3 relative z-10">
-                                    {sysAnnouncement?.items && sysAnnouncement.items.length > 0 ? (
-                                        sysAnnouncement.items.map((item: any) => (
-                                            <div key={item.id} className={`group w-full border rounded-2xl p-4 transition-all hover:translate-x-1 ${item.type === 'warning' ? 'bg-red-50/40 text-red-900 border-red-100/60' :
-                                                item.type === 'promo' ? 'bg-amber-50/40 text-amber-900 border-amber-100/60' :
-                                                    'bg-white text-slate-900 border-slate-100 group-hover:border-sky-100 shadow-sm'
-                                                }`}>
-                                                <div className="flex gap-3">
-                                                    <div className="shrink-0 text-base">
-                                                        {item.pinned && <span className="mr-1 shadow-sm">📌</span>}
-                                                        {item.type === 'warning' ? '⚠️' : item.type === 'promo' ? '🎉' : '📢'}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="text-[13px] leading-relaxed text-slate-600 font-medium whitespace-pre-wrap">{item.content}</div>
-                                                        {item.linkUrl && (
-                                                            <a href={item.linkUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-indigo-500 hover:text-indigo-700 mt-2 inline-flex items-center gap-1 font-black uppercase tracking-wider">
-                                                                更多详情 <ArrowRight size={10} />
-                                                            </a>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="w-full bg-slate-50/50 border border-slate-100 border-dashed rounded-2xl p-6 text-center text-slate-400 font-medium italic text-[13px]">
-                                            {sysAnnouncement?.content || '暂无发布公告'}
-                                        </div>
-                                    )}
-                                </div>
+                                {health.status === 'perfect' ? (
+                                    <div className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[8px] font-black uppercase">Passed</div>
+                                ) : (
+                                    <div className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[8px] font-black uppercase">Review</div>
+                                )}
                             </div>
-
-                            <div className={`relative p-6 rounded-[30px] border transition-all duration-500 ${health.status === 'perfect'
-                                ? 'bg-gradient-to-br from-emerald-50/50 to-white border-emerald-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.02)]'
-                                : 'bg-gradient-to-br from-amber-50/50 to-white border-amber-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.02)]'
-                                }`}>
-                                <div className="flex items-center justify-between mb-5">
-                                    <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2.5 tracking-tight">
-                                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${health.status === 'perfect' ? 'bg-emerald-50' : 'bg-amber-50'}`}>
-                                            <Zap size={16} className={health.status === 'perfect' ? 'text-emerald-500' : 'text-amber-500'} />
-                                        </div>
-                                        兼容性实验室检测
-                                    </h3>
-                                    {health.status === 'perfect' ? (
-                                        <div className="px-3 py-1 rounded-full bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">Passed</div>
-                                    ) : (
-                                        <div className="px-3 py-1 rounded-full bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 animate-pulse">Review</div>
-                                    )}
-                                </div>
-                                <div className="relative z-10">
-                                    {health.status === 'perfect' ? (
-                                        <div className="text-[13px] text-emerald-700 font-bold flex items-center gap-3 bg-white/60 border border-emerald-100/50 px-4 py-3 rounded-2xl shadow-sm">
-                                            <CheckCircle2 size={16} className="text-emerald-500" />
-                                            <span className="leading-none">核心算法检测通过：配置完美兼容</span>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            {health.issues.map((issue: string, idx: number) => (
-                                                <div key={idx} className="group text-[13px] text-amber-800 font-bold bg-white/60 border border-amber-100/50 p-4 rounded-2xl flex gap-3 shadow-sm hover:translate-x-1 transition-transform">
-                                                    <AlertCircle size={16} className="text-amber-500 shrink-0 mt-0.5" />
-                                                    <div className="leading-relaxed">{issue}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                            <div className="text-[12px] font-bold">
+                                {health.status === 'perfect' ? (
+                                    <div className="text-emerald-700 flex items-center gap-2">
+                                        <CheckCircle2 size={14} /> 核心组件完美兼容
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {health.issues.map((issue: string, idx: number) => (
+                                            <div key={idx} className="flex gap-2 text-amber-800">
+                                                <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span>{issue}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

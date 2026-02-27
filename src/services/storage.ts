@@ -299,6 +299,20 @@ class StorageService {
     }
 
     // --- AI Settings ---
+    // --- Auth Settings ---
+    async getAuthSettings(): Promise<import('../types/adminTypes').AuthSettings> {
+        try {
+            const data = await ApiService.get('/settings');
+            return data.authSettings || { inviteCodeEnabled: true };
+        } catch (e) {
+            return { inviteCodeEnabled: true };
+        }
+    }
+
+    async saveAuthSettings(settings: import('../types/adminTypes').AuthSettings) {
+        await ApiService.post('/settings', { authSettings: settings });
+    }
+
     // --- AI Settings ---
     async getAISettings(): Promise<import('../types/adminTypes').AISettings> {
         try {

@@ -158,7 +158,7 @@ async def init_session(
             session.add(welcome_msg)
             session.commit()
         
-    return chat_session.dict() if chat_session else None
+    return chat_session.model_dump() if chat_session else None
 
 @router.get("/messages")
 async def get_messages(
@@ -275,5 +275,5 @@ async def send_message(
                     session.commit()
                     session.refresh(auto_reply_msg)
             
-    return {"message": msg.dict(), "autoReply": auto_reply_msg.dict() if auto_reply_msg else None}
+    return {"message": msg.model_dump(), "autoReply": auto_reply_msg.model_dump() if auto_reply_msg else None}
 
