@@ -1,6 +1,7 @@
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
-import { ArrowRight, Zap, CreditCard, FileText, CheckCircle2, AlertCircle, X, Search, Sparkles, Share2, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { ArrowRight, Zap, CreditCard, FileText, CheckCircle2, AlertCircle, X, Search, Sparkles, Share2, ChevronDown, ChevronUp, RefreshCw, Trash2, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
@@ -59,6 +60,9 @@ function VisualBuilder({
     const [sortOrder, setSortOrder] = useState<'default' | 'asc' | 'desc'>('default');
     const [isBrandsExpanded, setIsBrandsExpanded] = useState(false);
     const [showAiModal, setShowAiModal] = useState(false);
+
+    const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
+    const posterRef = useRef<HTMLDivElement>(null);
 
     // Category-specific items for the selector
     const [modalItems, setModalItems] = useState<HardwareItem[]>([]);
@@ -219,6 +223,40 @@ function VisualBuilder({
         }
     }, [buildList, onUpdate, rowRefs, modalSearchInputRef, modalItemRefs]);
 
+    const handleShareClick = () => {
+        // Execute external checks/hooks before proceeding
+        if (onShare) onShare();
+    };
+
+    const handleGeneratePoster = async () => {
+        if (!posterRef.current || isGeneratingPoster) return;
+        setIsGeneratingPoster(true);
+        try {
+            posterRef.current.style.display = 'block';
+            await new Promise(resolve => setTimeout(resolve, 100)); // allow DOM refresh
+            const canvas = await html2canvas(posterRef.current, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: null,
+            });
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `小鱼装机单_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '')}.png`;
+            link.click();
+        } catch (error) {
+            console.error('Failed to generate poster:', error);
+            alert('生成图片失败，请稍后重试');
+        } finally {
+            if (posterRef.current) {
+                posterRef.current.style.display = 'none';
+            }
+            setIsGeneratingPoster(false);
+        }
+    };
+
+    const validPosterItems = buildList.filter(b => b.item || b.customName);
+
     const filteredItems = useMemo(() => {
         if (!modalCategory) return [];
 
@@ -268,6 +306,63 @@ function VisualBuilder({
 
     return (
         <div className="flex flex-col lg:flex-row gap-8 relative">
+
+            {/* Hidden Poster Template */}
+            <div style={{ display: 'none', position: 'absolute', top: -9999, left: -9999, zIndex: -9999 }}>
+                <div ref={posterRef} className="bg-white text-slate-900 w-[600px] rounded-[24px] overflow-hidden font-sans border border-slate-200 shadow-xl relative">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/60 rounded-full blur-3xl pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-50/60 rounded-full blur-3xl pointer-events-none"></div>
+                    <div className="flex items-center gap-4 px-8 py-8 border-b border-indigo-50/50 relative z-10 bg-gradient-to-r from-white to-slate-50">
+                        <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20">
+                            <Zap size={28} />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">专属高级装机方案</h2>
+                            <p className="text-indigo-600 font-bold opacity-80 uppercase tracking-widest text-[10px] mt-1">XIAOYU PC BUILDER</p>
+                        </div>
+                    </div>
+                    <div className="px-8 py-6 flex flex-col gap-4 relative z-10">
+                        {validPosterItems.map(row => {
+                            const name = row.item ? `${row.item.brand} ${row.item.model}` : row.customName;
+                            const prc = row.customPrice ?? (row.item?.price ?? 0);
+                            return (
+                                <div key={row.id} className="flex items-center gap-4 py-2 border-b border-slate-100 last:border-0 last:pb-0">
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${row.item ? 'bg-indigo-50 text-indigo-500 border border-indigo-100' : 'bg-slate-50 text-slate-400 border border-slate-200'}`}>
+                                        {getIconByCategory(row.category)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+                                            {CATEGORY_MAP[row.category]}
+                                            {row.quantity > 1 ? ` × ${row.quantity}` : ''}
+                                        </div>
+                                        <div className="text-[14px] font-bold text-slate-800 leading-snug truncate">
+                                            {name}
+                                        </div>
+                                    </div>
+                                    <div className="text-right pl-4">
+                                        <div className="font-mono text-lg font-black text-slate-900">¥{(prc * (row.quantity || 1)).toLocaleString()}</div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                    <div className="bg-slate-900 p-8 flex items-end justify-between relative z-10">
+                        <div className="flex flex-col gap-1 text-white/50 text-[10px] uppercase font-bold tracking-widest">
+                            <p>Powered by</p>
+                            <p className="text-white/80">小鱼装机平台智能引擎</p>
+                            <p className="mt-2 font-mono">{new Date().toLocaleDateString('zh-CN')} 生成</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-white/50 text-xs font-bold mb-1">整机预算预估</p>
+                            <div className="flex items-baseline gap-1 text-white">
+                                <span className="text-2xl font-bold">¥</span>
+                                <span className="text-5xl font-black font-mono tracking-tighter">{Math.floor(pricing.finalPrice).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Image Preview Modal */}
             {previewImage && (
                 <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={() => setPreviewImage(null)}>
@@ -306,6 +401,20 @@ function VisualBuilder({
                             <FileText size={16} className="text-slate-400" /> 推荐方案
                         </button>
                     </div>
+                    <div className="flex items-center gap-2 mt-3">
+                        <button onClick={onReset} className="h-10 px-4 whitespace-nowrap flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl transition-all active:scale-95 text-sm border border-rose-100" title="清空配置">
+                            清空配置
+                        </button>
+                        <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-10 aspect-square flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-all active:scale-95 border border-indigo-100" title="生成图片">
+                            {isGeneratingPoster ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
+                        </button>
+                        <button onClick={onSave} className="flex-1 h-10 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95 text-sm border border-slate-200" title="保存">
+                            保存配置
+                        </button>
+                    </div>
+                    <button onClick={handleShareClick} className="w-full h-12 flex items-center justify-center bg-slate-900 hover:bg-black text-white font-bold rounded-xl shadow-md transition-all active:scale-95 mt-2">
+                        <Share2 size={16} className="mr-2" /> 发长文晒单
+                    </button>
                 </div>
 
                 {/* Elegant Mobile List Items */}
@@ -450,7 +559,7 @@ function VisualBuilder({
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : entry.item ? (
-                                    <div className="font-extrabold text-slate-800 text-sm group-hover:text-indigo-600 transition-colors truncate tracking-tight">{entry.item.brand} {entry.item.model}</div>
+                                    <div className="font-extrabold text-slate-800 text-sm group-hover:text-indigo-600 transition-colors leading-snug tracking-tight">{entry.item.brand} {entry.item.model}</div>
                                 ) : entry.category === aiActiveCategory ? (
                                     <div className="text-indigo-500 text-xs font-bold flex items-center gap-2 animate-pulse bg-indigo-50 w-max px-3 py-1.5 rounded-full">
                                         <Sparkles size={14} className="animate-spin-slow" />
@@ -557,15 +666,18 @@ function VisualBuilder({
                                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 mb-6">
-                                <button onClick={onSave} className="bg-slate-900 text-white font-bold h-12 rounded-[18px] active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
-                                    <FileText size={16} /> 保存
+                            <div className="flex items-center gap-2 h-12 shrink-0">
+                                <button onClick={onReset} className="h-full aspect-square flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all active:scale-95 border border-rose-100" title="清空配置">
+                                    <Trash2 size={20} />
                                 </button>
-                                <button onClick={onShare} className="bg-white border border-slate-200 text-slate-700 font-bold h-12 rounded-[18px] active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
-                                    <Share2 size={16} className="text-indigo-500" /> 分享
+                                <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-all active:scale-95 border border-indigo-100" title="生成海报">
+                                    {isGeneratingPoster ? <RefreshCw size={20} className="animate-spin" /> : <Download size={20} />}
                                 </button>
-                                <button onClick={onReset} className="col-span-2 bg-rose-50 text-rose-500 font-bold h-10 rounded-[14px] active:scale-95 hover:bg-rose-100 transition-all flex items-center justify-center gap-2 text-xs border border-rose-100">
-                                    <X size={14} /> 清空配置
+                                <button onClick={onSave} className="h-full px-5 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95 text-sm border border-slate-200">
+                                    保存
+                                </button>
+                                <button onClick={handleShareClick} className="h-full flex-1 flex items-center justify-center bg-slate-900 hover:bg-black text-white font-bold rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] transition-all active:scale-95 text-sm">
+                                    <Share2 size={16} className="mr-2 opacity-80" /> 发长文晒单
                                 </button>
                             </div>
                         </div>

@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2 } from 'lucide-react';
+import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
@@ -487,6 +488,37 @@ function StreamerWorkbench({
 
     const [showAiModal, setShowAiModal] = useState(false);
     const [showChatSettings, setShowChatSettings] = useState(false);
+
+    const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
+    const posterRef = useRef<HTMLDivElement>(null);
+
+    const handleGeneratePoster = async () => {
+        if (!posterRef.current || isGeneratingPoster) return;
+        setIsGeneratingPoster(true);
+        try {
+            posterRef.current.style.display = 'block';
+            await new Promise(resolve => setTimeout(resolve, 100)); // allow DOM refresh
+            const canvas = await html2canvas(posterRef.current, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: null,
+            });
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `小鱼主播装机单_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '')}.png`;
+            link.click();
+        } catch (error) {
+            console.error('Failed to generate poster:', error);
+            alert('生成图片失败，请稍后重试');
+        } finally {
+            if (posterRef.current) {
+                posterRef.current.style.display = 'none';
+            }
+            setIsGeneratingPoster(false);
+        }
+    };
+
     const [isAiTyping, setIsAiTyping] = useState(false);
     const [aiResult, setAiResult] = useState<AIBuildResult | null>(null);
     const [ghostPos, setGhostPos] = useState({ x: 0, y: 0 });
@@ -742,6 +774,9 @@ function StreamerWorkbench({
                         </button>
                         <button onClick={handleSave} className="h-full aspect-square flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all active:scale-95 border border-slate-200" title="保存配置">
                             <Save size={18} />
+                        </button>
+                        <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all active:scale-95 border border-slate-200" title="生成海报">
+                            {isGeneratingPoster ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
                         </button>
                         <button onClick={handleShareTrigger} disabled={isSharing} className={`h-full aspect-square flex items-center justify-center ${theme.bgPrimary} hover:opacity-90 disabled:opacity-50 text-white rounded-lg shadow-md transition-all active:scale-95`} title="分享配置">
                             {isSharing ? <RefreshCw size={18} className="animate-spin" /> : <Share2 size={18} />}
