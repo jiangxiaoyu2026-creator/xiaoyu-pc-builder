@@ -327,12 +327,16 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
 
                             {/* Card Footer: Price & Social */}
                             <div className="px-5 py-4 border-t border-slate-100 flex items-center justify-between bg-white group-hover:bg-slate-50/30 transition-colors">
-                                <div className="flex items-center gap-2">
-                                    <div className={`w-6 h-6 rounded-full ${cfg.avatarColor} flex items-center justify-center text-[10px] text-white font-bold ring-2 ring-white shadow-sm`}>
-                                        {cfg.author[0].toUpperCase()}
-                                    </div>
-                                    <div className="text-xs text-slate-500 font-medium">
-                                        {cfg.likes} <span className="text-[10px]">赞</span>
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-5 h-5 rounded-full ${cfg.avatarColor} flex items-center justify-center text-[9px] text-white font-bold ring-2 ring-white shadow-sm`}>
+                                            {cfg.author[0].toUpperCase()}
+                                        </div>
+                                        <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                                            {cfg.likes} <span className="text-[10px]">赞</span>
+                                            <span className="text-slate-300">·</span>
+                                            <span className="text-[10px] text-slate-400">{new Date(cfg.date).toLocaleDateString('zh-CN')}</span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="text-lg font-mono font-bold text-slate-900 tracking-tight">

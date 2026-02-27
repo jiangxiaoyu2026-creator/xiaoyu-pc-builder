@@ -161,14 +161,14 @@ class AiService:
 
         min_price, max_price = budget * 0.7, budget * 1.3
         now = datetime.utcnow()
-        one_year_ago = now - timedelta(days=365)
+        thirty_days_ago = now - timedelta(days=30)
         
         statement = select(Config).where(
             Config.status == "published",
             Config.isRecommended == True,
             Config.totalPrice >= min_price,
             Config.totalPrice <= max_price,
-            Config.createdAt >= one_year_ago
+            Config.createdAt >= thirty_days_ago
         ).order_by(Config.likes.desc()).limit(30)
         
         recent_configs = self.session.exec(statement).all()
