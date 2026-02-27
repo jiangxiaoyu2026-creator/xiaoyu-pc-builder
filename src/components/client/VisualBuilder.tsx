@@ -386,82 +386,89 @@ function VisualBuilder({
                     <div onClick={() => {
                         if (onAiCheck && !onAiCheck()) return;
                         setShowAiModal(true);
-                    }} className="flex-1 group relative cursor-pointer transition-all hover:-translate-y-1">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-2xl blur opacity-10 group-hover:opacity-25 transition duration-500"></div>
-                        <div className="relative flex items-center gap-3 bg-white/90 backdrop-blur-sm rounded-2xl p-4 border border-indigo-100/50 shadow-sm overflow-hidden">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                <Sparkles size={20} className="animate-pulse-slow" />
+                    }} className="flex-1 group relative cursor-pointer transition-all duration-500 hover:-translate-y-1">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-[24px] blur-md opacity-20 group-hover:opacity-40 transition duration-500"></div>
+                        <div className="relative flex items-center gap-4 bg-white/90 backdrop-blur-xl rounded-[20px] p-4 md:p-5 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                            <div className="w-12 h-12 rounded-[16px] bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-lg shadow-indigo-500/30">
+                                <Sparkles size={22} className="animate-pulse" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                    <h3 className="font-extrabold text-sm text-slate-900">AI 智能装机</h3>
-                                    <span className="text-[8px] font-bold bg-indigo-600 text-white px-1 py-0.5 rounded uppercase">Experimental</span>
+                                <div className="flex items-baseline gap-2 mb-1">
+                                    <h3 className="font-extrabold text-base text-slate-900 tracking-tight">AI 智能装机</h3>
+                                    <span className="text-[9px] font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm">Pro</span>
                                 </div>
-                                <p className="text-slate-500 text-[11px] font-medium leading-none">智能语义分析，一键生成配置单</p>
+                                <p className="text-slate-500 text-xs font-medium leading-none tracking-wide">智能语义分析，一挥而就</p>
                             </div>
-                            <ArrowRight size={14} className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                                <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                            </div>
                         </div>
                     </div>
 
-                    <div onClick={onOpenLibrary} className="flex-1 group relative cursor-pointer transition-all hover:-translate-y-1">
-                        <div className="relative flex items-center gap-3 bg-white/90 backdrop-blur-sm rounded-2xl p-4 border border-slate-200/60 shadow-sm hover:border-indigo-200 transition-all">
-                            <div className="w-10 h-10 bg-slate-50 text-indigo-500 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                <FileText size={20} />
+                    <div onClick={onOpenLibrary} className="flex-1 group relative cursor-pointer transition-all duration-500 hover:-translate-y-1">
+                        <div className="absolute -inset-0.5 bg-slate-200 rounded-[24px] blur-md opacity-0 group-hover:opacity-50 transition duration-500"></div>
+                        <div className="relative flex items-center gap-4 bg-white/80 backdrop-blur-xl rounded-[20px] p-4 md:p-5 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] group-hover:border-indigo-100 transition-all overflow-hidden">
+                            <div className="w-12 h-12 bg-slate-100 text-slate-600 rounded-[16px] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-50 group-hover:text-indigo-600">
+                                <FileText size={22} />
                             </div>
                             <div className="flex-1">
-                                <h3 className="font-extrabold text-slate-800 text-sm mb-0.5">快速装机</h3>
-                                <p className="text-slate-500 text-[11px] font-medium leading-none">浏览社区精选优质配置单</p>
+                                <h3 className="font-extrabold text-slate-800 text-base mb-1 tracking-tight">快速装机</h3>
+                                <p className="text-slate-500 text-xs font-medium leading-none tracking-wide">浏览社区精选优质配置单</p>
                             </div>
-                            <ArrowRight size={14} className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                                <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex flex-col space-y-1.5">
+                <div className="flex flex-col space-y-2.5">
                     {buildList.map((entry) => (
                         <div
                             key={entry.id}
                             ref={(el) => { if (el) rowRefs[entry.id] = el; }}
                             onClick={() => openSelector(entry)}
-                            className={`relative rounded-2xl p-2.5 border transition-all duration-300 cursor-pointer group flex items-center gap-3 ${entry.item || entry.customName
-                                ? 'bg-gradient-to-r from-white to-slate-50/50 border-slate-200/40 shadow-sm hover:shadow-md hover:border-indigo-200 hover:-translate-y-0.5'
-                                : 'bg-white/40 backdrop-blur-sm border-dashed border-slate-200 hover:bg-white hover:border-indigo-300 hover:shadow-sm'
+                            className={`relative rounded-[20px] p-3 border transition-all duration-300 cursor-pointer group flex items-center gap-4 ${entry.item || entry.customName
+                                ? 'bg-white/80 backdrop-blur-md border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.12)] hover:border-indigo-200/50 hover:-translate-y-0.5'
+                                : 'bg-white/40 backdrop-blur-sm border-dashed border-slate-300/60 hover:bg-white hover:border-indigo-300 hover:shadow-sm'
                                 }`}
                         >
-                            <div className={`w-9 h-9 rounded-[14px] flex items-center justify-center text-xl shrink-0 transition-all duration-500 shadow-sm ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white group-hover:scale-105' : 'bg-slate-50 text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-400'}`}>
+                            <div className={`w-11 h-11 rounded-[16px] flex items-center justify-center text-xl shrink-0 transition-all duration-500 shadow-sm relative overflow-hidden ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white group-hover:scale-105 group-hover:shadow-indigo-500/25 group-hover:shadow-lg' : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-400'}`}>
+                                {entry.item && <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>}
                                 {getIconByCategory(entry.category)}
                             </div>
-                            <div className={`text-[13px] font-black w-12 ${entry.item ? 'text-indigo-900' : 'text-slate-300 group-hover:text-slate-400'}`}>{CATEGORY_MAP[entry.category]}</div>
+                            <div className={`text-[13px] font-black w-14 tracking-wider ${entry.item ? 'text-indigo-900' : 'text-slate-400 group-hover:text-slate-500'}`}>{CATEGORY_MAP[entry.category]}</div>
 
                             <div className="flex-1 min-w-0 flex flex-col justify-center">
                                 {entry.category === 'accessory' ? (
                                     <input
                                         type="text"
-                                        className="w-full bg-transparent border-none p-0 text-slate-800 font-bold placeholder-slate-300 focus:ring-0 truncate text-sm"
+                                        className="w-full bg-transparent border-none p-0 text-slate-800 font-extrabold placeholder-slate-300 focus:ring-0 truncate text-sm"
                                         placeholder="快捷输入附件..."
                                         value={entry.customName || ''}
                                         onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : entry.item ? (
-                                    <div className="font-bold text-slate-700 text-sm group-hover:text-indigo-600 transition-colors truncate tracking-tight">{entry.item.brand} {entry.item.model}</div>
+                                    <div className="font-extrabold text-slate-800 text-sm group-hover:text-indigo-600 transition-colors truncate tracking-tight">{entry.item.brand} {entry.item.model}</div>
                                 ) : entry.category === aiActiveCategory ? (
-                                    <div className="text-indigo-400 text-xs font-medium flex items-center gap-2 animate-pulse">
-                                        <Sparkles size={12} className="animate-spin-slow" />
-                                        AI 正在挑选...
+                                    <div className="text-indigo-500 text-xs font-bold flex items-center gap-2 animate-pulse bg-indigo-50 w-max px-3 py-1.5 rounded-full">
+                                        <Sparkles size={14} className="animate-spin-slow" />
+                                        AI 正在为您挑选...
                                     </div>
                                 ) : (
-                                    <div className="text-slate-200 text-xs font-medium italic">未选择 {CATEGORY_MAP[entry.category]}</div>
+                                    <div className="text-slate-300/80 text-xs font-bold italic tracking-wide">未挑选 {CATEGORY_MAP[entry.category]}</div>
                                 )}
                             </div>
                             <div className="flex items-center gap-4 w-40 justify-end shrink-0">
                                 <div className="hidden md:flex" onClick={e => e.stopPropagation()}>
                                     {entry.category === 'accessory' ? null : (
                                         !entry.isLockedQty ? (
-                                            <div className="flex items-center bg-slate-50 rounded-lg p-0.5 border border-slate-100 scale-90">
-                                                <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold">-</button>
-                                                <span className="w-5 text-center text-[10px] font-bold text-slate-600">{entry.quantity}</span>
-                                                <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-5 h-5 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold">+</button>
+                                            <div className="flex items-center bg-slate-100/80 rounded-xl p-1 border border-slate-200/60 shadow-inner">
+                                                <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded-lg text-slate-500 font-black hover:shadow-sm transition-all">-</button>
+                                                <span className="w-6 text-center text-xs font-black text-slate-700">{entry.quantity}</span>
+                                                <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded-lg text-slate-500 font-black hover:shadow-sm transition-all">+</button>
                                             </div>
                                         ) : null
                                     )}
@@ -697,9 +704,9 @@ function VisualBuilder({
                                                     key={item.id}
                                                     ref={(el) => { if (el) modalItemRefs[item.id] = el; }}
                                                     onClick={() => !isOutOfStock && handleSelect(item)}
-                                                    className={`group relative flex items-center gap-5 p-4 rounded-[28px] bg-white border border-slate-100/80 transition-all duration-300 active:scale-[0.98] ${isOutOfStock
+                                                    className={`group relative flex items-center gap-5 p-4 rounded-[28px] bg-white/60 backdrop-blur-md border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 active:scale-[0.98] ${isOutOfStock
                                                         ? 'opacity-50 grayscale cursor-not-allowed'
-                                                        : 'hover:border-indigo-100 hover:shadow-[0_12px_40px_rgba(79,70,229,0.06)] cursor-pointer'
+                                                        : 'hover:bg-white hover:border-indigo-100/80 hover:shadow-[0_12px_40px_rgba(79,70,229,0.08)] cursor-pointer hover:-translate-y-0.5'
                                                         }`}
                                                 >
                                                     {/* Product Image Wrapper */}
@@ -738,12 +745,23 @@ function VisualBuilder({
                                                             {item.model}
                                                         </h4>
                                                         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-400 font-bold">
-                                                            {Object.entries(item.specs).slice(0, 2).map(([key, val]) => (
-                                                                <div key={key} className="flex items-center gap-1">
-                                                                    <div className="w-1 h-1 rounded-full bg-slate-200"></div>
-                                                                    <span className="truncate max-w-[120px]">{val}</span>
-                                                                </div>
-                                                            ))}
+                                                            {(() => {
+                                                                let specsObj = item.specs;
+                                                                if (typeof specsObj === 'string') {
+                                                                    try { specsObj = JSON.parse(specsObj); } catch { specsObj = {}; }
+                                                                }
+                                                                if (!specsObj || typeof specsObj !== 'object') specsObj = {};
+
+                                                                const specEntries = Object.entries(specsObj).filter(([_, val]) => val && String(val).trim() !== '');
+                                                                if (specEntries.length === 0) return null;
+
+                                                                return specEntries.slice(0, 2).map(([key, val]) => (
+                                                                    <div key={key} className="flex items-center gap-1">
+                                                                        <div className="w-1 h-1 rounded-full bg-slate-200"></div>
+                                                                        <span>{String(val)}</span>
+                                                                    </div>
+                                                                ));
+                                                            })()}
                                                         </div>
                                                     </div>
 
@@ -775,11 +793,12 @@ function VisualBuilder({
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                </div >
+            )
+            }
 
             {showAiModal && <AiGenerateModal key="ai-modal" onClose={() => setShowAiModal(false)} onSubmit={handleAiBuild} />}
-        </div>
+        </div >
     );
 }
 

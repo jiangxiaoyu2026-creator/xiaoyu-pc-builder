@@ -38,7 +38,7 @@ class AiService:
             except Exception as e:
                 print(f"Error loading AI settings: {e}")
 
-    def retrieve_candidates(self, budget: int, usage: str) -> List[Dict]:
+    def retrieve_candidates(self, budget: int, usage: str, user_prompt: str = "") -> List[Dict]:
         """
         根据预算和用途从数据库中检索相关的硬件候选列表。
         """
@@ -51,11 +51,33 @@ class AiService:
         statement = select(Hardware).where(Hardware.status == "active")
         all_hardware = self.session.exec(statement).all()
         
+        # 提取用户可能点名的硬件
+        user_prompt_lower = user_prompt.lower()
+        forced_items = []
+        for item in all_hardware:
+            # 如果用户的提示词包含了该硬件的型号（需大于3个字符避免误杀）或品牌+部分型号
+            model_clean = item.model.lower().replace(" ", "")
+            if len(model_clean) > 3 and model_clean in user_prompt_lower:
+                forced_items.append(item)
+                continue
+            # 处理例如 "七彩虹 5050" 的模糊匹配
+            brand_lower = item.brand.lower()
+            if brand_lower in user_prompt_lower:
+                # 检查型号中的关键词是否也在提示词中
+                keywords = item.model.lower().split()
+                if keywords and all(kw in user_prompt_lower for kw in keywords if len(kw) > 2):
+                    forced_items.append(item)
+        
         categories = {}
         for item in all_hardware:
             cat = item.category
             if cat not in categories: categories[cat] = []
             
+            # 如果是用户点名的，直接跳过预算限制纳入候选
+            if item in forced_items:
+                categories[cat].append(item)
+                continue
+                
             if cat in ratios:
                 min_ratio, max_ratio = ratios[cat]
                 # Relaxed tolerance (1.5x) to allow high-end parts in inventory even for tight budgets
@@ -72,8 +94,17 @@ class AiService:
                 all_cat_items.sort(key=lambda x: x.price)
                 items = all_cat_items[:2]
 
-            items.sort(key=lambda x: x.price)
-            selected = items[::len(items)//8 + 1][:8] if len(items) > 8 else items
+            # 分离出用户强制点名的和普通的
+            forced_cat_items = [i for i in items if i in forced_items]
+            normal_cat_items = [i for i in items if i not in forced_items]
+
+            normal_cat_items.sort(key=lambda x: x.price)
+            # 给每个类别留8个空位，优先塞入点名的硬件
+            spots_left = 8 - len(forced_cat_items)
+            selected = forced_cat_items.copy()
+            
+            if spots_left > 0 and normal_cat_items:
+                selected.extend(normal_cat_items[::len(normal_cat_items)//spots_left + 1][:spots_left] if len(normal_cat_items) > spots_left else normal_cat_items)
             
             for item in selected:
                 # Ensure specs is a dict
@@ -254,7 +285,7 @@ class AiService:
 3. **电源冗余底线**：电源额定功率必须大于 `(CPU TDP功耗 + GPU TDP功耗) * 1.5 + 50W`，绝不选刚好压线的电源！不确定具体数值就往上多留 100W。
 4. **散热器精准化**：中低端 CPU（如 i3/i5/i7非K/R5非X）强制首选【风冷散热器】以节省预算；只有遇到高端高发热 CPU（i7-K/i9/R9），或是客户明确要求“海景房/全白/必须上水冷”时，才可使用【240/360 水冷】。
 5. **显示器去留**：默认情况**绝对不选显示器**(将 monitor 返回 null)。唯一的例外是用户在需求里明确说出“包含一台电脑屏幕”之类的需求。
-6. **满足点名要求**：哪怕客户的要求很不合理，只要他在需求里说了要用具体的哪个配置（如“给我上块 4090”），只要库存里有，你必须无脑选进去。
+6. **无条件服从点名**：如果客户在需求里明确点名了某个在【库存清单】中存在的硬件型号（如指定要“玩嘉 风琴 黑”机箱、“七彩虹 战斧5050”显卡或具体的内存主板等），你**必须100%原封不动地选用该库存硬件**，绝对不允许以任何理由（如性价比、品牌偏好、预算）替换成其他型号！哪怕搭配很奇怪也要按照用户的来！
 
 【库存清单】：
 {json.dumps(inventory, ensure_ascii=False)}
