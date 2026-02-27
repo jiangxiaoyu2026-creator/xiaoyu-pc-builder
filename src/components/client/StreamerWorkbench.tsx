@@ -139,25 +139,19 @@ export function StreamerPermissionDenied() {
 
 // Mock "Ghost Cursor" component
 function GhostCursor({ x, y, active, status }: { x: number, y: number, active: boolean, status: string }) {
-    if (!active) return null;
+    if (!active || !status) return null;
     return (
         <div
-            className="fixed pointer-events-none z-50 transition-all duration-300 ease-out flex items-start -ml-3 -mt-3"
+            className="fixed pointer-events-none z-50 transition-all duration-300 ease-out flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
             style={{
                 left: x,
                 top: y,
                 opacity: active ? 1 : 0
             }}
         >
-            <div className="relative">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={`drop-shadow-xl text-black fill-black`}>
-                    <path d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z" fill="currentColor" stroke="white" strokeWidth="1" />
-                </svg>
-                {status && (
-                    <div className="absolute left-6 top-0 bg-black/80 backdrop-blur text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap animate-fade-in font-medium tracking-wide border border-white/20">
-                        {status}
-                    </div>
-                )}
+            <div className="bg-indigo-600/95 backdrop-blur-md text-white text-[11px] px-3 py-1.5 rounded-full shadow-xl shadow-indigo-600/20 whitespace-nowrap animate-fade-in font-bold tracking-wide border border-indigo-400/30 flex items-center gap-1.5">
+                <Sparkles size={12} className="animate-pulse" />
+                {status}
             </div>
         </div>
     );
