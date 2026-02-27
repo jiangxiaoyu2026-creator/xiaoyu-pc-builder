@@ -159,17 +159,17 @@ class AiService:
         if any(kw in prompt_lower for kw in ["海景房", "好看", "发光", "白"]):
             mapped_tags.extend(["海景房", "白色"])
 
-        min_price, max_price = budget * 0.8, budget * 1.2
+        min_price, max_price = budget * 0.7, budget * 1.3
         now = datetime.utcnow()
-        thirty_days_ago = now - timedelta(days=30)
+        one_year_ago = now - timedelta(days=365)
         
         statement = select(Config).where(
             Config.status == "published",
             Config.isRecommended == True,
             Config.totalPrice >= min_price,
             Config.totalPrice <= max_price,
-            Config.createdAt >= thirty_days_ago
-        ).order_by(Config.likes.desc()).limit(20)
+            Config.createdAt >= one_year_ago
+        ).order_by(Config.likes.desc()).limit(30)
         
         recent_configs = self.session.exec(statement).all()
         if not recent_configs:
@@ -185,11 +185,14 @@ class AiService:
             
             for tag in mapped_tags:
                 if tag.lower() in config_text:
-                    score += 20
+                    score += 50
             
             for word in user_prompt.split():
                 if len(word) > 1 and word.lower() in config_text:
-                    score += 10
+                    score += 30
+
+            # 加上一个很小的随机数避免分数一模一样的时候总是固定的那个
+            score += random.uniform(0, 5)
 
             if score > best_score:
                 best_score = score
