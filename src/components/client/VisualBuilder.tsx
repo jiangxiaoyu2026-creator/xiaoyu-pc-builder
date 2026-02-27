@@ -10,19 +10,17 @@ import { AiGenerateModal } from './AiGenerateModal';
 
 // Mock "Ghost Cursor" component
 function GhostCursor({ x, y, active, status }: { x: number, y: number, active: boolean, status: string }) {
-    if (!active || !status) return null;
     return (
         <div
-            className="fixed pointer-events-none z-50 transition-all duration-300 ease-out flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
+            className={`fixed pointer-events-none z-[100] transition-all duration-500 ease-out flex items-center justify-center -translate-x-1/2 -translate-y-1/2 ${active && status ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
             style={{
                 left: x,
                 top: y,
-                opacity: active ? 1 : 0
             }}
         >
-            <div className="bg-indigo-600/95 backdrop-blur-md text-white text-[11px] px-3 py-1.5 rounded-full shadow-xl shadow-indigo-600/20 whitespace-nowrap animate-fade-in font-bold tracking-wide border border-indigo-400/30 flex items-center gap-1.5">
+            <div className="bg-indigo-600/95 backdrop-blur-md text-white text-[11px] px-3 py-1.5 rounded-full shadow-xl shadow-indigo-600/20 whitespace-nowrap font-bold tracking-wide border border-indigo-400/30 flex items-center gap-1.5">
                 <Sparkles size={12} className="animate-pulse" />
-                {status}
+                {status || '...'}
             </div>
         </div>
     );
@@ -148,7 +146,6 @@ function VisualBuilder({
             setShowAiModal(false);
             setIsAiExecuting(true);
 
-            setGhostPos({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
             setGhostStatus('AI 介入中...');
             await new Promise(r => setTimeout(r, 400));
 
