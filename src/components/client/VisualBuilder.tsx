@@ -10,25 +10,19 @@ import { AiGenerateModal } from './AiGenerateModal';
 
 // Mock "Ghost Cursor" component
 function GhostCursor({ x, y, active, status }: { x: number, y: number, active: boolean, status: string }) {
-    if (!active) return null;
+    if (!active || !status) return null;
     return (
         <div
-            className="fixed pointer-events-none z-50 transition-all duration-300 ease-out flex items-start -ml-3 -mt-3"
+            className="fixed pointer-events-none z-50 transition-all duration-300 ease-out flex items-center justify-center -translate-x-1/2 -translate-y-1/2"
             style={{
                 left: x,
                 top: y,
                 opacity: active ? 1 : 0
             }}
         >
-            <div className="relative">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-xl text-black fill-black">
-                    <path d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z" fill="currentColor" stroke="white" strokeWidth="1" />
-                </svg>
-                {status && (
-                    <div className="absolute left-6 top-0 bg-black/80 backdrop-blur text-white text-[10px] px-2 py-1 rounded-md whitespace-nowrap animate-fade-in font-medium tracking-wide border border-white/20">
-                        {status}
-                    </div>
-                )}
+            <div className="bg-indigo-600/95 backdrop-blur-md text-white text-[11px] px-3 py-1.5 rounded-full shadow-xl shadow-indigo-600/20 whitespace-nowrap animate-fade-in font-bold tracking-wide border border-indigo-400/30 flex items-center gap-1.5">
+                <Sparkles size={12} className="animate-pulse" />
+                {status}
             </div>
         </div>
     );
@@ -292,21 +286,29 @@ function VisualBuilder({
             <GhostCursor x={ghostPos.x} y={ghostPos.y} active={isAiExecuting} status={ghostStatus} />
 
             {/* Mobile Column View (Compact & Premium) */}
-            <div className="lg:hidden flex flex-col bg-slate-50 relative">
+            <div className="lg:hidden flex flex-col bg-slate-50/50 relative">
                 {/* Premium Mobile Header: Functional Buttons */}
-                <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 p-3 flex gap-2 shadow-sm">
-                    <button
-                        onClick={() => { if (onAiCheck && !onAiCheck()) return; setShowAiModal(true); }}
-                        className="flex-1 bg-gradient-to-r from-amber-400 to-orange-500 text-slate-900 font-bold py-2.5 px-4 rounded-2xl shadow-lg shadow-orange-200/50 active:scale-95 transition-all flex items-center justify-center gap-2 border border-amber-300"
-                    >
-                        <Sparkles size={16} className="animate-pulse" /> 智能装机 (AI)
-                    </button>
-                    <button
-                        onClick={onOpenLibrary}
-                        className="flex-1 bg-white hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-4 rounded-2xl border border-slate-200 shadow-sm active:scale-95 transition-all text-sm"
-                    >
-                        推荐方案
-                    </button>
+                <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-3xl border-b border-slate-100 p-2.5 pb-3 shadow-[0_4px_30px_rgba(0,0,0,0.03)]">
+                    <div className="flex gap-2.5 relative w-full items-center justify-between">
+                        {/* 智能装机 PRO AI Button */}
+                        <button
+                            onClick={() => { if (onAiCheck && !onAiCheck()) return; setShowAiModal(true); }}
+                            className="flex-[1.1] relative overflow-hidden bg-slate-900 border border-slate-800 text-white font-extrabold py-3.5 px-3 rounded-[20px] shadow-lg shadow-slate-900/15 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 text-[14px] tracking-wide group"
+                        >
+                            {/* Inner subtle glow */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 opacity-0 group-active:opacity-100 transition-opacity"></div>
+                            <Sparkles size={16} className="text-indigo-400 animate-pulse shrink-0" />
+                            <span className="flex items-center gap-1.5 whitespace-nowrap">智能装机 <span className="text-[10px] bg-white/15 px-1.5 py-0.5 rounded-lg flex items-center justify-center font-black">AI</span></span>
+                        </button>
+
+                        {/* Recommendation Button */}
+                        <button
+                            onClick={onOpenLibrary}
+                            className="flex-[0.9] bg-white hover:bg-slate-50 text-slate-700 font-extrabold py-3.5 px-3 rounded-[20px] border-[1.5px] border-slate-200/80 shadow-sm shadow-slate-200/50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 text-[14px] tracking-wide whitespace-nowrap"
+                        >
+                            <FileText size={16} className="text-slate-400" /> 推荐方案
+                        </button>
+                    </div>
                 </div>
 
                 {/* Elegant Mobile List Items */}

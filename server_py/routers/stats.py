@@ -205,7 +205,7 @@ async def get_price_trends(
 
 @router.get("/public-price-trends")
 async def get_public_price_trends(
-    days: int = 14, # 默认给前台看14天的
+    days: int = 30, # 默认给前台看30天的
     session: Session = Depends(get_session)
 ):
     """前台获取公开价格变化趋势（所有人可用）"""

@@ -72,7 +72,7 @@ export default function ClientPriceTrendModal({ onClose }: Props) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch('/api/stats/public-price-trends?days=14');
+                const res = await fetch('/api/stats/public-price-trends?days=30');
                 if (res.ok) {
                     setData(await res.json());
                 }
@@ -97,7 +97,7 @@ export default function ClientPriceTrendModal({ onClose }: Props) {
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-slate-800">硬件行情雷达</h2>
-                            <p className="text-xs text-slate-500 font-medium">近14天价格波动趋势</p>
+                            <p className="text-xs text-slate-500 font-medium">近30天价格波动趋势</p>
                         </div>
                     </div>
                     <button
@@ -126,21 +126,23 @@ export default function ClientPriceTrendModal({ onClose }: Props) {
 
                             {/* Today Summary */}
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100/50 relative overflow-hidden group">
-                                    <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:scale-110 transition-transform duration-500">
+                                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-4 border-2 border-emerald-400/30 relative overflow-hidden group shadow-[0_0_20px_rgba(16,185,129,0.15)] animate-pulse-slow">
+                                    <div className="absolute right-[-10px] bottom-[-10px] opacity-20 group-hover:scale-125 transition-transform duration-700 ease-out">
                                         <ArrowDownRight size={80} className="text-emerald-500" />
                                     </div>
-                                    <p className="text-xs font-bold text-emerald-600/80 mb-1">今日降价 (件)</p>
-                                    <div className="text-3xl font-black text-emerald-600 relative z-10">{data.todaySummary.downCount}</div>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/10 to-transparent -translate-x-full group-hover:translate-x-full duration-1000 transition-transform"></div>
+                                    <p className="text-xs font-black text-emerald-600/90 mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>今日降价 (件)</p>
+                                    <div className="text-4xl font-black text-emerald-600 relative z-10 drop-shadow-sm tracking-tighter">{data.todaySummary.downCount}</div>
                                 </div>
-                                <div className="bg-rose-50 rounded-2xl p-4 border border-rose-100/50 relative overflow-hidden group">
-                                    <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:scale-110 transition-transform duration-500">
+                                <div className="bg-gradient-to-br from-rose-50 to-rose-100/50 rounded-2xl p-4 border-2 border-rose-400/30 relative overflow-hidden group shadow-[0_0_20px_rgba(244,63,94,0.15)] animate-pulse-slow" style={{ animationDelay: '500ms' }}>
+                                    <div className="absolute right-[-10px] bottom-[-10px] opacity-20 group-hover:scale-125 transition-transform duration-700 ease-out">
                                         <ArrowUpRight size={80} className="text-rose-500" />
                                     </div>
-                                    <p className="text-xs font-bold text-rose-600/80 mb-1">今日涨价 (件)</p>
-                                    <div className="text-3xl font-black text-rose-600 relative z-10">{data.todaySummary.upCount}</div>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-rose-400/10 to-transparent -translate-x-full group-hover:translate-x-full duration-1000 transition-transform"></div>
+                                    <p className="text-xs font-black text-rose-600/90 mb-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>今日涨价 (件)</p>
+                                    <div className="text-4xl font-black text-rose-600 relative z-10 drop-shadow-sm tracking-tighter">{data.todaySummary.upCount}</div>
                                 </div>
-                                <div className="bg-indigo-50 rounded-2xl p-4 border border-indigo-100/50 relative overflow-hidden group col-span-2 md:col-span-1 hidden md:block">
+                                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-2xl p-4 border border-indigo-200/50 relative overflow-hidden group col-span-2 md:col-span-1 hidden md:block transition-all hover:border-indigo-300">
                                     <div className="absolute right-[-10px] bottom-[-10px] opacity-10 group-hover:scale-110 transition-transform duration-500">
                                         <TrendingUp size={80} className="text-indigo-500" />
                                     </div>
@@ -200,8 +202,8 @@ export default function ClientPriceTrendModal({ onClose }: Props) {
                                                     key={cat}
                                                     onClick={() => setSelectedCategory(cat)}
                                                     className={`px-3 py-1 text-xs font-bold rounded-full whitespace-nowrap transition-colors ${selectedCategory === cat
-                                                            ? 'bg-slate-800 text-white shadow-sm'
-                                                            : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                                                        ? 'bg-slate-800 text-white shadow-sm'
+                                                        : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
                                                         }`}
                                                 >
                                                     {cat === 'all' ? '全部零件' : CATEGORY_LABELS[cat] || cat}
