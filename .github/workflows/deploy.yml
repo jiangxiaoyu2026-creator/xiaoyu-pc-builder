@@ -40,7 +40,13 @@ jobs:
           command_timeout: 30m
           script: |
             cd /root/pcbuilder
-            # 如果存在老旧的打包镜像，清理一下节约空间
-            docker system prune -f
+            echo "--- Server Disk Space ---"
+            df -h
+            echo "--- Server Memory ---"
+            free -m
+            echo "--- Cleaning up docker (aggressive) ---"
+            docker system prune -af --volumes
+            echo "--- Building docker image ---"
             docker-compose build
+            echo "--- Starting docker container ---"
             docker-compose up -d --force-recreate
