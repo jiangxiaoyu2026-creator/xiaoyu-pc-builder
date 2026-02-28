@@ -120,7 +120,7 @@ function VisualBuilder({
         // Fetch items for this specific category
         setIsModalLoading(true);
         try {
-            const res = await storage.getProducts(1, 200, entry.category);
+            const res = await storage.getProducts(1, 2000, entry.category);
             setModalItems(res.items);
         } catch (e) {
             console.error('Failed to load category products', e);

@@ -182,7 +182,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
         if (hardwareList.length > 0 || isLoading) return;
         setIsLoading(true);
         try {
-            const res = await storage.getProducts(1, 200, entry.category);
+            const res = await storage.getProducts(1, 2000, entry.category);
             setHardwareList(res.items);
         } catch (error) {
             console.error("Failed to load products for category:", entry.category, error);
