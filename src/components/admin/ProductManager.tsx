@@ -286,6 +286,14 @@ export default function ProductManager() {
                             if (typeof parsedSpecs === 'string') {
                                 try { parsedSpecs = JSON.parse(parsedSpecs); } catch (e) { parsedSpecs = {}; }
                             }
+                            if (parsedSpecs && typeof parsedSpecs === 'object' && !Array.isArray(parsedSpecs) && '0' in parsedSpecs && typeof (parsedSpecs as any)['0'] === 'string' && (parsedSpecs as any)['0'] === '{') {
+                                try {
+                                    const str = Object.values(parsedSpecs).join('');
+                                    parsedSpecs = JSON.parse(str);
+                                } catch (e) {
+                                    // Keep as is if parsing fails
+                                }
+                            }
 
                             const specSummary = Object.entries(parsedSpecs || {}).slice(0, 3).map(([k, v]) => `${k}:${v}`).join(', ');
                             return (
@@ -477,10 +485,18 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
     };
 
     const handleSpecChange = (key: string, value: any) => {
-        setFormData(prev => ({
-            ...prev,
-            specs: { ...prev.specs, [key]: value }
-        }));
+        setFormData(prev => {
+            let currentSpecs: any = prev.specs || {};
+            if (typeof currentSpecs === 'string') {
+                try { currentSpecs = JSON.parse(currentSpecs); } catch (e) { currentSpecs = {}; }
+            } else if (currentSpecs && typeof currentSpecs === 'object' && !Array.isArray(currentSpecs) && '0' in currentSpecs && typeof currentSpecs['0'] === 'string' && currentSpecs['0'] === '{') {
+                try { currentSpecs = JSON.parse(Object.values(currentSpecs).join('')); } catch (e) { currentSpecs = {}; }
+            }
+            return {
+                ...prev,
+                specs: { ...currentSpecs, [key]: value }
+            };
+        });
     };
 
     const currentCatSpecs = formData.category ? COMPATIBILITY_FIELDS[formData.category] : null;

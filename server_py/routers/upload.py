@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 import os
 import uuid
 import shutil
-from .auth import get_current_admin
+from .auth import get_current_admin, get_current_user
 from ..models import User
 
 router = APIRouter()
@@ -18,9 +18,9 @@ if not os.path.exists(UPLOAD_DIR):
 @router.post("/image")
 async def upload_image(
     file: UploadFile = File(...),
-    admin: User = Depends(get_current_admin)
+    user: User = Depends(get_current_user)
 ):
-    """Admin only: Upload an image file and return its public URL"""
+    """Upload an image file and return its public URL"""
     # 验证文件类型
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="只能上传图片文件")
