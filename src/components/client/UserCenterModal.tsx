@@ -283,7 +283,14 @@ export function UserCenterModal({
                     author: c.authorName || 'Unknown',
                     avatarColor: 'bg-zinc-500', // Default, maybe enhance later
                     type: (c.authorName && c.authorName.includes('官方')) ? 'official' : ((c.authorName && c.authorName.includes('主播')) ? 'streamer' : ((c.tags && c.tags.includes('求助')) ? 'help' : 'user')),
-                    tags: (c.tags || []).map((t: string) => ({ type: 'usage', label: t })),
+                    tags: (() => {
+                        let parsedTagsRaw: any = [];
+                        try {
+                            parsedTagsRaw = Array.isArray(c.tags) ? c.tags : (typeof c.tags === 'string' ? JSON.parse(c.tags || '[]') : []);
+                        } catch (e) { }
+                        const parsedTags = Array.isArray(parsedTagsRaw) ? parsedTagsRaw : [];
+                        return parsedTags.map((t: any) => typeof t === 'string' ? { type: 'usage' as const, label: t } : t);
+                    })(),
                     price: c.totalPrice,
                     items: c.items,
                     likes: c.likes,
