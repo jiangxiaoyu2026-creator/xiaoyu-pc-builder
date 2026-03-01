@@ -157,10 +157,45 @@ export default function ProductManager() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<HardwareItem | null>(null);
 
+    // Inline Spec Editor State
+    const [specEditingId, setSpecEditingId] = useState<string | null>(null);
+    const [specEditingText, setSpecEditingText] = useState<string>('');
+
     // Confirm Modal State
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleInlineImageUpload = async (id: string, file: File) => {
+        const p = products.find(x => String(x.id) === String(id));
+        if (!p) return;
+
+        // Optimistic UI could be added here, but direct upload is safer
+        const res = await storage.uploadImage(file);
+        if (res && res.url) {
+            const updated = { ...p, image: res.url };
+            setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
+            await storage.saveProduct(updated);
+        } else {
+            alert('图片上传失败，请稍后重试');
+        }
+    };
+
+    const handleInlineSpecSave = async (id: string) => {
+        const p = products.find(x => String(x.id) === String(id));
+        if (!p) return;
+
+        let parsedSpecs = p.specs;
+        try {
+            parsedSpecs = JSON.parse(specEditingText);
+            const updated = { ...p, specs: parsedSpecs };
+            setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
+            await storage.saveProduct(updated);
+            setSpecEditingId(null);
+        } catch (e) {
+            alert('JSON 格式错误，请检查！');
+        }
+    };
 
 
     const handleSaveProduct = async (product: HardwareItem, keepOpen = false) => {
@@ -247,7 +282,12 @@ export default function ProductManager() {
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                         {filtered.map(p => {
-                            const specSummary = Object.entries(p.specs).slice(0, 3).map(([k, v]) => `${k}:${v}`).join(', ');
+                            let parsedSpecs = p.specs;
+                            if (typeof parsedSpecs === 'string') {
+                                try { parsedSpecs = JSON.parse(parsedSpecs); } catch (e) { parsedSpecs = {}; }
+                            }
+
+                            const specSummary = Object.entries(parsedSpecs || {}).slice(0, 3).map(([k, v]) => `${k}:${v}`).join(', ');
                             return (
                                 <tr key={p.id} className={`hover:bg-slate-50/50 ${p.status === 'archived' ? 'opacity-60 grayscale' : ''}`}>
                                     <td className="px-6 py-4">
@@ -275,12 +315,28 @@ export default function ProductManager() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200">
+                                            <div className="relative w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 group cursor-pointer">
                                                 {p.image ? (
                                                     <img src={p.image} alt={p.model} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <ImageIcon size={20} className="text-slate-400" />
                                                 )}
+                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Upload size={14} className="text-white" />
+                                                </div>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-[0]"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            handleInlineImageUpload(p.id, file);
+                                                        }
+                                                        e.target.value = ''; // reset
+                                                    }}
+                                                />
                                             </div>
                                             <div>
                                                 <div className="font-bold text-slate-900 flex items-center gap-2">
@@ -292,8 +348,34 @@ export default function ProductManager() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <div className="text-xs text-slate-500 truncate max-w-xs">{specSummary}</div>
+                                    <td className="px-6 py-4 relative">
+                                        <div className="text-xs text-slate-500 truncate max-w-[12rem] cursor-pointer hover:text-indigo-600 transition-colors"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSpecEditingId(p.id);
+                                                setSpecEditingText(JSON.stringify(parsedSpecs || {}, null, 2));
+                                            }}
+                                            title="点击快速修改参数"
+                                        >
+                                            {specSummary || <span className="text-slate-300 italic">空 (点击设置)</span>}
+                                        </div>
+                                        {specEditingId === p.id && (
+                                            <div className="absolute left-6 top-12 z-20 w-64 bg-white p-3 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50">
+                                                <div className="text-xs font-bold text-slate-700 mb-2 flex justify-between">
+                                                    <span>快捷编辑参数 (JSON)</span>
+                                                    <button onClick={() => setSpecEditingId(null)} className="text-slate-400 hover:text-slate-600"><X size={14} /></button>
+                                                </div>
+                                                <textarea
+                                                    className="w-full h-24 text-xs font-mono p-2 border border-slate-200 rounded outline-none focus:border-indigo-500"
+                                                    value={specEditingText}
+                                                    onChange={e => setSpecEditingText(e.target.value)}
+                                                />
+                                                <div className="flex justify-end gap-2 mt-2">
+                                                    <button onClick={() => setSpecEditingId(null)} className="px-3 py-1 text-xs text-slate-500 rounded hover:bg-slate-100">取消</button>
+                                                    <button onClick={() => handleInlineSpecSave(p.id)} className="px-3 py-1 text-xs text-white bg-indigo-600 rounded hover:bg-indigo-700">保存</button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-1">
