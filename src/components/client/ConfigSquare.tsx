@@ -62,7 +62,7 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                     author: authorName,
                     avatarColor: 'bg-zinc-500',
                     type: type,
-                    tags: (c.tags || []).map((t: string) => ({ type: 'usage' as const, label: t })),
+                    tags: (Array.isArray(c.tags) ? c.tags : (typeof c.tags === 'string' ? JSON.parse(c.tags || '[]') : [])).map((t: string) => ({ type: 'usage' as const, label: t })),
                     price: c.totalPrice,
                     items: typeof c.items === 'string' ? JSON.parse(c.items) : (c.items || {}),
                     likes: c.likes || 0,

@@ -116,9 +116,14 @@ export default function ClientApp() {
                     author: authorName,
                     avatarColor: c.userId === 'admin' ? 'bg-zinc-900' : 'bg-blue-500',
                     type: type,
-                    tags: Array.isArray(c.tags) ? c.tags.map((t: any) =>
-                        typeof t === 'string' ? { type: 'usage' as const, label: t } : t
-                    ) : [],
+                    tags: (() => {
+                        let parsedTagsRaw: any = [];
+                        try {
+                            parsedTagsRaw = Array.isArray(c.tags) ? c.tags : (typeof c.tags === 'string' ? JSON.parse(c.tags || '[]') : []);
+                        } catch (e) { }
+                        const parsedTags = Array.isArray(parsedTagsRaw) ? parsedTagsRaw : [];
+                        return parsedTags.map((t: any) => typeof t === 'string' ? { type: 'usage' as const, label: t } : t);
+                    })(),
                     price: c.totalPrice,
                     items: typeof c.items === 'string' ? JSON.parse(c.items) : (c.items || {}),
                     likes: c.likes || 0,
@@ -457,7 +462,13 @@ export default function ClientApp() {
                 else if (authorName.includes('官方')) type = 'official';
                 else if (authorName.includes('主播')) type = 'streamer';
 
-                const parsedTags = Array.isArray(c.tags) ? c.tags : (typeof c.tags === 'string' ? JSON.parse(c.tags || '[]') : []);
+                let parsedTagsRaw: any = [];
+                try {
+                    parsedTagsRaw = Array.isArray(c.tags) ? c.tags : (typeof c.tags === 'string' ? JSON.parse(c.tags || '[]') : []);
+                } catch (e) {
+                    // Ignore parse error
+                }
+                const parsedTags = Array.isArray(parsedTagsRaw) ? parsedTagsRaw : [];
 
                 if (parsedTags.some((t: any) => (typeof t === 'string' ? t : t.label) === '求助')) type = 'help';
 
