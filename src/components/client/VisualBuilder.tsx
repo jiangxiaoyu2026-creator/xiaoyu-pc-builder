@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { ArrowRight, Zap, CreditCard, FileText, CheckCircle2, AlertCircle, X, Search, Sparkles, Share2, ChevronDown, ChevronUp, RefreshCw, Trash2, Download } from 'lucide-react';
+import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
@@ -447,7 +447,10 @@ function VisualBuilder({
                                         {entry.item.brand} {entry.item.model}
                                     </div>
                                 ) : (
-                                    <div className="text-[12px] text-slate-300 font-medium italic">未配备</div>
+                                    <div className="flex items-center gap-1 w-fit px-2 py-0.5 rounded-md bg-slate-100/80 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
+                                        <Plus size={12} strokeWidth={2.5} />
+                                        <span className="text-[11px] font-bold tracking-wider">去挑选</span>
+                                    </div>
                                 )}
                             </div>
 
