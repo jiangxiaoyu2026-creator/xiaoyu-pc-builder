@@ -292,7 +292,7 @@ export function UserCenterModal({
                         return parsedTags.map((t: any) => typeof t === 'string' ? { type: 'usage' as const, label: t } : t);
                     })(),
                     price: c.totalPrice,
-                    items: c.items,
+                    items: typeof c.items === 'string' ? JSON.parse(c.items) : (c.items || {}),
                     likes: c.likes,
                     views: c.views,
                     comments: 0,
@@ -300,7 +300,13 @@ export function UserCenterModal({
                     isLiked: userLikes.includes(c.id),
                     serialNumber: c.serialNumber,
                     description: c.description,
-                    showcaseImages: c.showcaseImages,
+                    showcaseImages: (() => {
+                        let parsedImagesRaw: any = [];
+                        try {
+                            parsedImagesRaw = Array.isArray(c.showcaseImages) ? c.showcaseImages : (typeof c.showcaseImages === 'string' ? JSON.parse(c.showcaseImages || '[]') : []);
+                        } catch (e) { }
+                        return Array.isArray(parsedImagesRaw) ? parsedImagesRaw : [];
+                    })(),
                     showcaseStatus: c.showcaseStatus
                 });
 
