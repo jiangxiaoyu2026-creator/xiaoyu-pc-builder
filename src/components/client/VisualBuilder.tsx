@@ -343,12 +343,12 @@ function VisualBuilder({
                                             {CATEGORY_MAP[row.category]}
                                             {row.quantity > 1 ? ` × ${row.quantity}` : ''}
                                         </div>
-                                        <div className="text-[14px] font-bold text-slate-800 leading-snug truncate">
+                                        <div className="text-[14px] font-bold text-slate-800 leading-relaxed pb-1 truncate">
                                             {name}
                                         </div>
                                     </div>
                                     <div className="text-right pl-4">
-                                        <div className="font-mono text-lg font-black text-slate-900">¥{(prc * (row.quantity || 1)).toLocaleString()}</div>
+                                        <div className="font-mono text-lg font-black text-slate-900 leading-relaxed pb-1">¥{(prc * (row.quantity || 1)).toLocaleString()}</div>
                                     </div>
                                 </div>
                             )
