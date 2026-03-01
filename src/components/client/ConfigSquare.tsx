@@ -34,7 +34,7 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                     search: searchQuery,
                     sortBy
                 }),
-                storage.getAdminProducts(1, 1000) // Products still needed for spec names
+                storage.getProducts(1, 1000) // Fetch public products without admin restriction
             ]);
 
             setTotal(cRes.total);
@@ -64,7 +64,7 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                     type: type,
                     tags: (c.tags || []).map((t: string) => ({ type: 'usage' as const, label: t })),
                     price: c.totalPrice,
-                    items: c.items || {},
+                    items: typeof c.items === 'string' ? JSON.parse(c.items) : (c.items || {}),
                     likes: c.likes || 0,
                     views: c.views || 0,
                     comments: 0,
@@ -72,7 +72,7 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                     isLiked: false,
                     serialNumber: c.serialNumber,
                     description: c.description,
-                    showcaseImages: c.showcaseImages,
+                    showcaseImages: typeof c.showcaseImages === 'string' ? JSON.parse(c.showcaseImages) : (c.showcaseImages || []),
                     showcaseStatus: c.showcaseStatus
                     // isVip: handled if needed
                 };

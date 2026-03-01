@@ -457,7 +457,9 @@ export default function ClientApp() {
                 else if (authorName.includes('官方')) type = 'official';
                 else if (authorName.includes('主播')) type = 'streamer';
 
-                if (c.tags?.includes('求助')) type = 'help';
+                const parsedTags = Array.isArray(c.tags) ? c.tags : (typeof c.tags === 'string' ? JSON.parse(c.tags || '[]') : []);
+
+                if (parsedTags.some((t: any) => (typeof t === 'string' ? t : t.label) === '求助')) type = 'help';
 
                 return {
                     id: c.id,
@@ -465,7 +467,7 @@ export default function ClientApp() {
                     author: authorName,
                     avatarColor: 'bg-zinc-500',
                     type: type,
-                    tags: (c.tags || []).map((t: string) => ({ type: 'usage' as const, label: t })),
+                    tags: parsedTags.map((t: any) => typeof t === 'string' ? { type: 'usage' as const, label: t } : t),
                     price: c.totalPrice,
                     items: c.items,
                     likes: c.likes,

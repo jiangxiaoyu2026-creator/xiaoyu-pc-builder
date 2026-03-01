@@ -88,10 +88,22 @@ function VisualBuilder({
 
     const updateGhost = (el: HTMLElement | null, status: string = '') => {
         if (el) {
-            const rect = el.getBoundingClientRect();
-            const offsetX = rect.width / 2 + (Math.random() * 20 - 10);
-            const offsetY = rect.height / 2 + (Math.random() * 10 - 5);
-            setGhostPos({ x: rect.left + offsetX, y: rect.top + offsetY });
+            if (window.innerWidth < 1024) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            const initialRect = el.getBoundingClientRect();
+            const offsetX = initialRect.width / 2 + (Math.random() * 20 - 10);
+            const offsetY = initialRect.height / 2 + (Math.random() * 10 - 5);
+
+            const update = () => {
+                const rect = el.getBoundingClientRect();
+                setGhostPos({ x: rect.left + offsetX, y: rect.top + offsetY });
+            };
+
+            update();
+            const interval = setInterval(update, 50);
+            setTimeout(() => clearInterval(interval), 600);
+
             setGhostStatus(status);
         }
     };
@@ -401,20 +413,7 @@ function VisualBuilder({
                             <FileText size={16} className="text-slate-400" /> 推荐方案
                         </button>
                     </div>
-                    <div className="flex items-center gap-2 mt-3">
-                        <button onClick={onReset} className="h-10 px-4 whitespace-nowrap flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl transition-all active:scale-95 text-sm border border-rose-100" title="清空配置">
-                            清空配置
-                        </button>
-                        <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-10 aspect-square flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-all active:scale-95 border border-indigo-100" title="生成图片">
-                            {isGeneratingPoster ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
-                        </button>
-                        <button onClick={onSave} className="flex-1 h-10 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95 text-sm border border-slate-200" title="保存">
-                            保存配置
-                        </button>
-                    </div>
-                    <button onClick={handleShareClick} className="w-full h-12 flex items-center justify-center bg-slate-900 hover:bg-black text-white font-bold rounded-xl shadow-md transition-all active:scale-95 mt-2">
-                        <Share2 size={16} className="mr-2" /> 发长文晒单
-                    </button>
+
                 </div>
 
                 {/* Elegant Mobile List Items */}
