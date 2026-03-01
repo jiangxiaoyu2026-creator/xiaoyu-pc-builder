@@ -244,7 +244,6 @@ function VisualBuilder({
         if (!posterRef.current || isGeneratingPoster) return;
         setIsGeneratingPoster(true);
         try {
-            posterRef.current.style.display = 'block';
             await new Promise(resolve => setTimeout(resolve, 100)); // allow DOM refresh
             const canvas = await html2canvas(posterRef.current, {
                 scale: 2,
@@ -260,9 +259,6 @@ function VisualBuilder({
             console.error('Failed to generate poster:', error);
             alert('生成图片失败，请稍后重试');
         } finally {
-            if (posterRef.current) {
-                posterRef.current.style.display = 'none';
-            }
             setIsGeneratingPoster(false);
         }
     };
@@ -320,7 +316,7 @@ function VisualBuilder({
         <div className="flex flex-col lg:flex-row gap-8 relative">
 
             {/* Hidden Poster Template */}
-            <div style={{ display: 'none', position: 'absolute', top: -9999, left: -9999, zIndex: -9999 }}>
+            <div style={{ position: 'fixed', top: -9999, left: -9999, zIndex: -9999 }}>
                 <div ref={posterRef} className="bg-white text-slate-900 w-[600px] rounded-[24px] overflow-hidden font-sans border border-slate-200 shadow-xl relative">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/60 rounded-full blur-3xl pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-50/60 rounded-full blur-3xl pointer-events-none"></div>
