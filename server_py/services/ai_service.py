@@ -119,8 +119,8 @@ class AiService:
             normal_cat_items = [i for i in items if i.id not in seen_ids]
             normal_cat_items.sort(key=lambda x: x.price)
             
-            # 每个类别最多扩充到 12 个候选项，确保 AI 有得选
-            spots_left = 12 - len(forced_cat_items)
+            # 每个类别最多扩充到 15 个候选项，确保 AI 有得选
+            spots_left = 15 - len(forced_cat_items)
             selected = forced_cat_items.copy()
             
             if spots_left > 0 and normal_cat_items:
@@ -145,7 +145,7 @@ class AiService:
 
     def find_reference_configs(self, budget: int, user_prompt: str) -> Optional[Dict]:
         """
-        寻找匹配的最佳单套神评配置作为模板
+        寻找匹配的最佳单套配置作为模板（包含推荐配置和主播配置）
         """
         # 1. 标签映射
         mapped_tags = []
@@ -158,35 +158,65 @@ class AiService:
             mapped_tags.extend(["设计", "剪辑", "工作"])
         if any(kw in prompt_lower for kw in ["海景房", "好看", "发光", "白"]):
             mapped_tags.extend(["海景房", "白色"])
+        if any(kw in prompt_lower for kw in ["游戏", "吃鸡", "fps", "帧数"]):
+            mapped_tags.extend(["游戏", "电竞"])
 
         min_price, max_price = budget * 0.7, budget * 1.3
         now = datetime.utcnow()
         thirty_days_ago = now - timedelta(days=30)
-        
-        statement = select(Config).where(
+
+        # 2. 查询范围扩大：同时包含官方推荐配置 + 主播用户发布的配置
+        # 第一优先级：官方推荐配置（最近30天内）
+        stmt_recommended = select(Config).where(
             Config.status == "published",
             Config.isRecommended == True,
             Config.totalPrice >= min_price,
             Config.totalPrice <= max_price,
             Config.createdAt >= thirty_days_ago
         ).order_by(Config.likes.desc()).limit(30)
-        
-        recent_configs = self.session.exec(statement).all()
-        if not recent_configs:
+        recommended_configs = self.session.exec(stmt_recommended).all()
+
+        # 第二优先级：主播(streamer)角色用户的配置（最近30天内）
+        from sqlmodel import or_
+        stmt_streamer = select(Config).where(
+            Config.status == "published",
+            Config.totalPrice >= min_price,
+            Config.totalPrice <= max_price,
+            Config.createdAt >= thirty_days_ago,
+            Config.authorRole == "streamer"
+        ).order_by(Config.likes.desc()).limit(20)
+        streamer_configs = self.session.exec(stmt_streamer).all()
+
+        # 合并候选，去重
+        seen_ids = set()
+        all_candidates = []
+        for c in recommended_configs + streamer_configs:
+            if c.id not in seen_ids:
+                seen_ids.add(c.id)
+                all_candidates.append(c)
+
+        if not all_candidates:
             return None
 
         # 评分机制挑选最符合的模板
         best_config = None
         best_score = -1
 
-        for c in recent_configs:
-            score = c.likes
-            config_text = f"{c.title} {c.tags}".lower()
-            
+        for c in all_candidates:
+            score = c.likes * 2  # 点赞权重加倍  
+            config_text = f"{c.title} {c.tags} {c.description or ''}".lower()
+
+            # 官方推荐配置额外加分
+            if c.isRecommended:
+                score += 80
+            # 主播配置额外加分
+            if c.authorRole == 'streamer':
+                score += 60
+
             for tag in mapped_tags:
                 if tag.lower() in config_text:
                     score += 50
-            
+
             for word in user_prompt.split():
                 if len(word) > 1 and word.lower() in config_text:
                     score += 30
@@ -197,14 +227,21 @@ class AiService:
             if score > best_score:
                 best_score = score
                 best_config = c
-                
+
         if not best_config:
             return None
 
+        # 解析配置骨架
         comp_details = []
         fan_count = 0
-        if isinstance(best_config.items, dict):
-            for cat, item_data in best_config.items.items():
+        config_items = best_config.items
+        if isinstance(config_items, str):
+            try:
+                config_items = json.loads(config_items)
+            except:
+                config_items = {}
+        if isinstance(config_items, dict):
+            for cat, item_data in config_items.items():
                 if cat == 'fan':
                     if isinstance(item_data, dict) and 'count' in item_data:
                         fan_count = item_data['count']
@@ -218,13 +255,16 @@ class AiService:
                         hw_specs = self._get_inferred_specs(hw)
                         spec_str = f"({hw_specs.get('socket', '')}, {hw_specs.get('memoryType', '')})" if hw_specs else ""
                         comp_details.append(f"{cat}: {hw.brand} {hw.model} {spec_str}")
-        
+
+        source_label = "主播推荐配置" if best_config.authorRole == 'streamer' else "官方推荐配置"
         return {
             "title": best_config.title,
             "price": best_config.totalPrice,
             "tags": best_config.tags,
             "logic": "; ".join(comp_details) if comp_details else "通用搭配",
-            "fan_count": fan_count
+            "fan_count": fan_count,
+            "source": source_label,
+            "author": best_config.authorName or ""
         }
 
     def generate_build(self, user_prompt: str) -> Dict:
@@ -263,21 +303,24 @@ class AiService:
 你的任务是根据用户的需求，从【库存清单】中精准挑选硬件，组成一台电脑主机。
 
 **【当前配单匹配策略】：**
+**最高优先级绝对红线：无条件服从点名！** 如果客户在需求里明确点名了某个在【库存清单】中存在的硬件型号（如指定要“玩嘉 风琴 黑”机箱、“七彩虹 战斧5050”显卡或具体的内存主板等），你**必须100%原封不动地选用该库存硬件**，绝对不允许以任何理由（如性价比、品牌偏好、预算）替换成其他型号！哪怕搭配很奇怪也要按照用户的来！
+
 """
         if best_template:
-            system_prompt += f"""我已经在【高分配置广场】中找到了最符合用户需求的满分模板配置单：
+            system_prompt += f"""除用户强制点名的配件外，我已经在【高级装机库】中找到了最符合用户需求的满分模板配置单：
+模板来源：{best_template['source']} ({best_template['author']})
 模板名称：{best_template['title']}
 骨架组合：{best_template['logic']}
 模板风扇数：{best_template['fan_count']} 把。
 
 **你必须将这套模板作为基础骨架（优先抄作业）：**
-1. **最高优先级**：如果用户点名要求了具体的配件（哪怕只有一个），你**必须优先满足用户的点名**，而不是盲从模板（例如模板是13400F，用户点名5600X，你必须换成5600X）。
-2. 如果模板中的某个配件在当前的【库存清单】中找不到原型号，请在库存中寻找同级别的平替。
-3. 如果模板包含明确的风扇数量，请你在库存中选一款合适的机箱风扇并将数量设为 {best_template['fan_count']}。
+1. **最高优先级冲突解决**：你的首要任务是满足用户点名的配件。只有在用户没有点名该部位配件时，才去参考这个模板！如果模板是13400F，用户点名5600X，你必须换成5600X。
+2. 平替寻找：如果模板中的某个配件在当前的【库存清单】中找不到原型号，请在库存中寻找同级别的平替。
+3. 补全风扇：如果模板包含明确的风扇数量，请你在库存中选一款合适的机箱风扇并将数量设为 {best_template['fan_count']}。
 4. **一致性检查**：你输出的 `description` 描述文字中提到的型号，必须和你 `items` JSON 字段中返回的 `id` 对应的型号**完全一致**。禁止说一套做一套！
 """
         else:
-            system_prompt += "没有找到任何相似的完美模板，请遵循下方的【专家级装机规则】，自行从库存中搭配出最优解。"
+            system_prompt += "没有找到任何相似的完美模板，请遵循下方的【专家级装机规则】，在满足用户点名配件的前提下，自行从库存中搭配出最优解。"
 
         system_prompt += f"""
 
@@ -293,7 +336,6 @@ class AiService:
 3. **电源冗余底线**：电源额定功率必须大于 `(CPU TDP功耗 + GPU TDP功耗) * 1.5 + 50W`，绝不选刚好压线的电源！不确定具体数值就往上多留 100W。
 4. **散热器精准化**：中低端 CPU（如 i3/i5/i7非K/R5非X）强制首选【风冷散热器】以节省预算；只有遇到高端高发热 CPU（i7-K/i9/R9），或是客户明确要求“海景房/全白/必须上水冷”时，才可使用【240/360 水冷】。
 5. **显示器去留**：默认情况**绝对不选显示器**(将 monitor 返回 null)。唯一的例外是用户在需求里明确说出“包含一台电脑屏幕”之类的需求。
-6. **无条件服从点名**：如果客户在需求里明确点名了某个在【库存清单】中存在的硬件型号（如指定要“玩嘉 风琴 黑”机箱、“七彩虹 战斧5050”显卡或具体的内存主板等），你**必须100%原封不动地选用该库存硬件**，绝对不允许以任何理由（如性价比、品牌偏好、预算）替换成其他型号！哪怕搭配很奇怪也要按照用户的来！
 
 【库存清单】：
 {json.dumps(inventory, ensure_ascii=False)}
