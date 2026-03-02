@@ -4,7 +4,7 @@ import { storage } from '../../services/storage';
 import { UserItem, ConfigTemplate } from '../../types/clientTypes';
 import ConfirmModal from '../common/ConfirmModal';
 
-import { ConfigDetailModal } from './Modals';
+import { ConfigDetailModal } from './ConfigDetailModal';
 import SellModal from './SellModal';
 import ShowcaseModal from './ShowcaseModal';
 
@@ -759,8 +759,8 @@ export function UserCenterModal({
                 <ConfigDetailModal
                     config={selectedConfig}
                     onClose={() => setSelectedConfig(null)}
-                    onLoad={(cfg) => {
-                        onLoadConfig(cfg);
+                    onLoad={() => {
+                        onLoadConfig(selectedConfig!);
                         setSelectedConfig(null);
                     }}
                     showToast={showToast}

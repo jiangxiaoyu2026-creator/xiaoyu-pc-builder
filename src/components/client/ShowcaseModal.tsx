@@ -28,19 +28,25 @@ export default function ShowcaseModal({ config, onClose, onSuccess, showToast }:
 
         setIsUploading(true);
         try {
-            const uploadPromises = files.map(file => storage.uploadImage(file));
-            const results = await Promise.all(uploadPromises);
+            const newUrls: string[] = [];
+            let failedCount = 0;
 
-            const newUrls = results
-                .filter(res => res !== null)
-                .map(res => res!.url);
+            // Process sequentially to prevent mobile OOM during batch canvas compression
+            for (const file of files) {
+                const res = await storage.uploadImage(file);
+                if (res && res.url) {
+                    newUrls.push(res.url);
+                } else {
+                    failedCount++;
+                }
+            }
 
             if (newUrls.length > 0) {
                 setImages(prev => [...prev, ...newUrls]);
-                if (newUrls.length < files.length) {
-                    showToast(`成功上传 ${newUrls.length} 张，失败 ${files.length - newUrls.length} 张`);
+                if (failedCount > 0) {
+                    showToast(`成功上传 ${newUrls.length} 张，失败 ${failedCount} 张`);
                 }
-            } else {
+            } else if (failedCount > 0) {
                 showToast('上传失败，请稍后重试');
             }
         } catch (error) {
