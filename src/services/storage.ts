@@ -1350,11 +1350,6 @@ class StorageService {
 
     async uploadImage(file: File): Promise<{ url: string, filename: string } | null> {
         try {
-            if (file.size > 3 * 1024 * 1024) {
-                alert('图片太大，不得超过 3MB。请压缩后重试。');
-                return null;
-            }
-
             let fileToUpload = file;
 
             // Handle iOS HEIC/HEIF format
@@ -1374,12 +1369,6 @@ class StorageService {
                         type: 'image/jpeg',
                         lastModified: Date.now()
                     });
-
-                    // Re-check size after conversion just in case
-                    if (fileToUpload.size > 3 * 1024 * 1024) {
-                        alert('图片太大，不得超过 3MB。请压缩后重试。');
-                        return null;
-                    }
                 } catch (heicError) {
                     console.error('Failed to convert HEIC image:', heicError);
                     alert('苹果 HEIC 图片格式转换失败，请尝试在手机相册中重新保存或截图后上传。');
@@ -1390,6 +1379,12 @@ class StorageService {
             // 自动压缩超大图片 ( > 1MB )，跳过 GIF 避免丢失动图效果
             if (fileToUpload.type.startsWith('image/') && fileToUpload.size > 1024 * 1024 && !fileToUpload.type.includes('gif')) {
                 fileToUpload = await this.compressImage(fileToUpload);
+            }
+
+            // 最终大小检查：如果经过转换和压缩后，文件依然大于 3MB，才拦截
+            if (fileToUpload.size > 3 * 1024 * 1024) {
+                alert('图片太大，压缩后仍超过 3MB。请截图或选择更小的图片上传。');
+                return null;
             }
 
             const formData = new FormData();
