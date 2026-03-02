@@ -87,6 +87,13 @@ async def serve_frontend(full_path: str):
     # API 路径不应该到达这里，但以防万一
     if full_path.startswith("api"):
         raise HTTPException(status_code=404, detail="API 接口未找到")
+    
+    # /uploads 路径 —— 直接从上传目录提供文件
+    if full_path.startswith("uploads/"):
+        upload_file_path = os.path.join(UPLOAD_DIR, full_path[len("uploads/"):])
+        if os.path.isfile(upload_file_path):
+            return FileResponse(upload_file_path)
+        raise HTTPException(status_code=404, detail="文件未找到")
 
     # 检查是否存在静态文件
     if os.path.exists(DIST_DIR):
