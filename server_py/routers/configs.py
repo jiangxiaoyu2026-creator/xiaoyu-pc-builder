@@ -13,10 +13,10 @@ router = APIRouter()
 def _parse_config(config: Config, current_user: Optional[User] = None, session: Session = None):
     c_dict = config.model_dump()
     # Parse JSON strings if they are not already dicts/lists
-    for key in ["items", "tags", "evaluation"]:
+    for key in ["items", "tags", "evaluation", "showcaseImages"]:
         if isinstance(c_dict.get(key), str):
             try: c_dict[key] = json.loads(c_dict[key])
-            except: c_dict[key] = [] if key == "tags" else {}
+            except: c_dict[key] = [] if key in ["tags", "showcaseImages"] else {}
 
     # Filter showcase if not approved and not owner/admin
     is_owner = current_user and current_user.id == config.userId

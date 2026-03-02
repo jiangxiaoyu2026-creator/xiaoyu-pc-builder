@@ -263,12 +263,13 @@ class StorageService {
         }
     }
 
-    async getAdminConfigs(page: number = 1, pageSize: number = 20, status: string = 'all'): Promise<{ items: ConfigItem[], total: number }> {
+    async getAdminConfigs(_page: number = 1, _pageSize: number = 20, _status: string = 'all'): Promise<{ items: ConfigItem[], total: number }> {
         try {
-            const result = await ApiService.get(`/configs?page=${page}&page_size=${pageSize}&status=${status}`);
+            const result = await ApiService.get('/configs/admin');
+            const items = Array.isArray(result) ? result : (Array.isArray(result.items) ? result.items : []);
             return {
-                items: Array.isArray(result.items) ? result.items : [],
-                total: result.total || 0
+                items,
+                total: items.length
             };
         } catch (e) {
             console.error('Failed to load admin configs', e);
