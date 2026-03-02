@@ -591,9 +591,10 @@ class StorageService {
     async getRecycleRequests(page: number = 1, pageSize: number = 20): Promise<{ items: RecycleRequest[], total: number }> {
         try {
             const result = await ApiService.get(`/recycle?page=${page}&page_size=${pageSize}`);
+            const items = Array.isArray(result) ? result : (Array.isArray(result.items) ? result.items : []);
             return {
-                items: Array.isArray(result.items) ? result.items : [],
-                total: result.total || 0
+                items,
+                total: items.length
             };
         } catch (e) {
             return { items: [], total: 0 };
@@ -1349,6 +1350,11 @@ class StorageService {
 
     async uploadImage(file: File): Promise<{ url: string, filename: string } | null> {
         try {
+            if (file.size > 3 * 1024 * 1024) {
+                alert('图片太大，不得超过 3MB。请压缩后重试。');
+                return null;
+            }
+
             let fileToUpload = file;
             // 自动压缩超大图片 ( > 1MB )，跳过 GIF 避免丢失动图效果
             if (file.type.startsWith('image/') && file.size > 1024 * 1024 && !file.type.includes('gif')) {
