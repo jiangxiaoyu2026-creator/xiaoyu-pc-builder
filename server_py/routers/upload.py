@@ -21,8 +21,12 @@ async def upload_image(
     user: User = Depends(get_current_user)
 ):
     """Upload an image file and return its public URL"""
-    # 验证文件类型
-    if not file.content_type.startswith("image/"):
+    # 验证文件类型：如果 content_type 为空或不以 image/ 开头，则通过扩展名进行二次判断（兼容部分移动端异常 Mime Type）
+    ext = os.path.splitext(file.filename)[1].lower()
+    valid_exts = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif"}
+    
+    is_valid_type = file.content_type.startswith("image/") if file.content_type else False
+    if not is_valid_type and ext not in valid_exts:
         raise HTTPException(status_code=400, detail="只能上传图片文件")
     
     # 生成唯一文件名

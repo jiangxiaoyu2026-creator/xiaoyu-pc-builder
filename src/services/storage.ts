@@ -1376,8 +1376,13 @@ class StorageService {
                 }
             }
 
+            // 判断是否为图片 (兼容有些系统返回空 type 的情况)
+            const isImage = fileToUpload.type.startsWith('image/') ||
+                /\.(jpg|jpeg|png|webp|heic|heif|gif)$/i.test(fileToUpload.name);
+            const isGif = fileToUpload.type.includes('gif') || /\.gif$/i.test(fileToUpload.name);
+
             // 自动压缩超大图片 ( > 1MB )，跳过 GIF 避免丢失动图效果
-            if (fileToUpload.type.startsWith('image/') && fileToUpload.size > 1024 * 1024 && !fileToUpload.type.includes('gif')) {
+            if (isImage && fileToUpload.size > 1024 * 1024 && !isGif) {
                 fileToUpload = await this.compressImage(fileToUpload);
             }
 
