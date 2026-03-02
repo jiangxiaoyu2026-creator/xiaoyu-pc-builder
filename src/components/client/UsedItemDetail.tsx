@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, ShieldCheck, User, Shield, AlertTriangle, Copy, Check } from 'lucide-react';
+import { X, ShieldCheck, User, Shield, AlertTriangle, Copy, Check, Share2 } from 'lucide-react';
 import { UsedItem, UserItem } from '../../types/adminTypes';
 import OfficialInspectionCard from './OfficialInspectionCard';
 
@@ -14,6 +14,36 @@ interface UsedItemDetailProps {
 export default function UsedItemDetail({ item, onClose, currentUser, onLogin, onConsultPurchase }: UsedItemDetailProps) {
     const [activeImage, setActiveImage] = useState(0);
     const [copied, setCopied] = useState(false);
+    const [shared, setShared] = useState(false);
+
+    const handleShare = async () => {
+        const lines = [
+            `🔥 ${item.type === 'official' ? '【官方自营】' : '【个人闲置】'} ${item.brand} ${item.model}`,
+            `💰 售价：¥${item.price}${item.originalPrice ? ` (原价 ¥${item.originalPrice})` : ''}`,
+            `📦 成色：${item.condition}`,
+            `📝 ${item.description || '暂无详细描述'}`,
+            ``,
+            `👉 来「蒋小鱼装机平台」查看更多：https://diyxx.com`,
+        ];
+        const shareText = lines.join('\n');
+
+        // Try native share on mobile
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: `${item.brand} ${item.model} - 二手好价`, text: shareText });
+                return;
+            } catch { /* user cancelled or not supported */ }
+        }
+
+        // Fallback: copy to clipboard
+        try {
+            await navigator.clipboard.writeText(shareText);
+            setShared(true);
+            setTimeout(() => setShared(false), 2000);
+        } catch {
+            // ignore
+        }
+    };
 
 
 
@@ -98,9 +128,20 @@ export default function UsedItemDetail({ item, onClose, currentUser, onLogin, on
                                 </div>
                                 <h2 className="text-2xl font-bold text-slate-900">{item.brand} {item.model}</h2>
                             </div>
-                            <button onClick={onClose} className="hidden md:block p-2 hover:bg-slate-100 rounded-full transition-colors">
-                                <X size={24} className="text-slate-400" />
-                            </button>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={handleShare}
+                                    className="p-2 hover:bg-indigo-50 rounded-full transition-colors group"
+                                    title="分享"
+                                >
+                                    {shared
+                                        ? <Check size={20} className="text-emerald-500" />
+                                        : <Share2 size={20} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />}
+                                </button>
+                                <button onClick={onClose} className="hidden md:block p-2 hover:bg-slate-100 rounded-full transition-colors">
+                                    <X size={24} className="text-slate-400" />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Price Card */}
@@ -164,8 +205,8 @@ export default function UsedItemDetail({ item, onClose, currentUser, onLogin, on
                                     }}
                                     disabled={!item.xianyuLink}
                                     className={`w-full py-4 rounded-xl font-bold transition-all transform flex items-center justify-center gap-2 ${item.xianyuLink
-                                            ? 'bg-[#ffda44] hover:bg-[#ffe160] text-slate-900 shadow-lg hover:scale-[1.02] active:scale-[0.98] shadow-orange-500/20'
-                                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                        ? 'bg-[#ffda44] hover:bg-[#ffe160] text-slate-900 shadow-lg hover:scale-[1.02] active:scale-[0.98] shadow-orange-500/20'
+                                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                         }`}
                                 >
                                     {copied ? <Check size={18} className={item.xianyuLink ? "text-emerald-500" : ""} /> : <Copy size={18} />}
