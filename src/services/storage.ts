@@ -1356,9 +1356,40 @@ class StorageService {
             }
 
             let fileToUpload = file;
+
+            // Handle iOS HEIC/HEIF format
+            const filenameLower = file.name.toLowerCase();
+            if (filenameLower.endsWith('.heic') || filenameLower.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif') {
+                try {
+                    // Dynamically import to reduce main bundle size
+                    const heic2any = (await import('heic2any')).default;
+                    const convertedBlob = await heic2any({
+                        blob: file,
+                        toType: 'image/jpeg',
+                        quality: 0.8
+                    });
+
+                    const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                    fileToUpload = new File([blob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+
+                    // Re-check size after conversion just in case
+                    if (fileToUpload.size > 3 * 1024 * 1024) {
+                        alert('图片太大，不得超过 3MB。请压缩后重试。');
+                        return null;
+                    }
+                } catch (heicError) {
+                    console.error('Failed to convert HEIC image:', heicError);
+                    alert('苹果 HEIC 图片格式转换失败，请尝试在手机相册中重新保存或截图后上传。');
+                    return null;
+                }
+            }
+
             // 自动压缩超大图片 ( > 1MB )，跳过 GIF 避免丢失动图效果
-            if (file.type.startsWith('image/') && file.size > 1024 * 1024 && !file.type.includes('gif')) {
-                fileToUpload = await this.compressImage(file);
+            if (fileToUpload.type.startsWith('image/') && fileToUpload.size > 1024 * 1024 && !fileToUpload.type.includes('gif')) {
+                fileToUpload = await this.compressImage(fileToUpload);
             }
 
             const formData = new FormData();
