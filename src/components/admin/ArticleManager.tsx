@@ -2,10 +2,15 @@ import { useState, useEffect } from 'react';
 import { storage } from '../../services/storage';
 import { Article } from '../../types/clientTypes';
 import { Plus, Trash2, Edit, X, BookOpen, Pin } from 'lucide-react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 
 export default function ArticleManager() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [isEditing, setIsEditing] = useState(false);
+    const [editorTab, setEditorTab] = useState<'edit' | 'preview'>('edit');
     const [currentArticle, setCurrentArticle] = useState<Partial<Article>>({});
     const [loading, setLoading] = useState(false);
 
@@ -23,6 +28,7 @@ export default function ArticleManager() {
     const handleEdit = (article: Article) => {
         setCurrentArticle(article);
         setIsEditing(true);
+        setEditorTab('edit');
     };
 
     const handleCreate = () => {
@@ -33,6 +39,7 @@ export default function ArticleManager() {
             coverImage: ''
         });
         setIsEditing(true);
+        setEditorTab('edit');
     };
 
     const handleSave = async () => {
@@ -155,13 +162,50 @@ export default function ArticleManager() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">内容 (支持 Markdown/HTML)</label>
-                        <textarea
-                            value={currentArticle.content || ''}
-                            onChange={e => setCurrentArticle({ ...currentArticle, content: e.target.value })}
-                            className="w-full h-96 border border-slate-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-mono text-sm leading-relaxed"
-                            placeholder="# 标题\n\n正文内容..."
-                        />
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="text-sm font-bold text-slate-700">内容 (支持 Markdown/HTML)</label>
+                            <div className="flex bg-slate-100 rounded-lg p-1">
+                                <button
+                                    onClick={() => setEditorTab('edit')}
+                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${editorTab === 'edit' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    编辑
+                                </button>
+                                <button
+                                    onClick={() => setEditorTab('preview')}
+                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${editorTab === 'preview' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    预览
+                                </button>
+                            </div>
+                        </div>
+                        {editorTab === 'edit' ? (
+                            <textarea
+                                value={currentArticle.content || ''}
+                                onChange={e => setCurrentArticle({ ...currentArticle, content: e.target.value })}
+                                className="w-full h-[500px] border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none font-mono text-sm leading-relaxed resize-y shadow-inner"
+                                placeholder="# 标题\n\n正文内容..."
+                            />
+                        ) : (
+                            <div className="w-full h-[500px] border border-slate-200 rounded-xl px-4 py-3 bg-slate-50 overflow-y-auto">
+                                <div className="prose prose-slate max-w-none prose-sm md:prose-base bg-white p-6 rounded-lg shadow-sm w-full leading-relaxed overflow-hidden">
+                                    <Markdown
+                                        remarkPlugins={[remarkGfm]}
+                                        rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                                        components={{
+                                            img: ({ node, ...props }: any) => (
+                                                <img {...props} className="rounded-lg shadow-sm max-w-full h-auto mt-4 mb-4 border border-slate-100 mx-auto" style={{ maxHeight: '400px', objectFit: 'contain' }} />
+                                            ),
+                                            a: ({ node, ...props }: any) => (
+                                                <a {...props} className="text-indigo-600 hover:underline" target="_blank" rel="noopener noreferrer" />
+                                            )
+                                        }}
+                                    >
+                                        {currentArticle.content || '*暂无内容*'}
+                                    </Markdown>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2 pt-2">

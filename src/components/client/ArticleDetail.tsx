@@ -82,7 +82,7 @@ export default function ArticleDetail() {
                     />
                 )}
 
-                <div className="prose prose-slate max-w-none prose-lg bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-100 leading-relaxed overflow-hidden whitespace-pre-wrap">
+                <div className="prose prose-slate max-w-none prose-lg bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-100 leading-relaxed overflow-hidden">
                     <Markdown
                         remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeRaw, rehypeSanitize]}
