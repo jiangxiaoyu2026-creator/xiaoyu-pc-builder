@@ -5,7 +5,8 @@
 import { useState, useEffect } from 'react';
 import {
     XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, BarChart, Bar, Legend
+    ResponsiveContainer, BarChart, Bar, Legend,
+    LineChart, Line
 } from 'recharts';
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter } from 'lucide-react';
 
@@ -35,6 +36,25 @@ interface PriceTrendData {
         changedAt: string;
     }>;
     categories: string[];
+}
+
+interface ProductPriceTrendData {
+    productTrends: Array<{
+        hardwareId: string;
+        name: string;
+        points: Array<{ date: string; price: number; oldPrice: number }>;
+    }>;
+    categoryAvgTrend: Array<{
+        date: string;
+        avgPrice: number;
+        count: number;
+    }>;
+    products: Array<{
+        id: string;
+        name: string;
+        price: number;
+        category: string;
+    }>;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -69,20 +89,31 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function PriceTrendChart() {
     const [data, setData] = useState<PriceTrendData | null>(null);
+    const [trendData, setTrendData] = useState<ProductPriceTrendData | null>(null);
     const [loading, setLoading] = useState(true);
     const [category, setCategory] = useState('all');
+    const [selectedProductId, setSelectedProductId] = useState<string>('');
     const [days, setDays] = useState(30);
 
     const fetchData = async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('xiaoyu_token');
-            const res = await fetch(
-                `/api/stats/price-trends?days=${days}&category=${category === 'all' ? '' : category}`,
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-            if (res.ok) {
-                setData(await res.json());
+            const headers = { 'Authorization': `Bearer ${token}` };
+            
+            const [resStats, resHistory] = await Promise.all([
+                fetch(`/api/stats/price-trends?days=${days}&category=${category === 'all' ? '' : category}`, { headers }),
+                fetch(`/api/stats/product-price-history?days=${days}&category=${category === 'all' ? '' : category}`, { headers })
+            ]);
+
+            if (resStats.ok && resHistory.ok) {
+                setData(await resStats.json());
+                const hData = await resHistory.json();
+                setTrendData(hData);
+                // Reset product selection if category changes, or auto-select first
+                if (!hData.products.find((p: any) => String(p.id) === selectedProductId)) {
+                    setSelectedProductId('');
+                }
             }
         } catch (e) {
             console.error('Failed to load price trends:', e);
@@ -165,6 +196,19 @@ export default function PriceTrendChart() {
                             <option key={c} value={c}>{CATEGORY_LABELS[c] || c}</option>
                         ))}
                     </select>
+
+                    {category !== 'all' && trendData && trendData.products && (
+                        <select
+                            value={selectedProductId}
+                            onChange={e => setSelectedProductId(e.target.value)}
+                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none max-w-[200px]"
+                        >
+                            <option value="">查看单品走势...</option>
+                            {trendData.products.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                        </select>
+                    )}
                 </div>
                 <div className="flex gap-1">
                     {[7, 14, 30].map(d => (
@@ -185,7 +229,7 @@ export default function PriceTrendChart() {
             {/* 折线图 */}
             {chartData.length > 0 ? (
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-800 mb-4">价格变动趋势</h3>
+                    <h3 className="font-bold text-slate-800 mb-4">调价次数走势</h3>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }} barGap={8}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -227,6 +271,138 @@ export default function PriceTrendChart() {
                     <TrendingDown size={40} className="mx-auto text-slate-300 mb-3" />
                     <p className="text-slate-400 text-sm">暂无价格变动记录</p>
                     <p className="text-slate-300 text-xs mt-1">修改硬件价格后，变动记录将自动显示在此处</p>
+                </div>
+            )}
+
+            {/* 品类均价走势 */}
+            {trendData && trendData.categoryAvgTrend.length > 0 && category !== 'all' && (
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        {CATEGORY_LABELS[category] || category} 品类变动均价走势
+                    </h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={trendData.categoryAvgTrend} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                            <XAxis 
+                                dataKey="date" 
+                                tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
+                                tickFormatter={(v: string) => v.slice(5)}
+                                axisLine={false} tickLine={false} dy={10} 
+                            />
+                            <YAxis 
+                                tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
+                                axisLine={false} tickLine={false} dx={-10}
+                                domain={['auto', 'auto']}
+                                tickFormatter={(v) => `¥${v}`}
+                            />
+                            <Tooltip 
+                                content={({ active, payload, label }: any) => {
+                                    if (active && payload && payload.length) {
+                                        return (
+                                            <div className="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50">
+                                                <p className="font-bold text-slate-800 mb-2">{label}</p>
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    <span className="w-2.5 h-2.5 bg-indigo-500 rounded-sm"></span>
+                                                    <span className="text-slate-600">变动均价:</span>
+                                                    <span className="font-bold text-slate-800">¥{payload[0].value}</span>
+                                                </div>
+                                                <div className="text-xs text-slate-400 mt-1">采样数: {payload[0].payload.count}件</div>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="avgPrice" 
+                                stroke="#6366f1" 
+                                strokeWidth={3}
+                                dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
+                                activeDot={{ r: 6, strokeWidth: 0 }}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+            )}
+
+            {/* 单品走势 */}
+            {selectedProductId && trendData && (
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    {(() => {
+                        const productData = trendData.productTrends.find(p => String(p.hardwareId) === selectedProductId);
+                        if (!productData || productData.points.length === 0) {
+                            return (
+                                <div className="text-center py-8">
+                                    <TrendingDown size={32} className="mx-auto text-slate-300 mb-2" />
+                                    <p className="text-slate-400 text-sm">该产品在此期间无价格变动记录</p>
+                                </div>
+                            );
+                        }
+                        return (
+                            <>
+                                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                    {productData.name} 价格走势
+                                </h3>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <LineChart data={productData.points} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                        <XAxis 
+                                            dataKey="date" 
+                                            tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
+                                            tickFormatter={(v: string) => v.slice(5)}
+                                            axisLine={false} tickLine={false} dy={10} 
+                                        />
+                                        <YAxis 
+                                            tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
+                                            axisLine={false} tickLine={false} dx={-10}
+                                            domain={['auto', 'auto']}
+                                            tickFormatter={(v) => `¥${v}`}
+                                        />
+                                        <Tooltip 
+                                            content={({ active, payload, label }: any) => {
+                                                if (active && payload && payload.length) {
+                                                    const point = payload[0].payload;
+                                                    const diff = point.price - point.oldPrice;
+                                                    return (
+                                                        <div className="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50">
+                                                            <p className="font-bold text-slate-800 mb-2">{label}</p>
+                                                            <div className="flex items-center justify-between gap-4 text-sm mb-1">
+                                                                <span className="text-slate-600">调整后:</span>
+                                                                <span className="font-bold text-slate-800">¥{point.price}</span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between gap-4 text-sm mb-2 pb-2 border-b border-slate-100">
+                                                                <span className="text-slate-600">调整前:</span>
+                                                                <span className="text-slate-500 line-through">¥{point.oldPrice}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1 text-xs font-bold">
+                                                                {diff > 0 ? (
+                                                                    <span className="text-rose-500 flex items-center"><ArrowUpRight size={14} /> 涨 ¥{diff}</span>
+                                                                ) : diff < 0 ? (
+                                                                    <span className="text-emerald-500 flex items-center"><ArrowDownRight size={14} /> 降 ¥{Math.abs(diff)}</span>
+                                                                ) : (
+                                                                    <span className="text-slate-400">无变化</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            }}
+                                        />
+                                        <Line 
+                                            type="stepAfter" 
+                                            dataKey="price" 
+                                            stroke="#f59e0b" 
+                                            strokeWidth={3}
+                                            dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                                            activeDot={{ r: 6, strokeWidth: 0 }}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </>
+                        );
+                    })()}
                 </div>
             )}
 

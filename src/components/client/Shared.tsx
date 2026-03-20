@@ -26,15 +26,23 @@ export function TabButton({ active, onClick, icon, label }: { active: boolean, o
     return (
         <button
             onClick={onClick}
+            title={label}
             className={cn(
-                "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all duration-300",
+                "flex items-center gap-1.5 px-3 lg:px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all duration-300",
                 active
                     ? "bg-white text-black shadow-sm"
-                    : "text-[#86868B] hover:text-black"
+                    : "text-[#86868B] hover:text-black hover:bg-black/5"
             )}
         >
-            {icon}
-            <span>{label}</span>
+            <div className="shrink-0">
+                {icon}
+            </div>
+            <span className={cn(
+                "whitespace-nowrap transition-all duration-300",
+                active ? "inline-block" : "hidden xl:inline-block"
+            )}>
+                {label}
+            </span>
         </button>
     );
 }

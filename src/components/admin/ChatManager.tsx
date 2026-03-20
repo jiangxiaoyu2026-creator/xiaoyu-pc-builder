@@ -4,6 +4,14 @@ import { storage } from '../../services/storage';
 import { ChatSession, ChatMessage } from '../../types/adminTypes';
 import { ChatSettingsModal } from './ChatSettingsModal';
 
+// Backend stores UTC timestamps without 'Z' suffix. This helper ensures correct local time conversion.
+const toLocalTime = (utcStr: string | number | undefined): Date => {
+    if (!utcStr) return new Date();
+    if (typeof utcStr === 'number') return new Date(utcStr);
+    const s = utcStr.endsWith('Z') || utcStr.includes('+') ? utcStr : utcStr + 'Z';
+    return new Date(s);
+};
+
 export default function ChatManager() {
     const [sessions, setSessions] = useState<ChatSession[]>([]);
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
@@ -164,7 +172,7 @@ export default function ChatManager() {
                                                 {session.userName || session.username}
                                             </h3>
                                             <span className="text-[10px] text-slate-400 whitespace-nowrap">
-                                                {new Date(session.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                {toLocalTime(session.updatedAt || session.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
                                         <p className={`text-xs truncate ${session.unreadCount > 0 ? 'text-slate-600 font-medium' : 'text-slate-400'}`}>
@@ -230,7 +238,7 @@ export default function ChatManager() {
                                                 {msg.content}
                                             </div>
                                             <span className="text-[10px] text-slate-300 mt-1 px-1">
-                                                {new Date(msg.createdAt || msg.timestamp).toLocaleTimeString()}
+                                                {toLocalTime(msg.createdAt || msg.timestamp).toLocaleTimeString()}
                                             </span>
                                         </div>
                                     </div>

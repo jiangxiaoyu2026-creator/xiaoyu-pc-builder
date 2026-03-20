@@ -64,7 +64,11 @@ async def get_configs(
         if tag == "showcase":
             query = query.where(Config.showcaseStatus == "approved")
         else:
-            query = query.where(Config.tags.like(f'%"{tag}"%'))
+            escaped_tag = json.dumps(tag, ensure_ascii=True).strip('"')
+            query = query.where(
+                (Config.tags.like(f'%"{tag}"%')) |
+                (Config.tags.like(f'%"{escaped_tag}"%'))
+            )
     if search:
         query = query.where(
             (Config.title.like(f"%{search}%")) | 
@@ -180,6 +184,11 @@ async def create_config(
     user_id = user.id if user else "guest"
     user_name = user.username if user else (config_data.get("userName") or "游客")
 
+    # Handle showcaseImages: convert list to JSON string for storage
+    showcase_images_raw = config_data.get("showcaseImages", [])
+    showcase_images_str = json.dumps(showcase_images_raw) if isinstance(showcase_images_raw, list) else "[]"
+    showcase_status = config_data.get("showcaseStatus", "none")
+
     new_config = Config(
         id=str(uuid.uuid4()),
         userId=user_id,
@@ -201,7 +210,9 @@ async def create_config(
         evaluation=config_data.get("evaluation", {}) if isinstance(config_data.get("evaluation"), dict) else {},
         items=config_data.get("items", {}),
         tags=config_data.get("tags", []),
-        isRecommended=config_data.get("isRecommended", False)
+        isRecommended=config_data.get("isRecommended", False),
+        showcaseImages=showcase_images_str,
+        showcaseStatus=showcase_status
     )
     session.add(new_config)
     session.commit()

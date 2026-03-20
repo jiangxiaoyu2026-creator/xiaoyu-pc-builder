@@ -268,3 +268,93 @@ async def get_public_price_trends(
         "chartData": chart_data,
         "recentChanges": recent,
     }
+
+@router.get("/product-price-history")
+async def get_product_price_history(
+    hardware_id: Optional[str] = None,
+    category: Optional[str] = None,
+    days: int = 30,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """获取产品级别价格历史趋势（品类均价 + 单品走势）"""
+    from datetime import timedelta
+    from collections import defaultdict
+
+    cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
+
+    # Build the query for price history records
+    query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff)
+    if category and category != "all":
+        query = query.where(PriceHistory.category == category)
+    if hardware_id:
+        query = query.where(PriceHistory.hardwareId == hardware_id)
+    query = query.order_by(PriceHistory.changedAt.asc())
+
+    changes = session.exec(query.limit(2000)).all()
+
+    # --- Build per-product price timeline ---
+    # For each product, reconstruct a price curve from change events
+    # Each change gives us (date, newPrice), so we can build a step function
+    product_timelines = defaultdict(list)  # hardwareId -> [{date, price, name}]
+    product_names = {}  # hardwareId -> name
+
+    for c in changes:
+        date_key = c.changedAt[:10]
+        product_timelines[c.hardwareId].append({
+            "date": date_key,
+            "price": c.newPrice,
+            "oldPrice": c.oldPrice,
+        })
+        product_names[c.hardwareId] = c.hardwareName
+
+    # Format product trends for frontend
+    product_trends = []
+    for hw_id, points in product_timelines.items():
+        product_trends.append({
+            "hardwareId": hw_id,
+            "name": product_names[hw_id],
+            "points": points  # [{date, price, oldPrice}]
+        })
+
+    # --- Category average price trend ---
+    # For each day that had changes, compute the average newPrice across all products in that category
+    daily_prices = defaultdict(list)  # date -> [newPrice, ...]
+    for c in changes:
+        date_key = c.changedAt[:10]
+        daily_prices[date_key].append(c.newPrice)
+
+    category_avg_trend = []
+    for date_key in sorted(daily_prices.keys()):
+        prices = daily_prices[date_key]
+        category_avg_trend.append({
+            "date": date_key,
+            "avgPrice": round(sum(prices) / len(prices), 2),
+            "count": len(prices),
+        })
+
+    # --- Product list for this category (for the dropdown selector) ---
+    products_query = select(Hardware.id, Hardware.brand, Hardware.model, Hardware.price, Hardware.category)
+    if category and category != "all":
+        products_query = products_query.where(Hardware.category == category)
+    products_query = products_query.where(Hardware.status == "active").order_by(Hardware.brand, Hardware.model)
+    product_rows = session.exec(products_query).all()
+
+    products_list = []
+    for row in product_rows:
+        products_list.append({
+            "id": row[0],
+            "name": f"{row[1]} {row[2]}",
+            "price": row[3],
+            "category": row[4],
+        })
+
+    # Available categories
+    categories = session.exec(select(Hardware.category).distinct()).all()
+
+    return {
+        "productTrends": product_trends,
+        "categoryAvgTrend": category_avg_trend,
+        "products": products_list,
+        "categories": sorted([c for c in categories if c]),
+    }
