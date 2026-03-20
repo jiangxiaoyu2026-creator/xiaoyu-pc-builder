@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useRef } from 'react';
-import { X, Share2, Save, Copy, Search, Cpu, Monitor, User, Heart, CheckCircle2, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { ConfigTemplate, BuildEntry, Category, HardwareItem } from '../../types/clientTypes';
+import { X, Share2, Save, Copy, Search, Cpu, Monitor, User, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { ConfigTemplate, BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { TAGS_APPEARANCE, TAGS_USAGE, ALL_SCENARIO_TAGS, CATEGORY_MAP, HARDWARE_DB } from '../../data/clientData';
 import { storage } from '../../services/storage';
 
@@ -322,110 +322,4 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
 // For now, I'll extract the ItemSelector Modal logic if needed, but it was embedded in VisualBuilder in the original code.
 // Let's keep the ItemSelector inside VisualBuilder or make it separate if it's large.
 
-export function ConfigDetailModal({
-    config,
-    onClose,
-    onLoad,
-    showToast,
-    onToggleLike,
-    currentUser
-}: {
-    config: ConfigTemplate,
-    onClose: () => void,
-    onLoad: (cfg: ConfigTemplate) => void,
-    showToast: (msg: string) => void,
-    onToggleLike: (id: string) => void,
-    currentUser: any
-}) {
-    const isLiked = currentUser?.likes?.includes(config.id);
-    const itemCount = Object.keys(config.items).length;
 
-    const handleShare = () => {
-        navigator.clipboard.writeText(JSON.stringify(config));
-        showToast("🔗 配置已复制到剪贴板");
-    };
-
-    return (
-        <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center md:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in" onClick={onClose}>
-            <div
-                className="relative bg-white w-full md:max-w-xl md:rounded-[32px] rounded-t-[32px] shadow-2xl animate-slide-up flex flex-col overflow-hidden"
-                style={{ height: '85vh', maxHeight: '85vh' }}
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="shrink-0 px-5 py-4 bg-white border-b border-slate-100 rounded-t-[32px]">
-                    <div className="flex justify-between items-start mb-1">
-                        <h2 className="text-lg md:text-xl font-bold text-slate-900 line-clamp-1 pr-10">{config.title}</h2>
-                        <button onClick={onClose} className="absolute top-3 right-3 p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors">
-                            <X size={18} className="text-slate-500" />
-                        </button>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-                        <span className="bg-slate-100 px-2 py-0.5 rounded text-[10px] font-bold text-slate-600">配置清单</span>
-                        <span>•</span>
-                        <span>共 {itemCount} 件</span>
-                    </div>
-                </div>
-
-                {/* Content - Scrollable area */}
-                <div className="flex-1 min-h-0 overflow-y-auto bg-slate-50 p-4 space-y-3 custom-scrollbar">
-                    {Object.entries(config.items).map(([cat, itemId]) => {
-                        let item: any = null;
-                        let qty = 1;
-                        if (typeof itemId === 'object') {
-                            if ((itemId as any).isCustom) {
-                                item = { brand: '自定义', model: (itemId as any).name, price: (itemId as any).price };
-                            } else {
-                                item = HARDWARE_DB.find(h => h.id === (itemId as any).id);
-                            }
-                            qty = (itemId as any).quantity || 1;
-                        } else {
-                            item = HARDWARE_DB.find(h => h.id === itemId);
-                        }
-                        if (!item) return null;
-                        return (
-                            <div key={cat} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shrink-0 border border-slate-100">
-                                    {cat === 'cpu' ? <Cpu size={20} /> :
-                                        cat === 'gpu' ? <Monitor size={20} /> :
-                                            <span className="font-bold text-[10px]">{CATEGORY_MAP[cat as Category]?.slice(0, 2) || cat}</span>}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="inline-block px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 text-[9px] font-bold mb-1">
-                                        {CATEGORY_MAP[cat as Category] || cat}
-                                    </div>
-                                    <div className="text-sm font-bold text-slate-900 leading-snug line-clamp-1">
-                                        {item.brand} {item.model} {qty > 1 ? `x${qty}` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* Footer - Stays at bottom via flex */}
-                <div className="shrink-0 p-4 bg-white border-t border-slate-100 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] flex items-center gap-2">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onToggleLike(config.id); }}
-                        className={`w-11 h-11 rounded-xl border flex items-center justify-center transition-all ${isLiked ? 'bg-red-50 border-red-100 text-red-500' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'}`}
-                    >
-                        <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
-                    </button>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleShare(); }}
-                        className="w-11 h-11 rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 flex items-center justify-center transition-all"
-                    >
-                        <Share2 size={18} />
-                    </button>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onLoad(config); }}
-                        className="flex-1 h-11 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 text-sm tap-active"
-                    >
-                        <CheckCircle2 size={18} />
-                        <span>加载此配置</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}

@@ -23,7 +23,11 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
     React.useEffect(() => {
         const loadInitialData = async () => {
             // Extract all hardware IDs from the config
-            const productIds = Object.values(config.items).filter(id => id && typeof id === 'string') as string[];
+            const productIds: string[] = [];
+            Object.values(config.items).forEach(val => {
+                if (typeof val === 'string') productIds.push(val);
+                else if (val && typeof val === 'object' && (val as any).id) productIds.push((val as any).id);
+            });
 
             const [fetchedComments, fetchedProducts, fetchedUsers] = await Promise.all([
                 storage.getComments(config.id),
@@ -68,9 +72,14 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
 
         Object.entries(config.items).forEach(([cat, itemId]) => {
             const category = cat as keyof typeof CATEGORY_MAP;
-            const item = getHardwareDetail(itemId as string);
+            const item = getHardwareDetail(itemId);
             if (item) {
-                textLines.push(`${CATEGORY_MAP[category]}: ${item.brand} ${item.model}`);
+                let qty = 1;
+                if (typeof itemId === 'object' && (itemId as any).quantity) {
+                    qty = (itemId as any).quantity;
+                }
+                const qtyText = qty > 1 ? ` x${qty}` : '';
+                textLines.push(`${CATEGORY_MAP[category]}: ${item.brand} ${item.model}${qtyText}`);
             }
         });
 
