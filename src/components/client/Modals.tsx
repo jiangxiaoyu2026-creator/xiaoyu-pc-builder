@@ -1,27 +1,56 @@
 
-import { useState, useMemo } from 'react';
-import { X, Share2, Save, Copy, Search, Cpu, Monitor, User, Heart, CheckCircle2 } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
+import { X, Share2, Save, Copy, Search, Cpu, Monitor, User, Heart, CheckCircle2, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { ConfigTemplate, BuildEntry, Category, HardwareItem } from '../../types/clientTypes';
 import { TAGS_APPEARANCE, TAGS_USAGE, ALL_SCENARIO_TAGS, CATEGORY_MAP, HARDWARE_DB } from '../../data/clientData';
+import { storage } from '../../services/storage';
 
-export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, onPublish: (data: { title: string, tags: string[], desc: string }) => void }) {
+export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, onPublish: (data: { title: string, tags: string[], desc: string, showcaseImages?: string[] }) => void }) {
     const [title, setTitle] = useState('');
     const [desc, setDesc] = useState('');
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [images, setImages] = useState<string[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const toggleTag = (tag: string) => {
         setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
     };
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+        if (images.length + files.length > 9) return;
+
+        setIsUploading(true);
+        try {
+            for (const file of files) {
+                const res = await storage.uploadImage(file);
+                if (res && res.url) {
+                    setImages(prev => [...prev, res.url]);
+                }
+            }
+        } catch (error) {
+            console.error('Image upload failed:', error);
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleRemoveImage = (idx: number) => {
+        setImages(prev => prev.filter((_, i) => i !== idx));
+    };
+
     return (
         <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md">
-            <div className="bg-white w-full max-w-lg md:rounded-3xl rounded-t-[32px] p-6 shadow-2xl animate-slide-up md:animate-scale-up">
-                <div className="flex justify-between items-center mb-6">
+            <div className="bg-white w-full max-w-lg md:rounded-3xl rounded-t-[32px] shadow-2xl animate-slide-up md:animate-scale-up flex flex-col max-h-[90vh]">
+                <div className="flex justify-between items-center px-6 pt-6 pb-4 shrink-0">
                     <h2 className="text-xl font-bold text-slate-800">分享配置单</h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={20} /></button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="px-6 pb-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase mb-2">标题 *</label>
                         <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none" placeholder="例如：13600K 白色海景房作业" />
@@ -45,11 +74,62 @@ export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, on
                         <label className="block text-xs font-bold text-slate-500 uppercase mb-2">描述 (可选)</label>
                         <textarea value={desc} onChange={e => setDesc(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none h-24 resize-none" placeholder="分享一下你的装机心得或配置亮点..." />
                     </div>
+
+                    {/* Showcase Image Upload (Optional) */}
+                    <div className="pt-2 border-t border-slate-100">
+                        <div className="flex items-center justify-between mb-3">
+                            <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1.5">
+                                <ImageIcon size={14} className="text-indigo-500" />
+                                晒单图片 (可选)
+                            </label>
+                            {images.length > 0 && <span className="text-[10px] text-slate-400">{images.length}/9</span>}
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-2">
+                            {images.map((img, idx) => (
+                                <div key={idx} className="aspect-square rounded-xl border border-slate-200 overflow-hidden relative group">
+                                    <img src={img} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
+                                    <button
+                                        onClick={() => handleRemoveImage(idx)}
+                                        className="absolute top-1 right-1 bg-black/50 hover:bg-red-500 text-white p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                </div>
+                            ))}
+
+                            {images.length < 9 && (
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading}
+                                    className="aspect-square rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 bg-slate-50 flex flex-col items-center justify-center text-slate-400 hover:text-indigo-500 transition-all disabled:opacity-50"
+                                >
+                                    {isUploading ? (
+                                        <Loader2 size={20} className="animate-spin text-indigo-500" />
+                                    ) : (
+                                        <>
+                                            <Upload size={18} className="mb-1" />
+                                            <span className="text-[9px] font-medium">上传</span>
+                                        </>
+                                    )}
+                                </button>
+                            )}
+                        </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            multiple
+                            accept="image/*"
+                            className="hidden"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-2">上传实机照片即可同步完成晒单，发布后自动进入审核流程。</p>
+                    </div>
                 </div>
 
-                <div className="mt-8">
-                    <button onClick={() => onPublish({ title, tags: selectedTags, desc })} disabled={!title.trim()} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2 tap-active">
-                        <Share2 size={18} /> 发布到配置广场
+                <div className="px-6 pb-6 pt-2 shrink-0">
+                    <button onClick={() => onPublish({ title, tags: selectedTags, desc, showcaseImages: images.length > 0 ? images : undefined })} disabled={!title.trim() || isUploading} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2 tap-active">
+                        <Share2 size={18} /> {images.length > 0 ? '发布并提交晒单' : '发布到配置广场'}
                     </button>
                 </div>
             </div>
@@ -60,7 +140,7 @@ export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, on
 export function SavePreviewModal({ buildList, pricing, onClose, onCopy, onSave }: { buildList: BuildEntry[], pricing: any, onClose: () => void, onCopy: (text: string) => void, onSave?: () => void }) {
     const generateText = () => {
         const today = new Date().toLocaleDateString();
-        const validItems = buildList.filter(e => e.item || (e.category === 'accessory' && e.customName));
+        const validItems = buildList.filter(e => e.item || e.customName);
         const itemsText = validItems.map(e => {
             const name = e.item ? `${e.item.brand} ${e.item.model}` : e.customName;
             const price = e.customPrice ?? e.item?.price ?? 0;
@@ -155,8 +235,8 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {filteredConfigs.map(cfg => {
                             const sourceDB = products || HARDWARE_DB;
-                            const cpuItem = sourceDB.find(h => h.id === cfg.items?.cpu);
-                            const gpuItem = sourceDB.find(h => h.id === cfg.items?.gpu);
+                            const cpuItem = typeof cfg.items?.cpu === 'object' && (cfg.items.cpu as any).isCustom ? { model: (cfg.items.cpu as any).name } : sourceDB.find(h => h.id === cfg.items?.cpu);
+                            const gpuItem = typeof cfg.items?.gpu === 'object' && (cfg.items.gpu as any).isCustom ? { model: (cfg.items.gpu as any).name } : sourceDB.find(h => h.id === cfg.items?.gpu);
                             // Simpler names
                             const cpuName = cpuItem ? cpuItem.model.replace(/Intel Core |AMD Ryzen /i, '').replace(/ Processor/i, '') : 'CPU';
                             const gpuName = gpuItem ? gpuItem.model.replace(/NVIDIA GeForce |AMD Radeon /i, '').replace(/ Graphics/i, '') : '集成显卡';
@@ -290,7 +370,18 @@ export function ConfigDetailModal({
                 {/* Content - Scrollable area */}
                 <div className="flex-1 min-h-0 overflow-y-auto bg-slate-50 p-4 space-y-3 custom-scrollbar">
                     {Object.entries(config.items).map(([cat, itemId]) => {
-                        const item = HARDWARE_DB.find(h => h.id === itemId);
+                        let item: any = null;
+                        let qty = 1;
+                        if (typeof itemId === 'object') {
+                            if ((itemId as any).isCustom) {
+                                item = { brand: '自定义', model: (itemId as any).name, price: (itemId as any).price };
+                            } else {
+                                item = HARDWARE_DB.find(h => h.id === (itemId as any).id);
+                            }
+                            qty = (itemId as any).quantity || 1;
+                        } else {
+                            item = HARDWARE_DB.find(h => h.id === itemId);
+                        }
                         if (!item) return null;
                         return (
                             <div key={cat} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
@@ -304,7 +395,7 @@ export function ConfigDetailModal({
                                         {CATEGORY_MAP[cat as Category] || cat}
                                     </div>
                                     <div className="text-sm font-bold text-slate-900 leading-snug line-clamp-1">
-                                        {item.brand} {item.model}
+                                        {item.brand} {item.model} {qty > 1 ? `x${qty}` : ''}
                                     </div>
                                 </div>
                             </div>

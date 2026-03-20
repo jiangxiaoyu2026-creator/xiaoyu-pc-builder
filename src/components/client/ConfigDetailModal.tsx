@@ -47,7 +47,11 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
         return () => window.removeEventListener('xiaoyu-comment-update', refreshComments);
     }, [config.id]);
 
-    const getHardwareDetail = (id: string) => {
+    const getHardwareDetail = (id: any) => {
+        if (typeof id === 'object') {
+            if (id.isCustom) return { brand: '自定义', model: id.name, price: id.price || 0, image: null, category: 'custom' };
+            id = id.id;
+        }
         const p = allProducts.find(i => i.id === id);
         if (p) return p;
         return HARDWARE_DB.find(i => i.id === id);
@@ -274,10 +278,13 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                             </div>
                                             <div className={`text-sm truncate ${isCore ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}`} title={`${item.brand} ${item.model}`}>
                                                 {item.brand} {item.model}
+                                                {typeof itemId === 'object' && (itemId as any).quantity && (itemId as any).quantity > 1 ? <span className="text-xs text-slate-400 font-bold ml-1">x{(itemId as any).quantity}</span> : ''}
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="font-mono font-bold text-base text-slate-800">¥{item.price}</div>
+                                            <div className="font-mono font-bold text-base text-slate-800">
+                                                ¥{(item.price || 0) * (typeof itemId === 'object' && (itemId as any).quantity ? (itemId as any).quantity : 1)}
+                                            </div>
                                         </div>
                                     </div>
                                 )

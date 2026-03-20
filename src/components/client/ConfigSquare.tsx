@@ -113,8 +113,12 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
     const sortedConfigs = configs; // Now sorted on server
 
     const getCoreSpecs = (cfg: ConfigTemplate) => {
-        const getModel = (id: string | undefined, defaultText: string) => {
+        const getModel = (id: any, defaultText: string) => {
             if (!id) return defaultText;
+            if (typeof id === 'object') {
+                if (id.isCustom) return id.name;
+                id = id.id;
+            }
             const item = allProducts.find(i => i.id === id) || HARDWARE_DB.find(i => i.id === id);
             return item ? item.model : defaultText;
         };
@@ -246,8 +250,18 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
 
                     // Recalculate price for accuracy (sum of parts + 6% fee)
                     let base = 0;
-                    Object.values(cfg.items).forEach(itemId => {
+                    Object.values(cfg.items).forEach((itemId: any) => {
                         if (!itemId) return;
+                        if (typeof itemId === 'object') {
+                            if (itemId.isCustom) {
+                                base += (itemId.price || 0) * (itemId.quantity || 1);
+                                return;
+                            } else if (itemId.id) {
+                                const localItem = allProducts.find(p => p.id === itemId.id) || HARDWARE_DB.find(p => p.id === itemId.id);
+                                if (localItem) base += ((localItem as any).price || 0) * (itemId.quantity || 1);
+                                return;
+                            }
+                        }
                         const item = allProducts.find(p => p.id === itemId) || HARDWARE_DB.find(p => p.id === itemId);
                         if (item) base += (item as any).price || 0;
                     });
