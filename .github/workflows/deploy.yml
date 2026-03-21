@@ -15,6 +15,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies and build frontend
+        run: |
+          npm install
+          npm run build
+
       # 使用 SCP 将最新代码复制到服务器（完美避开服务器访问 GitHub 的网络问题）
       - name: Copy files via SSH
         uses: appleboy/scp-action@v0.1.7

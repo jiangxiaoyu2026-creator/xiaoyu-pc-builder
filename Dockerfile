@@ -1,6 +1,7 @@
-# Stage 1: Build Frontend
-FROM node:20.18-slim AS frontend-builder
+# Build Final Image
+FROM python:3.12-slim
 WORKDIR /app
+
 RUN set -x; \
     if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
         sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
@@ -9,19 +10,6 @@ RUN set -x; \
         sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list && \
         sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list; \
     fi
-RUN apt-get update && apt-get install -y python3 build-essential
-COPY package*.json ./
-RUN npm config set registry https://registry.npmmirror.com
-RUN npm install
-COPY . .
-RUN npm run build
-
-# Stage 2: Build Backend & Final Image
-FROM python:3.12-slim
-WORKDIR /app
-
-RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources \
-    && sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -33,8 +21,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY server_py/requirements.txt ./
 #RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com -r requirements.txt
-# Copy frontend build from stage 1
-COPY --from=frontend-builder /app/dist ./dist
+# Copy pre-built frontend from build context
+COPY dist ./dist
 
 # Copy backend code
 COPY server_py/ ./server_py/
