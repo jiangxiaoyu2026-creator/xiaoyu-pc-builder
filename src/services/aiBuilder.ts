@@ -153,7 +153,7 @@ export const aiBuilder = {
                 description: `⚠️ 生成失败: ${friendlyError}\n\n技术细节: ${errorMsg}`,
                 logs: [
                     { type: 'analysis', step: '云端连接', detail: '[SYSTEM] Connecting...' },
-                    { type: 'analysis', step: '错误', detail: `[ERROR] ${friendlyError}` }
+                    { type: 'analysis', step: '错误', detail: `[ERROR] ${friendlyError} | 详情: ${errorMsg}` }
                 ]
             };
         }

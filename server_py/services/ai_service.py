@@ -380,7 +380,21 @@ class AiService:
             )
             
             content = response.choices[0].message.content
-            raw_result = json.loads(content)
+            
+            try:
+                raw_result = json.loads(content)
+            except json.JSONDecodeError:
+                # LLM might have wrapped the JSON in markdown code blocks
+                import re
+                json_match = re.search(r"```(?:json)?\s*(.*?)\s*```", content, re.DOTALL)
+                if json_match:
+                    try:
+                        raw_result = json.loads(json_match.group(1))
+                    except json.JSONDecodeError:
+                        raise Exception("AI Error: Invalid JSON inside code block.")
+                else:
+                    raise Exception("AI Error: Failed to parse LLM output as JSON.")
+            
             
             # --- 后端自动修正逻辑 (Auto-Fix) ---
             actual_total = 0
@@ -453,7 +467,7 @@ class AiService:
 
     def _get_inferred_specs(self, hardware: Hardware) -> Dict:
         """Helper to get specs with name-based inference"""
-        specs = hardware.specs
+        specs = hardware.specs or {}
         if isinstance(specs, str):
             try: specs = json.loads(specs)
             except: specs = {}
