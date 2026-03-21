@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight } from 'lucide-react';
+import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon } from 'lucide-react';
 import { BuildEntry, ConfigTemplate, Category, UserItem } from '../types/clientTypes';
 import { DEFAULT_BUILD_TEMPLATE, HARDWARE_DB } from '../data/clientData';
 import { storage } from '../services/storage';
@@ -24,6 +24,7 @@ import DailyPopup from '../components/client/DailyPopup';
 import ArticleList from '../components/client/ArticleList';
 
 // ...
+import { useTheme } from '../hooks/useTheme';
 
 export default function ClientApp() {
     const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'headlines'>(() => {
@@ -46,6 +47,9 @@ export default function ClientApp() {
     const [showUserCenter, setShowUserCenter] = useState(false);
     const [showDiscountSheet, setShowDiscountSheet] = useState(false);
     const [triggerAiModal, setTriggerAiModal] = useState(false);
+    
+    // Theme
+    const { theme, setTheme } = useTheme();
 
     // Check permission for Streamer Center
     const hasStreamerPermission = useMemo(() => {
@@ -561,17 +565,17 @@ export default function ClientApp() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800">
-            <header className="relative md:sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-100 shadow-sm transition-all duration-300">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800 dark:text-slate-200 transition-colors duration-300">
+            <header className="relative md:sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300">
                 <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200">
+                        <div className="w-9 h-9 bg-slate-900 dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200 dark:shadow-none">
                             <Monitor className="text-white" size={20} />
                         </div>
-                        <span className="text-xl font-extrabold text-slate-900 tracking-tight">蒋小鱼装机平台</span>
+                        <span className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">蒋小鱼装机平台</span>
                     </div>
                     {/* Navigation Tabs - Hidden on mobile, visible on tablet/desktop */}
-                    <div className="hidden md:flex bg-slate-50/90 p-2 rounded-2xl border border-slate-200/80 backdrop-blur-xl shadow-inner overflow-x-auto no-scrollbar max-w-none gap-1">
+                    <div className="hidden md:flex bg-slate-50/90 dark:bg-slate-800/80 p-2 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 backdrop-blur-xl shadow-inner overflow-x-auto no-scrollbar max-w-none gap-1">
                         <TabButton
                             active={viewMode === 'streamer'}
                             onClick={() => {
@@ -587,11 +591,20 @@ export default function ClientApp() {
                         <TabButton active={viewMode === 'about'} onClick={() => setViewMode('about')} icon={<Info size={16} />} label="关于我们" />
                     </div>
 
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                            className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            title="切换深浅色主题"
+                        >
+                            {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+                        </button>
+                        
                         {currentUser ? (
                             <div className={`flex items-center gap-2 border p-1 rounded-2xl shadow-sm transition-all cursor-pointer hover:shadow-md active:scale-95 duration-300 ${['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())
-                                ? 'bg-slate-900 border-amber-500/40'
-                                : 'bg-white border-slate-200'
+                                ? 'bg-slate-900 dark:bg-slate-800 border-amber-500/40 dark:border-amber-500/20'
+                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
                                 } `}
                                 onClick={() => setShowUserCenter(true)}
                             >
@@ -611,14 +624,14 @@ export default function ClientApp() {
                         ) : (
                             <button
                                 onClick={() => setShowLoginModal(true)}
-                                className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 transition-colors"
+                                className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                             >
                                 <User size={20} />
                             </button>
                         )}
 
                         <button
-                            className="hidden md:flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 text-white shadow-lg shadow-slate-200 active:scale-90 transition-all tap-active"
+                            className="hidden md:flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 dark:bg-slate-800 text-white shadow-lg shadow-slate-200 dark:shadow-none active:scale-90 transition-all tap-active"
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
                         >
                             {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
@@ -631,10 +644,10 @@ export default function ClientApp() {
             {showMobileMenu && (
                 <div className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in flex flex-col justify-end" onClick={() => setShowMobileMenu(false)}>
                     <div
-                        className="bg-white border-t border-slate-200 shadow-2xl rounded-t-3xl animate-in slide-in-from-bottom duration-300 pb-safe pb-24"
+                        className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-2xl rounded-t-3xl animate-in slide-in-from-bottom duration-300 pb-safe pb-24"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-3" />
+                        <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto my-3" />
                         <div className="px-5 pb-5 pt-2 max-h-[70vh] overflow-y-auto space-y-2">
                             {/* Login Banner for Mobile Menu */}
                             {!currentUser && (
@@ -643,7 +656,7 @@ export default function ClientApp() {
                                         setShowLoginModal(true);
                                         setShowMobileMenu(false);
                                     }}
-                                    className="w-full flex items-center gap-5 p-5 rounded-[24px] mb-6 bg-slate-900 text-white shadow-2xl shadow-slate-200 group active:scale-[0.98] transition-all"
+                                    className="w-full flex items-center gap-5 p-5 rounded-[24px] mb-6 bg-slate-900 dark:bg-indigo-600/20 text-white shadow-2xl shadow-slate-200 dark:shadow-none border border-transparent dark:border-indigo-500/30 group active:scale-[0.98] transition-all"
                                 >
                                     <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/10 group-hover:bg-white/20 transition-colors">
                                         <User size={28} className="text-white/90" />
@@ -672,10 +685,10 @@ export default function ClientApp() {
                                             setTriggerAiModal(true);
                                             setShowMobileMenu(false);
                                         },
-                                        customBg: 'bg-indigo-50 border-indigo-100/50 text-indigo-700',
-                                        iconBg: 'bg-white',
-                                        iconColor: 'text-indigo-600',
-                                        chevronBg: 'bg-indigo-100/30'
+                                        customBg: 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100/50 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400',
+                                        iconBg: 'bg-white dark:bg-slate-800',
+                                        iconColor: 'text-indigo-600 dark:text-indigo-400',
+                                        chevronBg: 'bg-indigo-100/30 dark:bg-indigo-500/20 text-indigo-400 dark:text-indigo-500'
                                     },
                                     {
                                         id: 'library',
@@ -686,10 +699,10 @@ export default function ClientApp() {
                                             setShowLibraryModal(true);
                                             setShowMobileMenu(false);
                                         },
-                                        customBg: 'bg-slate-50 border-slate-200/50 text-slate-700',
-                                        iconBg: 'bg-white',
-                                        iconColor: 'text-slate-900',
-                                        chevronBg: 'bg-slate-200/50'
+                                        customBg: 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-300',
+                                        iconBg: 'bg-white dark:bg-slate-800',
+                                        iconColor: 'text-slate-900 dark:text-slate-200',
+                                        chevronBg: 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-500'
                                     },
                                     { id: 'square' as const, icon: Share2, label: '配置广场', desc: '热门配置分享' },
                                     { id: 'used' as const, icon: ShoppingBag, label: '严选二手', desc: '性价比之选' },
@@ -707,23 +720,23 @@ export default function ClientApp() {
                                             key={item.id}
                                             onClick={clickHandler}
                                             className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 border ${isActive
-                                                ? 'bg-gradient-to-r from-slate-900 to-slate-800 text-white border-slate-800 shadow-lg shadow-slate-200 active:scale-[0.98]'
-                                                : item.customBg || 'bg-white hover:bg-slate-50 text-slate-700 border-slate-100 active:scale-[0.99]'
+                                                ? 'bg-gradient-to-r from-slate-900 to-slate-800 dark:from-indigo-600/20 dark:to-indigo-500/10 text-white dark:text-indigo-400 border-slate-800 dark:border-indigo-500/30 shadow-lg shadow-slate-200 dark:shadow-none active:scale-[0.98]'
+                                                : item.customBg || 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-100 dark:border-slate-700 active:scale-[0.99]'
                                                 }`}
                                         >
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isActive
-                                                ? 'bg-white/10 text-white'
-                                                : item.iconBg || 'bg-slate-100 text-slate-500'
+                                                ? 'bg-white/10 dark:bg-indigo-500/20 text-white dark:text-indigo-400'
+                                                : item.iconBg || 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                                                 }`}>
                                                 <Icon size={20} className={!isActive ? item.iconColor : ''} />
                                             </div>
                                             <div className="text-left flex-1">
                                                 <div className="font-bold text-sm tracking-tight">{item.label}</div>
-                                                <div className={`text-[10px] ${isActive ? 'text-slate-400' : 'text-slate-400'}`}>{item.desc}</div>
+                                                <div className={`text-[10px] ${isActive ? 'text-slate-400 dark:text-indigo-400/70' : 'text-slate-400 dark:text-slate-500'}`}>{item.desc}</div>
                                             </div>
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors tap-active ${isActive
-                                                ? 'bg-white/10 text-white'
-                                                : item.chevronBg || 'bg-slate-100/50 text-slate-400'
+                                                ? 'bg-white/10 dark:bg-indigo-500/20 text-white dark:text-indigo-400'
+                                                : item.chevronBg || 'bg-slate-100/50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-500'
                                                 }`}>
                                                 <ChevronRight size={16} />
                                             </div>
@@ -737,7 +750,7 @@ export default function ClientApp() {
             )}
 
             {/* Application Mobile Bottom Tab Bar */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[45] bg-white/90 backdrop-blur-xl border-t border-slate-200/60 pb-safe pt-1 shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[45] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-800/60 pb-safe pt-1 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] dark:shadow-none">
                 <div className="flex justify-around items-center h-[56px] px-2 relative">
                     {[
                         { id: 'visual', icon: LayoutGrid, label: '装机' },

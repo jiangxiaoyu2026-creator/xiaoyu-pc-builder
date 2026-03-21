@@ -33,83 +33,71 @@ interface ThemeConfig {
 
 // Shared base — clean white background for all themes
 const BASE_BG = {
-    cardBg: 'bg-white',
-    headerBg: 'bg-slate-50/50',
-    tableHeaderBg: 'bg-slate-50',
-    divider: 'divide-slate-100',
-    footerBg: 'bg-white/90',
-    borderColor: 'border-slate-200/60',
-    textTitle: 'text-slate-800',
-    textMuted: 'text-slate-400',
-    rowBg: 'bg-white'
+    cardBg: 'bg-white dark:bg-slate-900',
+    headerBg: 'bg-slate-50/50 dark:bg-slate-900/50',
+    tableHeaderBg: 'bg-slate-50 dark:bg-slate-800',
+    divider: 'divide-slate-100 dark:divide-slate-800',
+    footerBg: 'bg-white/90 dark:bg-slate-900/90',
+    borderColor: 'border-slate-200/60 dark:border-slate-800/60',
+    textTitle: 'text-slate-800 dark:text-white',
+    textMuted: 'text-slate-400 dark:text-slate-500',
+    rowBg: 'bg-white dark:bg-slate-900'
 };
 
 export const THEMES: Record<ThemeColor, ThemeConfig> = {
     default: {
         name: '经典',
-        primary: 'text-indigo-600',
-        bgLight: 'bg-indigo-50',
+        primary: 'text-indigo-600 dark:text-indigo-400',
+        bgLight: 'bg-indigo-50 dark:bg-indigo-500/10',
         bgPrimary: 'bg-indigo-600',
         gradient: 'from-indigo-600 to-purple-600',
         ring: 'ring-indigo-500',
         ...BASE_BG,
-        divider: 'divide-indigo-100/50',
-        tableHeaderBg: 'bg-indigo-50/40',
     },
     cosmic: {
         name: '星空紫',
-        primary: 'text-violet-600',
-        bgLight: 'bg-violet-50',
+        primary: 'text-violet-600 dark:text-violet-400',
+        bgLight: 'bg-violet-50 dark:bg-violet-500/10',
         bgPrimary: 'bg-violet-600',
         gradient: 'from-violet-600 via-purple-600 to-fuchsia-500',
         ring: 'ring-violet-500',
         ...BASE_BG,
-        divider: 'divide-violet-100/50',
-        tableHeaderBg: 'bg-violet-50/40',
     },
     jade: {
         name: '翡翠青',
-        primary: 'text-emerald-600',
-        bgLight: 'bg-emerald-50',
+        primary: 'text-emerald-600 dark:text-emerald-400',
+        bgLight: 'bg-emerald-50 dark:bg-emerald-500/10',
         bgPrimary: 'bg-emerald-600',
         gradient: 'from-emerald-500 via-green-500 to-teal-500',
         ring: 'ring-emerald-500',
         ...BASE_BG,
-        divider: 'divide-emerald-100/50',
-        tableHeaderBg: 'bg-emerald-50/40',
     },
     rosegold: {
         name: '玫瑰金',
-        primary: 'text-rose-500',
-        bgLight: 'bg-rose-50',
+        primary: 'text-rose-500 dark:text-rose-400',
+        bgLight: 'bg-rose-50 dark:bg-rose-500/10',
         bgPrimary: 'bg-rose-500',
         gradient: 'from-rose-400 via-pink-500 to-amber-400',
         ring: 'ring-rose-400',
         ...BASE_BG,
-        divider: 'divide-rose-100/50',
-        tableHeaderBg: 'bg-rose-50/40',
     },
     ocean: {
         name: '深海蓝',
-        primary: 'text-blue-600',
-        bgLight: 'bg-blue-50',
+        primary: 'text-blue-600 dark:text-blue-400',
+        bgLight: 'bg-blue-50 dark:bg-blue-500/10',
         bgPrimary: 'bg-blue-600',
         gradient: 'from-blue-500 via-cyan-500 to-sky-400',
         ring: 'ring-blue-500',
         ...BASE_BG,
-        divider: 'divide-blue-100/50',
-        tableHeaderBg: 'bg-blue-50/40',
     },
     midnight: {
         name: '暗金',
-        primary: 'text-amber-500',
-        bgLight: 'bg-amber-50',
+        primary: 'text-amber-500 dark:text-amber-400',
+        bgLight: 'bg-amber-50 dark:bg-amber-500/10',
         bgPrimary: 'bg-amber-500',
         gradient: 'from-amber-500 via-orange-500 to-yellow-500',
         ring: 'ring-amber-500',
         ...BASE_BG,
-        divider: 'divide-amber-100/50',
-        tableHeaderBg: 'bg-amber-50/40',
     }
 };
 
@@ -334,11 +322,11 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
 
     return (
-        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-2 items-center group transition-colors ${entry.item ? theme.bgLight.replace('bg-', 'bg-').concat('/30') : 'hover:bg-slate-50'}`}>
+        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-2 items-center group transition-colors ${entry.item ? theme.bgLight.replace('bg-', 'bg-').concat('/30') : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
 
             <div className={`flex items-center gap-3 font-bold text-sm transition-all ${theme.primary}`}>
                 <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? `bg-gradient-to-br ${theme.gradient} text-white shadow-md` : `${style.bg} ${style.text}`} ${!entry.item && 'group-hover:bg-white group-hover:shadow-md'}`}
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? `bg-gradient-to-br ${theme.gradient} text-white shadow-md` : `${style.bg} ${style.text}`} ${!entry.item && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
                     onClick={() => entry.item?.image && onPreview(entry.item.image)}
                 >
                     {getIconByCategory(entry.category)}
@@ -347,22 +335,22 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 font-semibold text-[16px] tracking-wide placeholder-slate-300 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-semibold text-[16px] tracking-wide placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
                 {entry.item && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
-                        {entry.item.isRecommended && <span className="bg-orange-50 text-orange-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 flex items-center gap-0.5 whitespace-nowrap"><Sparkles size={10} /> 推荐</span>}
-                        {entry.item.isDiscount && <span className="bg-rose-50 text-rose-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 whitespace-nowrap">特惠</span>}
+                        {entry.item.isRecommended && <span className="bg-orange-50 dark:bg-orange-500/20 text-orange-500 dark:text-orange-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 dark:border-orange-500/30 flex items-center gap-0.5 whitespace-nowrap"><Sparkles size={10} /> 推荐</span>}
+                        {entry.item.isDiscount && <span className="bg-rose-50 dark:bg-rose-500/20 text-rose-500 dark:text-rose-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 dark:border-rose-500/30 whitespace-nowrap">特惠</span>}
                     </div>
                 )}
                 {showSuggestions && (
-                    <div ref={suggestionsRef} className="absolute top-full left-0 right-0 bg-white shadow-xl rounded-xl border border-slate-100 z-50 mt-2 overflow-hidden max-h-[300px] overflow-y-auto">
+                    <div ref={suggestionsRef} className="absolute top-full left-0 right-0 bg-white dark:bg-slate-800 shadow-xl rounded-xl border border-slate-100 dark:border-slate-700 z-50 mt-2 overflow-hidden max-h-[300px] overflow-y-auto">
                         {isLoading && <div className="px-4 py-3 text-xs text-slate-400 text-center flex items-center justify-center gap-2"><RefreshCw size={12} className="animate-spin" /> 正在加载产品库...</div>}
                         {!isLoading && suggestions.map((item, idx) => (
-                            <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? `${theme.bgLight} ${theme.primary} transition-colors` : 'text-slate-600 hover:bg-slate-50'}`} onMouseDown={() => selectItem(item)}>
+                            <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? `${theme.bgLight} ${theme.primary} transition-colors` : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`} onMouseDown={() => selectItem(item)}>
                                 <span className="flex items-center">
                                     {item.brand} {item.model}
-                                    {item.isRecommended && <span className="ml-1.5 bg-orange-50 text-orange-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 shrink-0 scale-90 origin-left flex items-center gap-0.5"><Sparkles size={10} /> 推荐</span>}
-                                    {item.isDiscount && <span className="ml-1.5 bg-rose-50 text-rose-500 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 shrink-0 scale-90 origin-left">特惠</span>}
+                                    {item.isRecommended && <span className="ml-1.5 bg-orange-50 dark:bg-orange-500/20 text-orange-500 dark:text-orange-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 dark:border-orange-500/30 shrink-0 scale-90 origin-left flex items-center gap-0.5"><Sparkles size={10} /> 推荐</span>}
+                                    {item.isDiscount && <span className="ml-1.5 bg-rose-50 dark:bg-rose-500/20 text-rose-500 dark:text-rose-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 dark:border-rose-500/30 shrink-0 scale-90 origin-left">特惠</span>}
                                 </span>
                                 <span className="font-bold">¥{item.price}</span>
                             </div>
@@ -375,22 +363,22 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             <div className="flex justify-center">
                 {entry.category === 'accessory' ? null : (
                     entry.isLockedQty ? <span className="text-slate-400 text-sm">× 1</span> : (
-                        <div className="flex items-center bg-white rounded border border-slate-200">
-                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className={`text-slate-400 hover:${theme.primary} transition-colors px-1`}>-</button>
-                            <span className="w-8 text-center text-sm">{entry.quantity}</span>
-                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className={`text-slate-400 hover:${theme.primary} transition-colors px-1`}>+</button>
+                        <div className="flex items-center bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>-</button>
+                            <span className="w-8 text-center text-sm dark:text-slate-200">{entry.quantity}</span>
+                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>+</button>
                         </div>
                     )
                 )}
             </div>
 
             <div className="flex items-center gap-1 justify-end">
-                <span className="text-slate-300 text-sm">¥</span>
-                <input type="text" className={`w-16 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700'}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} />
+                <span className="text-slate-300 dark:text-slate-600 text-sm">¥</span>
+                <input type="text" className={`w-16 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300'}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} />
             </div>
 
             <div className="flex justify-end">
-                <button onClick={() => onUpdate(entry.id, { item: null, customPrice: undefined, customName: '' })} className="text-slate-300 hover:text-red-500 transition-colors">
+                <button onClick={() => onUpdate(entry.id, { item: null, customPrice: undefined, customName: '' })} className="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors">
                     <X size={16} />
                 </button>
             </div>
@@ -704,39 +692,39 @@ function StreamerWorkbench({
 
             {/* Permission Overlay */}
             {!hasPermission && (
-                <div className="absolute inset-0 z-50 bg-white/40 backdrop-blur-sm flex items-center justify-center">
-                    <div className={`bg-white p-8 rounded-3xl shadow-2xl border ${theme.bgLight.replace('bg-', 'border-')} text-center max-w-md mx-4 transform scale-100 relative overflow-hidden`}>
+                <div className="absolute inset-0 z-50 bg-white/40 dark:bg-slate-950/60 backdrop-blur-sm flex items-center justify-center">
+                    <div className={`bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-2xl border ${theme.bgLight.replace('bg-', 'border-')} text-center max-w-md mx-4 transform scale-100 relative overflow-hidden`}>
                         <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${theme.gradient}`}></div>
                         <div className={`mb-6 inline-flex p-4 ${theme.bgLight} rounded-full ${theme.primary} ring-4 ${theme.bgLight.replace('bg-', 'ring-')}/50`}>
                             <Zap size={40} />
                         </div>
-                        <h3 className="text-2xl font-extrabold text-slate-900 mb-2">专业装机中心</h3>
-                        <p className="text-slate-500 mb-8 font-medium px-4">
+                        <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">专业装机中心</h3>
+                        <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium px-4">
                             专为高效装机打造的强大工具。
                         </p>
 
-                        <div className="text-left space-y-3 mb-8 bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                            <div className="flex items-center gap-3 text-slate-700 font-medium">
-                                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
+                        <div className="text-left space-y-3 mb-8 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                            <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
+                                <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
                                 快速报价 & 装机单生成
                             </div>
-                            <div className="flex items-center gap-3 text-slate-700 font-medium">
-                                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
+                            <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
+                                <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
                                 多级折扣方案管理
                             </div>
-                            <div className="flex items-center gap-3 text-slate-700 font-medium">
-                                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
+                            <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
+                                <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
                                 一键生成配置图
                             </div>
-                            <div className="flex items-center gap-3 text-slate-700 font-medium">
-                                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
+                            <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
+                                <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
                                 营销海报生成器
                             </div>
                         </div>
 
-                        <div className="bg-indigo-50 rounded-xl p-4 mb-6 border border-indigo-100">
-                            <p className="text-indigo-900 text-sm font-bold mb-1">联系管理员开通权限</p>
-                            <p className="text-indigo-600 font-mono text-lg font-bold select-all">手机: 13793195989</p>
+                        <div className="bg-indigo-50 dark:bg-indigo-500/10 rounded-xl p-4 mb-6 border border-indigo-100 dark:border-indigo-500/20">
+                            <p className="text-indigo-900 dark:text-indigo-300 text-sm font-bold mb-1">联系管理员开通权限</p>
+                            <p className="text-indigo-600 dark:text-indigo-400 font-mono text-lg font-bold select-all">手机: 13793195989</p>
                         </div>
 
                     </div>
@@ -756,7 +744,7 @@ function StreamerWorkbench({
                             <Zap className={theme.primary} size={18} />
                             智能装机平台
                         </h2>
-                        <div className="hidden md:flex items-center gap-1.5 bg-white px-2 py-0.5 rounded-full border border-slate-200 shadow-sm">
+                        <div className="hidden md:flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
                             {(Object.keys(THEMES) as ThemeColor[]).map((tKey) => (
                                 <button
                                     key={tKey}
@@ -768,7 +756,7 @@ function StreamerWorkbench({
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={onOpenLibrary} className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-full transition-colors active:scale-95 border border-slate-200">
+                        <button onClick={onOpenLibrary} className="flex items-center gap-1 px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-full transition-colors active:scale-95 border border-slate-200 dark:border-slate-700">
                             <Zap size={12} className="text-amber-500" /> 快速装机
                         </button>
                         <button onClick={() => {
@@ -811,10 +799,10 @@ function StreamerWorkbench({
                             <span className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap self-start mt-1.5">省 ¥{pricing.savedAmount}</span>
 
                             <div className="relative group w-[100px] ml-1 self-center">
-                                <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className={`w-full appearance-none bg-slate-100 border border-slate-200 hover:border-slate-300 text-slate-700 text-[10px] font-bold py-1 pl-2 pr-6 rounded-md focus:outline-none focus:ring-2 ${theme.ring}/20 transition-all cursor-pointer text-center`}>
+                                <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className={`w-full appearance-none bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300 text-[10px] font-bold py-1 pl-2 pr-6 rounded-md focus:outline-none focus:ring-2 ${theme.ring}/20 transition-all cursor-pointer text-center`}>
                                     {strategies.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                 </select>
-                                <ChevronDown className="absolute right-2 top-1.5 text-slate-400 pointer-events-none" size={12} />
+                                <ChevronDown className="absolute right-2 top-1.5 text-slate-400 dark:text-slate-500 pointer-events-none" size={12} />
                             </div>
                         </div>
                         <div className={`text-[10px] ${theme.textMuted} font-black pl-0.5 uppercase tracking-tight`}>
@@ -827,13 +815,13 @@ function StreamerWorkbench({
                     </div>
 
                     <div className="flex items-center gap-2 h-10">
-                        <button onClick={clearBuild} className="h-full aspect-square flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-all active:scale-95 border border-rose-100" title="清空配置">
+                        <button onClick={clearBuild} className="h-full aspect-square flex items-center justify-center bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-lg transition-all active:scale-95 border border-rose-100 dark:border-rose-500/20" title="清空配置">
                             <Trash2 size={18} />
                         </button>
-                        <button onClick={handleSave} className="h-full aspect-square flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all active:scale-95 border border-slate-200" title="保存配置">
+                        <button onClick={handleSave} className="h-full aspect-square flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all active:scale-95 border border-slate-200 dark:border-slate-700" title="保存配置">
                             <Save size={18} />
                         </button>
-                        <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all active:scale-95 border border-slate-200" title="生成海报">
+                        <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all active:scale-95 border border-slate-200 dark:border-slate-700" title="生成海报">
                             {isGeneratingPoster ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
                         </button>
                         <button onClick={handleShareTrigger} disabled={isSharing} className={`h-full aspect-square flex items-center justify-center ${theme.bgPrimary} hover:opacity-90 disabled:opacity-50 text-white rounded-lg shadow-md transition-all active:scale-95`} title="分享配置">
@@ -850,7 +838,7 @@ function StreamerWorkbench({
                 {/* AI Result Section */}
                 {
                     aiResult && (
-                        <div className={`mt-8 bg-white rounded-[24px] shadow-lg border ${theme.bgLight.replace('bg-', 'border-')} overflow-hidden animate-fade-in relative z-10 w-full mb-12`}>
+                        <div className={`mt-8 bg-white dark:bg-slate-900 rounded-[24px] shadow-lg border ${theme.bgLight.replace('bg-', 'border-')} overflow-hidden animate-fade-in relative z-10 w-full mb-12`}>
                             <div className={`bg-gradient-to-r ${theme.gradient} px-6 py-4 flex items-center justify-between`}>
                                 <div className="flex items-center gap-3 text-white">
                                     <Sparkles size={18} className="animate-pulse" />
@@ -869,16 +857,16 @@ function StreamerWorkbench({
                                 {/* Score + Description */}
                                 <div className="flex gap-5 items-start">
                                     {aiResult.evaluation && (
-                                        <div className="shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 shadow-md border border-slate-200 flex flex-col items-center justify-center">
-                                            <span className={`text-3xl font-black ${aiResult.evaluation.score >= 90 ? 'text-emerald-600' :
+                                        <div className="shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 shadow-md border border-slate-200 dark:border-slate-600 flex flex-col items-center justify-center">
+                                            <span className={`text-3xl font-black ${aiResult.evaluation.score >= 90 ? 'text-emerald-600 dark:text-emerald-400' :
                                                 aiResult.evaluation.score >= 75 ? theme.primary :
-                                                    aiResult.evaluation.score >= 60 ? 'text-amber-600' : 'text-rose-600'
+                                                    aiResult.evaluation.score >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
                                                 }`}>{aiResult.evaluation.score}</span>
                                             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">分</span>
                                         </div>
                                     )}
                                     <div className="flex-1">
-                                        <p className="text-slate-700 text-sm leading-relaxed font-medium">{aiResult.description}</p>
+                                        <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed font-medium">{aiResult.description}</p>
                                     </div>
                                 </div>
 
@@ -886,11 +874,11 @@ function StreamerWorkbench({
                                 {aiResult.evaluation && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {aiResult.evaluation.pros?.length > 0 && (
-                                            <div className="bg-emerald-50/80 rounded-2xl p-4 border border-emerald-100">
-                                                <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-wider mb-2.5">✓ 优点</h4>
+                                            <div className="bg-emerald-50/80 dark:bg-emerald-500/10 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-500/20">
+                                                <h4 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-2.5">✓ 优点</h4>
                                                 <ul className="space-y-1.5">
                                                     {aiResult.evaluation.pros.map((p: string, i: number) => (
-                                                        <li key={i} className="text-sm text-emerald-800 font-medium flex items-start gap-2">
+                                                        <li key={i} className="text-sm text-emerald-800 dark:text-emerald-300 font-medium flex items-start gap-2">
                                                             <span className="text-emerald-500 mt-0.5 shrink-0">•</span> {p}
                                                         </li>
                                                     ))}
@@ -898,11 +886,11 @@ function StreamerWorkbench({
                                             </div>
                                         )}
                                         {aiResult.evaluation.cons?.length > 0 && (
-                                            <div className="bg-amber-50/80 rounded-2xl p-4 border border-amber-100">
-                                                <h4 className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2.5">⚠ 不足</h4>
+                                            <div className="bg-amber-50/80 dark:bg-amber-500/10 rounded-2xl p-4 border border-amber-100 dark:border-amber-500/20">
+                                                <h4 className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-2.5">⚠ 不足</h4>
                                                 <ul className="space-y-1.5">
                                                     {aiResult.evaluation.cons.map((c: string, i: number) => (
-                                                        <li key={i} className="text-sm text-amber-800 font-medium flex items-start gap-2">
+                                                        <li key={i} className="text-sm text-amber-800 dark:text-amber-300 font-medium flex items-start gap-2">
                                                             <span className="text-amber-500 mt-0.5 shrink-0">•</span> {c}
                                                         </li>
                                                     ))}
@@ -914,9 +902,9 @@ function StreamerWorkbench({
 
                                 {/* Detailed Summary */}
                                 {aiResult.evaluation?.summary && (
-                                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-700/50">
                                         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">📋 详细点评</h4>
-                                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap">
                                             {aiResult.evaluation.summary}
                                         </p>
                                     </div>

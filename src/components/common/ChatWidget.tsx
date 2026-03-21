@@ -146,7 +146,7 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
         <div className="fixed bottom-[84px] md:bottom-6 right-4 md:right-6 z-50 flex flex-col items-end">
             {/* Chat Window */}
             {isOpen && (
-                <div className="mb-4 w-[calc(100vw-2rem)] md:w-[360px] h-[65vh] md:h-[520px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 animate-in slide-in-from-bottom-10 fade-in duration-300">
+                <div className="mb-4 w-[calc(100vw-2rem)] md:w-[360px] h-[65vh] md:h-[520px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-10 fade-in duration-300">
                     {/* Header */}
                     <div className="h-16 bg-slate-900 flex items-center justify-between px-4 shrink-0">
                         <div className="flex items-center gap-3">
@@ -172,17 +172,17 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 relative">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950 relative">
                         {/* Welcome Display Card */}
                         <div className="mb-6 mx-1">
-                            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100/80">
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100/80 dark:border-slate-700">
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-                                            <h3 className="text-base font-bold text-slate-900">当前客服正忙</h3>
+                                            <h3 className="text-base font-bold text-slate-900 dark:text-white">当前客服正忙</h3>
                                         </div>
-                                        <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
                                             有需要的可以联系管理员微信：<span className="font-semibold text-indigo-600 select-all">pcjiangxiaoyu</span>
                                         </p>
                                         <button 
@@ -208,7 +208,7 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
                                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${isMe
                                         ? 'bg-indigo-600 text-white rounded-br-none'
-                                        : 'bg-white text-slate-700 border border-slate-100 rounded-bl-none'
+                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-bl-none'
                                         }`}>
                                         {msg.content}
                                     </div>
@@ -219,9 +219,9 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
                     </div>
 
                     {/* Input */}
-                    <div className="bg-white border-t border-slate-100 shrink-0 flex flex-col">
+                    <div className="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-700 shrink-0 flex flex-col">
                         <div className="p-4">
-                            <div className="flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-xl border border-transparent focus-within:border-indigo-200 focus-within:bg-white transition-all">
+                            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl border border-transparent focus-within:border-indigo-200 dark:focus-within:border-indigo-500 focus-within:bg-white dark:focus-within:bg-slate-700 transition-all">
                                 <input
                                     id="chat-input"
                                     type="text"
@@ -229,7 +229,7 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={handleKeyPress}
                                     placeholder="请输入您的问题..."
-                                    className="flex-1 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
+                                    className="flex-1 bg-transparent text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none"
                                 />
                                 <button
                                     onClick={handleSend}

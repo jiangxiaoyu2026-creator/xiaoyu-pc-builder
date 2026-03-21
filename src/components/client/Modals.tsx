@@ -44,39 +44,39 @@ export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, on
 
     return (
         <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md">
-            <div className="bg-white w-full max-w-lg md:rounded-3xl rounded-t-[32px] shadow-2xl animate-slide-up md:animate-scale-up flex flex-col max-h-[90vh]">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-lg md:rounded-3xl rounded-t-[32px] shadow-2xl animate-slide-up md:animate-scale-up flex flex-col max-h-[90vh]">
                 <div className="flex justify-between items-center px-6 pt-6 pb-4 shrink-0">
-                    <h2 className="text-xl font-bold text-slate-800">分享配置单</h2>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">分享配置单</h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={20} /></button>
                 </div>
 
                 <div className="px-6 pb-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase mb-2">标题 *</label>
-                        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none" placeholder="例如：13600K 白色海景房作业" />
+                        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none" placeholder="例如：13600K 白色海景房作业" />
                     </div>
 
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase mb-2">外观风格 (多选)</label>
                         <div className="flex flex-wrap gap-2">
-                            {TAGS_APPEARANCE.map(tag => (<button key={tag} onClick={() => toggleTag(tag)} className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${selectedTags.includes(tag) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'}`}>{tag}</button>))}
+                            {TAGS_APPEARANCE.map(tag => (<button key={tag} onClick={() => toggleTag(tag)} className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${selectedTags.includes(tag) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500'}`}>{tag}</button>))}
                         </div>
                     </div>
 
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase mb-2">主要用途 (多选)</label>
                         <div className="flex flex-wrap gap-2">
-                            {TAGS_USAGE.map(tag => (<button key={tag} onClick={() => toggleTag(tag)} className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${selectedTags.includes(tag) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'}`}>{tag}</button>))}
+                            {TAGS_USAGE.map(tag => (<button key={tag} onClick={() => toggleTag(tag)} className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${selectedTags.includes(tag) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500'}`}>{tag}</button>))}
                         </div>
                     </div>
 
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase mb-2">描述 (可选)</label>
-                        <textarea value={desc} onChange={e => setDesc(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none h-24 resize-none" placeholder="分享一下你的装机心得或配置亮点..." />
+                        <textarea value={desc} onChange={e => setDesc(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none h-24 resize-none" placeholder="分享一下你的装机心得或配置亮点..." />
                     </div>
 
                     {/* Showcase Image Upload (Optional) */}
-                    <div className="pt-2 border-t border-slate-100">
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
                         <div className="flex items-center justify-between mb-3">
                             <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1.5">
                                 <ImageIcon size={14} className="text-indigo-500" />
@@ -87,7 +87,7 @@ export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, on
 
                         <div className="grid grid-cols-4 gap-2">
                             {images.map((img, idx) => (
-                                <div key={idx} className="aspect-square rounded-xl border border-slate-200 overflow-hidden relative group">
+                                <div key={idx} className="aspect-square rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative group">
                                     <img src={img} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
                                     <button
                                         onClick={() => handleRemoveImage(idx)}
@@ -102,7 +102,7 @@ export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, on
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isUploading}
-                                    className="aspect-square rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 bg-slate-50 flex flex-col items-center justify-center text-slate-400 hover:text-indigo-500 transition-all disabled:opacity-50"
+                                    className="aspect-square rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 bg-slate-50 dark:bg-slate-800/50 flex flex-col items-center justify-center text-slate-400 hover:text-indigo-500 transition-all disabled:opacity-50"
                                 >
                                     {isUploading ? (
                                         <Loader2 size={20} className="animate-spin text-indigo-500" />
@@ -127,8 +127,8 @@ export function ShareFormModal({ onClose, onPublish }: { onClose: () => void, on
                     </div>
                 </div>
 
-                <div className="px-6 pb-6 pt-2 shrink-0">
-                    <button onClick={() => onPublish({ title, tags: selectedTags, desc, showcaseImages: images.length > 0 ? images : undefined })} disabled={!title.trim() || isUploading} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-200 flex justify-center items-center gap-2 tap-active">
+                <div className="px-6 pb-6 pt-2 shrink-0 border-t border-slate-100 dark:border-slate-800">
+                    <button onClick={() => onPublish({ title, tags: selectedTags, desc, showcaseImages: images.length > 0 ? images : undefined })} disabled={!title.trim() || isUploading} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 dark:disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-200 dark:shadow-none flex justify-center items-center gap-2 tap-active">
                         <Share2 size={18} /> {images.length > 0 ? '发布并提交晒单' : '发布到配置广场'}
                     </button>
                 </div>
@@ -150,19 +150,19 @@ export function SavePreviewModal({ buildList, pricing, onClose, onCopy, onSave }
     };
     return (
         <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md">
-            <div className="bg-white w-full max-w-md md:rounded-2xl rounded-t-[32px] p-6 shadow-2xl animate-slide-up md:animate-scale-up">
-                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><Save size={20} /> 保存配置单</h3>
-                <div className="bg-slate-50 p-4 rounded-xl text-xs font-mono text-slate-600 mb-6 whitespace-pre-wrap border border-slate-200 max-h-[60vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-md md:rounded-2xl rounded-t-[32px] p-6 shadow-2xl animate-slide-up md:animate-scale-up">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2"><Save size={20} /> 保存配置单</h3>
+                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl text-xs font-mono text-slate-600 dark:text-slate-300 mb-6 whitespace-pre-wrap border border-slate-200 dark:border-slate-700 max-h-[60vh] overflow-y-auto">
                     {generateText()}
                 </div>
                 <div className="flex flex-col-reverse md:flex-row gap-3">
-                    <button onClick={onClose} className="w-full md:w-auto py-3 md:py-2.5 px-6 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">取消</button>
+                    <button onClick={onClose} className="w-full md:w-auto py-3 md:py-2.5 px-6 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">取消</button>
                     {onSave && (
-                        <button onClick={onSave} className="flex-1 w-full md:w-auto py-3 md:py-2.5 bg-white border-2 border-slate-100 text-slate-700 font-bold rounded-xl hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2">
+                        <button onClick={onSave} className="flex-1 w-full md:w-auto py-3 md:py-2.5 bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:border-indigo-500 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2">
                             <User size={16} /> 保存到个人中心
                         </button>
                     )}
-                    <button onClick={() => onCopy(generateText())} className="flex-1 w-full md:w-auto py-3 md:py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-200">
+                    <button onClick={() => onCopy(generateText())} className="flex-1 w-full md:w-auto py-3 md:py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 dark:shadow-none">
                         <Copy size={16} /> 一键复制
                     </button>
                 </div>
@@ -190,12 +190,12 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
 
     return (
         <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-            <div className="bg-white w-full max-w-5xl h-[90vh] md:h-[85vh] md:rounded-[24px] rounded-t-[32px] shadow-2xl overflow-hidden flex flex-col relative animate-slide-up md:animate-scale-up">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-5xl h-[90vh] md:h-[85vh] md:rounded-[24px] rounded-t-[32px] shadow-2xl overflow-hidden flex flex-col relative animate-slide-up md:animate-scale-up">
 
                 {/* Header */}
-                <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white z-10 shrink-0">
+                <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 z-10 shrink-0">
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">快速装机库</h2>
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">快速装机库</h2>
                         <p className="text-slate-500 text-sm mt-1">选择一个模板快速开始您的装机之旅</p>
                     </div>
                     <button onClick={onClose} className="p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-700 rounded-full transition-colors">
@@ -204,7 +204,7 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
                 </div>
 
                 {/* Toolbar */}
-                <div className="px-8 py-4 bg-slate-50/50 border-b border-slate-100 flex flex-col md:flex-row gap-4 shrink-0">
+                <div className="px-8 py-4 bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-4 shrink-0">
                     <div className="relative flex-1 group">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
                         <input
@@ -212,7 +212,7 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="搜索配置单、CPU、显卡..."
-                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-800 dark:text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
                         />
                     </div>
                     <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 mask-linear-fade">
@@ -221,8 +221,8 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
                                 key={tag}
                                 onClick={() => setFilterTag(tag)}
                                 className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${filterTag === tag
-                                    ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+                                    ? 'bg-slate-900 dark:bg-indigo-600 text-white border-slate-900 dark:border-indigo-600 shadow-md'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
                             >
                                 {tag === 'all' ? '全部场景' : tag}
                             </button>
@@ -231,7 +231,7 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
                 </div>
 
                 {/* Grid Content */}
-                <div className="flex-1 overflow-y-auto p-6 bg-slate-50 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-950 custom-scrollbar">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {filteredConfigs.map(cfg => {
                             const sourceDB = products || HARDWARE_DB;
@@ -244,7 +244,7 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
                             return (
                                 <div
                                     key={cfg.id}
-                                    className="group bg-white rounded-2xl border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col overflow-hidden h-full"
+                                    className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col overflow-hidden h-full"
                                     onClick={() => onSelectConfig(cfg)}
                                 >
                                     {/* Card Header */}
@@ -252,8 +252,8 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded tracking-wide uppercase ${cfg.type === 'official'
-                                                    ? 'bg-black text-white'
-                                                    : 'bg-slate-100 text-slate-500'}`}>
+                                                    ? 'bg-black dark:bg-indigo-600 text-white'
+                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
                                                     {cfg.type === 'official' ? '官方严选' : '用户分享'}
                                                 </span>
                                                 {cfg.views > 100 && (
@@ -262,7 +262,7 @@ export function ConfigLibraryModal({ configList, products, onClose, onSelectConf
                                                     </span>
                                                 )}
                                             </div>
-                                            <h3 className="font-bold text-slate-900 text-base leading-snug line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                                            <h3 className="font-bold text-slate-900 dark:text-white text-base leading-snug line-clamp-2 group-hover:text-indigo-600 transition-colors">
                                                 {cfg.title}
                                             </h3>
                                         </div>

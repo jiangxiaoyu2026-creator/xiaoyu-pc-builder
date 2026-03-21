@@ -30,8 +30,8 @@ export function TabButton({ active, onClick, icon, label }: { active: boolean, o
             className={cn(
                 "flex items-center gap-1.5 px-3 lg:px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all duration-300",
                 active
-                    ? "bg-white text-black shadow-sm"
-                    : "text-[#86868B] hover:text-black hover:bg-black/5"
+                    ? "bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm dark:shadow-none"
+                    : "text-[#86868B] dark:text-slate-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
             )}
         >
             <div className="shrink-0">

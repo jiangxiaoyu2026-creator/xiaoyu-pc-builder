@@ -206,27 +206,27 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
             )}
 
             <div
-                className="bg-white w-full md:max-w-6xl h-[95vh] md:h-[90vh] rounded-t-[24px] md:rounded-[24px] shadow-2xl overflow-hidden flex flex-col md:flex-row relative cursor-default animate-slide-up md:animate-scale-up"
+                className="bg-white dark:bg-slate-900 w-full md:max-w-6xl h-[95vh] md:h-[90vh] rounded-t-[24px] md:rounded-[24px] shadow-2xl overflow-hidden flex flex-col md:flex-row relative cursor-default animate-slide-up md:animate-scale-up"
                 onClick={e => e.stopPropagation()}
             >
 
                 {/* LEFT MAIN: Specs List (Flex-1) */}
-                <div className="flex-1 bg-slate-50/50 flex flex-col min-h-0 relative">
+                <div className="flex-1 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col min-h-0 relative">
 
                     {/* Header Layout: Title in Center/Left, Price on Right */}
-                    <div className="px-4 md:px-8 py-3 md:py-5 border-b border-slate-200/60 bg-white/80 backdrop-blur-md flex items-center sticky top-0 z-10 gap-2 md:gap-4">
+                    <div className="px-4 md:px-8 py-3 md:py-5 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center sticky top-0 z-10 gap-2 md:gap-4">
                         <div className="flex-1 min-w-0">
-                            <h2 className="text-base md:text-xl font-extrabold text-slate-900 truncate tracking-tight">{config.title}</h2>
-                            <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold text-slate-400 mt-0.5">
-                                <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">配置清单</span>
+                            <h2 className="text-base md:text-xl font-extrabold text-slate-900 dark:text-white truncate tracking-tight">{config.title}</h2>
+                            <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 mt-0.5">
+                                <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400">配置清单</span>
                                 <span>•</span>
                                 <span>共 {Object.keys(config.items).length} 件硬件</span>
                             </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                             <div className="text-right">
-                                <div className="text-[10px] md:text-sm font-bold text-slate-400 uppercase tracking-wider">总价</div>
-                                <div className="text-lg md:text-2xl font-mono font-black text-indigo-600 leading-none">
+                                <div className="text-[10px] md:text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">总价</div>
+                                <div className="text-lg md:text-2xl font-mono font-black text-indigo-600 dark:text-indigo-400 leading-none">
                                     ¥{config.price}
                                 </div>
                             </div>
@@ -248,8 +248,8 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                 const isCore = ['cpu', 'gpu', 'mainboard'].includes(category);
 
                                 if (!item) return (
-                                    <div key={category} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 opacity-60">
-                                        <div className="w-10 h-10 rounded-lg bg-slate-200 flex items-center justify-center text-slate-400 scale-90">
+                                    <div key={category} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 opacity-60">
+                                        <div className="w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 scale-90">
                                             {getIconByCategory(category)}
                                         </div>
                                         <div className="flex-1">
@@ -260,8 +260,8 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                 );
                                 return (
                                     <div key={category} className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-300 group ${isCore
-                                        ? 'bg-gradient-to-r from-indigo-50/80 to-white/60 border-indigo-100 shadow-sm hover:shadow-md'
-                                        : 'bg-white border-slate-100 hover:border-indigo-100 hover:shadow-md'
+                                        ? 'bg-gradient-to-r from-indigo-50/80 to-white/60 dark:from-indigo-900/30 dark:to-slate-800/60 border-indigo-100 dark:border-indigo-800 shadow-sm hover:shadow-md'
+                                        : 'bg-white dark:bg-slate-800/60 border-slate-100 dark:border-slate-700 hover:border-indigo-100 dark:hover:border-indigo-700 hover:shadow-md'
                                         }`}>
                                         <div
                                             className="relative w-12 md:w-14 h-12 md:h-14 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300 overflow-hidden border-[2px] border-white shadow-sm ring-1 ring-slate-200 bg-slate-100 cursor-zoom-in group-hover:shadow-md group-hover:ring-indigo-200"
@@ -282,16 +282,16 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                         </div>
                                         <div className="flex-1 min-w-0 pl-1">
                                             <div className="flex items-center gap-2 mb-0.5">
-                                                <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${isCore ? 'bg-indigo-100/80 text-indigo-700' : 'bg-slate-100 text-slate-500'
+                                                <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${isCore ? 'bg-indigo-100/80 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                                                     }`}>{CATEGORY_MAP[category]}</span>
                                             </div>
-                                            <div className={`text-sm truncate ${isCore ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}`} title={`${item.brand} ${item.model}`}>
+                                            <div className={`text-sm truncate ${isCore ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-slate-300'}`} title={`${item.brand} ${item.model}`}>
                                                 {item.brand} {item.model}
                                                 {typeof itemId === 'object' && (itemId as any).quantity && (itemId as any).quantity > 1 ? <span className="text-xs text-slate-400 font-bold ml-1">x{(itemId as any).quantity}</span> : ''}
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="font-mono font-bold text-base text-slate-800">
+                                            <div className="font-mono font-bold text-base text-slate-800 dark:text-slate-200">
                                                 ¥{(item.price || 0) * (typeof itemId === 'object' && (itemId as any).quantity ? (itemId as any).quantity : 1)}
                                             </div>
                                         </div>
@@ -304,19 +304,19 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                     </div>
 
                     {/* Mobile Action Bar */}
-                    <div className="md:hidden flex items-center gap-3 p-4 border-t border-slate-200 bg-white shrink-0">
+                    <div className="md:hidden flex items-center gap-3 p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0">
                         <button
                             onClick={() => onToggleLike(config.id)}
                             className={`p-3 rounded-xl border transition-all ${config.isLiked
                                 ? 'bg-pink-50 border-pink-200 text-pink-500'
-                                : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-pink-500'
+                                : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-pink-500'
                                 }`}
                         >
                             <Heart size={20} className={config.isLiked ? 'fill-pink-500' : ''} />
                         </button>
                         <button
                             onClick={() => handleCopyLink()}
-                            className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-400 hover:text-indigo-500 transition-all"
+                            className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indigo-500 transition-all"
                         >
                             <Share2 size={20} />
                         </button>
@@ -331,19 +331,19 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                 </div>
 
                 {/* RIGHT SIDEBAR: Info & Comments (Fixed Width, Hidden on Mobile) */}
-                <div className="hidden md:flex md:w-[380px] bg-white border-l border-slate-100 flex-col h-full z-20 shadow-[-10px_0_40px_rgba(0,0,0,0.02)] relative">
+                <div className="hidden md:flex md:w-[380px] bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-700 flex-col h-full z-20 shadow-[-10px_0_40px_rgba(0,0,0,0.02)] relative">
 
                     {/* Close Button */}
                     <button
                         onClick={onClose}
-                        className="absolute top-3 right-3 z-50 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-all group active:scale-90"
+                        className="absolute top-3 right-3 z-50 p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all group active:scale-90"
                         title="Close (Esc)"
                     >
                         <X size={18} />
                     </button>
 
                     {/* ... (rest of sidebar content) */}
-                    <div className="p-6 pb-4 border-b border-slate-100 bg-white">
+                    <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900">
                         <div className="flex items-center gap-3 mb-4">
                             <div className={`w-12 h-12 rounded-full ${config.avatarColor} border-2 border-white shadow-md flex items-center justify-center text-lg text-white font-bold flex-shrink-0 relative`}>
                                 {config.author[0].toUpperCase()}
@@ -363,7 +363,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
-                                    <div className="font-bold text-slate-900 text-base truncate max-w-[150px]" title={config.author}>{config.author}</div>
+                                    <div className="font-bold text-slate-900 dark:text-white text-base truncate max-w-[150px]" title={config.author}>{config.author}</div>
                                     {(() => {
                                         const authorUser = config.userId ? users.find(u => u.id === config.userId) : users.find(u => u.username === config.author);
                                         const isVip = authorUser && (['admin', 'streamer', 'sub_admin'].includes(authorUser.role) || (authorUser.vipExpireAt && authorUser.vipExpireAt > Date.now()));
@@ -391,7 +391,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                         {renderShowcase(false)}
 
                         {config.description && (
-                            <p className="text-sm text-slate-600 leading-relaxed mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
                                 {config.description}
                             </p>
                         )}
@@ -399,7 +399,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                         {/* Tags */}
                         <div className="flex gap-2 flex-wrap mb-4">
                             {config.tags.map(t => (
-                                <span key={t.label} className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold">
+                                <span key={t.label} className="text-[10px] px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-full font-bold">
                                     #{t.label}
                                 </span>
                             ))}
@@ -407,7 +407,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
 
                         {/* Action Buttons Row */}
                         <div className="flex gap-2">
-                            <button onClick={() => onToggleLike(config.id)} className={`flex-1 py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all text-xs active:scale-95 ripple ${config.isLiked ? 'bg-pink-50 text-pink-600 border border-pink-200' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}`}>
+                            <button onClick={() => onToggleLike(config.id)} className={`flex-1 py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all text-xs active:scale-95 ripple ${config.isLiked ? 'bg-pink-50 text-pink-600 border border-pink-200' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
                                 <Heart size={14} className={config.isLiked ? 'fill-current' : ''} />
                                 {config.likes > 0 ? config.likes : '点赞'}
                             </button>
@@ -416,7 +416,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                     e.stopPropagation();
                                     handleCopyLink();
                                 }}
-                                className={`flex-1 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 text-xs relative active:scale-95 ripple ${isCopied ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}`}
+                                className={`flex-1 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 text-xs relative active:scale-95 ripple ${isCopied ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
                             >
                                 {isCopied ? <CheckCircle2 size={14} /> : <Share2 size={14} />}
                                 {isCopied ? '已复制' : '分享'}
@@ -428,9 +428,9 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                     </div>
 
                     {/* 2. Comments Section (Auto-scroll) */}
-                    <div className="flex-1 flex flex-col min-h-0 bg-slate-50/30">
-                        <div className="px-6 py-3 border-b border-slate-100 flex items-center justify-between">
-                            <span className="text-sm font-bold text-slate-700">社区评论 ({comments.length})</span>
+                    <div className="flex-1 flex flex-col min-h-0 bg-slate-50/30 dark:bg-slate-950/30">
+                        <div className="px-6 py-3 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">社区评论 ({comments.length})</span>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-4 pr-2 mr-1 space-y-4 custom-scrollbar">
@@ -441,10 +441,10 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-baseline justify-between mb-1">
-                                            <span className="font-bold text-slate-800 text-xs">{c.userName}</span>
-                                            <span className="text-[10px] text-slate-400">{new Date(c.createdAt).toLocaleString()}</span>
+                                            <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">{c.userName}</span>
+                                            <span className="text-[10px] text-slate-400 dark:text-slate-500">{new Date(c.createdAt).toLocaleString()}</span>
                                         </div>
-                                        <div className="bg-white p-2.5 rounded-2xl rounded-tl-none border border-slate-200 text-slate-600 shadow-sm relative group">
+                                        <div className="bg-white dark:bg-slate-800 p-2.5 rounded-2xl rounded-tl-none border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm relative group">
                                             {c.content}
                                             {/* Deletion for Admin or Author */}
                                             {(currentUser?.role === 'admin' || currentUser?.id === c.userId) && (
@@ -470,13 +470,13 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                         </div>
 
                         {/* Input Area */}
-                        <div className="p-4 bg-white border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
+                        <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-700 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
                             <div className="flex gap-2 mb-3 overflow-x-auto no-scrollbar pb-1">
                                 {QUICK_REPLIES.map(reply => (
                                     <button
                                         key={reply}
                                         onClick={() => setCommentText(reply)}
-                                        className="whitespace-nowrap px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] md:text-xs rounded-full font-medium transition-colors active:scale-90 ripple"
+                                        className="whitespace-nowrap px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] md:text-xs rounded-full font-medium transition-colors active:scale-90 ripple"
                                     >
                                         {reply}
                                     </button>
@@ -488,7 +488,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                     onChange={e => setCommentText(e.target.value)}
                                     placeholder={currentUser ? "说点什么..." : "登录后发表评论"}
                                     disabled={!currentUser}
-                                    className={`flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none h-[42px] max-h-[80px] ${!currentUser ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                    className={`flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none h-[42px] max-h-[80px] ${!currentUser ? 'opacity-60 cursor-not-allowed' : ''}`}
                                     onKeyDown={e => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
                                             e.preventDefault();
