@@ -31,6 +31,7 @@ export default function ClientApp() {
         const params = new URLSearchParams(window.location.search);
         const tab = params.get('tab');
         if (tab === 'headlines') return 'headlines';
+        if (params.get('config')) return 'square';
         return 'visual';
     });
     const [buildList, setBuildList] = useState<BuildEntry[]>(() =>

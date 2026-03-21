@@ -263,6 +263,15 @@ class StorageService {
         }
     }
 
+    async getConfig(id: string): Promise<ConfigItem | null> {
+        try {
+            return await ApiService.get(`/configs/${id}`);
+        } catch (e) {
+            console.error('Failed to load config ' + id, e);
+            return null;
+        }
+    }
+
     async getAdminConfigs(_page: number = 1, _pageSize: number = 20, _status: string = 'all'): Promise<{ items: ConfigItem[], total: number }> {
         try {
             const result = await ApiService.get('/configs/admin');

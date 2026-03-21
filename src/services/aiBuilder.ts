@@ -139,8 +139,13 @@ export const aiBuilder = {
             const errorMsg = (error as any).message || "未知错误";
             let friendlyError = "连接云端失败";
 
-            if (errorMsg.includes("503")) friendlyError = "AI 服务未配置 API Key，请联系管理员。";
-            if (errorMsg.includes("500")) friendlyError = "AI 服务内部错误，请稍后重试。";
+            if (errorMsg.includes("503") || errorMsg.includes("Service Unavailable")) {
+                friendlyError = "AI 服务未配置或配置有误，请在后台检查 API Key。";
+            } else if (errorMsg.includes("500") || errorMsg.includes("Internal Server Error")) {
+                friendlyError = "AI 服务内部错误或模型连接失败，请联系管理员检查后端日志。";
+            } else if (errorMsg.includes("401") || errorMsg.includes("Unauthorized")) {
+                friendlyError = "AI 服务授权失败，API Key 可能已过期或无效。";
+            }
 
             return {
                 items: {},

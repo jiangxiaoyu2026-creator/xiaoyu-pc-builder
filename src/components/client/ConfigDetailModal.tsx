@@ -85,7 +85,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
 
         textLines.push(`------------------`);
         textLines.push(`总价: ¥${config.price}`);
-        textLines.push(`详情: https://DIYXX.COM/config/${config.id}`);
+        textLines.push(`详情: ${window.location.origin}?config=${config.id}`);
 
         const shareText = textLines.join('\n');
 

@@ -10,6 +10,7 @@ import os
 
 class AiService:
     def __init__(self, session: Session):
+        from ..models import User # Added import here for convenience or at top
         self.session = session
         self.client = None
         self.model = "gpt-3.5-turbo"
@@ -178,14 +179,28 @@ class AiService:
 
         # 第二优先级：主播(streamer)角色用户的配置（最近30天内）
         from sqlmodel import or_
-        stmt_streamer = select(Config).where(
+        from ..models import User
+        stmt_streamer = select(Config, User.role).join(User, Config.userId == User.id).where(
             Config.status == "published",
             Config.totalPrice >= min_price,
             Config.totalPrice <= max_price,
             Config.createdAt >= thirty_days_ago,
-            Config.authorRole == "streamer"
+            User.role == "streamer"
         ).order_by(Config.likes.desc()).limit(20)
-        streamer_configs = self.session.exec(stmt_streamer).all()
+        streamer_results = self.session.exec(stmt_streamer).all()
+        
+        # 将结果转换为带 authorRole 属性的对象或字典（为了兼容后续代码）
+        streamer_configs = []
+        for c, role in streamer_results:
+            c.authorRole = role # dynamically attach for scoring logic below
+            streamer_configs.append(c)
+            
+        # 补全 recommended_configs 的 authorRole 属性 (用于后续评分逻辑)
+        for c in recommended_configs:
+            if not hasattr(c, 'authorRole'):
+                # 默认推荐的一般是官方，但也可能是主播被推荐。这里简单查一下或默认为 official/admin
+                author = self.session.get(User, c.userId)
+                c.authorRole = author.role if author else 'admin'
 
         # 合并候选，去重
         seen_ids = set()
@@ -256,7 +271,9 @@ class AiService:
                         spec_str = f"({hw_specs.get('socket', '')}, {hw_specs.get('memoryType', '')})" if hw_specs else ""
                         comp_details.append(f"{cat}: {hw.brand} {hw.model} {spec_str}")
 
-        source_label = "主播推荐配置" if best_config.authorRole == 'streamer' else "官方推荐配置"
+        # best_config should have authorRole attached during find_reference_configs
+        role = getattr(best_config, 'authorRole', 'admin')
+        source_label = "主播推荐配置" if role == 'streamer' else "官方推荐配置"
         return {
             "title": best_config.title,
             "price": best_config.totalPrice,

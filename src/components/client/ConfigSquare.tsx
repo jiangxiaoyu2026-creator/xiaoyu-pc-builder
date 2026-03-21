@@ -77,6 +77,57 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                 };
             });
             setConfigs(mappedList);
+
+            // Fetch specific config from URL if present
+            const params = new URLSearchParams(window.location.search);
+            const urlConfigId = params.get('config');
+            if (urlConfigId && !selectedConfigId) {
+                const found = mappedList.find((c: ConfigTemplate) => c.id === urlConfigId);
+                if (found) {
+                    setSelectedConfigId(urlConfigId);
+                } else {
+                    try {
+                        const directRes = await storage.getConfig(urlConfigId);
+                        if (directRes) {
+                            const authorName = directRes.userName || directRes.authorName || 'Unknown User';
+                            let directType: 'official' | 'streamer' | 'user' | 'help' = 'user';
+                            if (directRes.authorRole === 'streamer') directType = 'streamer';
+                            else if (authorName.includes('主播') || (authorName.includes('分享者') === false && directRes.title.includes('主播'))) directType = 'streamer';
+                            if (directRes.tags?.includes('求助')) directType = 'help';
+                            if (directRes.isRecommended) directType = 'official';
+
+                            const mappedDirect: ConfigTemplate = {
+                                id: directRes.id,
+                                userId: directRes.userId,
+                                title: directRes.title,
+                                author: authorName,
+                                avatarColor: 'bg-zinc-500',
+                                type: directType,
+                                tags: (Array.isArray(directRes.tags) ? directRes.tags : (typeof directRes.tags === 'string' ? JSON.parse(directRes.tags || '[]') : [])).map((t: string) => ({ type: 'usage' as const, label: t })),
+                                price: directRes.totalPrice,
+                                items: typeof directRes.items === 'string' ? JSON.parse(directRes.items) : (directRes.items || {}),
+                                likes: directRes.likes || 0,
+                                views: directRes.views || 0,
+                                comments: 0,
+                                date: directRes.createdAt,
+                                isLiked: userLikes.includes(directRes.id),
+                                serialNumber: directRes.serialNumber,
+                                description: directRes.description,
+                                showcaseImages: typeof directRes.showcaseImages === 'string' ? JSON.parse(directRes.showcaseImages) : (directRes.showcaseImages || []),
+                                showcaseStatus: directRes.showcaseStatus
+                            };
+                            setConfigs(prev => [mappedDirect, ...prev]);
+                            setSelectedConfigId(urlConfigId);
+                        }
+                    } catch (e) {
+                        console.error('Failed to load shared config', e);
+                    }
+                }
+                
+                params.delete('config');
+                const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+                window.history.replaceState({}, '', newUrl);
+            }
         } catch (error) {
             console.error('Failed to load configs:', error);
         } finally {
