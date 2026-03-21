@@ -49,7 +49,12 @@ class AiService:
             'cooling': (0.03, 0.08), 'case': (0.03, 0.08)
         }
         
-        statement = select(Hardware).where(Hardware.status == "active")
+        # 仅检索已激活且属于核心类别的硬件，避免全表扫描
+        target_categories = list(ratios.keys())
+        statement = select(Hardware).where(
+            Hardware.status == "active",
+            Hardware.category.in_(target_categories)
+        )
         all_hardware = self.session.exec(statement).all()
         
         # 提取用户可能点名的硬件
@@ -377,8 +382,14 @@ class AiService:
                 ],
                 temperature=0.3,
                 response_format={"type": "json_object"},
-                timeout=45.0
+                timeout=25.0
             )
+        except Exception as e:
+            # Handle timeout specifically for OpenAI
+            if "timeout" in str(e).lower():
+                print(f"ERROR: AI Timeout after 25s. Query: {user_prompt[:50]}...")
+                raise Exception("AI Error: 云端算力节点响应超时，请稍后再试。")
+            raise e
             
             content = response.choices[0].message.content
             print(f"DEBUG: AI Output: {content[:200]}...") # Log start of output

@@ -18,12 +18,8 @@ async def generate_build_endpoint(
     session: Session = Depends(get_session)
 ):
     service = AiService(session)
-    # Combine structured inputs into natural language prompt if needed, 
-    # but the service 'generate_build' takes a single string or we can enhance it.
-    # Service implementation in previous step took 'user_prompt'. 
-    # Let's combine them for better context.
-    
     full_prompt = f"{req.prompt}。预算约{req.budget}元，用于{req.usage}，偏好{req.appearance}风格。"
+    print(f"DEBUG: [AI] Request received for prompt: {str(req.prompt)[:50]}... budget: {req.budget}")
     
     try:
         result = service.generate_build(full_prompt)
