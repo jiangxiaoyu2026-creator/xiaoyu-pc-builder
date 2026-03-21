@@ -1,7 +1,7 @@
 {
   "name": "xiaoyu-pc-builder",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Trigger deployment sync - latest features restoration",
   "type": "module",
   "scripts": {
