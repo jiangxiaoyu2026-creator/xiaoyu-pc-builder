@@ -381,20 +381,33 @@ class AiService:
             )
             
             content = response.choices[0].message.content
+            print(f"DEBUG: AI Output: {content[:200]}...") # Log start of output
             
+            raw_result = None
             try:
                 raw_result = json.loads(content)
             except json.JSONDecodeError:
-                # LLM might have wrapped the JSON in markdown code blocks
                 import re
+                # Try Markdown code block first
                 json_match = re.search(r"```(?:json)?\s*(.*?)\s*```", content, re.DOTALL)
                 if json_match:
                     try:
                         raw_result = json.loads(json_match.group(1))
                     except json.JSONDecodeError:
-                        raise Exception("AI Error: Invalid JSON inside code block.")
-                else:
-                    raise Exception("AI Error: Failed to parse LLM output as JSON.")
+                        pass
+                
+                # If still failed, try raw curly brace extraction
+                if not raw_result:
+                    json_match = re.search(r"(\{.*\})", content, re.DOTALL)
+                    if json_match:
+                        try:
+                            raw_result = json.loads(json_match.group(1))
+                        except json.JSONDecodeError:
+                            pass
+            
+            if not raw_result:
+                print(f"ERROR: Failed to parse JSON from AI. Raw content: {content}")
+                raise Exception("AI Error: Failed to parse LLM output as JSON.")
             
             
             # --- 后端自动修正逻辑 (Auto-Fix) ---
