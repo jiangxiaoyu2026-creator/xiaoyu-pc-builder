@@ -168,14 +168,14 @@ class AiService:
 
         # 2. 查询范围扩大：同时包含官方推荐配置 + 主播用户发布的配置
         # 第一优先级：官方推荐配置（最近30天内）
-        stmt_recommended = select(Config).where(
+        stmt_recommended = select(Config, User.role).join(User, Config.userId == User.id, isouter=True).where(
             Config.status == "published",
             Config.isRecommended == True,
             Config.totalPrice >= min_price,
             Config.totalPrice <= max_price,
             Config.createdAt >= thirty_days_ago
         ).order_by(Config.likes.desc()).limit(30)
-        recommended_configs = self.session.exec(stmt_recommended).all()
+        recommended_results = self.session.exec(stmt_recommended).all()
 
         # 第二优先级：主播(streamer)角色用户的配置（最近30天内）
         from sqlmodel import or_
@@ -194,20 +194,17 @@ class AiService:
         all_candidates = []
         config_roles = {} # Map config.id -> authorRole
         
-        for c in recommended_configs:
+        for c, role in recommended_results:
             if c.id not in seen_ids:
                 seen_ids.add(c.id)
                 all_candidates.append(c)
-                # For recommended, we still need to look up role if not known
-                # But it might be an admin/official one
-                author = self.session.get(User, c.userId)
-                config_roles[c.id] = author.role if author else 'admin'
+                config_roles[c.id] = role or 'admin'
         
         for c, role in streamer_results:
             if c.id not in seen_ids:
                 seen_ids.add(c.id)
                 all_candidates.append(c)
-                config_roles[c.id] = role
+                config_roles[c.id] = role or 'user'
 
         if not all_candidates:
             return None, 'admin'
@@ -379,7 +376,8 @@ class AiService:
                     {"role": "user", "content": user_msg}
                 ],
                 temperature=0.3,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                timeout=45.0
             )
             
             content = response.choices[0].message.content
@@ -402,6 +400,11 @@ class AiService:
             # --- 后端自动修正逻辑 (Auto-Fix) ---
             actual_total = 0
             resolved_items = {}
+            
+            # Ensure description exists
+            if "description" not in raw_result:
+                raw_result["description"] = "配置详情生成中..."
+                
             if "items" in raw_result:
                 # 1. 第一遍解析
                 for cat, item_data in raw_result["items"].items():
@@ -455,9 +458,22 @@ class AiService:
                     alt_ram = self._find_compatible_hardware('ram', {'memoryType': target_type}, budget*0.1)
                     if alt_ram:
                         resolved_items['ram'] = alt_ram
-                        raw_result['description'] += f" (注意：主板支持 {target_type}，已自动将内存更换为兼容型号)"
+                        raw_result['description'] = raw_result.get('description', '') + f" (注意：主板支持 {target_type}，已自动将内存更换为兼容型号)"
 
-                # 重新计算总价
+                # 确保 evaluation 结构完整
+                if "evaluation" not in raw_result:
+                    raw_result["evaluation"] = {"score": 85, "verdict": "完成", "pros": [], "cons": [], "summary": "AI 自动生成"}
+                else:
+                    eval_data = raw_result["evaluation"]
+                    if not isinstance(eval_data, dict):
+                        raw_result["evaluation"] = {"score": 85, "verdict": "完成", "pros": [], "cons": [], "summary": "AI 自动生成"}
+                    else:
+                        # 补齐缺字段
+                        if "score" not in eval_data: eval_data["score"] = 85
+                        if "pros" not in eval_data: eval_data["pros"] = []
+                        if "cons" not in eval_data: eval_data["cons"] = []
+                
+                # 重新计算并同步总价 (Ensuring frontend gets the real price after auto-fix)
                 actual_total = sum(i['price'] for i in resolved_items.values() if i)
                 raw_result["items"] = resolved_items
                 raw_result["totalPrice"] = actual_total
