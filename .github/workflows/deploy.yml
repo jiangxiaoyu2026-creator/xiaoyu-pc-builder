@@ -28,7 +28,7 @@ jobs:
           npm install
           npm run build
 
-      # 使用 SCP 将最新代码复制到服务器（排除 node_modules 以减重）
+      # 使用 SCP 将最新代码复制到服务器
       - name: Copy files via SSH
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -38,11 +38,6 @@ jobs:
           source: "."
           target: "/root/pcbuilder"
           overwrite: true
-          exclude: |
-            node_modules
-            .git
-            .github
-            *.log
           strip_components: 0
           tar_tmp_path: "/tmp"
           rm: false
@@ -56,28 +51,31 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           command_timeout: 30m
           script: |
-            set -e
             cd /root/pcbuilder
             
-            echo "--- Server Info ---"
-            df -h
-            free -m
+            # 基础信息打印
+            df -h && free -m
             
-            # 检测 docker-compose 命令
-            if command -v docker-compose >/dev/null 2>&1; then
-              DOCKER_COMPOSE="docker-compose"
+            # 极其保守的 Docker Compose 命令检测
+            if docker compose version >/dev/null 2>&1; then
+              DC="docker compose"
+            elif docker-compose version >/dev/null 2>&1; then
+              DC="docker-compose"
             else
-              DOCKER_COMPOSE="docker compose"
+              echo "Error: Docker Compose not found"
+              exit 1
             fi
-            echo "Using Docker Compose command: $DOCKER_COMPOSE"
-
-            echo "--- Cleaning up docker (aggressive) ---"
-            docker system prune -af --volumes
-
-            echo "--- Building and Starting docker container ---"
-            $DOCKER_COMPOSE down --remove-orphans
-            $DOCKER_COMPOSE build --pull
-            $DOCKER_COMPOSE up -d --force-recreate
             
-            echo "--- Deployment Successful ---"
+            echo "Using command: $DC"
+            
+            # 清理空间（可选但保留，确保构建成功）
+            docker system prune -f
+            
+            # 基础部署流程
+            $DC stop || true
+            $DC rm -f || true
+            $DC build
+            $DC up -d
+            
+            echo "--- Ready ---"
             docker ps
