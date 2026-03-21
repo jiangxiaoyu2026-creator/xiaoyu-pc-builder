@@ -39,4 +39,10 @@ async def generate_build_endpoint(
         # Check if it's the "not configured" error which might come from check at start of generate_build
         if "AI Service not configured" in str(e):
             raise HTTPException(status_code=503, detail="AI Service not configured. Please check admin settings.")
-        raise HTTPException(status_code=500, detail=f"AI Service Error: {str(e)}")
+        
+        # Log the error on the backend for debugging
+        import traceback
+        traceback.print_exc()
+        
+        # We use 400 instead of 500 to prevent Nginx/Cloudflare from swallowing the JSON body with custom error pages
+        raise HTTPException(status_code=400, detail=f"AI Service Error: {str(e)}")
