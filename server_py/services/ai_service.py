@@ -145,6 +145,7 @@ class AiService:
         return final_list
 
     def find_reference_configs(self, budget: int, user_prompt: str) -> tuple:
+        from ..models import User
         """
         寻找匹配的最佳单套配置作为模板（包含推荐配置和主播配置）
         """
@@ -179,7 +180,6 @@ class AiService:
 
         # 第二优先级：主播(streamer)角色用户的配置（最近30天内）
         from sqlmodel import or_
-        from ..models import User
         stmt_streamer = select(Config, User.role).join(User, Config.userId == User.id).where(
             Config.status == "published",
             Config.totalPrice >= min_price,
