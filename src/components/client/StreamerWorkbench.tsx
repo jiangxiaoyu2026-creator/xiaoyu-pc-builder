@@ -536,10 +536,13 @@ function StreamerWorkbench({
         }
     };
 
-    const handleAiBuild = async (prompt: any) => {
+    const handleAiBuild = async (prompt: any, preResult?: any) => {
         try {
-            const request = typeof prompt === 'string' ? aiBuilder.parseRequest(prompt) : prompt;
-            const result = await aiBuilder.generateBuildWithLogs(request);
+            let result = preResult;
+            if (!result) {
+                const request = typeof prompt === 'string' ? aiBuilder.parseRequest(prompt) : prompt;
+                result = await aiBuilder.generateBuildWithLogs(request);
+            }
 
             setShowAiModal(false);
             clearBuild();

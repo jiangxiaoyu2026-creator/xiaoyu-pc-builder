@@ -158,7 +158,7 @@ function VisualBuilder({
 
             if (!result) {
                 const request = aiBuilder.parseRequest(prompt);
-                result = aiBuilder.generateBuildWithLogs(request);
+                result = await aiBuilder.generateBuildWithLogs(request);
             }
 
             setShowAiModal(false);
