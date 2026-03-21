@@ -318,8 +318,8 @@ async def get_product_price_history(
         })
 
     # --- Category average price trend ---
-    # For each day that had changes, compute the average newPrice across all products in that category
-    daily_prices = defaultdict(list)  # date -> [newPrice, ...]
+    # 1. Average of CHANGED items (original "变动均价")
+    daily_prices = defaultdict(list)
     for c in changes:
         date_key = c.changedAt[:10]
         daily_prices[date_key].append(c.newPrice)
@@ -333,7 +333,47 @@ async def get_product_price_history(
             "count": len(prices),
         })
 
-    # --- Product list for this category (for the dropdown selector) ---
+    # 2. Total category average (new "全量均价")
+    category_total_avg_trend = []
+    if category and category != "all":
+        # Get current prices and creation dates for all active products in category
+        hw_data = session.exec(
+            select(Hardware.id, Hardware.price, Hardware.createdAt)
+            .where(Hardware.category == category, Hardware.status == "active")
+        ).all()
+        
+        if hw_data:
+            # Reconstruct history working backwards from today
+            current_date = datetime.utcnow()
+            dates = [(current_date - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days + 1)]
+            dates.sort()
+            
+            # Map changes by date for easy lookup
+            changes_by_date = defaultdict(list)
+            for c in sorted(changes, key=lambda x: x.changedAt, reverse=True):
+                changes_by_date[c.changedAt[:10]].append(c)
+            
+            temp_prices = {h[0]: h[1] for h in hw_data}
+            hw_created = {h[0]: h[2][:10] for h in hw_data}
+            
+            for d in reversed(dates):
+                # Only include products that were already created
+                valid_prices = [p for hid, p in temp_prices.items() if hw_created[hid] <= d]
+                if valid_prices:
+                    avg = sum(valid_prices) / len(valid_prices)
+                    category_total_avg_trend.append({
+                        "date": d,
+                        "avgPrice": round(avg, 2)
+                    })
+                
+                # Reverse changes that happened on this day
+                for c in changes_by_date.get(d, []):
+                    if c.hardwareId in temp_prices:
+                        temp_prices[c.hardwareId] = c.oldPrice
+            
+            category_total_avg_trend.reverse()
+
+    # --- Product list for this category ---
     products_query = select(Hardware.id, Hardware.brand, Hardware.model, Hardware.price, Hardware.category)
     if category and category != "all":
         products_query = products_query.where(Hardware.category == category)
@@ -355,6 +395,7 @@ async def get_product_price_history(
     return {
         "productTrends": product_trends,
         "categoryAvgTrend": category_avg_trend,
+        "categoryTotalAvgTrend": category_total_avg_trend,
         "products": products_list,
         "categories": sorted([c for c in categories if c]),
     }

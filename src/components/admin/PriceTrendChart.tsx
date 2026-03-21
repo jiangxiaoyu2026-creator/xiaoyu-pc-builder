@@ -49,6 +49,10 @@ interface ProductPriceTrendData {
         avgPrice: number;
         count: number;
     }>;
+    categoryTotalAvgTrend: Array<{
+        date: string;
+        avgPrice: number;
+    }>;
     products: Array<{
         id: string;
         name: string;
@@ -275,22 +279,43 @@ export default function PriceTrendChart() {
             )}
 
             {/* 品类均价走势 */}
-            {trendData && trendData.categoryAvgTrend.length > 0 && category !== 'all' && (
+            {trendData && trendData.categoryTotalAvgTrend && trendData.categoryTotalAvgTrend.length > 0 && category !== 'all' && (
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        {CATEGORY_LABELS[category] || category} 品类变动均价走势
-                    </h3>
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                            {CATEGORY_LABELS[category] || category} 品类价格走势
+                        </h3>
+                        <div className="flex gap-4">
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                <span className="w-3 h-0.5 bg-indigo-500"></span> 变动均价 (仅限调价商品)
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                <span className="w-3 h-0.5 bg-slate-300"></span> 全量均价 (品类合集)
+                            </div>
+                        </div>
+                    </div>
                     <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={trendData.categoryAvgTrend} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
+                        <LineChart 
+                            data={trendData.categoryTotalAvgTrend.map(totalItem => {
+                                const changeItem = trendData.categoryAvgTrend.find(c => c.date === totalItem.date);
+                                return {
+                                    date: totalItem.date,
+                                    totalAvg: totalItem.avgPrice,
+                                    changeAvg: changeItem?.avgPrice,
+                                    count: changeItem?.count || 0
+                                };
+                            })} 
+                            margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
+                        >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                             <XAxis 
                                 dataKey="date" 
-                                tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
+                                tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 500 }}
                                 tickFormatter={(v: string) => v.slice(5)}
                                 axisLine={false} tickLine={false} dy={10} 
                             />
                             <YAxis 
-                                tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
+                                tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 500 }}
                                 axisLine={false} tickLine={false} dx={-10}
                                 domain={['auto', 'auto']}
                                 tickFormatter={(v) => `¥${v}`}
@@ -298,15 +323,31 @@ export default function PriceTrendChart() {
                             <Tooltip 
                                 content={({ active, payload, label }: any) => {
                                     if (active && payload && payload.length) {
+                                        const data = payload[0].payload;
                                         return (
-                                            <div className="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50">
-                                                <p className="font-bold text-slate-800 mb-2">{label}</p>
-                                                <div className="flex items-center gap-2 text-sm">
-                                                    <span className="w-2.5 h-2.5 bg-indigo-500 rounded-sm"></span>
-                                                    <span className="text-slate-600">变动均价:</span>
-                                                    <span className="font-bold text-slate-800">¥{payload[0].value}</span>
+                                            <div className="bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 min-w-[180px]">
+                                                <p className="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2">{label}</p>
+                                                <div className="space-y-2.5">
+                                                    <div className="flex items-center justify-between gap-4">
+                                                        <span className="flex items-center gap-2 text-sm text-slate-600">
+                                                            <div className="w-2 h-2 rounded-full bg-slate-300" />
+                                                            全量均价
+                                                        </span>
+                                                        <span className="font-bold text-slate-800">¥{data.totalAvg}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between gap-4">
+                                                        <span className="flex items-center gap-2 text-sm text-indigo-600">
+                                                            <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                                                            变动均价
+                                                        </span>
+                                                        <span className="font-bold text-indigo-600">
+                                                            {data.changeAvg ? `¥${data.changeAvg}` : '--'}
+                                                        </span>
+                                                    </div>
+                                                    {data.count > 0 && (
+                                                        <div className="text-[10px] text-slate-400 text-right">调价采样: {data.count}件</div>
+                                                    )}
                                                 </div>
-                                                <div className="text-xs text-slate-400 mt-1">采样数: {payload[0].payload.count}件</div>
                                             </div>
                                         );
                                     }
@@ -315,10 +356,26 @@ export default function PriceTrendChart() {
                             />
                             <Line 
                                 type="monotone" 
-                                dataKey="avgPrice" 
+                                dataKey="totalAvg" 
+                                stroke="#cbd5e1" 
+                                strokeWidth={2}
+                                strokeDasharray="5 5"
+                                dot={false}
+                                activeDot={{ r: 4, strokeWidth: 0 }}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="changeAvg" 
                                 stroke="#6366f1" 
                                 strokeWidth={3}
-                                dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
+                                connectNulls={true}
+                                dot={(props: any) => {
+                                    const { cx, cy, payload } = props;
+                                    if (payload.count > 0) {
+                                        return <circle key={payload.date} cx={cx} cy={cy} r={4} fill="#6366f1" stroke="none" />;
+                                    }
+                                    return null;
+                                }}
                                 activeDot={{ r: 6, strokeWidth: 0 }}
                             />
                         </LineChart>
