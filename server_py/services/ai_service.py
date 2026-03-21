@@ -281,7 +281,7 @@ class AiService:
             "logic": "; ".join(comp_details) if comp_details else "通用搭配",
             "fan_count": fan_count,
             "source": source_label,
-            "author": best_config.authorName or ""
+            "author": best_config.userName or ""
         }
         
         return result_metadata, role
