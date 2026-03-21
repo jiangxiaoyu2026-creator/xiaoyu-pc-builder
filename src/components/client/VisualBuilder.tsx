@@ -424,9 +424,23 @@ function VisualBuilder({
                                 : 'border-slate-100 border-dashed bg-slate-50/50'
                                 }`}
                         >
-                            {/* Category Text Column */}
-                            <div className="w-12 shrink-0">
-                                <span className="text-[11px] font-black tracking-tight text-slate-400">
+                            {/* Category Icon & Text Column */}
+                            <div className="w-12 sm:w-14 shrink-0 flex flex-col items-center justify-center gap-1">
+                                <div 
+                                    className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-sm relative overflow-hidden transition-all ${entry.item ? 'bg-indigo-50 text-indigo-500 group-hover:bg-indigo-100' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'} ${entry.item?.image ? 'cursor-zoom-in active:scale-95 hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1' : ''}`}
+                                    onClick={(e) => {
+                                        if (entry.item?.image) {
+                                            e.stopPropagation();
+                                            setPreviewImage(entry.item.image);
+                                        }
+                                    }}
+                                >
+                                    {entry.item && <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>}
+                                    <div className="scale-[0.8]">
+                                        {getIconByCategory(entry.category)}
+                                    </div>
+                                </div>
+                                <span className="text-[10px] font-black tracking-tight text-slate-400 text-center w-full line-clamp-1 scale-90 sm:scale-100 origin-center">
                                     {CATEGORY_MAP[entry.category]}
                                 </span>
                             </div>
@@ -540,7 +554,15 @@ function VisualBuilder({
                                 : 'bg-white/40 backdrop-blur-sm border-dashed border-slate-300/60 hover:bg-white hover:border-indigo-300 hover:shadow-sm'
                                 }`}
                         >
-                            <div className={`w-11 h-11 rounded-[16px] flex items-center justify-center text-xl shrink-0 transition-all duration-500 shadow-sm relative overflow-hidden ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white group-hover:scale-105 group-hover:shadow-indigo-500/25 group-hover:shadow-lg' : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-400'}`}>
+                            <div 
+                                className={`w-11 h-11 rounded-[16px] flex items-center justify-center text-xl shrink-0 transition-all duration-500 shadow-sm relative overflow-hidden ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white group-hover:scale-105 group-hover:shadow-indigo-500/25 group-hover:shadow-lg' : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-400'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
+                                onClick={(e) => {
+                                    if (entry.item?.image) {
+                                        e.stopPropagation();
+                                        setPreviewImage(entry.item.image);
+                                    }
+                                }}
+                            >
                                 {entry.item && <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>}
                                 {getIconByCategory(entry.category)}
                             </div>
