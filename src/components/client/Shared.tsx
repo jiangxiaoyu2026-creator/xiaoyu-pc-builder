@@ -39,7 +39,7 @@ export function TabButton({ active, onClick, icon, label }: { active: boolean, o
             </div>
             <span className={cn(
                 "whitespace-nowrap transition-all duration-300",
-                active ? "inline-block" : "hidden xl:inline-block"
+                active ? "inline-block" : "hidden 2xl:inline-block"
             )}>
                 {label}
             </span>

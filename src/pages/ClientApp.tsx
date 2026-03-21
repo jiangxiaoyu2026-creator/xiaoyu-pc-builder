@@ -364,7 +364,7 @@ export default function ClientApp() {
     const handleFork = async (config: ConfigTemplate) => {
         try {
             // Extract all hardware IDs from the config
-            const productIds = Object.values(config.items).map(id => {
+            const productIds = Object.values(config.items).map((id: any) => {
                 if (typeof id === 'string') return id;
                 if (typeof id === 'object' && id && id.id && !id.isCustom) return id.id;
                 return null;
