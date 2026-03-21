@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor } from 'lucide-react';
+import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor, Info, Pin } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
@@ -646,7 +646,8 @@ function VisualBuilder({
 
                     <div className="p-4 md:p-8 flex flex-col gap-4 lg:gap-6 relative z-10">
                         {/* Box 0: Announcements (Newly Moved to Top) */}
-                        <div className="relative p-6 rounded-[28px] bg-sky-50/30 border border-sky-100 shadow-sm overflow-hidden mb-2">
+                        {sysAnnouncement?.enabled && (
+                            <div className="relative p-6 rounded-[28px] bg-sky-50/30 border border-sky-100 shadow-sm overflow-hidden mb-2">
                             <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full blur-3xl -mr-12 -mt-12"></div>
                             <h3 className="font-extrabold text-slate-900 mb-4 flex items-center gap-2 text-sm">
                                 <FileText size={16} className="text-sky-500" />
@@ -654,16 +655,47 @@ function VisualBuilder({
                             </h3>
                             <div className="space-y-3">
                                 {sysAnnouncement?.items && sysAnnouncement.items.length > 0 ? (
-                                    sysAnnouncement.items.map((item: any) => (
-                                        <div key={item.id} className="text-[12px] leading-relaxed text-slate-600 bg-white border border-slate-100 p-3 rounded-xl shadow-sm">
-                                            {item.content}
-                                        </div>
-                                    ))
+                                    sysAnnouncement.items.map((item: any) => {
+                                        const typeConfig = {
+                                            promo: { label: '活动', icon: <Sparkles size={10} />, bg: 'bg-amber-50 text-amber-600 border-amber-100' },
+                                            warning: { label: '紧急', icon: <AlertCircle size={10} />, bg: 'bg-red-50 text-red-600 border-red-100' },
+                                            info: { label: '通知', icon: <Info size={10} />, bg: 'bg-sky-50 text-sky-600 border-sky-100' }
+                                        };
+                                        const config = typeConfig[item.type as keyof typeof typeConfig] || typeConfig.info;
+
+                                        const content = (
+                                            <div className={`group relative text-[12px] leading-relaxed text-slate-600 bg-white border border-slate-100 p-3 rounded-xl shadow-sm transition-all ${item.linkUrl ? 'hover:border-sky-300 hover:shadow-md cursor-pointer pr-8' : ''}`}>
+                                                <div className="flex items-center gap-2 mb-1.5">
+                                                    <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${config.bg}`}>
+                                                        {config.icon}
+                                                        {config.label}
+                                                    </span>
+                                                    {item.pinned && <Pin size={10} className="text-sky-400 rotate-45 fill-current" />}
+                                                </div>
+                                                <div className="font-medium text-slate-700">{item.content}</div>
+                                                {item.linkUrl && (
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sky-400 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                        <ArrowRight size={14} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+
+                                        if (item.linkUrl) {
+                                            return (
+                                                <a key={item.id} href={item.linkUrl} target="_blank" rel="noopener noreferrer" className="block outline-none hover:no-underline">
+                                                    {content}
+                                                </a>
+                                            );
+                                        }
+                                        return <div key={item.id}>{content}</div>;
+                                    })
                                 ) : (
                                     <div className="text-[12px] text-slate-400 italic py-2 text-center">{sysAnnouncement?.content || '暂无发布公告'}</div>
                                 )}
                             </div>
                         </div>
+                        )}
 
                         {/* Box 2: Price Details (Hidden on Mobile) */}
                         <div className="hidden lg:block">

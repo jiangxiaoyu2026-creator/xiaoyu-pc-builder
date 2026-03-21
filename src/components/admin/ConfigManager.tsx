@@ -126,7 +126,9 @@ export default function ConfigManager() {
                 const pid = c.items[cat];
                 if (!pid) return '-';
                 const p = products.find(x => x.id === pid);
-                return p ? `"${p.brand} ${p.model}"` : pid;
+                if (p) return `"${p.brand} ${p.model}"`;
+                if (typeof pid === 'object' && (pid as any).name) return `"${(pid as any).name}"`;
+                return pid;
             });
             return [
                 c.id,
@@ -280,13 +282,17 @@ export default function ConfigManager() {
 
                                     <div className="mt-3 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                                         {['cpu', 'gpu', 'mainboard'].map(cat => {
-                                            const itemId = config.items[cat as Category] as string;
+                                            const itemId = config.items[cat as Category];
                                             if (!itemId) return null;
                                             const product = products.find(p => p.id === itemId);
+                                            const displayName = product 
+                                                ? product.model 
+                                                : (typeof itemId === 'object' ? (itemId as any).name : itemId);
+                                            
                                             return (
                                                 <div key={cat} className="flex items-center gap-2 bg-slate-100 px-2 py-1 rounded border border-slate-200 min-w-[120px]">
                                                     <div className="text-[10px] text-slate-400 w-8">{CATEGORY_MAP[cat as Category].label}</div>
-                                                    <div className="text-xs font-medium text-slate-700 truncate">{product ? product.model : itemId}</div>
+                                                    <div className="text-xs font-medium text-slate-700 truncate">{displayName}</div>
                                                 </div>
                                             )
                                         })}
