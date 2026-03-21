@@ -11,6 +11,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,7 +28,7 @@ jobs:
           npm install
           npm run build
 
-      # 使用 SCP 将最新代码复制到服务器（完美避开服务器访问 GitHub 的网络问题）
+      # 使用 SCP 将最新代码复制到服务器（排除 node_modules 以减重）
       - name: Copy files via SSH
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -36,7 +38,11 @@ jobs:
           source: "."
           target: "/root/pcbuilder"
           overwrite: true
-          # 排除一些不需要传到服务器上的文件
+          exclude: |
+            node_modules
+            .git
+            .github
+            *.log
           strip_components: 0
           tar_tmp_path: "/tmp"
           rm: false
@@ -50,14 +56,28 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           command_timeout: 30m
           script: |
+            set -e
             cd /root/pcbuilder
-            echo "--- Server Disk Space ---"
+            
+            echo "--- Server Info ---"
             df -h
-            echo "--- Server Memory ---"
             free -m
+            
+            # 检测 docker-compose 命令
+            if command -v docker-compose >/dev/null 2>&1; then
+              DOCKER_COMPOSE="docker-compose"
+            else
+              DOCKER_COMPOSE="docker compose"
+            fi
+            echo "Using Docker Compose command: $DOCKER_COMPOSE"
+
             echo "--- Cleaning up docker (aggressive) ---"
             docker system prune -af --volumes
-            echo "--- Building docker image ---"
-            docker-compose build
-            echo "--- Starting docker container ---"
-            docker-compose up -d --force-recreate
+
+            echo "--- Building and Starting docker container ---"
+            $DOCKER_COMPOSE down --remove-orphans
+            $DOCKER_COMPOSE build --pull
+            $DOCKER_COMPOSE up -d --force-recreate
+            
+            echo "--- Deployment Successful ---"
+            docker ps
