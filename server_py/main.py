@@ -112,5 +112,6 @@ if __name__ == "__main__":
     import uvicorn
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "8000"))
-    reload = os.getenv("RELOAD", "true").lower() == "true"
-    uvicorn.run("main:app", host=host, port=port, reload=reload, log_level="info")
+    # In production with -m server_py.main, we pass the app object directly
+    # and disable hot-reload for maximum stability.
+    uvicorn.run(app, host=host, port=port, log_level="info")
