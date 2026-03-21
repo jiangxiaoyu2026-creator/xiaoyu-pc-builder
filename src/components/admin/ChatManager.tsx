@@ -4,11 +4,10 @@ import { storage } from '../../services/storage';
 import { ChatSession, ChatMessage } from '../../types/adminTypes';
 import { ChatSettingsModal } from './ChatSettingsModal';
 
-// Backend stores UTC timestamps without 'Z' suffix. This helper ensures correct local time conversion.
 const toLocalTime = (utcStr: string | number | undefined): Date => {
     if (!utcStr) return new Date();
     if (typeof utcStr === 'number') return new Date(utcStr);
-    const s = utcStr.endsWith('Z') || utcStr.includes('+') ? utcStr : utcStr + 'Z';
+    const s = utcStr.replace(' ', 'T');
     return new Date(s);
 };
 

@@ -69,11 +69,30 @@ async def get_configs(
                 (Config.tags.like(f'%"{tag}"%')) |
                 (Config.tags.like(f'%"{escaped_tag}"%'))
             )
+    search_condition = None
     if search:
-        query = query.where(
-            (Config.title.like(f"%{search}%")) | 
-            (Config.userName.like(f"%{search}%"))
+        from ..models import Hardware
+        from sqlalchemy import or_
+        hw_query = select(Hardware.id).where(
+            or_(
+                Hardware.model.like(f"%{search}%"),
+                Hardware.brand.like(f"%{search}%")
+            )
         )
+        hw_ids = session.exec(hw_query).all()
+        
+        conditions = [
+            Config.title.like(f"%{search}%"),
+            Config.userName.like(f"%{search}%")
+        ]
+        if hw_ids:
+            conditions.append(Config.cpuId.in_(hw_ids))
+            conditions.append(Config.gpuId.in_(hw_ids))
+        
+        search_condition = or_(*conditions)
+
+    if search_condition is not None:
+        query = query.where(search_condition)
 
     # Sorting
     if sort_by == "new":
@@ -105,11 +124,8 @@ async def get_configs(
                 (Config.tags.like(f'%"{tag}"%')) | 
                 (Config.tags.like(f'%"{escaped_tag}"%'))
             )
-    if search:
-        count_query = count_query.where(
-            (Config.title.like(f"%{search}%")) | 
-            (Config.userName.like(f"%{search}%"))
-        )
+    if search_condition is not None:
+        count_query = count_query.where(search_condition)
     total = session.scalar(count_query)
 
     offset = (page - 1) * page_size

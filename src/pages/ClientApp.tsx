@@ -100,12 +100,14 @@ export default function ClientApp() {
 
                 // Unified type logic consistent with ConfigSquare
                 let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
+                // Prioritize role-based identification
                 if (c.authorRole === 'streamer') type = 'streamer';
-                else if (c.authorRole && ['admin', 'sub_admin'].includes(c.authorRole)) type = 'official';
-                else if (authorName.includes('官方') || authorName.toLowerCase().includes('admin')) type = 'official';
-                else if (authorName.includes('主播') || (c.title && c.title.includes('主播'))) type = 'streamer';
+                // Fallback to keyword matching and other flags
+                else if (authorName.includes('主播') || (authorName.includes('分享者') === false && c.title.includes('主播'))) type = 'streamer';
 
                 if (Array.isArray(c.tags) && c.tags.some((t: any) => (typeof t === 'string' ? t : t.label) === '求助')) type = 'help';
+                
+                // 官方要求：只有后台明确设置了“官方推荐”才显示为官方配置
                 if (c.isRecommended) type = 'official';
 
                 const isVip = authorUser ? (
@@ -494,8 +496,6 @@ export default function ClientApp() {
 
                 // Prioritize role-based identification (Improved Logic)
                 if (c.authorRole === 'streamer') type = 'streamer';
-                else if (['admin', 'sub_admin'].includes(c.authorRole)) type = 'official';
-                else if (authorName.includes('官方')) type = 'official';
                 else if (authorName.includes('主播')) type = 'streamer';
 
                 let parsedTagsRaw: any = [];
@@ -507,6 +507,7 @@ export default function ClientApp() {
                 const parsedTags = Array.isArray(parsedTagsRaw) ? parsedTagsRaw : [];
 
                 if (parsedTags.some((t: any) => (typeof t === 'string' ? t : t.label) === '求助')) type = 'help';
+                if (c.isRecommended) type = 'official';
 
                 return {
                     id: c.id,

@@ -13,6 +13,39 @@ export default function ArticleDetail() {
     const navigate = useNavigate();
     const [article, setArticle] = useState<Article | null>(null);
     const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState({ show: false, msg: '' });
+
+    const showToast = (msg: string) => {
+        setToast({ show: true, msg });
+        setTimeout(() => setToast({ show: false, msg: '' }), 3000);
+    };
+
+    const handleShare = async () => {
+        if (!article) return;
+        
+        const shareData = {
+            title: article.title,
+            text: article.summary || article.title,
+            url: window.location.href,
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+                return;
+            } catch (err) {
+                console.error('Share failed:', err);
+                // Fallthrough to clipboard if share was cancelled or failed
+            }
+        }
+        
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            showToast('链接已复制到剪贴板');
+        } catch (err) {
+            showToast('复制链接失败');
+        }
+    };
 
     useEffect(() => {
         if (id) loadArticle(id);
@@ -51,7 +84,7 @@ export default function ArticleDetail() {
                         <ArrowLeft size={20} className="text-slate-600" />
                     </button>
                     <span className="font-bold text-slate-800">文章详情</span>
-                    <button className="p-2 -mr-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+                    <button onClick={handleShare} className="p-2 -mr-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
                         <Share2 size={20} />
                     </button>
                 </div>
@@ -99,6 +132,15 @@ export default function ArticleDetail() {
                     </Markdown>
                 </div>
             </article>
+
+            {/* Minimal Toast */}
+            {toast.show && (
+                <div className="fixed bottom-[100px] left-1/2 -translate-x-1/2 z-50 animate-fade-in pointer-events-none">
+                    <div className="bg-slate-900/90 text-white px-4 py-2.5 rounded-full text-xs font-medium shadow-xl backdrop-blur-md">
+                        {toast.msg}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

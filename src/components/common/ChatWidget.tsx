@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send, Minimize2, ChevronRight, User } from 'lucide-react';
+import { MessageCircle, Send, Minimize2 } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { ChatMessage, ChatSession } from '../../types/adminTypes';
 
@@ -173,35 +173,12 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
 
                     {/* Messages */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950 relative">
-                        {/* Welcome Display Card */}
-                        <div className="mb-6 mx-1">
-                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100/80 dark:border-slate-700">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-                                            <h3 className="text-base font-bold text-slate-900 dark:text-white">当前客服正忙</h3>
-                                        </div>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
-                                            有需要的可以联系管理员微信：<span className="font-semibold text-indigo-600 select-all">pcjiangxiaoyu</span>
-                                        </p>
-                                        <button 
-                                            onClick={() => document.getElementById('chat-input')?.focus()} 
-                                            className="text-indigo-600 text-[13px] font-bold flex items-center gap-1 hover:text-indigo-700 transition-colors group"
-                                        >
-                                            开始留言 <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                                        </button>
-                                    </div>
-                                    <div className="relative shrink-0 mt-1">
-                                        <div className="w-12 h-12 rounded-full bg-slate-100 border-2 border-white shadow-sm flex items-center justify-center relative z-10 overflow-hidden">
-                                            <User size={24} className="text-slate-400" />
-                                        </div>
-                                        <div className="absolute 0 right-0 bottom-0 w-3.5 h-3.5 bg-amber-500 border-2 border-white rounded-full z-20"></div>
-                                    </div>
-                                </div>
+                        {/* Auto Welcome Message as a Chat Bubble */}
+                        <div className="flex justify-start">
+                            <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-bl-none">
+                                客服回复不及时，可以联系管理员微信：<span className="font-semibold text-indigo-600 select-all">pcjiangxiaoyu</span>
                             </div>
                         </div>
-
                         {messages.map((msg) => {
                             const isMe = msg.sender === 'user';
                             return (

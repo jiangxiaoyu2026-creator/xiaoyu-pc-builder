@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Sparkles, Cpu, Zap, Crown } from 'lucide-react';
+import { Search, Sparkles, Cpu, Zap, Crown, Heart } from 'lucide-react';
 import { ConfigTemplate, HardwareItem } from '../../types/clientTypes';
 import { TAGS_APPEARANCE, TAGS_USAGE, HARDWARE_DB } from '../../data/clientData';
 import { ConfigDetailModal } from './ConfigDetailModal';
@@ -26,7 +26,7 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
         try {
             // Need products for spec mapping (though backend join would be better)
             // For now, fetch a large enough set of products or just what's needed
-            const [cRes, pRes] = await Promise.all([
+            const [cRes, pRes, userLikes] = await Promise.all([
                 storage.getConfigs({
                     page,
                     pageSize,
@@ -34,7 +34,8 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                     search: searchQuery,
                     sortBy
                 }),
-                storage.getProducts(1, 1000) // Fetch public products without admin restriction
+                storage.getProducts(1, 1000), // Fetch public products without admin restriction
+                currentUser ? storage.getUserLikes(currentUser.id) : Promise.resolve([])
             ]);
 
             setTotal(cRes.total);
@@ -47,10 +48,8 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
 
                 // Prioritize role-based identification
                 if (c.authorRole === 'streamer') type = 'streamer';
-                else if (c.authorRole && ['admin', 'sub_admin'].includes(c.authorRole)) type = 'official';
                 // Fallback to keyword matching and other flags
-                else if (authorName.includes('官方') || authorName.toLowerCase().includes('admin')) type = 'official';
-                else if (authorName.includes('主播') || authorName.includes('分享者') === false && c.title.includes('主播')) type = 'streamer';
+                else if (authorName.includes('主播') || (authorName.includes('分享者') === false && c.title.includes('主播'))) type = 'streamer';
 
                 if (c.tags?.includes('求助')) type = 'help';
                 if (c.isRecommended) type = 'official';
@@ -69,7 +68,7 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                     views: c.views || 0,
                     comments: 0,
                     date: c.createdAt,
-                    isLiked: false,
+                    isLiked: userLikes.includes(c.id),
                     serialNumber: c.serialNumber,
                     description: c.description,
                     showcaseImages: typeof c.showcaseImages === 'string' ? JSON.parse(c.showcaseImages) : (c.showcaseImages || []),
@@ -148,6 +147,25 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
     // Check if author is VIP (now using pre-calculated flag from template)
     const isUserVip = (cfg: ConfigTemplate): boolean => {
         return !!cfg.isVip;
+    };
+
+    const handleToggleLikeClick = async (e: React.MouseEvent, cfg: ConfigTemplate) => {
+        e.stopPropagation();
+        if (!currentUser) {
+            showToast("请先登录后收藏");
+            return;
+        }
+
+        // Update local state immediately for snappy UI
+        setConfigs(prev => prev.map(c => {
+            if (c.id === cfg.id) {
+                return { ...c, likes: c.isLiked ? c.likes - 1 : c.likes + 1, isLiked: !c.isLiked };
+            }
+            return c;
+        }));
+
+        // Call the parent which handles global state and backend saves
+        onToggleLike(cfg.id);
     };
 
     return (
@@ -314,6 +332,18 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                                     <h3 className={`text-base font-bold line-clamp-2 leading-snug group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors drop-shadow-sm ${coverImageUrl ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
                                         {cfg.title}
                                     </h3>
+                                    {cfg.tags && cfg.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5 mt-2.5">
+                                            {cfg.tags.slice(0, 3).map((tag: any, idx: number) => (
+                                                <span key={idx} className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold border backdrop-blur-md ${coverImageUrl ? 'bg-black/30 text-white/90 border-white/20' : 'bg-slate-100/80 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200/50 dark:border-slate-700/50'}`}>
+                                                    {tag.label || tag}
+                                                </span>
+                                            ))}
+                                            {cfg.tags.length > 3 && (
+                                                <span className={`px-1 py-0.5 rounded-md text-[10px] font-bold border backdrop-blur-md ${coverImageUrl ? 'bg-black/20 text-white/80 border-white/10' : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 border-slate-200/30 dark:border-slate-700'}`}>+{cfg.tags.length - 3}</span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -347,7 +377,13 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                                             {cfg.author[0].toUpperCase()}
                                         </div>
                                         <div className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
-                                            {cfg.likes} <span className="text-[10px]">赞</span>
+                                            <button 
+                                                onClick={(e) => handleToggleLikeClick(e, cfg)}
+                                                className={`flex items-center gap-1 px-2 py-1 -ml-2 rounded-full transition-all active:scale-95 border ${cfg.isLiked ? 'text-pink-500 bg-pink-50 dark:bg-pink-500/10 border-pink-200 dark:border-pink-500/30 shadow-sm' : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                            >
+                                                <Heart size={14} className={cfg.isLiked ? 'fill-current' : ''} />
+                                                <span>{cfg.likes} <span className="text-[10px]">赞</span></span>
+                                            </button>
                                             <span className="text-slate-300 dark:text-slate-600">·</span>
                                             <span className="text-[10px] text-slate-400 dark:text-slate-500">{new Date(cfg.date).toLocaleDateString('zh-CN')}</span>
                                         </div>

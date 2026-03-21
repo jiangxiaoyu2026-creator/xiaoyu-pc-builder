@@ -110,9 +110,11 @@ function VisualBuilder({
 
 
     const [sysAnnouncement, setSysAnnouncement] = useState<SystemAnnouncementSettings | null>(null);
+    const [pricingStrategy, setPricingStrategy] = useState<import('../../types/adminTypes').PricingStrategy | null>(null);
 
     useEffect(() => {
         storage.getSystemAnnouncement().then(setSysAnnouncement);
+        storage.getPricingStrategy().then(setPricingStrategy);
 
         const handleUpdate = () => {
             storage.getSystemAnnouncement().then(setSysAnnouncement);
@@ -169,7 +171,8 @@ function VisualBuilder({
                 const cat = entry.category;
                 const targetItem = result.items[cat as keyof typeof result.items];
 
-                if (targetItem) {
+                // Added strict type guard to prevent crashes when AI returns broken JSON format.
+                if (targetItem && typeof targetItem === 'object' && typeof targetItem.model === 'string') {
                     const rowEl = rowRefs[entry.id];
 
                     if (rowEl) {
@@ -184,7 +187,7 @@ function VisualBuilder({
                             updateGhost(searchEl, '搜索型号中...');
                             await new Promise(r => setTimeout(r, 200));
 
-                            const searchTerm = targetItem.model.split(' ')[0];
+                            const searchTerm = targetItem.model?.split(' ')[0] || '';
                             for (let i = 0; i < searchTerm.length; i++) {
                                 setModalSearch(prev => prev + searchTerm[i]);
                                 await new Promise(r => setTimeout(r, 40));
@@ -661,29 +664,43 @@ function VisualBuilder({
                         <div className="hidden lg:block">
                             <h3 className="font-extrabold text-slate-800 mb-4 flex items-center gap-2 text-sm"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
                             <div className="space-y-3 mb-5">
-                                <div className="flex justify-between items-center text-xs font-medium">
+                                <div className="flex justify-between items-center text-xs font-medium px-1">
                                     <span className="text-slate-500">基础总价</span>
-                                    <span className="font-black text-slate-700">¥{pricing.totalHardware}</span>
+                                    <span className="font-black text-slate-700">¥{pricing.totalHardware || 0}</span>
                                 </div>
-                                <div className="flex justify-between items-end bg-slate-50 rounded-2xl border border-slate-100 p-4 shadow-sm">
+                                <div className="flex justify-between items-center text-xs font-medium px-1">
+                                    <span className="text-slate-500">优惠前金额</span>
+                                    <span className="font-black text-slate-400 line-through decoration-slate-300">¥{Math.floor(pricing.standardPrice || 0)}</span>
+                                </div>
+                                <div className="flex justify-between items-end bg-slate-50 rounded-2xl border border-slate-100 p-4 shadow-sm relative overflow-hidden">
+                                    {(pricing.savedAmount || 0) > 0 && (
+                                        <div className="absolute top-0 right-0 bg-emerald-100 text-emerald-700 text-[10px] px-2 py-1 rounded-bl-xl font-bold border-b border-l border-emerald-200/50">
+                                            已省 ¥{pricing.savedAmount}
+                                        </div>
+                                    )}
                                     <span className="text-slate-600 font-extrabold text-[13px] mb-1">实付预估</span>
-                                    <span className="text-3xl font-black text-indigo-600 tracking-tight">¥{pricing.finalPrice}</span>
+                                    <span className="text-3xl font-black text-indigo-600 tracking-tight font-mono">¥{pricing.finalPrice || 0}</span>
                                 </div>
                             </div>
 
-                            <div className="relative mb-5">
-                                <select
-                                    value={pricing.discountRate}
-                                    onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
-                                    className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
-                                >
-                                    {pricing.discountTiers?.map((tier: any) => (
-                                        <option key={tier.id} value={tier.multiplier}>
-                                            {tier.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                            <div className="mb-5">
+                                <div className="relative">
+                                    <select
+                                        value={pricing.discountRate}
+                                        onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
+                                        className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+                                    >
+                                        {pricing.discountTiers?.map((tier: any) => (
+                                            <option key={tier.id} value={tier.multiplier}>
+                                                {tier.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                                </div>
+                                <div className="text-[10px] text-slate-400 font-bold mt-2 text-center uppercase tracking-wide">
+                                    标准价格包含 {((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}% 装机售后服务费
+                                </div>
                             </div>
 
                             <div className="flex items-center gap-2 h-12 shrink-0">
