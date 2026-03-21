@@ -144,7 +144,7 @@ class AiService:
                 })
         return final_list
 
-    def find_reference_configs(self, budget: int, user_prompt: str) -> Optional[Dict]:
+    def find_reference_configs(self, budget: int, user_prompt: str) -> tuple:
         """
         寻找匹配的最佳单套配置作为模板（包含推荐配置和主播配置）
         """
@@ -189,29 +189,28 @@ class AiService:
         ).order_by(Config.likes.desc()).limit(20)
         streamer_results = self.session.exec(stmt_streamer).all()
         
-        # 将结果转换为带 authorRole 属性的对象或字典（为了兼容后续代码）
-        streamer_configs = []
-        for c, role in streamer_results:
-            c.authorRole = role # dynamically attach for scoring logic below
-            streamer_configs.append(c)
-            
-        # 补全 recommended_configs 的 authorRole 属性 (用于后续评分逻辑)
-        for c in recommended_configs:
-            if not hasattr(c, 'authorRole'):
-                # 默认推荐的一般是官方，但也可能是主播被推荐。这里简单查一下或默认为 official/admin
-                author = self.session.get(User, c.userId)
-                c.authorRole = author.role if author else 'admin'
-
-        # 合并候选，去重
+        # 合并候选，去重并记录 role
         seen_ids = set()
         all_candidates = []
-        for c in recommended_configs + streamer_configs:
+        config_roles = {} # Map config.id -> authorRole
+        
+        for c in recommended_configs:
             if c.id not in seen_ids:
                 seen_ids.add(c.id)
                 all_candidates.append(c)
+                # For recommended, we still need to look up role if not known
+                # But it might be an admin/official one
+                author = self.session.get(User, c.userId)
+                config_roles[c.id] = author.role if author else 'admin'
+        
+        for c, role in streamer_results:
+            if c.id not in seen_ids:
+                seen_ids.add(c.id)
+                all_candidates.append(c)
+                config_roles[c.id] = role
 
         if not all_candidates:
-            return None
+            return None, 'admin'
 
         # 评分机制挑选最符合的模板
         best_config = None
@@ -225,7 +224,7 @@ class AiService:
             if c.isRecommended:
                 score += 80
             # 主播配置额外加分
-            if c.authorRole == 'streamer':
+            if config_roles.get(c.id) == 'streamer':
                 score += 60
 
             for tag in mapped_tags:
@@ -244,7 +243,9 @@ class AiService:
                 best_config = c
 
         if not best_config:
-            return None
+            return None, 'admin'
+        
+        role = config_roles.get(best_config.id, 'admin')
 
         # 解析配置骨架
         comp_details = []
@@ -271,10 +272,9 @@ class AiService:
                         spec_str = f"({hw_specs.get('socket', '')}, {hw_specs.get('memoryType', '')})" if hw_specs else ""
                         comp_details.append(f"{cat}: {hw.brand} {hw.model} {spec_str}")
 
-        # best_config should have authorRole attached during find_reference_configs
-        role = getattr(best_config, 'authorRole', 'admin')
         source_label = "主播推荐配置" if role == 'streamer' else "官方推荐配置"
-        return {
+        
+        result_metadata = {
             "title": best_config.title,
             "price": best_config.totalPrice,
             "tags": best_config.tags,
@@ -283,6 +283,8 @@ class AiService:
             "source": source_label,
             "author": best_config.authorName or ""
         }
+        
+        return result_metadata, role
 
     def generate_build(self, user_prompt: str) -> Dict:
         if not self.client:
@@ -296,7 +298,8 @@ class AiService:
         if any(kw in user_prompt for kw in ["办公", "生产力", "剪辑", "设计", "代码"]): usage = 'work'
             
         inventory = self.retrieve_candidates(budget, usage)
-        best_template = self.find_reference_configs(budget, user_prompt)
+        best_template_data = self.find_reference_configs(budget, user_prompt)
+        best_template, template_role = best_template_data if best_template_data else (None, 'admin')
         
         # Build persona instruction
         persona_instructions = {
