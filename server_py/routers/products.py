@@ -88,6 +88,12 @@ async def get_products_batch(
     query = select(Hardware).where(Hardware.id.in_(request.ids))
     results = session.exec(query).all()
     
+    # Diagnostic logging
+    found_ids = {hw.id for hw in results}
+    missing_ids = [pid for pid in request.ids if pid not in found_ids]
+    if missing_ids:
+        print(f"DIAGNOSTIC - Batch Products Missing: {missing_ids}")
+    
     products = [hw.model_dump() for hw in results]
     
     # 保持请求中的顺序

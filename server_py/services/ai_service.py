@@ -391,13 +391,13 @@ class AiService:
                 raise Exception("AI Error: 云端算力节点响应超时（60s），请稍后再试。")
             raise e
             
-            content = response.choices[0].message.content
-            print(f"DEBUG: AI Output: {content[:200]}...") # Log start of output
+        content = response.choices[0].message.content
+        print(f"DEBUG: AI Output: {content[:200]}...") # Log start of output
             
-            raw_result = None
-            try:
-                raw_result = json.loads(content)
-            except json.JSONDecodeError:
+        raw_result = None
+        try:
+            raw_result = json.loads(content)
+        except json.JSONDecodeError:
                 import re
                 # Try Markdown code block first
                 json_match = re.search(r"```(?:json)?\s*(.*?)\s*```", content, re.DOTALL)
@@ -416,97 +416,94 @@ class AiService:
                         except json.JSONDecodeError:
                             pass
             
-            if not raw_result:
-                print(f"ERROR: Failed to parse JSON from AI. Raw content: {content}")
-                raise Exception("AI Error: Failed to parse LLM output as JSON.")
+        if not raw_result:
+            print(f"ERROR: Failed to parse JSON from AI. Raw content: {content}")
+            raise Exception("AI Error: Failed to parse LLM output as JSON.")
             
             
-            # --- 后端自动修正逻辑 (Auto-Fix) ---
-            actual_total = 0
-            resolved_items = {}
+        # --- 后端自动修正逻辑 (Auto-Fix) ---
+        actual_total = 0
+        resolved_items = {}
+        
+        # Ensure description exists
+        if "description" not in raw_result:
+            raw_result["description"] = "配置详情生成中..."
             
-            # Ensure description exists
-            if "description" not in raw_result:
-                raw_result["description"] = "配置详情生成中..."
-                
-            if "items" in raw_result:
-                # 1. 第一遍解析
-                for cat, item_data in raw_result["items"].items():
-                    if not item_data:
-                        resolved_items[cat] = None
-                        continue
-                        
-                    item_id = item_data
-                    fan_count = 1
+        if "items" in raw_result:
+            # 1. 第一遍解析
+            for cat, item_data in raw_result["items"].items():
+                if not item_data:
+                    resolved_items[cat] = None
+                    continue
                     
-                    if cat == 'fan' and isinstance(item_data, dict):
-                        item_id = item_data.get('id')
-                        fan_count = item_data.get('count', 1)
-                        
-                    if not item_id or not isinstance(item_id, str):
-                        resolved_items[cat] = None
-                        continue
-
-                    hw = self.session.get(Hardware, item_id)
-                    if hw:
-                        # 注入推断逻辑得到的 specs
-                        hw.specs = self._get_inferred_specs(hw)
-                        resolved_item = {
-                            "id": hw.id, "category": hw.category, "brand": hw.brand, "model": hw.model, 
-                            "price": hw.price, "specs": hw.specs, "image": hw.image
-                        }
-                        if cat == 'fan':
-                            resolved_item['count'] = fan_count
-                            resolved_item['price'] = hw.price * fan_count
-                        resolved_items[cat] = resolved_item
-                    else:
-                        resolved_items[cat] = None
-
-                # 2. 兼容性校验与自动替换 (X870 + DDR4 终结者)
-                cpu = resolved_items.get('cpu')
-                mb = resolved_items.get('mainboard')
-                ram = resolved_items.get('ram')
+                item_id = item_data
+                fan_count = 1
                 
-                # 检查插槽
-                if cpu and mb and cpu['specs'].get('socket') != mb['specs'].get('socket'):
-                    # 尝试寻找兼容当前主板的备选 CPU
-                    alt_cpu = self._find_compatible_hardware('cpu', {'socket': mb['specs'].get('socket')}, budget*0.3)
-                    if alt_cpu: 
-                        resolved_items['cpu'] = alt_cpu
-                        raw_result['description'] += " (注意：原选 CPU 接口不匹配，已自动更换为兼容型号)"
+                if cat == 'fan' and isinstance(item_data, dict):
+                    item_id = item_data.get('id')
+                    fan_count = item_data.get('count', 1)
+                    
+                if not item_id or not isinstance(item_id, str):
+                    resolved_items[cat] = None
+                    continue
 
-                # 检查内存 (用户主要痛点)
-                if ram and mb and ram['specs'].get('memoryType') != mb['specs'].get('memoryType'):
-                    # 尝试寻找兼容当前主板的备选内存
-                    target_type = mb['specs'].get('memoryType')
-                    alt_ram = self._find_compatible_hardware('ram', {'memoryType': target_type}, budget*0.1)
-                    if alt_ram:
-                        resolved_items['ram'] = alt_ram
-                        raw_result['description'] = raw_result.get('description', '') + f" (注意：主板支持 {target_type}，已自动将内存更换为兼容型号)"
+                hw = self.session.get(Hardware, item_id)
+                if hw:
+                    # 注入推断逻辑得到的 specs
+                    hw.specs = self._get_inferred_specs(hw)
+                    resolved_item = {
+                        "id": hw.id, "category": hw.category, "brand": hw.brand, "model": hw.model, 
+                        "price": hw.price, "specs": hw.specs, "image": hw.image
+                    }
+                    if cat == 'fan':
+                        resolved_item['count'] = fan_count
+                        resolved_item['price'] = hw.price * fan_count
+                    resolved_items[cat] = resolved_item
+                else:
+                    resolved_items[cat] = None
 
-                # 确保 evaluation 结构完整
-                if "evaluation" not in raw_result:
+            # 2. 兼容性校验与自动替换 (X870 + DDR4 终结者)
+            cpu = resolved_items.get('cpu')
+            mb = resolved_items.get('mainboard')
+            ram = resolved_items.get('ram')
+            
+            # 检查插槽
+            if cpu and mb and cpu['specs'].get('socket') != mb['specs'].get('socket'):
+                # 尝试寻找兼容当前主板的备选 CPU
+                alt_cpu = self._find_compatible_hardware('cpu', {'socket': mb['specs'].get('socket')}, budget*0.3)
+                if alt_cpu: 
+                    resolved_items['cpu'] = alt_cpu
+                    raw_result['description'] += " (注意：原选 CPU 接口不匹配，已自动更换为兼容型号)"
+
+            # 检查内存 (用户主要痛点)
+            if ram and mb and ram['specs'].get('memoryType') != mb['specs'].get('memoryType'):
+                # 尝试寻找兼容当前主板的备选内存
+                target_type = mb['specs'].get('memoryType')
+                alt_ram = self._find_compatible_hardware('ram', {'memoryType': target_type}, budget*0.1)
+                if alt_ram:
+                    resolved_items['ram'] = alt_ram
+                    raw_result['description'] = raw_result.get('description', '') + f" (注意：主板支持 {target_type}，已自动将内存更换为兼容型号)"
+
+            # 确保 evaluation 结构完整
+            if "evaluation" not in raw_result:
+                raw_result["evaluation"] = {"score": 85, "verdict": "完成", "pros": [], "cons": [], "summary": "AI 自动生成"}
+            else:
+                eval_data = raw_result["evaluation"]
+                if not isinstance(eval_data, dict):
                     raw_result["evaluation"] = {"score": 85, "verdict": "完成", "pros": [], "cons": [], "summary": "AI 自动生成"}
                 else:
-                    eval_data = raw_result["evaluation"]
-                    if not isinstance(eval_data, dict):
-                        raw_result["evaluation"] = {"score": 85, "verdict": "完成", "pros": [], "cons": [], "summary": "AI 自动生成"}
-                    else:
-                        # 补齐缺字段
-                        if "score" not in eval_data: eval_data["score"] = 85
-                        if "pros" not in eval_data: eval_data["pros"] = []
-                        if "cons" not in eval_data: eval_data["cons"] = []
-                
-                # 重新计算并同步总价 (Ensuring frontend gets the real price after auto-fix)
-                actual_total = sum(i['price'] for i in resolved_items.values() if i)
-                raw_result["items"] = resolved_items
-                raw_result["totalPrice"] = actual_total
-                
-            return raw_result
+                    # 补齐缺字段
+                    if "score" not in eval_data: eval_data["score"] = 85
+                    if "pros" not in eval_data: eval_data["pros"] = []
+                    if "cons" not in eval_data: eval_data["cons"] = []
             
-        except Exception as e:
-            print(f"LLM Error: {e}")
-            raise e
+            # 重新计算并同步总价 (Ensuring frontend gets the real price after auto-fix)
+            actual_total = sum(i['price'] for i in resolved_items.values() if i)
+            raw_result["items"] = resolved_items
+            raw_result["totalPrice"] = actual_total
+            
+        return raw_result
+        
 
     def _get_inferred_specs(self, hardware: Hardware) -> Dict:
         """Helper to get specs with name-based inference"""
