@@ -382,13 +382,13 @@ class AiService:
                 ],
                 temperature=0.3,
                 response_format={"type": "json_object"},
-                timeout=25.0
+                timeout=60.0
             )
         except Exception as e:
             # Handle timeout specifically for OpenAI
             if "timeout" in str(e).lower():
-                print(f"ERROR: AI Timeout after 25s. Query: {user_prompt[:50]}...")
-                raise Exception("AI Error: 云端算力节点响应超时，请稍后再试。")
+                print(f"ERROR: AI Timeout after 60s. Query: {user_prompt[:50]}...")
+                raise Exception("AI Error: 云端算力节点响应超时（60s），请稍后再试。")
             raise e
             
             content = response.choices[0].message.content
