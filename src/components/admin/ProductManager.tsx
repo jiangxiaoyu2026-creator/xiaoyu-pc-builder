@@ -394,7 +394,19 @@ export default function ProductManager() {
                                                 title="点击上传，或在此处直接粘贴图片/链接"
                                             >
                                                 {p.image ? (
-                                                    <img src={p.image} alt={p.model} className="w-full h-full object-cover" />
+                                                    (p.image.includes('bing.com') || p.image.includes('google.com') || p.image.includes('search')) ? (
+                                                        <a 
+                                                            href={p.image} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer"
+                                                            className="text-[10px] text-indigo-600 font-bold hover:underline text-center px-1 z-20"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            去搜索
+                                                        </a>
+                                                    ) : (
+                                                        <img src={p.image} alt={p.model} className="w-full h-full object-cover" />
+                                                    )
                                                 ) : (
                                                     <ImageIcon size={20} className="text-slate-400" />
                                                 )}

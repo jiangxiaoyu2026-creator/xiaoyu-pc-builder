@@ -569,7 +569,7 @@ class AiService:
         if not self.client:
             return None
             
-        system_prompt = "你是一个硬件专家。根据给出的品牌和型号，提供一个该产品的官方高清图片URL。如果无法提供直接链接，请返回一个能展示该产品的精准搜索链接。只返回 URL 字符串，不要有任何解析性文字。"
+        system_prompt = "你是一个硬件专家。根据给出的品牌和型号，提供一个该产品的官方高清图片直接URL（必须以.jpg, .png, .webp等结尾）。如果绝对无法提供直接链接，请返回一个对应的 Bing 图片搜索链接。只返回 URL 字符串，不要有任何其他文字。"
         user_msg = f"品牌: {brand}, 型号: {model}"
         
         try:
