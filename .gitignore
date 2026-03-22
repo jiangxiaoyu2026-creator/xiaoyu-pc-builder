@@ -33,3 +33,12 @@ data/
 
 # Uploads
 uploads/
+
+# Python Virtual Environments
+venv/
+.venv/
+server_py/venv/
+
+# Python Cache
+__pycache__/
+*.pyc
