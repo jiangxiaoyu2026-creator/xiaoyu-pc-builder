@@ -564,6 +564,48 @@ class AiService:
             "price": best.price, "specs": self._get_inferred_specs(best), "image": best.image
         }
 
+    def suggest_specs(self, category: str, brand: str, model: str) -> Optional[str]:
+        """Generate structured technical specifications for a product using AI"""
+        if not self.client:
+            return None
+            
+        system_prompt = f"""你是一个电脑硬件专家。请为用户提供的硬件产品提供详细的技术参数。
+分类: {category}
+品牌: {brand}
+型号: {model}
+
+请提供关键的核心参数，例如：
+- 对于 CPU，必须包含: "socket" (如 LGA1700), "wattage" (TDP), "memoryType" (如 DDR5)。
+- 对于 主板，必须包含: "socket", "memoryType", "formFactor" (如 MATX)。
+- 对于 显卡，必须包含: "length" (mm), "wattage" (建议电源)。
+- 其他分类也请提供其标准的行业参数。
+
+请【严格】按标准 JSON 格式返回，只返回 JSON 字符串，不要回复任何多余的解释。"""
+
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"产品: {brand} {model}"}
+                ],
+                temperature=0.3,
+                max_tokens=600
+            )
+            content = response.choices[0].message.content.strip()
+            # 简单清洗 Markdown 代码块
+            import re
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
+            if json_match:
+                content = json_match.group(0)
+            
+            # 验证 JSON
+            json.loads(content)
+            return content
+        except Exception as e:
+            print(f"AI suggest_specs error: {e}")
+            return None
+
     def suggest_image_url(self, brand: str, model: str) -> Optional[str]:
         """Ask AI to suggest a product image URL or search query"""
         if not self.client:
