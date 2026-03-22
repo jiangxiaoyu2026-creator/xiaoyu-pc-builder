@@ -433,50 +433,59 @@ export default function ProductManager() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div 
-                                                className="relative w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 group cursor-pointer"
-                                                onPaste={(e) => handlePaste(e, p.id)}
-                                                tabIndex={0}
-                                                title="点击上传，或在此处直接粘贴图片/链接"
-                                            >
-                                                {p.image ? (
-                                                    (p.image.includes('bing.com') || p.image.includes('google.com') || p.image.includes('search')) ? (
-                                                        <a 
-                                                            href={p.image} 
-                                                            target="_blank" 
-                                                            rel="noopener noreferrer"
-                                                            className="text-[10px] text-indigo-600 font-bold hover:underline text-center px-1 z-20"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                        >
-                                                            去搜索
-                                                        </a>
+                                            <div className="relative group/img z-20">
+                                                <div 
+                                                    className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 group cursor-pointer"
+                                                    onPaste={(e) => handlePaste(e, p.id)}
+                                                    tabIndex={0}
+                                                    title="点击上传，或在此处直接粘贴图片/链接"
+                                                >
+                                                    {p.image ? (
+                                                        (p.image.includes('bing.com') || p.image.includes('google.com') || p.image.includes('search')) ? (
+                                                            <a 
+                                                                href={p.image} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer"
+                                                                className="text-[10px] text-indigo-600 font-bold hover:underline text-center px-1 z-20"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                去搜索
+                                                            </a>
+                                                        ) : (
+                                                            <img src={p.image} alt={p.model} className="w-full h-full object-cover" />
+                                                        )
                                                     ) : (
-                                                        <img src={p.image} alt={p.model} className="w-full h-full object-cover" />
-                                                    )
-                                                ) : (
-                                                    <ImageIcon size={20} className="text-slate-400" />
-                                                )}
-                                                {p.imageSource === 'ai_suggested' && (
-                                                    <div className="absolute top-0 right-0 bg-amber-500 text-[8px] text-white px-1 font-bold z-10" title="AI建议图片，点击确认或手动更改">
-                                                        AI
+                                                        <ImageIcon size={20} className="text-slate-400" />
+                                                    )}
+                                                    {p.imageSource === 'ai_suggested' && (
+                                                        <div className="absolute top-0 right-0 bg-amber-500 text-[8px] text-white px-1 font-bold z-10" title="AI建议图片，点击确认或手动更改">
+                                                            AI
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Upload size={14} className="text-white" />
+                                                    </div>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-[0]"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (file) {
+                                                                handleInlineImageUpload(p.id, file);
+                                                            }
+                                                            e.target.value = ''; // reset
+                                                        }}
+                                                    />
+                                                </div>
+                                                
+                                                {/* Hover Large Preview */}
+                                                {p.image && !(p.image.includes('bing.com') || p.image.includes('google.com') || p.image.includes('search')) && (
+                                                    <div className="absolute left-14 top-0 z-[100] w-56 h-56 bg-white border-2 border-white shadow-2xl rounded-xl overflow-hidden opacity-0 invisible group-hover/img:opacity-100 group-hover/img:visible pointer-events-none transition-all duration-200 scale-95 group-hover/img:scale-100 origin-left">
+                                                        <img src={p.image} alt="Preview" className="w-full h-full object-contain bg-slate-50" />
                                                     </div>
                                                 )}
-                                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Upload size={14} className="text-white" />
-                                                </div>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-[0]"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    onChange={(e) => {
-                                                        const file = e.target.files?.[0];
-                                                        if (file) {
-                                                            handleInlineImageUpload(p.id, file);
-                                                        }
-                                                        e.target.value = ''; // reset
-                                                    }}
-                                                />
                                             </div>
                                             {p.imageSource === 'ai_suggested' && (
                                                 <button 
