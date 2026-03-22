@@ -1,7 +1,16 @@
-# Build Final Image
+# Stage 1: Build Frontend
+FROM node:20-slim AS build-stage
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Stage 2: Build Final Image
 FROM python:3.12-slim
 WORKDIR /app
 
+# Configure Debian mirrors for China
 RUN set -x; \
     if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
         sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
@@ -19,10 +28,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy requirements and install
 COPY server_py/requirements.txt ./
-#RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com -r requirements.txt
-# Copy pre-built frontend from build context
-COPY dist ./dist
+
+# Copy built frontend from build-stage
+COPY --from=build-stage /app/dist ./dist
 
 # Copy backend code
 COPY server_py/ ./server_py/
