@@ -150,7 +150,9 @@ class StorageService {
     async getProductsByIds(ids: string[]): Promise<HardwareItem[]> {
         if (!ids || ids.length === 0) return [];
         try {
-            return await ApiService.post('/products/batch', { ids });
+            // Join IDs with comma to support GET request query param
+            const idString = ids.join(',');
+            return await ApiService.get(`/products/batch?ids=${encodeURIComponent(idString)}`);
         } catch (e) {
             console.error('Failed to load batch products', e);
             return [];

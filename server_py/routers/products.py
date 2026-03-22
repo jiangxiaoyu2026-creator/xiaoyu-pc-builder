@@ -75,22 +75,32 @@ async def get_products(
 class BatchProductsRequest(BaseModel):
     ids: List[str]
 
+@router.get("/batch", response_model=List[dict])
 @router.post("/batch", response_model=List[dict])
 async def get_products_batch(
-    request: BatchProductsRequest,
+    request: Optional[BatchProductsRequest] = None,
+    ids: Optional[str] = None,
     session: Session = Depends(get_session)
 ):
-    """批量获取指定 ID 的产品详情（用于配置单展示）"""
-    if not request.ids:
+    """批量获取指定 ID 的产品详情（用于配置单展示）
+    支持 POST (JSON body) 或 GET (query param 'ids' as comma-separated string)
+    """
+    target_ids = []
+    if request and request.ids:
+        target_ids = request.ids
+    elif ids:
+        target_ids = [i.strip() for i in ids.split(",") if i.strip()]
+        
+    if not target_ids:
         return []
         
     from sqlmodel import select
-    query = select(Hardware).where(Hardware.id.in_(request.ids))
+    query = select(Hardware).where(Hardware.id.in_(target_ids))
     results = session.exec(query).all()
     
     # Diagnostic logging
     found_ids = {hw.id for hw in results}
-    missing_ids = [pid for pid in request.ids if pid not in found_ids]
+    missing_ids = [pid for pid in target_ids if pid not in found_ids]
     if missing_ids:
         print(f"DIAGNOSTIC - Batch Products Missing: {missing_ids}")
     
@@ -98,7 +108,7 @@ async def get_products_batch(
     
     # 保持请求中的顺序
     id_map = {p["id"]: p for p in products}
-    ordered_products = [id_map[pid] for pid in request.ids if pid in id_map]
+    ordered_products = [id_map[pid] for pid in target_ids if pid in id_map]
     
     return ordered_products
 
