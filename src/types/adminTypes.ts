@@ -13,6 +13,7 @@ export interface HardwareItem {
     status: 'active' | 'draft' | 'archived'; // 上架、草稿、下架
     specs: Record<string, any>; // 包含兼容性字段
     image?: string; // Base64 or URL
+    imageSource?: 'user' | 'ai_suggested';
     createdAt?: string;
     isDiscount?: boolean; // 折扣 (后台标记)
     isRecommended?: boolean; // 推荐 (后台标记)

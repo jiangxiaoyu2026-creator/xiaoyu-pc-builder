@@ -35,6 +35,7 @@ class Hardware(SQLModel, table=True):
     sortOrder: int = Field(default=100)
     specs: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     image: Optional[str] = None # Matches frontend 'image'
+    imageSource: str = Field(default="user") # 'user', 'ai_suggested'
     createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     isDiscount: bool = Field(default=False)
     isRecommended: bool = Field(default=False)

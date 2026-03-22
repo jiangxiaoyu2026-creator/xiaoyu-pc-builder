@@ -1411,6 +1411,24 @@ class StorageService {
             return null;
         }
     }
+
+    async uploadImageUrl(url: string): Promise<{ url: string } | null> {
+        try {
+            return await ApiService.post('/upload/url', { url });
+        } catch (e) {
+            console.error('Failed to upload image from URL', e);
+            return null;
+        }
+    }
+
+    async autofillImages(): Promise<{ count: number, message: string } | null> {
+        try {
+            return await ApiService.post('/products/admin/autofill-images', {});
+        } catch (e) {
+            console.error('Autofill failed', e);
+            return null;
+        }
+    }
 }
 
 export const storage = new StorageService();

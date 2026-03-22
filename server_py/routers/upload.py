@@ -4,6 +4,9 @@ import uuid
 import shutil
 from .auth import get_current_admin, get_current_user
 from ..models import User
+from pydantic import BaseModel
+import ipaddress
+import socket
 
 router = APIRouter()
 
@@ -44,3 +47,59 @@ async def upload_image(
         return {"url": f"/uploads/{filename}", "filename": filename}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"上传失败: {str(e)}")
+
+class UrlUploadRequest(BaseModel):
+    url: str
+
+@router.post("/url")
+async def upload_image_by_url(
+    request: UrlUploadRequest,
+    user: User = Depends(get_current_user)
+):
+    """Download an image from a URL and save it locally"""
+    import requests
+    from urllib.parse import urlparse
+    
+    # SSRF Protection: Validate URL and IP
+    try:
+        parsed_url = urlparse(request.url)
+        if parsed_url.scheme not in ["http", "https"]:
+            raise HTTPException(status_code=400, detail="只允许 http 或 https 协议")
+            
+        hostname = parsed_url.hostname
+        if not hostname:
+            raise HTTPException(status_code=400, detail="无效的 URL")
+            
+        # Get IP address
+        ip = socket.gethostbyname(hostname)
+        ip_obj = ipaddress.ip_address(ip)
+        
+        if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local:
+            raise HTTPException(status_code=400, detail="不允许访问内部网络地址")
+            
+        response = requests.get(request.url, timeout=10, stream=True)
+        response.raise_for_status()
+        
+        # Check content type
+        content_type = response.headers.get('content-type', '')
+        if not content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="URL 必须指向一个图片文件")
+            
+        # Get extension from URL or content type
+        path = urlparse(request.url).path
+        ext = os.path.splitext(path)[1].lower()
+        if not ext:
+            # Try to map from content type
+            mapping = {"image/jpeg": ".jpg", "image/png": ".png", "image/gif": ".gif", "image/webp": ".webp"}
+            ext = mapping.get(content_type, ".jpg")
+            
+        filename = f"{uuid.uuid4()}{ext}"
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        
+        with open(file_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+                
+        return {"url": f"/uploads/{filename}", "filename": filename}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"抓取图片失败: {str(e)}")

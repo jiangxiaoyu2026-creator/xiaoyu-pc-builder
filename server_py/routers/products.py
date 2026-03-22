@@ -4,6 +4,8 @@ from typing import List, Optional
 from ..db import get_session
 from ..models import Hardware, User, PriceHistory
 from .auth import get_current_admin
+from .auth import get_current_admin
+from ..services.ai_service import AiService
 from pydantic import BaseModel
 import uuid
 import json
@@ -189,6 +191,43 @@ async def get_admin_products(
         "total": total,
         "page": page,
         "page_size": page_size
+    }
+
+@router.post("/admin/autofill-images")
+async def autofill_images(
+    limit: int = 50,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """Admin only: Automatically find images for products that don't have one.
+    Limit added to prevent long-running request timeouts.
+    """
+    # 查找所有没有图片的产品, 限制数量以防超时
+    statement = select(Hardware).where(Hardware.image == None).limit(limit)
+    products_missing_images = session.exec(statement).all()
+    
+    if not products_missing_images:
+        return {"message": "没有需要补全图片的产品", "count": 0}
+        
+    ai_service = AiService(session)
+    count = 0
+    updated_ids = []
+    
+    for p in products_missing_images:
+        url = ai_service.suggest_image_url(p.brand, p.model)
+        if url:
+            p.image = url
+            # 标记为 AI 建议，方便用户审核
+            p.imageSource = "ai_suggested"
+            session.add(p)
+            count += 1
+            updated_ids.append(p.id)
+            
+    session.commit()
+    return {
+        "message": f"成功为 {count} 个产品补全了 AI 建议图片",
+        "count": count,
+        "updated_ids": updated_ids
     }
 
 @router.get("/counts/admin", response_model=dict)

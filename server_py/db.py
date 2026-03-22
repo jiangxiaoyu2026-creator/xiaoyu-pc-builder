@@ -70,6 +70,12 @@ def _migrate_extra_columns():
         if 'showcaseStatus' not in config_cols:
             cursor.execute("ALTER TABLE configs ADD COLUMN showcaseStatus TEXT NOT NULL DEFAULT 'none'")
             
+        # 补齐 hardware 表
+        cursor.execute("PRAGMA table_info(hardware)")
+        hw_cols = [row[1] for row in cursor.fetchall()]
+        if 'imageSource' not in hw_cols:
+            cursor.execute("ALTER TABLE hardware ADD COLUMN imageSource TEXT NOT NULL DEFAULT 'user'")
+            
         # Add Indexes for performance optimization
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_configs_userId ON configs(userId)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_configs_status ON configs(status)")

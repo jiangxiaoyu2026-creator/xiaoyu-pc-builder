@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Download, Plus, ListFilter, Package, Edit3, Trash2, X, Sparkles, Image as ImageIcon, Upload } from 'lucide-react';
+import { Search, Download, Plus, ListFilter, Package, Edit3, Trash2, X, Sparkles, Image as ImageIcon, Upload, CheckCircle2 } from 'lucide-react';
 import { HardwareItem, Category } from '../../types/adminTypes';
 import { CATEGORY_MAP, COMPATIBILITY_FIELDS } from '../../data/adminData';
 import { SortIcon } from './Shared';
@@ -15,6 +15,7 @@ export default function ProductManager() {
     const [page, setPage] = useState(1);
     const [pageSize] = useState(20);
     const [loading, setLoading] = useState(false);
+    const [isAutofilling, setIsAutofilling] = useState(false);
     const [search, setSearch] = useState('');
     const [filterCat, setFilterCat] = useState('all');
     const [filterBrand, setFilterBrand] = useState('all');
@@ -170,7 +171,6 @@ export default function ProductManager() {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
 
-        // Optimistic UI could be added here, but direct upload is safer
         const res = await storage.uploadImage(file);
         if (res && res.url) {
             const updated = { ...p, image: res.url };
@@ -178,6 +178,33 @@ export default function ProductManager() {
             await storage.saveProduct(updated);
         } else {
             alert('图片上传失败，请稍后重试');
+        }
+    };
+
+    const handlePaste = async (e: React.ClipboardEvent, id: string) => {
+        const items = e.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                if (file) {
+                    await handleInlineImageUpload(id, file);
+                }
+            } else if (items[i].type === 'text/plain') {
+                // If it's a plain text, check if it's an image URL
+                items[i].getAsString(async (text) => {
+                    if (text.match(/\.(jpg|jpeg|png|gif|webp|heic|heif)(\?.*)?$/i) || text.startsWith('http')) {
+                        const res = await storage.uploadImageUrl(text);
+                        if (res && res.url) {
+                            const p = products.find(x => String(x.id) === String(id));
+                            if (p) {
+                                const updated = { ...p, image: res.url };
+                                setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
+                                await storage.saveProduct(updated);
+                            }
+                        }
+                    }
+                });
+            }
         }
     };
 
@@ -210,6 +237,32 @@ export default function ProductManager() {
     const confirmDelete = (id: string) => {
         setDeleteId(id);
         setIsDeleteModalOpen(true);
+    };
+
+    const handleAutofill = async () => {
+        if (!confirm('此操作将为所有【没有图片】的商品自动从网上匹配图片建议，并标记为“AI建议”供您核对。是否继续？')) return;
+        
+        setIsAutofilling(true);
+        try {
+            const res = await storage.autofillImages();
+            if (res) {
+                alert(res.message);
+                loadProducts();
+            }
+        } catch (e) {
+            alert('自动补全失败');
+        } finally {
+            setIsAutofilling(false);
+        }
+    };
+
+    const confirmAiImage = async (id: string) => {
+        const p = products.find(x => String(x.id) === String(id));
+        if (!p) return;
+        
+        const updated = { ...p, imageSource: 'user' as any };
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
+        await storage.saveProduct(updated);
     };
 
     const handleDelete = async () => {
@@ -256,8 +309,19 @@ export default function ProductManager() {
                     <button onClick={handleExportHardware} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 shadow-md">
                         <Download size={16} /> 导出数据
                     </button>
-                    <button onClick={() => { setEditingProduct(null); setIsEditModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-200">
+                    <button onClick={() => { setEditingProduct(null); setIsEditModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors shadow-lg">
                         <Plus size={16} /> 录入
+                    </button>
+                    <button 
+                        onClick={handleAutofill}
+                        disabled={isAutofilling}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm whitespace-nowrap ${
+                            isAutofilling ? 'bg-slate-100 text-slate-400' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                        }`}
+                        title="为没有图片的商品自动匹配建议图片"
+                    >
+                        {isAutofilling ? <span className="animate-spin text-lg">⏳</span> : <Sparkles size={16} />}
+                        <span>AI 补全图片</span>
                     </button>
                 </div>
             </div>
@@ -323,11 +387,21 @@ export default function ProductManager() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="relative w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 group cursor-pointer">
+                                            <div 
+                                                className="relative w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200 group cursor-pointer"
+                                                onPaste={(e) => handlePaste(e, p.id)}
+                                                tabIndex={0}
+                                                title="点击上传，或在此处直接粘贴图片/链接"
+                                            >
                                                 {p.image ? (
                                                     <img src={p.image} alt={p.model} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <ImageIcon size={20} className="text-slate-400" />
+                                                )}
+                                                {p.imageSource === 'ai_suggested' && (
+                                                    <div className="absolute top-0 right-0 bg-amber-500 text-[8px] text-white px-1 font-bold z-10" title="AI建议图片，点击确认或手动更改">
+                                                        AI
+                                                    </div>
                                                 )}
                                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <Upload size={14} className="text-white" />
@@ -346,6 +420,15 @@ export default function ProductManager() {
                                                     }}
                                                 />
                                             </div>
+                                            {p.imageSource === 'ai_suggested' && (
+                                                <button 
+                                                    onClick={() => confirmAiImage(p.id)}
+                                                    className="p-1 text-slate-400 hover:text-green-600 transition-colors"
+                                                    title="确认此图片"
+                                                >
+                                                    <CheckCircle2 size={16} />
+                                                </button>
+                                            )}
                                             <div>
                                                 <div className="font-bold text-slate-900 flex items-center gap-2">
                                                     {p.model}

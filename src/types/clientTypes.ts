@@ -36,6 +36,7 @@ export interface HardwareItem {
     price: number;
     specs: HardwareSpecs;
     image?: string;
+    imageSource?: 'user' | 'ai_suggested';
     createdAt?: string;
     isDiscount?: boolean;
     isRecommended?: boolean;
