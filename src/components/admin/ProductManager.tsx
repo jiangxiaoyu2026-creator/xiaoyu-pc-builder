@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Download, Plus, ListFilter, Package, Edit3, Trash2, X, Sparkles, Image as ImageIcon, Upload, CheckCircle2 } from 'lucide-react';
+import { Search, Download, Plus, ListFilter, Package, Edit3, Trash2, X, Sparkles, Image as ImageIcon, Upload, CheckCircle2, Zap } from 'lucide-react';
 import { HardwareItem, Category } from '../../types/adminTypes';
 import { CATEGORY_MAP, COMPATIBILITY_FIELDS } from '../../data/adminData';
 import { SortIcon } from './Shared';
@@ -16,9 +16,11 @@ export default function ProductManager() {
     const [pageSize] = useState(20);
     const [loading, setLoading] = useState(false);
     const [isAutofilling, setIsAutofilling] = useState(false);
+    const [isAutofillingSpecs, setIsAutofillingSpecs] = useState(false);
     const [search, setSearch] = useState('');
     const [filterCat, setFilterCat] = useState('all');
     const [filterBrand, setFilterBrand] = useState('all');
+    const [filterAi, setFilterAi] = useState(false);
     const [brands, setBrands] = useState<string[]>([]);
     const [sortConfig, setSortConfig] = useState<{ key: keyof HardwareItem, direction: 'asc' | 'desc' } | null>({ key: 'sortOrder', direction: 'asc' });
     const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
@@ -33,7 +35,8 @@ export default function ProductManager() {
                 filterBrand,
                 search,
                 sortConfig?.key,
-                sortConfig?.direction
+                sortConfig?.direction,
+                filterAi
             );
             setProducts(result.items);
             setTotal(result.total);
@@ -76,7 +79,7 @@ export default function ProductManager() {
     useEffect(() => {
         loadProducts();
         loadCategoryCounts();
-    }, [page, sortConfig]);
+    }, [page, sortConfig, filterAi]);
 
     // 价格编辑：onChange 只更新本地状态，onBlur 时才保存到后端
     const handlePriceChange = (id: string, newPrice: number) => {
@@ -265,6 +268,32 @@ export default function ProductManager() {
         await storage.saveProduct(updated);
     };
 
+    const handleAutofillSpecs = async () => {
+        if (!confirm('此操作将为所有【缺少核心参数】的商品自动分析并匹配技术规格，并标记为“AI建议”供您核对。是否继续？')) return;
+        
+        setIsAutofillingSpecs(true);
+        try {
+            const res = await storage.autofillSpecs();
+            if (res) {
+                alert(res.message);
+                loadProducts();
+            }
+        } catch (e) {
+            alert('参数自动补全失败');
+        } finally {
+            setIsAutofillingSpecs(false);
+        }
+    };
+
+    const confirmAiSpecs = async (id: string) => {
+        const p = products.find(x => String(x.id) === String(id));
+        if (!p) return;
+        
+        const updated = { ...p, specsSource: 'user' as any };
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
+        await storage.saveProduct(updated);
+    };
+
     const handleDelete = async () => {
         if (!deleteId) return;
         setIsDeleting(true);
@@ -287,7 +316,14 @@ export default function ProductManager() {
             <div className="flex justify-between items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
                 <div className="flex-1 min-w-0 flex flex-col gap-2">
                     <div className="flex gap-2 overflow-x-auto pb-1 mask-gradient-right">
-                        <button onClick={() => setFilterCat('all')} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>全部 ({categoryCounts['total'] || 0})</button>
+                        <button onClick={() => setFilterCat('all')} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === 'all' && !filterAi ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>全部 ({categoryCounts['total'] || 0})</button>
+                        <button 
+                            onClick={() => { setFilterAi(!filterAi); setPage(1); }} 
+                            className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all border-2 flex items-center gap-1 ${filterAi ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-200' : 'bg-white border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-600'}`}
+                        >
+                            <Sparkles size={12} className={filterAi ? 'animate-pulse' : ''} />
+                            AI 待审核
+                        </button>
                         {Object.entries(CATEGORY_MAP).map(([k, v]) => (
                             <button key={k} onClick={() => setFilterCat(k)} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === k ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{v.label} ({categoryCounts[k] || 0})</button>
                         ))}
@@ -322,6 +358,17 @@ export default function ProductManager() {
                     >
                         {isAutofilling ? <span className="animate-spin text-lg">⏳</span> : <Sparkles size={16} />}
                         <span>AI 补全图片</span>
+                    </button>
+                    <button 
+                        onClick={handleAutofillSpecs}
+                        disabled={isAutofillingSpecs}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm whitespace-nowrap ${
+                            isAutofillingSpecs ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                        }`}
+                        title="为缺少参数的商品自动生成建议参数"
+                    >
+                        {isAutofillingSpecs ? <span className="animate-spin text-lg">⏳</span> : <Zap size={16} />}
+                        <span>AI 补全参数</span>
                     </button>
                 </div>
             </div>
@@ -359,7 +406,6 @@ export default function ProductManager() {
                                 }
                             }
 
-                            const specSummary = Object.entries(parsedSpecs || {}).slice(0, 3).map(([k, v]) => `${k}:${v}`).join(', ');
                             return (
                                 <tr key={p.id} className={`hover:bg-slate-50/50 ${p.status === 'archived' ? 'opacity-60 grayscale' : ''}`}>
                                     <td className="px-6 py-4">
@@ -452,33 +498,61 @@ export default function ProductManager() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 relative">
-                                        <div className="text-xs text-slate-500 truncate max-w-[12rem] cursor-pointer hover:text-indigo-600 transition-colors"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSpecEditingId(p.id);
-                                                setSpecEditingText(JSON.stringify(parsedSpecs || {}, null, 2));
-                                            }}
-                                            title="点击快速修改参数"
-                                        >
-                                            {specSummary || <span className="text-slate-300 italic">空 (点击设置)</span>}
-                                        </div>
-                                        {specEditingId === p.id && (
-                                            <div className="absolute left-6 top-12 z-20 w-64 bg-white p-3 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50">
-                                                <div className="text-xs font-bold text-slate-700 mb-2 flex justify-between">
-                                                    <span>快捷编辑参数 (JSON)</span>
-                                                    <button onClick={() => setSpecEditingId(null)} className="text-slate-400 hover:text-slate-600"><X size={14} /></button>
-                                                </div>
-                                                <textarea
-                                                    className="w-full h-24 text-xs font-mono p-2 border border-slate-200 rounded outline-none focus:border-indigo-500"
-                                                    value={specEditingText}
-                                                    onChange={e => setSpecEditingText(e.target.value)}
-                                                />
-                                                <div className="flex justify-end gap-2 mt-2">
-                                                    <button onClick={() => setSpecEditingId(null)} className="px-3 py-1 text-xs text-slate-500 rounded hover:bg-slate-100">取消</button>
-                                                    <button onClick={() => handleInlineSpecSave(p.id)} className="px-3 py-1 text-xs text-white bg-indigo-600 rounded hover:bg-indigo-700">保存</button>
+                                        <div className="flex items-center gap-2">
+                                            {p.specsSource === 'ai_suggested' && (
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); confirmAiSpecs(String(p.id)); }}
+                                                    className="p-1 text-slate-400 hover:text-emerald-600 transition-colors shrink-0"
+                                                    title="确认此参数"
+                                                >
+                                                    <CheckCircle2 size={16} />
+                                                </button>
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <div 
+                                                    className={`text-xs p-1.5 rounded-lg border transition-colors cursor-pointer group relative ${p.specsSource === 'ai_suggested' ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:border-emerald-300' : 'bg-slate-50 border-slate-100 text-slate-500 hover:border-slate-200'}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSpecEditingId(String(p.id));
+                                                        setSpecEditingText(JSON.stringify(parsedSpecs || {}, null, 2));
+                                                    }}
+                                                    title="点击快速修改参数"
+                                                >
+                                                    {p.specsSource === 'ai_suggested' && (
+                                                        <div className="absolute top-0 right-1 -translate-y-1/2 bg-emerald-500 text-[8px] text-white px-1 font-bold rounded">AI生成</div>
+                                                    )}
+                                                    {specEditingId === String(p.id) ? (
+                                                        <div className="p-1" onClick={e => e.stopPropagation()}>
+                                                            <textarea
+                                                                value={specEditingText}
+                                                                onChange={(e) => setSpecEditingText(e.target.value)}
+                                                                className="w-full h-32 p-2 text-[10px] font-mono border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                                                rows={4}
+                                                            />
+                                                            <div className="flex justify-end gap-1 mt-1">
+                                                                <button onClick={(e) => { e.stopPropagation(); setSpecEditingId(null); }} className="px-2 py-0.5 text-[8px] bg-slate-100 text-slate-600 rounded">取消</button>
+                                                                <button onClick={(e) => { e.stopPropagation(); handleInlineSpecSave(String(p.id)); }} className="px-2 py-0.5 text-[8px] bg-slate-900 text-white rounded">保存</button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+                                                            {Object.entries(parsedSpecs || {}).slice(0, 4).map(([key, value]) => (
+                                                                <div key={key} className="truncate flex items-center gap-1">
+                                                                    <span className="opacity-60">{key}:</span>
+                                                                    <span className="font-medium">{String(value)}</span>
+                                                                </div>
+                                                            ))}
+                                                            {Object.keys(parsedSpecs || {}).length > 4 && (
+                                                                <div className="text-[10px] opacity-40 italic">+ 更多参数</div>
+                                                            )}
+                                                            {Object.keys(parsedSpecs || {}).length === 0 && (
+                                                                <div className="text-[10px] opacity-40 italic">点击添加参数</div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                        )}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-1">

@@ -75,6 +75,8 @@ def _migrate_extra_columns():
         hw_cols = [row[1] for row in cursor.fetchall()]
         if 'imageSource' not in hw_cols:
             cursor.execute("ALTER TABLE hardware ADD COLUMN imageSource TEXT NOT NULL DEFAULT 'user'")
+        if 'specsSource' not in hw_cols:
+            cursor.execute("ALTER TABLE hardware ADD COLUMN specsSource TEXT NOT NULL DEFAULT 'user'")
             
         # Add Indexes for performance optimization
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_configs_userId ON configs(userId)")

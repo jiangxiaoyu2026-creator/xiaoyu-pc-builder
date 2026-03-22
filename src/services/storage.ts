@@ -159,7 +159,7 @@ class StorageService {
         }
     }
 
-    async getAdminProducts(page: number = 1, pageSize: number = 20, category: string = 'all', brand: string = 'all', search: string = '', sortKey: string = '', sortDir: string = ''): Promise<{ items: HardwareItem[], total: number }> {
+    async getAdminProducts(page: number = 1, pageSize: number = 20, category: string = 'all', brand: string = 'all', search: string = '', sortKey: string = '', sortDir: string = '', filterAi: boolean = false): Promise<{ items: HardwareItem[], total: number }> {
         try {
             const params = new URLSearchParams({
                 page: page.toString(),
@@ -168,6 +168,7 @@ class StorageService {
             if (category && category !== 'all') params.append('category', category);
             if (brand && brand !== 'all') params.append('brand', brand);
             if (search) params.append('search', search);
+            if (filterAi) params.append('filter_ai', 'true');
 
             if (sortKey) {
                 params.append('sort_key', sortKey);
@@ -1425,7 +1426,16 @@ class StorageService {
         try {
             return await ApiService.post('/products/admin/autofill-images', {});
         } catch (e) {
-            console.error('Autofill failed', e);
+            console.error('Autofill images failed', e);
+            return null;
+        }
+    }
+
+    async autofillSpecs(): Promise<{ count: number, message: string } | null> {
+        try {
+            return await ApiService.post('/products/admin/autofill-specs', {});
+        } catch (e) {
+            console.error('Autofill specs failed', e);
             return null;
         }
     }

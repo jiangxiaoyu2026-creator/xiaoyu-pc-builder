@@ -123,6 +123,7 @@ async def get_admin_products(
     search: Optional[str] = None,
     sort_key: Optional[str] = "sortOrder",
     sort_dir: Optional[str] = "asc",
+    filter_ai: bool = False,
     session: Session = Depends(get_session), 
     admin: User = Depends(get_current_admin)
 ):
@@ -134,8 +135,8 @@ async def get_admin_products(
     if category and category != 'all':
         query = query.where(Hardware.category == category)
     
-    if brand and brand != 'all':
-        query = query.where(Hardware.brand == brand)
+    if filter_ai:
+        query = query.where(or_(Hardware.imageSource == 'ai_suggested', Hardware.specsSource == 'ai_suggested'))
     
     if search:
         print(f"DEBUG: Search query: '{search}'")
@@ -155,9 +156,16 @@ async def get_admin_products(
         count_query = count_query.where(Hardware.category == category)
     if brand and brand != 'all':
         count_query = count_query.where(Hardware.brand == brand)
+    if filter_ai:
+        count_query = count_query.where(or_(Hardware.imageSource == 'ai_suggested', Hardware.specsSource == 'ai_suggested'))
     if search:
         keywords = search.strip().split()
         for kw in keywords:
+            search_term = f"%{kw}%"
+            count_query = count_query.where(or_(
+                func.coalesce(Hardware.brand, "").ilike(search_term),
+                func.coalesce(Hardware.model, "").ilike(search_term)
+            ))
             search_term = f"%{kw}%"
             count_query = count_query.where(or_(
                 func.coalesce(Hardware.brand, "").ilike(search_term),
@@ -229,6 +237,48 @@ async def autofill_images(
         "count": count,
         "updated_ids": updated_ids
     }
+
+@router.post("/admin/autofill-specs")
+async def autofill_specs(
+    limit: int = 50,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """Admin only: Automatically fill in missing product specifications using AI.
+    Limit added to prevent timeouts.
+    """
+    # Find products with missing or very short specs
+    from sqlalchemy import or_
+    statement = select(Hardware).where(
+        or_(
+            Hardware.specs == "{}",
+            Hardware.specs == "",
+            Hardware.specs == None,
+            Hardware.specsSource == "ai_suggested" # Also allow re-filling
+        )
+    ).limit(limit)
+    products = session.exec(statement).all()
+    
+    if not products:
+        return {"message": "没有需要补全参数的产品", "count": 0}
+        
+    ai_service = AiService(session)
+    filled_count = 0
+    
+    for product in products:
+        # Check if it actually needs filling (not user-filled)
+        if product.specsSource == 'user' and product.specs not in ["{}", "", None]:
+            continue
+            
+        suggested_specs = ai_service.suggest_specs(product.category, product.brand, product.model)
+        if suggested_specs:
+            product.specs = suggested_specs
+            product.specsSource = 'ai_suggested'
+            session.add(product)
+            filled_count += 1
+            
+    session.commit()
+    return {"message": f"成功为 {filled_count} 个商品补全了 AI 建议参数", "filled_count": filled_count}
 
 @router.get("/counts/admin", response_model=dict)
 async def get_admin_product_counts(
