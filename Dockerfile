@@ -1,14 +1,6 @@
 # Stage 1: Build Frontend
 FROM node:20-slim AS build-stage
 WORKDIR /app
-
-# Install build dependencies for native modules (like better-sqlite3)
-RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY package*.json ./
 RUN npm install
 COPY . .
