@@ -25,14 +25,18 @@ export default function ProductManager() {
     const [sortConfig, setSortConfig] = useState<{ key: keyof HardwareItem, direction: 'asc' | 'desc' } | null>({ key: 'sortOrder', direction: 'asc' });
     const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
-    const loadProducts = async () => {
+    // loadProducts 接受覆盖参数，解决 React 状态异步更新时的竞态问题
+    const loadProducts = async (overrides?: { brand?: string; category?: string; pg?: number }) => {
         setLoading(true);
+        const cat = overrides?.category ?? filterCat;
+        const brand = overrides?.brand ?? filterBrand;
+        const pg = overrides?.pg ?? page;
         try {
             const result = await storage.getAdminProducts(
-                page,
+                pg,
                 pageSize,
-                filterCat,
-                filterBrand,
+                cat,
+                brand,
                 search,
                 sortConfig?.key,
                 sortConfig?.direction,
@@ -41,8 +45,8 @@ export default function ProductManager() {
             setProducts(result.items);
             setTotal(result.total);
 
-            // Refresh brands when category changes
-            const brandList = await storage.getBrands(filterCat);
+            // 切换分类时刷新品牌列表
+            const brandList = await storage.getBrands(cat);
             setBrands(brandList);
         } catch (error) {
             console.error('Failed to load products:', error);
@@ -65,15 +69,17 @@ export default function ProductManager() {
         return () => clearTimeout(timer);
     }, [search]);
 
+    // 切换分类：重置品牌为 all 并立即用新分类+all 品牌请求，避免竞态
     useEffect(() => {
         setPage(1);
-        setFilterBrand('all'); // Reset brand filter when category changes
-        loadProducts();
+        setFilterBrand('all');
+        loadProducts({ category: filterCat, brand: 'all', pg: 1 });
     }, [filterCat]);
 
+    // 品牌筛选变化（不包含由 filterCat 触发的重置，因为上面已经处理）
     useEffect(() => {
         setPage(1);
-        loadProducts();
+        loadProducts({ pg: 1 });
     }, [filterBrand]);
 
     useEffect(() => {
@@ -323,6 +329,7 @@ export default function ProductManager() {
                         <button onClick={() => setFilterCat('all')} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === 'all' && !filterAi ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>全部 ({categoryCounts['total'] || 0})</button>
                         <button 
                             onClick={() => { setFilterAi(!filterAi); setPage(1); }} 
+                            title="筛选由 AI 自动补全图片/参数但尚未人工确认的产品，审核后可手动调整或直接保留"
                             className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all border-2 flex items-center gap-1 ${filterAi ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-200' : 'bg-white border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-600'}`}
                         >
                             <Sparkles size={12} className={filterAi ? 'animate-pulse' : ''} />

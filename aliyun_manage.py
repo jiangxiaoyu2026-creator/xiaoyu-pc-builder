@@ -124,7 +124,8 @@ class AliyunECSManager:
             region_id=self.region_id,
             instance_id=[self.instance_id],
             type='RunShellScript',
-            command_content=base64.b64encode(command.encode('utf-8')).decode('utf-8')
+            command_content=command,
+            content_encoding='PlainText'
         )
         try:
             response = self.client.run_command(run_command_request)
