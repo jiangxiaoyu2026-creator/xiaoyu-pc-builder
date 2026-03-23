@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlmodel import Session, select, func
 from typing import List, Optional, Dict, Any
 from ..db import get_session
 from ..models import Hardware, PriceHistory, User
 from .auth import get_current_admin
+from ..services.ai_service import AiService
 from datetime import datetime, timedelta
 import collections
 
@@ -99,3 +100,55 @@ async def get_marketing_summary(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+from pydantic import BaseModel
+
+class GenerateDailyRequest(BaseModel):
+    external_news: str = ""
+
+@router.post("/generate-daily")
+async def generate_daily_marketing(
+    request: GenerateDailyRequest,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """
+    Generate the 4-platform marketing content using AI based on today's hardware price drops.
+    """
+    # 1. 抓取当日大盘行情数据（复用 summary 逻辑或简化提取）
+    now = datetime.utcnow()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    
+    today_changes = session.exec(
+        select(PriceHistory)
+        .where(PriceHistory.changedAt >= today_start)
+        .order_by(PriceHistory.changeAmount.asc())
+        .limit(15)
+    ).all()
+    
+    top_drops_data = [
+        {
+            "category": c.category,
+            "hardwareName": c.hardwareName,
+            "oldPrice": c.oldPrice,
+            "newPrice": c.newPrice,
+            "drop": c.changeAmount
+        } for c in today_changes
+    ]
+    
+    daily_data = {
+        "date": now.strftime("%Y-%m-%d"),
+        "top_drops_today": top_drops_data
+    }
+    
+    # 2. 调用 AI 服务生成多端文案
+    ai_service = AiService(session)
+    result = ai_service.generate_marketing_content(daily_data, request.external_news)
+    
+    if not result:
+        raise HTTPException(status_code=500, detail="AI 生成文案失败，请稍后重试或检查配置。")
+        
+    return {
+        "status": "success",
+        "data": result
+    }

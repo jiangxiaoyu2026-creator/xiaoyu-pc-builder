@@ -137,6 +137,8 @@ class AiService:
             
             for item in selected:
                 hw_specs = self._get_inferred_specs(item)
+                # 补充物理尺寸参数用于兼容性校验
+                important_keys = ['memoryType', 'socket', 'formFactor', 'maxGpuLength', 'maxCoolerHeight', 'length', 'height']
                 final_list.append({
                     "id": item.id,
                     "category": item.category,
@@ -145,7 +147,12 @@ class AiService:
                     "price": item.price,
                     "memoryType": hw_specs.get('memoryType'),
                     "socket": hw_specs.get('socket'),
-                    "specs": ", ".join(f"{k}: {v}" for k, v in hw_specs.items() if v and k not in ['memoryType', 'socket'])
+                    "formFactor": hw_specs.get('formFactor'),
+                    "maxGpuLength": hw_specs.get('maxGpuLength'),
+                    "maxCoolerHeight": hw_specs.get('maxCoolerHeight'),
+                    "length": hw_specs.get('length'),
+                    "height": hw_specs.get('height'),
+                    "specs": ", ".join(f"{k}: {v}" for k, v in hw_specs.items() if v and k not in important_keys)
                 })
         return final_list
 
@@ -353,11 +360,16 @@ class AiService:
 {strategy_text}
 
 **⚠️ 专家级装机指令（强制红线规则）：**
-1. **基础兼容**：CPU 的 socket 必须与主板的 socket 匹配。主板支持 DDR4 就必须搭 DDR4 内存，DDR5 同理。
-2. **严禁机械硬盘**：禁止使用机械硬盘(HDD)做系统主盘。预算 > 3000 元必须优先选择 1TB 及以上的 NVMe PCIe 固态硬盘(SSD)。
-3. **电源冗余底线**：电源额定功率必须大于 `(CPU TDP功耗 + GPU TDP功耗) * 1.5 + 50W`，绝不选刚好压线的电源！不确定具体数值就往上多留 100W。
-4. **散热器精准化**：中低端 CPU（如 i3/i5/i7非K/R5非X）强制首选【风冷散热器】以节省预算；只有遇到高端高发热 CPU（i7-K/i9/R9），或是客户明确要求“海景房/全白/必须上水冷”时，才可使用【240/360 水冷】。
-5. **显示器去留**：默认情况**绝对不选显示器**(将 monitor 返回 null)。唯一的例外是用户在需求里明确说出“包含一台电脑屏幕”之类的需求。
+1. **精准解读客户配置单**：客户的发文可能是一段杂乱且连词成句的配件清单文本（如："CPUi5-14600kf盒装 主板华硕重炮手IID5显卡万丽5070硬盘宏碁GM71T..."）。你需要极其敏锐地拆解出每一项配件的真实型号，并在【库存清单】中寻找最匹配的商品。如果客户给的型号在库存中实在找不到，请寻找同级别平替，并在 description 中向客户说明。
+2. **基础兼容**：CPU 的 socket 必须与主板的 socket 匹配。主板支持 DDR4 就必须搭 DDR4 内存，DDR5 同理。
+3. **物理尺寸兼容（极度重要）**：
+   - **主板与机箱**：ATX 主板绝对不能装进只支持 M-ATX/ITX 的机箱！如果主板是 ATX (formFactor)，机箱必须支持 ATX。如果机箱只写了 M-ATX，则不能选 ATX 主板。
+   - **显卡限长**：显卡的 length (如 336mm) 绝对不能大于机箱的 maxGpuLength (如 330mm)！
+   - **风冷限高**：风冷散热器的 height (如 165mm) 绝对不能大于机箱的 maxCoolerHeight (如 160mm)！
+4. **严禁机械硬盘**：禁止使用机械硬盘(HDD)做系统主盘。预算 > 3000 元必须优先选择 1TB 及以上的 NVMe PCIe 固态硬盘(SSD)。
+5. **电源冗余底线**：电源额定功率必须大于 `(CPU TDP功耗 + GPU TDP功耗) * 1.5 + 50W`，绝不选刚好压线的电源！不确定具体数值就往上多留 100W。
+6. **散热器精准化**：中低端 CPU（如 i3/i5/i7非K/R5非X）强制首选【风冷散热器】以节省预算；只有遇到高端高发热 CPU（i7-K/i9/R9），或是客户明确要求“海景房/全白/必须上水冷”时，才可使用【240/360 水冷】。
+7. **显示器去留**：默认情况**绝对不选显示器**(将 monitor 返回 null)。唯一的例外是用户在需求里明确说出“包含一台电脑屏幕”之类的需求。
 
 【库存清单】：
 {json.dumps(inventory, ensure_ascii=False)}
@@ -483,6 +495,62 @@ class AiService:
                 if alt_ram:
                     resolved_items['ram'] = alt_ram
                     raw_result['description'] = raw_result.get('description', '') + f" (注意：主板支持 {target_type}，已自动将内存更换为兼容型号)"
+
+            # --- 物理尺寸兼容性硬校验 ---
+            case_item = resolved_items.get('case')
+            if case_item:
+                c_specs = case_item['specs']
+                desc_appends = []
+
+                # 1. 主板板型校验
+                if mb:
+                    mb_ff = mb['specs'].get('formFactor', '').upper()
+                    case_ff = c_specs.get('formFactor', '').upper()
+                    # 简化逻辑：如果主板是ATX，但机箱规格里没有明确写支持ATX（比如只写了M-ATX/ITX），则换机箱
+                    if 'ATX' in mb_ff and 'M-ATX' not in mb_ff and 'MICRO' not in mb_ff: 
+                        if case_ff and 'ATX' not in case_ff.replace('M-ATX', '').replace('MICRO-ATX', ''):
+                            # 主板太大，尝试换兼容的大机箱
+                            alt_case = self._find_compatible_hardware('case', {}, case_item['price'] * 1.2) # 只要是别的机箱就行，后端查找逻辑尽量放宽
+                            if alt_case:
+                                resolved_items['case'] = alt_case
+                                desc_appends.append("主板板型较大，已自动更换为空间更充裕的机箱")
+                                case_item = alt_case
+                                c_specs = alt_case['specs']
+
+                # 2. 显卡限长校验
+                gpu = resolved_items.get('gpu')
+                if gpu and gpu['specs'].get('length') and c_specs.get('maxGpuLength'):
+                    import re
+                    try:
+                        g_len = float(re.search(r'\d+', str(gpu['specs']['length'])).group())
+                        c_max_g = float(re.search(r'\d+', str(c_specs['maxGpuLength'])).group())
+                        if g_len > c_max_g:
+                            alt_case = self._find_compatible_hardware('case', {}, case_item['price'] * 1.2)
+                            if alt_case:
+                                resolved_items['case'] = alt_case
+                                desc_appends.append(f"显卡长度({g_len}mm)超出原机箱限长，已自动更换大机箱")
+                                case_item = alt_case
+                                c_specs = alt_case['specs']
+                    except Exception:
+                        pass # 无法解析数字就算了
+
+                # 3. 散热限高校验
+                cooler = resolved_items.get('cooling')
+                if cooler and cooler['specs'].get('height') and c_specs.get('maxCoolerHeight'):
+                    import re
+                    try:
+                        c_height = float(re.search(r'\d+', str(cooler['specs']['height'])).group())
+                        c_max_c = float(re.search(r'\d+', str(c_specs['maxCoolerHeight'])).group())
+                        if c_height > c_max_c:
+                            alt_case = self._find_compatible_hardware('case', {}, case_item['price'] * 1.2)
+                            if alt_case:
+                                resolved_items['case'] = alt_case
+                                desc_appends.append(f"散热器高度({c_height}mm)超出原机箱限高，已自动更换机箱")
+                    except Exception:
+                        pass
+                
+                if desc_appends:
+                    raw_result['description'] = raw_result.get('description', '') + " (兼容性修正：" + "，".join(desc_appends) + ")"
 
             # 确保 evaluation 结构完整
             if "evaluation" not in raw_result:
@@ -677,3 +745,69 @@ class AiService:
         
         # https://www.bing.com/images/search?q=...
         return f"https://www.bing.com/images/search?q={encoded_query}&FORM=HDRSC2"
+
+    def generate_marketing_content(self, daily_data: Dict[str, Any], external_news: str) -> Optional[Dict[str, str]]:
+        """
+        基于当日真实的硬件价格浮动和用户输入的今日行业快讯，生成用于四端分发的营销文案集合。
+        """
+        system_prompt = """你是一个全网拥有百万粉丝的硬核数码装机博主，人称“蒋哥”。
+你的任务是根据我提供的【今日硬件价格盘点数据】以及【行业最新快讯（选填）】，生成一套用于全网矩阵分发的“今日搞机快报”。
+
+**你的语言风格极其强硬、接地气，且数据敏感。**
+你坚决不说废话，开场直接报最具震撼力的硬件降价或涨价。
+你经常使用数码圈黑话来调动情绪，例如：
+- 划算/溢价 -> “真香”、“太臭了”
+- 暴跌 -> “跳水”、“成了空中飞人”
+- 新品降价背刺 -> “老用户直接被背刺的妈都不认识”
+- 虚假涨价/假打折 -> “这纯属是狼来了，别做大冤种接盘侠”
+- 遇到好价 -> “别犹豫，闭眼冲，这是绝杀”
+
+**你必须分别生成 4 种平台的专属文案（严格以 JSON 格式返回）：**
+- `article_title`: 适用于图文版式的一个极具吸引力的标题。
+- `official_account`: 最详实、排版精细的 Markdown 深度评析长文，适合发公众号或网站新闻。将价格跳水原因结合行业快讯剖析透彻，评出今日红黑榜，最后给出一套适应行情的配置推荐。
+- `moments`: 微信朋友圈短缩版，极致浓缩为3句话内，指明大盘最关键的利好或雷区，引导来私聊。要有煽动力。
+- `xiaohongshu`: 小红书文风，自带标题、满屏情绪化Emoji表情、使用项目符号、必须带上至少 5 个 #硬件 #装机 标签。
+- `video_script`: 面向B站和抖音的口语化出镜/解说文本。开头必须包含诸如 `【画面：直接全屏展示红绿相间的今日大盘Excel表】` 的视觉分镜指导！解说不能太干，要有主播连麦聊天的网感，语速快干货密。
+
+**你只能返回一个包含上述五个字段的纯 JSON 对象（不要包装 ```json）：**
+{
+    "article_title": "...",
+    "official_account": "...",
+    "moments": "...",
+    "xiaohongshu": "...",
+    "video_script": "..."
+}
+"""
+        import json
+        import re
+        
+        data_context = f"【今日内部大盘真实价格浮动数据】\n{json.dumps(daily_data, ensure_ascii=False, indent=2)}\n\n"
+        if external_news and external_news.strip():
+            data_context += f"【全网今日行业硬核快讯（必须揉碎进分析中）】\n{external_news}\n"
+        
+        user_prompt = f"{data_context}\n\n请根据以上数据立刻帮我产出 4 端矩阵分发文案，必须直接返回带 5 个字段的 JSON！"
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.6,
+                max_tokens=3000
+            )
+            content = response.choices[0].message.content.strip()
+            
+            # 清洗思考过程
+            content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
+            
+            # 提取 JSON 对象
+            json_match = re.search(r'(\{.*\})', content, re.DOTALL)
+            if json_match:
+                content = json_match.group(1)
+            
+            return json.loads(content)
+        except Exception as e:
+            print(f"generate_marketing_content error: {e}\nRaw Content: {content if 'content' in locals() else 'None'}")
+            return None

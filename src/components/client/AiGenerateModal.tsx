@@ -293,6 +293,17 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
+                                    {/* 新增：粘贴客户配置单快捷按钮 */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setPrompt("请按照以下配件清单精准生成配置单（遇到缺货或型号不匹配的，请找非常相似的平替并在描述中说明）：\n\n")}
+                                        className="relative px-5 py-3 bg-indigo-900/40 hover:bg-indigo-800/60 text-indigo-300 hover:text-white text-sm flex items-center gap-3 group/chip transition-all duration-300 rounded-2xl border border-indigo-500/30 hover:border-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.2)] backdrop-blur-md overflow-hidden"
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-400/20 to-transparent -translate-x-full group-hover/chip:translate-x-full transition-transform duration-700"></div>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 group-hover/chip:bg-indigo-300 transition-colors shadow-[0_0_10px_transparent] group-hover/chip:shadow-indigo-400 animate-pulse"></div>
+                                        <span className="font-bold tracking-wide relative z-10">📋 粘贴客户配置单</span>
+                                    </button>
+                                    
                                     {suggestions.map((s, i) => (
                                         <button
                                             key={i}

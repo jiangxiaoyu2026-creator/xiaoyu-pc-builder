@@ -14,6 +14,7 @@ import {
     Info,
     Gift,
     BookOpen,
+    TrendingUp,
 } from 'lucide-react';
 import { NavButton } from '../components/admin/Shared';
 import { PricingStrategy, UserItem } from '../types/adminTypes';
@@ -35,9 +36,10 @@ const PaymentSettings = lazy(() => import('../components/admin/PaymentSettings')
 const AboutUsSettings = lazy(() => import('../components/admin/AboutUsSettings'));
 const InvitationManager = lazy(() => import('../components/admin/InvitationManager'));
 const ArticleManager = lazy(() => import('../components/admin/ArticleManager'));
+const MarketingManager = lazy(() => import('../components/admin/MarketingManager'));
 
 export default function AdminApp() {
-    const [currentTab, setCurrentTab] = useState<'dashboard' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles'>('dashboard');
+    const [currentTab, setCurrentTab] = useState<'dashboard' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles' | 'marketing'>('dashboard');
 
     const [pricingStrategy, setPricingStrategy] = useState<PricingStrategy>({
         serviceFeeRate: 0.06,
@@ -140,6 +142,7 @@ export default function AdminApp() {
                     <NavButton active={currentTab === 'comments'} onClick={() => setCurrentTab('comments')} icon={<MessageSquare size={18} />} label="评论管理" />
                     <NavButton active={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} icon={<MessageCircle size={18} />} label="客户咨询" />
                     <NavButton active={currentTab === 'articles'} onClick={() => setCurrentTab('articles')} icon={<BookOpen size={18} />} label="头条管理" />
+                    <NavButton active={currentTab === 'marketing'} onClick={() => setCurrentTab('marketing')} icon={<TrendingUp size={18} />} label="📈 行情与营销中心" />
 
                     <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-6 uppercase">二手市场</div>
                     <NavButton active={currentTab === 'used_items'} onClick={() => setCurrentTab('used_items')} icon={<Package size={18} />} label="二手商品" />
@@ -205,6 +208,7 @@ export default function AdminApp() {
                         {currentTab === 'about_us' && '品牌页面管理'}
                         {currentTab === 'verifications' && '邮箱验证码安全审计'}
                         {currentTab === 'invitations' && '注册邀请码管理'}
+                        {currentTab === 'marketing' && '今日自动化大盘与营销中心'}
                     </h2>
                     <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -237,6 +241,7 @@ export default function AdminApp() {
                                 {/* {currentTab === 'verifications' && <VerificationManager />} */}
                                 {currentTab === 'invitations' && <InvitationManager />}
                                 {currentTab === 'articles' && <ArticleManager />}
+                                {currentTab === 'marketing' && <MarketingManager />}
                             </div>
                         )}
                     </Suspense>
