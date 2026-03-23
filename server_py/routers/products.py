@@ -245,17 +245,19 @@ async def autofill_specs(
     """Admin only: Automatically fill in missing product specifications using AI.
     Limit added to prevent timeouts.
     """
-    # Find products with missing/empty specs OR already AI-suggested (allow re-fill)
-    # JSON column stores dict, so we check cast-to-string length and specsSource
-    from sqlalchemy import or_, func, cast, String
+    # 核心逻辑：找出 specs 为空的产品（不管 specsSource 是什么）
+    # 只有 specs 真正有内容（长度>4 即非 '{}' / 'null' / ''）且是用户手动填的，才跳过
+    from sqlalchemy import or_, func, cast, String, and_
+    
     statement = select(Hardware).where(
+        Hardware.status == "active"
+    ).where(
         or_(
             Hardware.specs == None,
-            func.length(cast(Hardware.specs, String)) <= 4,  # '{}' or '[]' or null
-            Hardware.specsSource == "ai_suggested"  # Also allow re-filling
+            cast(Hardware.specs, String) == '{}',
+            cast(Hardware.specs, String) == '',
+            func.length(cast(Hardware.specs, String)) <= 4,
         )
-    ).where(
-        Hardware.specsSource != "user"  # Don't override user-confirmed specs
     ).limit(limit)
     products = session.exec(statement).all()
     
@@ -266,10 +268,6 @@ async def autofill_specs(
     filled_count = 0
     
     for product in products:
-        # Check if it actually needs filling (not user-filled)
-        if product.specsSource == 'user' and product.specs not in ["{}", "", None]:
-            continue
-            
         suggested_specs = ai_service.suggest_specs(product.category, product.brand, product.model)
         if suggested_specs:
             product.specs = suggested_specs
