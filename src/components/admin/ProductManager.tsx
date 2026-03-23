@@ -278,6 +278,15 @@ export default function ProductManager() {
         await storage.saveProduct(updated);
     };
 
+    const rejectAiImage = async (id: string) => {
+        const p = products.find(x => String(x.id) === String(id));
+        if (!p) return;
+        // 拒绝：清空图片并重置来源
+        const updated = { ...p, image: null as any, imageSource: 'user' as any };
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
+        await storage.saveProduct(updated);
+    };
+
     const handleAutofillSpecs = async () => {
         if (!confirm('此操作将为所有【缺少核心参数】的商品自动分析并匹配技术规格，并标记为“AI建议”供您核对。是否继续？')) return;
         
@@ -300,6 +309,15 @@ export default function ProductManager() {
         if (!p) return;
         
         const updated = { ...p, specsSource: 'user' as any };
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
+        await storage.saveProduct(updated);
+    };
+
+    const rejectAiSpecs = async (id: string) => {
+        const p = products.find(x => String(x.id) === String(id));
+        if (!p) return;
+        // 拒绝：清空参数并重置来源
+        const updated = { ...p, specs: {} as any, specsSource: 'user' as any };
         setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
         await storage.saveProduct(updated);
     };
@@ -458,16 +476,20 @@ export default function ProductManager() {
                                                                 href={p.image} 
                                                                 target="_blank" 
                                                                 rel="noopener noreferrer"
-                                                                className="text-[10px] text-indigo-600 font-bold hover:underline text-center px-1 z-20"
+                                                                className="flex flex-col items-center justify-center w-full h-full bg-blue-50 hover:bg-blue-100 transition-colors z-20"
                                                                 onClick={(e) => e.stopPropagation()}
+                                                                title="点击打开搜索页面，找到图片后粘贴回来"
                                                             >
-                                                                去搜索
+                                                                <Search size={14} className="text-blue-500" />
+                                                                <span className="text-[8px] text-blue-600 font-bold">搜图</span>
                                                             </a>
                                                         ) : (
                                                             <img src={p.image} alt={p.model} className="w-full h-full object-cover" />
                                                         )
                                                     ) : (
-                                                        <ImageIcon size={20} className="text-slate-400" />
+                                                        <div className="flex items-center justify-center w-full h-full bg-slate-50 text-slate-300 font-bold text-sm">
+                                                            {p.brand?.[0] || '?'}
+                                                        </div>
                                                     )}
                                                     {p.imageSource === 'ai_suggested' && (
                                                         <div className="absolute top-0 right-0 bg-amber-500 text-[8px] text-white px-1 font-bold z-10" title="AI建议图片，点击确认或手动更改">
@@ -500,13 +522,22 @@ export default function ProductManager() {
                                                 )}
                                             </div>
                                             {p.imageSource === 'ai_suggested' && (
-                                                <button 
-                                                    onClick={() => confirmAiImage(p.id)}
-                                                    className="p-1 text-slate-400 hover:text-green-600 transition-colors"
-                                                    title="确认此图片"
-                                                >
-                                                    <CheckCircle2 size={16} />
-                                                </button>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <button 
+                                                        onClick={() => confirmAiImage(p.id)}
+                                                        className="p-1 text-slate-400 hover:text-green-600 transition-colors"
+                                                        title="确认此图片"
+                                                    >
+                                                        <CheckCircle2 size={16} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => rejectAiImage(p.id)}
+                                                        className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                                        title="拒绝：清空此图片"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
                                             )}
                                             <div>
                                                 <div className="font-bold text-slate-900 flex items-center gap-2">
@@ -521,13 +552,22 @@ export default function ProductManager() {
                                     <td className="px-6 py-4 relative">
                                         <div className="flex items-center gap-2">
                                             {p.specsSource === 'ai_suggested' && (
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); confirmAiSpecs(String(p.id)); }}
-                                                    className="p-1 text-slate-400 hover:text-emerald-600 transition-colors shrink-0"
-                                                    title="确认此参数"
-                                                >
-                                                    <CheckCircle2 size={16} />
-                                                </button>
+                                                <div className="flex flex-col gap-0.5 shrink-0">
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); confirmAiSpecs(String(p.id)); }}
+                                                        className="p-1 text-slate-400 hover:text-emerald-600 transition-colors"
+                                                        title="确认此参数"
+                                                    >
+                                                        <CheckCircle2 size={16} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); rejectAiSpecs(String(p.id)); }}
+                                                        className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                                        title="拒绝：清空此参数"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
                                             )}
                                             <div className="flex-1 min-w-0">
                                                 <div 
