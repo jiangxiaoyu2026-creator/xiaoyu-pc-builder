@@ -601,35 +601,67 @@ class AiService:
                 max_tokens=1500  # 增加 token 以应对更丰富的参数
             )
             content = response.choices[0].message.content.strip()
-            
-            # 1. 提取第一个 { 和 最后一个 } 之间的内容
             import re
+            
+            # === 第 0 步: 剥离 DeepSeek <think>...</think> 思考过程 ===
+            content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
+            
+            # === 第 1 步: 提取第一个 { 和最后一个 } 之间的内容 ===
             json_match = re.search(r'(\{.*\})', content, re.DOTALL)
             if json_match:
                 content = json_match.group(0)
+            else:
+                # 如果没找到完整的 {}，可能 JSON 在末尾被截断了
+                # 尝试找到 { 开头的部分
+                brace_start = content.find('{')
+                if brace_start >= 0:
+                    content = content[brace_start:]
+                    # 尝试修复截断：补上 }
+                    content = content.rstrip().rstrip(',')
+                    # 如果最后一个值是截断的字符串，关闭它
+                    if content.count('"') % 2 != 0:
+                        content += '"'
+                    content += '}'
+                else:
+                    print(f"AI suggest_specs: No JSON found in response")
+                    return None
             
-            # 2. 基础清洗 (移除注释、多余换行)
-            content = re.sub(r'//.*', '', content) # 移除单行注释
+            # === 第 2 步: 基础清洗 ===
+            content = re.sub(r'//.*', '', content)  # 移除单行注释
+            content = re.sub(r'```json\s*', '', content)  # 移除 markdown 标记
+            content = re.sub(r'```\s*', '', content)
             
-            # 3. 修复常见的 JSON 错误
-            content = re.sub(r',\s*\}', '}', content) # 移除末尾多余逗号
+            # === 第 3 步: 修复常见 JSON 错误 ===
+            content = re.sub(r',\s*\}', '}', content)  # 移除末尾多余逗号
             content = re.sub(r',\s*\]', ']', content)
-            
-            # 尝试修复由于换行导致的遗漏逗号 (非常常见于 LLM)
-            # 处理 "key": "val"\n "key2" -> "key": "val",\n "key2"
+            # 修复遗漏逗号
             content = re.sub(r'("\s*\n\s*")', r'",\n"', content)
-            # 处理 "key": 123\n "key2" -> "key": 123,\n "key2"
             content = re.sub(r'(\d\s*\n\s*")', r',\n"', content)
-            # 处理 "key": true\n "key2" -> "key": true,\n "key2"
             content = re.sub(r'(true|false|null)\s*\n\s*"', r'\1,\n"', content)
             
+            # === 第 4 步: 尝试解析，失败则修复截断 ===
             try:
-                # 验证 JSON
                 parsed = json.loads(content)
-                return json.dumps(parsed, ensure_ascii=False) # 重新格式化并返回
-            except Exception as e:
+                print(f"AI suggest_specs OK: {len(parsed)} keys for {brand} {model}")
+                return json.dumps(parsed, ensure_ascii=False)
+            except json.JSONDecodeError as e:
+                # 最后手段：尝试逐步修复截断的 JSON
+                # 常见截断场景："key":"value 截断在此
+                fixed = content.rstrip()
+                # 移除最后一个不完整的 key-value 对
+                last_comma = fixed.rfind(',')
+                if last_comma > 0:
+                    candidate = fixed[:last_comma] + '}'
+                    candidate = re.sub(r',\s*\}', '}', candidate)
+                    try:
+                        parsed = json.loads(candidate)
+                        print(f"AI suggest_specs RECOVERED (truncation): {len(parsed)} keys for {brand} {model}")
+                        return json.dumps(parsed, ensure_ascii=False)
+                    except:
+                        pass
+                
                 print(f"AI suggest_specs JSON parse error: {e}")
-                print(f"--- FAILED CONTENT START ---\n{content}\n--- FAILED CONTENT END ---")
+                print(f"--- FAILED CONTENT START ---\n{content[:500]}\n--- FAILED CONTENT END ---")
                 return None
         except Exception as e:
             print(f"AI suggest_specs error: {e}")
