@@ -3,14 +3,14 @@ import random
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from sqlmodel import Session, select, col
-from ..models import Hardware, Config, Setting, ChatSettings
-from ..db import engine
+from server_py.models import Hardware, Config, Setting, ChatSettings
+from server_py.db import engine
 from openai import OpenAI
 import os
 
 class AiService:
     def __init__(self, session: Session):
-        from ..models import User # Added import here for convenience or at top
+        from server_py.models import User # Added import here for convenience or at top
         self.session = session
         self.client = None
         self.model = "gpt-3.5-turbo"
@@ -569,18 +569,24 @@ class AiService:
         if not self.client:
             return None
             
-        system_prompt = f"""你是一个电脑硬件专家。请为用户提供的硬件产品提供详细的技术参数。
-分类: {category}
+        system_prompt = f"""你是一个顶级的电脑硬件专家。请为用户提供的硬件产品提供【极其详尽】且【符合专业装机需求】的技术参数。
+产品分类: {category}
 品牌: {brand}
 型号: {model}
 
-请提供关键的核心参数，例如：
-- 对于 CPU，必须包含: "socket" (如 LGA1700), "wattage" (TDP), "memoryType" (如 DDR5)。
-- 对于 主板，必须包含: "socket", "memoryType", "formFactor" (如 MATX)。
-- 对于 显卡，必须包含: "length" (mm), "wattage" (建议电源)。
-- 其他分类也请提供其标准的行业参数。
+请【仅为该特定分类】提供参数。不要返回嵌套的分类对象，必须返回一个【单层、平级】的 JSON 键值对。
 
-请【严格】按标准 JSON 格式返回，只返回 JSON 字符串，不要回复任何多余的解释。"""
+参数要求：
+- 如果分类是 **cpu**: 必须包含 socket (如 LGA1700), wattage (TDP/PL1/PL2), memoryType (DDR4/DDR5), cores, threads, base_freq, boost_freq。
+- 如果分类是 **mainboard**: 必须包含 socket, memoryType (DDR4/DDR5), formFactor (ATX/MATX/ITX), m2Slots (数量及协议), usbPorts (后端接口描述), vrmPhases (供电相数), maxMemory (最大容量)。
+- 如果分类是 **gpu**: 必须包含 gpuChip (如 RTX 4070 Ti), vram (容量和类型), length (mm, 极其重要), wattage (建议电源瓦数), powerPin (供电接口如 16-pin)。
+- 如果分类是 **ram**: 必须包含 capacity (如 16GBx2), speed (频率如 6000MHz), type (DDR4/DDR5), timing (时序), hasRGB (是否带灯)。
+- 如果分类是 **disk**: 必须包含 capacity, interface (NVMe/SATA), speed (读写速度), protocol (PCIe 4.0/3.0)。
+- 如果分类是 **case**: 必须包含 formFactor (支持的主板), gpuLimit (支持的显卡限长), coolerLimit (CPU散热限高), fanSlots (风扇位分布)。
+- 如果分类是 **power**: 必须包含 wattage (额定功率), efficiency (80 Plus 级别), modular (是否全模组), length (电源长度)。
+- 如果分类是 **cooling**: 必须包含 targetSocket (支持的平台), type (风冷/240水冷/360水冷), height (高度)。
+
+请【严格】按标准单层 JSON 格式返回，Key 保持英文，Value 使用最准确的中文描述。只返回 JSON 字符串，不要回复任何多余的解释。"""
 
         try:
             response = self.client.chat.completions.create(
@@ -593,15 +599,36 @@ class AiService:
                 max_tokens=600
             )
             content = response.choices[0].message.content.strip()
-            # 简单清洗 Markdown 代码块
+            
+            # 1. 提取第一个 { 和 最后一个 } 之间的内容
             import re
-            json_match = re.search(r'\{.*\}', content, re.DOTALL)
+            json_match = re.search(r'(\{.*\})', content, re.DOTALL)
             if json_match:
                 content = json_match.group(0)
             
-            # 验证 JSON
-            json.loads(content)
-            return content
+            # 2. 基础清洗 (移除注释、多余换行)
+            content = re.sub(r'//.*', '', content) # 移除单行注释
+            
+            # 3. 修复常见的 JSON 错误
+            content = re.sub(r',\s*\}', '}', content) # 移除末尾多余逗号
+            content = re.sub(r',\s*\]', ']', content)
+            
+            # 尝试修复由于换行导致的遗漏逗号 (非常常见于 LLM)
+            # 处理 "key": "val"\n "key2" -> "key": "val",\n "key2"
+            content = re.sub(r'("\s*\n\s*")', r'",\n"', content)
+            # 处理 "key": 123\n "key2" -> "key": 123,\n "key2"
+            content = re.sub(r'(\d\s*\n\s*")', r',\n"', content)
+            # 处理 "key": true\n "key2" -> "key": true,\n "key2"
+            content = re.sub(r'(true|false|null)\s*\n\s*"', r'\1,\n"', content)
+            
+            try:
+                # 验证 JSON
+                parsed = json.loads(content)
+                return json.dumps(parsed, ensure_ascii=False) # 重新格式化并返回
+            except Exception as e:
+                print(f"AI suggest_specs JSON parse error: {e}")
+                print(f"--- FAILED CONTENT START ---\n{content}\n--- FAILED CONTENT END ---")
+                return None
         except Exception as e:
             print(f"AI suggest_specs error: {e}")
             return None
