@@ -634,32 +634,9 @@ class AiService:
             return None
 
     def suggest_image_url(self, brand: str, model: str) -> Optional[str]:
-        """Ask AI to suggest a product image URL or search query"""
-        if not self.client:
-            return None
-            
-        system_prompt = "你是一个硬件专家。根据给出的品牌和型号，提供一个该产品的官方高清图片直接URL（必须以.jpg, .png, .webp等结尾）。如果绝对无法提供直接链接，请返回一个对应的 Bing 图片搜索链接。只返回 URL 字符串，不要有任何其他文字。"
-        user_msg = f"品牌: {brand}, 型号: {model}"
-        
-        try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_msg}
-                ],
-                temperature=0.3,
-                max_tokens=100
-            )
-            content = response.choices[0].message.content.strip()
-            # Use regex to find the first URL in the response
-            import re
-            url_match = re.search(r'https?://[^\s)\]]+', content)
-            if url_match:
-                return url_match.group(0)
-            return None
-        except Exception:
-            # Fallback to a search URL if AI fails
-            import urllib.parse
-            q = urllib.parse.quote(f"{brand} {model} 产品图")
-            return f"https://www.bing.com/images/search?q={q}"
+        """Generate a Bing image search URL for the product.
+        AI-generated direct image URLs are almost always hallucinated/invalid,
+        so we directly provide a reliable search link."""
+        import urllib.parse
+        q = urllib.parse.quote(f"{brand} {model} 产品图 官方")
+        return f"https://www.bing.com/images/search?q={q}"

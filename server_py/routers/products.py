@@ -247,15 +247,17 @@ async def autofill_specs(
     """Admin only: Automatically fill in missing product specifications using AI.
     Limit added to prevent timeouts.
     """
-    # Find products with missing or very short specs
-    from sqlalchemy import or_
+    # Find products with missing/empty specs OR already AI-suggested (allow re-fill)
+    # JSON column stores dict, so we check cast-to-string length and specsSource
+    from sqlalchemy import or_, func, cast, String
     statement = select(Hardware).where(
         or_(
-            Hardware.specs == "{}",
-            Hardware.specs == "",
             Hardware.specs == None,
-            Hardware.specsSource == "ai_suggested" # Also allow re-filling
+            func.length(cast(Hardware.specs, String)) <= 4,  # '{}' or '[]' or null
+            Hardware.specsSource == "ai_suggested"  # Also allow re-filling
         )
+    ).where(
+        Hardware.specsSource != "user"  # Don't override user-confirmed specs
     ).limit(limit)
     products = session.exec(statement).all()
     
