@@ -585,8 +585,9 @@ class AiService:
         
         # 1. 插槽推断
         if hardware.category == 'mainboard' and not specs.get('socket'):
-            if any(chip in model_upper for chip in ['X870', 'B650', 'X670', 'A620']): specs['socket'] = 'AM5'
+            if any(chip in model_upper for chip in ['X870', 'B850', 'B840', 'B650', 'X670', 'A620']): specs['socket'] = 'AM5'
             elif any(chip in model_upper for chip in ['B550', 'X570', 'B450', 'A520', 'A320']): specs['socket'] = 'AM4'
+            elif any(chip in model_upper for chip in ['Z890', 'B860', 'H810']): specs['socket'] = 'LGA1851'
             elif any(chip in model_upper for chip in ['Z790', 'B760', 'Z690', 'B660', 'H610', 'Z590', 'B560', 'H510']): specs['socket'] = 'LGA1700'
             elif any(chip in model_upper for chip in ['Z490', 'B460', 'H410']): specs['socket'] = 'LGA1200'
         
@@ -597,10 +598,17 @@ class AiService:
             elif hardware.category == 'mainboard':
                 # 根据插槽兜底推断
                 soc = specs.get('socket')
-                if soc == 'AM5': specs['memoryType'] = 'DDR5'
+                if soc in ['AM5', 'LGA1851']: specs['memoryType'] = 'DDR5'  # AM5 和 LGA1851 只支持 DDR5
                 elif soc in ['AM4', 'LGA1200']: specs['memoryType'] = 'DDR4'
-                # LGA1700 比较尴尬，既有 D4 也有 D5，如果不带 D5 标识通常默认为 D4 (或由具体品牌决定)
+                # LGA1700 比较尴尬，既有 D4 也有 D5，如果不带 D5 标识通常默认为 D4
                 elif soc == 'LGA1700' and 'D5' not in model_upper: specs['memoryType'] = 'DDR4'
+        
+        # 3. CPU 插槽推断
+        if hardware.category == 'cpu' and not specs.get('socket'):
+            if any(kw in model_upper for kw in ['9950X', '9900X', '9800X', '9700X', '9600X', '7950X', '7900X', '7800X', '7700X', '7600X', '7500F']): specs['socket'] = 'AM5'
+            elif any(kw in model_upper for kw in ['5600', '5700', '5800', '5900', '5950', '5500', '4650']): specs['socket'] = 'AM4'
+            elif any(kw in model_upper for kw in ['285K', '265K', '245K', '265KF', '245KF', '285KF']): specs['socket'] = 'LGA1851'
+            elif any(kw in model_upper for kw in ['14900', '14700', '14600', '14500', '14400', '13900', '13700', '13600', '13500', '13400', '12900', '12700', '12600', '12400', '12100']): specs['socket'] = 'LGA1700'
 
         return specs
 
