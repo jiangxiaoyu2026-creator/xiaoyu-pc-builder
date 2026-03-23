@@ -135,6 +135,9 @@ async def get_admin_products(
     if category and category != 'all':
         query = query.where(Hardware.category == category)
     
+    if brand and brand != 'all':
+        query = query.where(Hardware.brand == brand)
+    
     if filter_ai:
         query = query.where(or_(Hardware.imageSource == 'ai_suggested', Hardware.specsSource == 'ai_suggested'))
     
@@ -161,11 +164,6 @@ async def get_admin_products(
     if search:
         keywords = search.strip().split()
         for kw in keywords:
-            search_term = f"%{kw}%"
-            count_query = count_query.where(or_(
-                func.coalesce(Hardware.brand, "").ilike(search_term),
-                func.coalesce(Hardware.model, "").ilike(search_term)
-            ))
             search_term = f"%{kw}%"
             count_query = count_query.where(or_(
                 func.coalesce(Hardware.brand, "").ilike(search_term),
