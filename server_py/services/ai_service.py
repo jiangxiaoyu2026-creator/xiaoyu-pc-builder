@@ -569,34 +569,36 @@ class AiService:
         if not self.client:
             return None
             
-        system_prompt = f"""你是一个顶级的电脑硬件专家。请为用户提供的硬件产品提供【极其详尽】且【符合专业装机需求】的技术参数。
+        system_prompt = f"""你是一个拥有全球最全电脑硬件规格数据库的顶级 AI 专家。你的任务是像查询官网技术白皮书一样，为以下硬件提供【极其精准、丰富、权威】的技术参数。
 产品分类: {category}
 品牌: {brand}
 型号: {model}
 
-请【仅为该特定分类】提供参数。不要返回嵌套的分类对象，必须返回一个【单层、平级】的 JSON 键值对。
+请【千万不要瞎猜】，必须基于你对该真实硬件的知识库来回答。如果是你确认存在的真实型号，尽可能多地提供各项硬指标参数。
+返回格式要求：
+1. 必须是一个【单层、平级】的 JSON 对象。不能有嵌套对象。
+2. Key 使用标准英文驼峰命名，Value 使用准确的中文或英文单位描述。
+3. 请只返回 JSON 字符串，不要包含任何如 ```json 的 markdown 标记或解释。
 
-参数要求：
-- 如果分类是 **cpu**: 必须包含 socket (如 LGA1700), wattage (TDP/PL1/PL2), memoryType (DDR4/DDR5), cores, threads, base_freq, boost_freq。
-- 如果分类是 **mainboard**: 必须包含 socket, memoryType (DDR4/DDR5), formFactor (ATX/MATX/ITX), m2Slots (数量及协议), usbPorts (后端接口描述), vrmPhases (供电相数), maxMemory (最大容量)。
-- 如果分类是 **gpu**: 必须包含 gpuChip (如 RTX 4070 Ti), vram (容量和类型), length (mm, 极其重要), wattage (建议电源瓦数), powerPin (供电接口如 16-pin)。
-- 如果分类是 **ram**: 必须包含 capacity (如 16GBx2), speed (频率如 6000MHz), type (DDR4/DDR5), timing (时序), hasRGB (是否带灯)。
-- 如果分类是 **disk**: 必须包含 capacity, interface (NVMe/SATA), speed (读写速度), protocol (PCIe 4.0/3.0)。
-- 如果分类是 **case**: 必须包含 formFactor (支持的主板), gpuLimit (支持的显卡限长), coolerLimit (CPU散热限高), fanSlots (风扇位分布)。
-- 如果分类是 **power**: 必须包含 wattage (额定功率), efficiency (80 Plus 级别), modular (是否全模组), length (电源长度)。
-- 如果分类是 **cooling**: 必须包含 targetSocket (支持的平台), type (风冷/240水冷/360水冷), height (高度)。
-
-请【严格】按标准单层 JSON 格式返回，Key 保持英文，Value 使用最准确的中文描述。只返回 JSON 字符串，不要回复任何多余的解释。"""
+必备及建议参数（你可以根据实际产品补充更多）：
+- **cpu**: socket (插槽如 LGA1700, AM5), architecture (架构名), cores (P核+E核配置), threads, baseClock, boostClock, l2Cache, l3Cache, tdp, maxPower (PL2), memorySupport (支持内存类型与基础频率), pcieLanes (PCIe通道数), integratedGraphics (是否有核显及型号).
+- **mainboard**: formFactor (ATX/MATX/ITX), socket, chipset, memorySlots (数量), maxMemoryCap (最大容量支持), memoryMaxFreq (最高OC频率), pciex16Slots (插槽版本与数量), m2Slots (具体协议如PCIe 4.0x4数量), sataPorts, vrmPhases (供电相数如 14+1+1), audioChip (声卡芯片), networkChip (网卡芯片), wifiVersion (是否支持 WiFi 6E/7 等).
+- **gpu**: gpuChip (核心代号如 AD104 / Navi 31), architecture, streamProcessors (CUDA/流处理器数), baseClock, boostClock, vramCapacity (多少 GB), vramType (GDDR6/GDDR6X), vramBusWidth (显存位宽如 192-bit), outputPorts (DP/HDMI数量), powerConnectors (供电接口如 1x 16-pin / 2x 8-pin), tgp (额定功耗), recommendedPowerSupply (建议电源), length (显卡长度，精确到mm，【极其重要】), slotWidth (占用槽位).
+- **ram**: capacity (单条或套条如 16GBx2), speed (频率如 6000MT/s), type (DDR4/DDR5), timing (完整时序如 30-36-36-76), voltage (电压如 1.35V), hasRGB (是否带灯), dieType (颗粒如 海力士A-die/三星B-die, 若已知).
+- **disk**: capacity, interface (M.2 / 2.5寸 SATA), protocol (PCIe 4.0 x4 / SATA3), seqRead (顺序读 MB/s), seqWrite (顺序写 MB/s), randomRead (随机读 IOPS), randomWrite (随机写 IOPS), tbw (写入寿命), nandType (TLC/QLC/MLC), controller (主控芯片).
+- **case**: formFactor (支持最大主板体型), maxGpuLength (显卡限长 mm), maxCoolerHeight (CPU散热器限高 mm), maxPsuLength (电源限长 mm), fanSupport (各位置风扇支持详情), radiatorSupport (冷排支持详情，如顶部支持360水冷), dimensions (长宽高), ioPorts (前置接口如 Type-C 10G).
+- **power**: wattage (额定瓦数), efficiency (80 Plus 认证等级如金牌/白金), formFactor (ATX / SFX), cabling (全模组/半模组/直出), capacitorType (是否全日系电容), protection (OVP/OPP等), fanSize (风扇尺寸), atxVersion (是否支持 ATX 3.0/3.1, PCIe 5.0).
+- **cooling**: type (风冷：单塔/双塔/下压，水冷：240/360等), dimension (长宽高 mm), compatibleSockets (兼容平台), fanSpeed (风扇转速区间), airFlow (风量 CFM), noiseLevel (噪音 dBA), tdpCapacity (解热功耗), pumpSpeed (如果是水冷，冷头转速)."""
 
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"产品: {brand} {model}"}
+                    {"role": "user", "content": f"请给出关于这件真实产品的详尽技术参数: {brand} {model}"}
                 ],
-                temperature=0.3,
-                max_tokens=600
+                temperature=0.1,  # 降低温度，提高专业数据的确定性
+                max_tokens=1500  # 增加 token 以应对更丰富的参数
             )
             content = response.choices[0].message.content.strip()
             
@@ -634,9 +636,12 @@ class AiService:
             return None
 
     def suggest_image_url(self, brand: str, model: str) -> Optional[str]:
-        """Generate a Bing image search URL for the product.
-        AI-generated direct image URLs are almost always hallucinated/invalid,
-        so we directly provide a reliable search link."""
+        """Generate a Bing search URL focused on e-commerce (JD) for the product."""
         import urllib.parse
-        q = urllib.parse.quote(f"{brand} {model} 产品图 官方")
-        return f"https://www.bing.com/images/search?q={q}"
+        
+        # 优化搜索关键词：加上"京东"或"官网"字眼能更容易搜到高质量带白底图的商品页
+        query = f"{brand} {model} 京东 详情图"
+        encoded_query = urllib.parse.quote(query)
+        
+        # https://www.bing.com/images/search?q=...
+        return f"https://www.bing.com/images/search?q={encoded_query}&FORM=HDRSC2"
