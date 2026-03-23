@@ -41,6 +41,9 @@ class Hardware(SQLModel, table=True):
     isDiscount: bool = Field(default=False)
     isRecommended: bool = Field(default=False)
     isNew: bool = Field(default=False)
+    costPrice: float = Field(default=0.0)
+    profitType: str = Field(default="fixed") # 'fixed' or 'percent'
+    profitValue: float = Field(default=0.0)
 
 class PriceHistory(SQLModel, table=True):
     __tablename__ = "price_history"

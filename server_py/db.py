@@ -27,9 +27,9 @@ from sqlalchemy import event
 @event.listens_for(engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL")
-    cursor.execute("PRAGMA synchronous=NORMAL")
-    cursor.execute("PRAGMA cache_size=-64000") # 64MB cache max
+#    cursor.execute("PRAGMA journal_mode=WAL")
+#    cursor.execute("PRAGMA synchronous=NORMAL")
+#    cursor.execute("PRAGMA cache_size=-64000") # 64MB cache max
     cursor.close()
 
 def init_db():
@@ -77,6 +77,12 @@ def _migrate_extra_columns():
             cursor.execute("ALTER TABLE hardware ADD COLUMN imageSource TEXT NOT NULL DEFAULT 'user'")
         if 'specsSource' not in hw_cols:
             cursor.execute("ALTER TABLE hardware ADD COLUMN specsSource TEXT NOT NULL DEFAULT 'user'")
+        if 'costPrice' not in hw_cols:
+            cursor.execute("ALTER TABLE hardware ADD COLUMN costPrice REAL NOT NULL DEFAULT 0.0")
+        if 'profitType' not in hw_cols:
+            cursor.execute("ALTER TABLE hardware ADD COLUMN profitType TEXT NOT NULL DEFAULT 'fixed'")
+        if 'profitValue' not in hw_cols:
+            cursor.execute("ALTER TABLE hardware ADD COLUMN profitValue REAL NOT NULL DEFAULT 0.0")
             
         # Add Indexes for performance optimization
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_configs_userId ON configs(userId)")

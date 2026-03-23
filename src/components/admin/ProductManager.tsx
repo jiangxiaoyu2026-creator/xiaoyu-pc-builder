@@ -135,13 +135,17 @@ export default function ProductManager() {
     const filtered = products; // Sorting is now handled on the server
 
     const handleExportHardware = () => {
-        const headers = ['ID', '分类', '品牌', '型号', '售价', '状态', '排序', '规格参数'];
+        const headers = ['ID', '分类', '品牌', '型号', '售价', '成本价', '利润类型', '利润值', '毛利率%', '状态', '排序', '规格参数'];
         const rows = filtered.map(p => [
             p.id,
             (CATEGORY_MAP[p.category]?.label || p.category),
             p.brand,
             p.model,
             p.price,
+            p.costPrice ?? 0,
+            p.profitType === 'percent' ? '百分比' : '固定金额',
+            p.profitValue ?? 0,
+            p.price ? (((p.price - (p.costPrice ?? 0)) / p.price) * 100).toFixed(1) : 0,
             p.status === 'active' ? '上架' : '下架',
             p.sortOrder,
             `"${JSON.stringify(p.specs).replace(/"/g, "'")}"`
@@ -383,8 +387,9 @@ export default function ProductManager() {
                             <th className="px-6 py-4">硬件信息</th>
                             <th className="px-6 py-4">关键参数</th>
                             <th className="px-6 py-4 text-right w-40 cursor-pointer hover:bg-slate-100" onClick={() => handleSort('price')}>
-                                <div className="flex items-center justify-end gap-1">售价 (可编辑) <SortIcon active={sortConfig?.key === 'price'} dir={sortConfig?.direction} /></div>
+                                <div className="flex items-center justify-end gap-1">售价 (预览) <SortIcon active={sortConfig?.key === 'price'} dir={sortConfig?.direction} /></div>
                             </th>
+                            <th className="px-6 py-4 text-right w-36">成本/利润</th>
                             <th className="px-6 py-4 text-center cursor-pointer hover:bg-slate-100" onClick={() => handleSort('sortOrder')}>
                                 <div className="flex items-center justify-center gap-1">排序 <SortIcon active={sortConfig?.key === 'sortOrder'} dir={sortConfig?.direction} /></div>
                             </th>
@@ -568,11 +573,22 @@ export default function ProductManager() {
                                             <span className="text-slate-400 text-xs">¥</span>
                                             <input
                                                 type="number"
-                                                className="w-24 text-right font-bold text-indigo-600 bg-slate-50 border border-slate-200 rounded px-2 py-1 focus:border-indigo-500 focus:outline-none transition-colors"
+                                                className="w-24 text-right font-bold text-indigo-600 bg-indigo-50/30 border border-indigo-100 rounded px-2 py-1 focus:border-indigo-500 focus:outline-none transition-colors"
                                                 value={p.price}
                                                 onChange={(e) => handlePriceChange(p.id, Number(e.target.value))}
                                                 onBlur={() => handlePriceBlur(p.id)}
                                             />
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex flex-col items-end gap-0.5">
+                                            <div className="text-[10px] text-slate-400">成本: ¥{p.costPrice || 0}</div>
+                                            <div className="text-xs font-bold text-emerald-600">
+                                                利润: {p.profitType === 'percent' ? `${p.profitValue}%` : `¥${p.profitValue}`}
+                                            </div>
+                                            <div className="text-[9px] bg-slate-100 px-1 rounded text-slate-400">
+                                                毛利率: {p.price ? (((p.price - (p.costPrice || 0)) / p.price) * 100).toFixed(1) : 0}%
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
@@ -630,7 +646,7 @@ export default function ProductManager() {
 
 function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem | null, onClose: () => void, onSave: (p: HardwareItem, keepOpen?: boolean) => void }) {
     const [formData, setFormData] = useState<Partial<HardwareItem>>(
-        product || { category: 'cpu', brand: '', model: '', price: 0, sortOrder: 99, status: 'active', specs: {} }
+        product || { category: 'cpu', brand: '', model: '', price: 0, sortOrder: 99, status: 'active', specs: {}, costPrice: 0, profitType: 'fixed', profitValue: 0 }
     );
 
     const [brandSuggestions, setBrandSuggestions] = useState<string[]>([]);
@@ -681,13 +697,12 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Default to close (keepOpen=false)
-        onSave({ ...formData, stock: 0, costPrice: 0 } as HardwareItem, false);
+        onSave(formData as HardwareItem, false);
     };
 
     const handleSaveAndContinue = (e: React.MouseEvent) => {
         e.preventDefault();
-        onSave({ ...formData, stock: 0, costPrice: 0 } as HardwareItem, true);
+        onSave(formData as HardwareItem, true);
         // Reset form for next entry (keep category for convenience)
         setFormData({
             category: formData.category,
@@ -699,7 +714,10 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
             specs: {},
             isRecommended: false,
             isDiscount: false,
-            image: undefined
+            image: undefined,
+            costPrice: 0,
+            profitType: 'fixed',
+            profitValue: 0
         });
     };
 
@@ -782,13 +800,97 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 mb-1">售价 (¥)</label>
-                                <input type="number" className="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono font-bold text-indigo-600" value={formData.price} onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} required />
+                            <div className="space-y-4 border-r border-slate-100 pr-4">
+                                <label className="block text-xs font-bold text-slate-500 mb-1">成本价 (¥)</label>
+                                <input 
+                                    type="number" 
+                                    className="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono" 
+                                    value={formData.costPrice} 
+                                    onChange={e => {
+                                        const cp = Number(e.target.value);
+                                        // 联动逻辑：重计售价
+                                        let newPrice = formData.price || 0;
+                                        if (formData.profitType === 'fixed') {
+                                            newPrice = cp + (formData.profitValue || 0);
+                                        } else {
+                                            newPrice = cp * (1 + (formData.profitValue || 0) / 100);
+                                        }
+                                        setFormData({ ...formData, costPrice: cp, price: Number(newPrice.toFixed(2)) });
+                                    }} 
+                                    placeholder="输入进货价"
+                                />
+                                
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 mb-1">利润类型</label>
+                                        <select 
+                                            className="w-full border border-slate-200 rounded-lg p-2 text-xs"
+                                            value={formData.profitType}
+                                            onChange={e => {
+                                                const pt = e.target.value as 'fixed' | 'percent';
+                                                let newPrice = formData.price || 0;
+                                                if (pt === 'fixed') {
+                                                    newPrice = (formData.costPrice || 0) + (formData.profitValue || 0);
+                                                } else {
+                                                    newPrice = (formData.costPrice || 0) * (1 + (formData.profitValue || 0) / 100);
+                                                }
+                                                setFormData({ ...formData, profitType: pt, price: Number(newPrice.toFixed(2)) });
+                                            }}
+                                        >
+                                            <option value="fixed">固定金额</option>
+                                            <option value="percent">百分比</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 mb-1">
+                                            {formData.profitType === 'fixed' ? '利润值 (¥)' : '利润率 (%)'}
+                                        </label>
+                                        <input 
+                                            type="number" 
+                                            className="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono" 
+                                            value={formData.profitValue}
+                                            onChange={e => {
+                                                const pv = Number(e.target.value);
+                                                let newPrice = formData.price || 0;
+                                                if (formData.profitType === 'fixed') {
+                                                    newPrice = (formData.costPrice || 0) + pv;
+                                                } else {
+                                                    newPrice = (formData.costPrice || 0) * (1 + pv / 100);
+                                                }
+                                                setFormData({ ...formData, profitValue: pv, price: Number(newPrice.toFixed(2)) });
+                                            }}
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 mb-1">排序权重</label>
-                                <input type="number" className="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono" value={formData.sortOrder} onChange={e => setFormData({ ...formData, sortOrder: Number(e.target.value) })} />
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1 flex justify-between">
+                                        <span>最终售价 (¥)</span>
+                                        <span className="text-[10px] text-indigo-500 font-normal">基于成本+利润联动</span>
+                                    </label>
+                                    <input 
+                                        type="number" 
+                                        className="w-full border-2 border-indigo-100 bg-indigo-50/30 rounded-lg p-2 text-lg font-mono font-bold text-indigo-600 focus:border-indigo-500 outline-none" 
+                                        value={formData.price} 
+                                        onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} 
+                                        required 
+                                    />
+                                    <div className="mt-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                        <div className="flex justify-between text-[10px] text-slate-400">
+                                            <span>预估毛利:</span>
+                                            <span className="font-bold text-emerald-600">¥{Number(( (formData.price || 0) - (formData.costPrice || 0) ).toFixed(2))}</span>
+                                        </div>
+                                        <div className="flex justify-between text-[10px] text-slate-400">
+                                            <span>毛利率:</span>
+                                            <span className="font-bold text-emerald-600">{formData.price ? (( (formData.price - (formData.costPrice || 0)) / formData.price ) * 100).toFixed(1) : 0}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1">排序权重</label>
+                                    <input type="number" className="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono text-slate-500" value={formData.sortOrder} onChange={e => setFormData({ ...formData, sortOrder: Number(e.target.value) })} />
+                                </div>
                             </div>
                         </div>
 

@@ -19,6 +19,10 @@ export interface HardwareItem {
     isDiscount?: boolean; // 折扣 (后台标记)
     isRecommended?: boolean; // 推荐 (后台标记)
     isNew?: boolean; // 新品 (后台标记)
+    previousPrice?: number; // 上次价格（用于价格变动显示）
+    costPrice?: number; // 成本价
+    profitType?: 'fixed' | 'percent'; // 利润类型
+    profitValue?: number; // 利润值
     updatedAt?: string;
 }
 

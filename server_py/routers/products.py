@@ -429,6 +429,14 @@ async def create_product(
             if hasattr(existing, key):
                 setattr(existing, key, value)
         new_price = existing.price
+        # 如果更新了成本或利润，且本次没有显式提供售价，则联动计算
+        if any(k in product_data for k in ["costPrice", "profitType", "profitValue"]):
+            if "price" not in product_data or product_data.get("price") == 0:
+                if existing.profitType == "fixed":
+                    existing.price = existing.costPrice + existing.profitValue
+                elif existing.profitType == "percent":
+                    existing.price = existing.costPrice * (1 + existing.profitValue / 100)
+                new_price = existing.price
         # 智能记录价格变动（2小时合并）
         _log_price_change(session, existing, old_price, new_price)
         session.add(existing)
@@ -445,11 +453,21 @@ async def create_product(
         status=product_data.get("status", "active"),
         sortOrder=product_data.get("sortOrder", 100),
         specs=specs_value,
+        costPrice=product_data.get("costPrice", 0.0),
+        profitType=product_data.get("profitType", "fixed"),
+        profitValue=product_data.get("profitValue", 0.0),
         image=product_data.get("image"),
         isDiscount=product_data.get("isDiscount", False),
         isRecommended=product_data.get("isRecommended", False),
         isNew=product_data.get("isNew", False)
     )
+
+    # 自动计算逻辑：如果提供了 costPrice 且 price 为 0 或 None，则尝试计算
+    if (new_product.price == 0 or new_product.price is None) and new_product.costPrice > 0:
+        if new_product.profitType == "fixed":
+            new_product.price = new_product.costPrice + new_product.profitValue
+        elif new_product.profitType == "percent":
+            new_product.price = new_product.costPrice * (1 + new_product.profitValue / 100)
     session.add(new_product)
     session.commit()
     session.refresh(new_product)
@@ -472,6 +490,17 @@ async def update_product(
             value = _serialize_specs(value)
         if hasattr(product, key):
             setattr(product, key, value)
+
+    # 如果更新了成本或利润，且没有显式更新售价（或者售价为0），则重新计算售价
+    # 注意：这里我们假设如果用户在 UI 上手动改了售价，则以售价为准；如果改的是成本/利润，则联动。
+    # 为了简化逻辑，我们检查输入数据中是否包含成本或利润字段
+    if any(k in product_data for k in ["costPrice", "profitType", "profitValue"]):
+        # 只有当 price 没有在本次请求中被显式修改，或者 price 被设为 0 时，才执行自动联动
+        if "price" not in product_data or product_data.get("price") == 0:
+            if product.profitType == "fixed":
+                product.price = product.costPrice + product.profitValue
+            elif product.profitType == "percent":
+                product.price = product.costPrice * (1 + product.profitValue / 100)
 
     new_price = product.price
     # 智能记录价格变动（2小时合并）
