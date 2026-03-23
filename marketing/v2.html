@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>小鱼装机 - 2.0 硬核行情旗舰版</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #050510;
+            --accent-nv: #76b900; /* NVIDIA Green */
+            --accent-amd: #ed1c24; /* AMD Red */
+            --accent-drop: #00f2fe;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-dark);
+            color: white;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container { width: 1080px; padding: 40px; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--accent-drop);
+            padding-bottom: 20px;
+        }
+
+        .title-group h1 { font-size: 4rem; margin: 0; letter-spacing: -2px; font-weight: 900; font-style: italic; }
+        .title-group p { color: var(--accent-drop); margin: 5px 0 0 0; font-weight: bold; }
+
+        .date-box { text-align: right; }
+        .date-box .day { font-size: 3rem; font-weight: 900; line-height: 1; }
+        .date-box .month { font-size: 1.2rem; color: var(--text-secondary); }
+
+        /* Grid for Charts */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+            position: relative;
+        }
+
+        .chart-card h3 { 
+            font-size: 0.8rem; margin: 5px 0; color: #aaa; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+        }
+
+        .chart-container { height: 120px; width: 100%; }
+
+        .chart-card .low-label {
+            position: absolute; top: 10px; right: 10px;
+            font-size: 0.7rem; color: #ffd700; font-weight: bold;
+        }
+
+        /* Main Table Section */
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .table-section {
+            background: var(--glass);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: #888; font-size: 0.9rem; padding: 10px; border-bottom: 1px solid var(--border); }
+        td { padding: 15px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+
+        .item-row { display: flex; align-items: center; gap: 10px; }
+        .item-row img { width: 40px; height: 40px; object-fit: contain; border-radius: 4px; background: white; }
+
+        .price-val { font-size: 1.4rem; font-weight: 800; }
+        .drop-val { color: var(--accent-drop); font-weight: bold; }
+        .up-val { color: var(--accent-amd); font-weight: bold; }
+
+        .ppr-tag {
+            background: #222; border: 1px solid #444; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;
+        }
+
+        /* Sidebar Focus */
+        .focus-item {
+            background: linear-gradient(180deg, rgba(118, 185, 0, 0.2), transparent);
+            border: 1px solid var(--accent-nv);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .focus-item img { width: 220px; height: 220px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 0 20px var(--accent-nv)); }
+        .focus-item h2 { margin: 0; font-size: 1.8rem; }
+        .focus-item .price { font-size: 3rem; font-weight: 900; color: var(--accent-nv); }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="title-group">
+                <h1>HARDWARE REPORT</h1>
+                <p>DIYXX.COM | 小鱼装机专业行情实验室</p>
+            </div>
+            <div class="date-box">
+                <div class="day">23</div>
+                <div class="month">MARCH 2026</div>
+            </div>
+        </header>
+
+        <div class="chart-grid" id="chart-grid">
+            <!-- 16 Line Charts will be injected here -->
+        </div>
+
+        <div class="main-content">
+            <div class="table-section">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>型号 (Model)</th>
+                            <th>今日低价</th>
+                            <th>较昨日</th>
+                            <th>全网低价</th>
+                            <th>性价比(PPR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="sidebar">
+                <div class="focus-item">
+                    <p style="color:var(--accent-nv)">今日降价之王</p>
+                    <img id="focus-img" src="https://www.asus.com/media/Odin/Websites/global/graphics-cards/rog-strix-rtx4070ti-o12g-gaming/rog-strix-rtx4070ti-o12g-gaming-01.png" alt="">
+                    <h2 id="focus-name">RTX 4070 Ti Super</h2>
+                    <div class="price" id="focus-price">¥6299</div>
+                    <div class="ppr-tag" style="margin-top:10px; border-color:var(--accent-nv)">比昨日下调 ¥200 | 达成史低</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Demo Data Generation
+        const products = [
+            { id: 1, brand: 'NVIDIA', model: 'RTX 5090', price: 12999, drop: -100, low: 12899, ppr: 98, img: 'https://m.media-amazon.com/images/I/617W777777L._AC_SL1500_.jpg' },
+            { id: 2, brand: 'NVIDIA', model: 'RTX 5080', price: 7999, drop: -250, low: 7999, ppr: 95, img: 'https://m.media-amazon.com/images/I/71777777777777.jpg' },
+            { id: 3, brand: 'AMD', model: 'RX 7900 XTX', price: 6299, drop: 0, low: 5999, ppr: 92, img: 'https://www.sapphiretech.com/picture/Product/1690779476_1690779476_1690779476.jpg' },
+            { id: 4, brand: 'NVIDIA', model: 'RTX 4070 Ti S', price: 6299, drop: -200, low: 6299, ppr: 89, img: 'https://www.asus.com/media/Odin/Websites/global/graphics-cards/rog-strix-rtx4070ti-o12g-gaming/rog-strix-rtx4070ti-o12g-gaming-01.png' },
+            { id: 5, brand: 'AMD', model: 'RX 7800 XT', price: 3699, drop: -50, low: 3499, ppr: 87, img: 'https://www.sapphiretech.com/picture/Product/1690779476_1690779476_1690779476.jpg' },
+            { id: 6, brand: 'NVIDIA', model: 'RTX 4060 Ti', price: 2899, drop: 30, low: 2799, ppr: 85, img: 'https://m.media-amazon.com/images/I/617W777777L._AC_SL1500_.jpg' }
+        ];
+
+        // Init Charts
+        const grid = document.getElementById('chart-grid');
+        for (let i = 0; i < 12; i++) {
+            const p = products[i % products.length];
+            const color = p.brand === 'NVIDIA' ? '#76b900' : '#ed1c24';
+            
+            const card = document.createElement('div');
+            card.className = 'chart-card';
+            card.innerHTML = `
+                <h3>${p.model}</h3>
+                <div class="low-label">史低: ¥${p.low}</div>
+                <div class="chart-container" id="chart-${i}"></div>
+            `;
+            grid.appendChild(card);
+
+            const chart = echarts.init(document.getElementById(`chart-${i}`));
+            const data = Array.from({length: 15}, () => p.price + Math.random() * 500 - 250);
+            data[14] = p.price; // today
+
+            chart.setOption({
+                grid: { left: 0, right: 0, top: 10, bottom: 0 },
+                xAxis: { type: 'category', show: false },
+                yAxis: { type: 'value', show: false, min: 'dataMin', max: 'dataMax' },
+                series: [{
+                    data: data,
+                    type: 'line',
+                    smooth: true,
+                    symbol: 'none',
+                    lineStyle: { color: color, width: 3 },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: color + '44' },
+                            { offset: 1, color: color + '00' }
+                        ])
+                    }
+                }]
+            });
+        }
+
+        // Init Table
+        const tbody = document.getElementById('table-body');
+        products.forEach(p => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <div class="item-row">
+                        <img src="${p.img}" alt="">
+                        <span>${p.model}</span>
+                    </div>
+                </td>
+                <td class="price-val">¥${p.price}</td>
+                <td class="${p.drop <= 0 ? 'drop-val' : 'up-val'}">${p.drop <= 0 ? '↓' : '↑'}${Math.abs(p.drop)}</td>
+                <td style="color:#888">¥${p.low}</td>
+                <td><span class="ppr-tag" style="color:${p.ppr > 90 ? 'var(--accent-drop)' : 'white'}">${p.ppr} 评分</span></td>
+            `;
+            tbody.appendChild(row);
+        });
+
+    </script>
+</body>
+</html>

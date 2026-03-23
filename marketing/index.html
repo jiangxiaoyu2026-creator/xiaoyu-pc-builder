@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小鱼装机 - 每日硬核行情</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent-down: #00f2fe; /* Price Down */
+            --accent-up: #ff4b2b;   /* Price Up */
+            --accent-low: #f9d423;  /* All-time Low */
+        }
+
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin: 0;
+            background: linear-gradient(to right, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        header .date {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+
+        .category-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            border-left: 5px solid var(--accent-down);
+            padding-left: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-weight: 400;
+            padding: 12px;
+            border-bottom: 1px solid var(--glass-border);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px dotted rgba(255, 255, 255, 0.05);
+            font-size: 1rem;
+        }
+
+        .model-name {
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .price-today {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .change-tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .tag-down { background: rgba(0, 242, 254, 0.1); color: var(--accent-down); }
+        .tag-up { background: rgba(255, 75, 43, 0.1); color: var(--accent-up); }
+        .tag-low { background: rgba(249, 212, 35, 0.1); color: var(--accent-low); border: 1px solid var(--accent-low); }
+
+        .history-low {
+            color: var(--accent-low);
+            font-size: 0.9rem;
+        }
+
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .watermark {
+            opacity: 0.3;
+            letter-spacing: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="main-title">HARDWARE QUOTE</h1>
+            <div class="date" id="current-date">2026.03.23 | 小鱼装机专业行情</div>
+        </header>
+
+        <div id="content-root">
+            <!-- Dynamically injected categories -->
+        </div>
+
+        <footer>
+            <div class="watermark">DIYXX.COM - XIAOYU PC BUILDER</div>
+            <div>数据来源：小鱼装机实时数据库 | 仅供参考</div>
+        </footer>
+    </div>
+
+    <script>
+        async function fetchDailySummary() {
+            try {
+                // In a real environment, this fetches from /api/marketing/daily-summary
+                // For demonstration, we simulate the structure
+                // const response = await fetch('/api/marketing/daily-summary');
+                // const data = await response.json();
+                
+                // Demo Data for initial look
+                const data = {
+                    date: "2026-03-23",
+                    categoryHighlights: {
+                        "cpu": [
+                            { name: "Intel i5-13600KF", todayPrice: 1699, yesterdayPrice: 1749, historyLow: 1650, change: -50, changePercent: -2.8 },
+                            { name: "AMD R7 7800X3D", todayPrice: 2499, yesterdayPrice: 2499, historyLow: 2399, change: 0, changePercent: 0 }
+                        ],
+                        "gpu": [
+                            { name: "ASUS RTX 4070 Ti Super", todayPrice: 6299, yesterdayPrice: 6499, historyLow: 6299, change: -200, changePercent: -3.1 },
+                            { name: "Colorful RTX 4060 Ti", todayPrice: 2999, yesterdayPrice: 2899, historyLow: 2799, change: 100, changePercent: 3.4 }
+                        ]
+                    }
+                };
+
+                render(data);
+            } catch (e) {
+                console.error("Failed to load data", e);
+            }
+        }
+
+        function render(data) {
+            const root = document.getElementById('content-root');
+            root.innerHTML = '';
+
+            for (const [cat, items] of Object.entries(data.categoryHighlights)) {
+                if (items.length === 0) continue;
+                
+                const section = document.createElement('div');
+                section.className = 'category-section';
+                
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.innerText = cat.toUpperCase() + ' 行情直击';
+                section.appendChild(title);
+
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th width="40%">型号</th>
+                            <th width="20%">今日低价</th>
+                            <th width="20%">涨跌情况</th>
+                            <th width="20%">历史底价</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
+                            <tr>
+                                <td class="model-name">${item.name}</td>
+                                <td class="price-today">¥${item.todayPrice}</td>
+                                <td>
+                                    <span class="change-tag ${item.change < 0 ? 'tag-down' : (item.change > 0 ? 'tag-up' : '')}">
+                                        ${item.change < 0 ? '↓' + Math.abs(item.change) : (item.change > 0 ? '↑' + item.change : '持平')}
+                                    </span>
+                                </td>
+                                <td class="history-low">
+                                    ${item.todayPrice <= item.historyLow ? '<span class="change-tag tag-low">史低!</span>' : '¥' + item.historyLow}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                section.appendChild(table);
+                root.appendChild(section);
+            }
+        }
+
+        fetchDailySummary();
+    </script>
+</body>
+</html>

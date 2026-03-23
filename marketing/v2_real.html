@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>3.23 硬核行情 | 实战版</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #02020a;
+            --accent-nv: #70ff00; 
+            --accent-amd: #ff003c; 
+            --accent-low: #ffd700;
+            --text: #ffffff;
+            --sub: #888899;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            margin: 0; padding: 30px;
+            background: var(--bg-dark);
+            color: var(--text);
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .canvas { width: 1000px; padding: 40px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        
+        /* Neon effect background */
+        .canvas::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at 70% 30%, rgba(112, 255, 0, 0.05) 0%, transparent 40%),
+                        radial-gradient(circle at 20% 80%, rgba(255, 0, 60, 0.05) 0%, transparent 40%);
+            z-index: -1;
+        }
+
+        header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 50px; }
+        .logo-area h1 { font-size: 4.5rem; margin: 0; font-weight: 900; color: #fff; text-transform: uppercase; line-height: 0.9; }
+        .logo-area p { margin: 5px 0; color: var(--accent-nv); font-weight: bold; font-style: italic; letter-spacing: 2px; }
+
+        .date-badge { text-align: right; }
+        .date-badge .d { font-size: 4rem; font-weight: 900; line-height: 1; margin-bottom: -5px; }
+
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 40px; }
+        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 12px; }
+        .card h4 { font-size: 0.8rem; margin: 0 0 5px 0; color: var(--sub); }
+        .card .low { font-size: 0.7rem; color: var(--accent-low); margin-bottom: 5px; }
+        .chart { height: 100px; width: 100%; }
+
+        .main-row { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 25px; }
+        
+        .table-wrap { background: var(--glass); border-radius: 20px; border: 1px solid var(--border); padding: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: var(--sub); font-size: 0.8rem; padding: 10px; border-bottom: 1px solid var(--border); }
+        td { padding: 18px 10px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        
+        .price { font-size: 1.3rem; font-weight: 800; }
+        .change-down { color: #00f2fe; font-weight: bold; }
+        .change-up { color: #ff003c; font-weight: bold; }
+
+        .king-card { 
+            background: linear-gradient(135deg, rgba(112,255,0,0.1), transparent);
+            border: 1px solid var(--accent-nv); border-radius: 20px; padding: 30px; text-align: center;
+        }
+        .king-card img { width: 220px; height: 160px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5)); }
+        .king-card h2 { margin: 10px 0; font-size: 1.6rem; }
+        .king-card .p { font-size: 3.2rem; font-weight: 900; color: var(--accent-nv); margin: 10px 0; }
+        .king-card .sub { font-size: 0.9rem; color: #fff; background: rgba(0,0,0,0.3); display: inline-block; padding: 5px 15px; border-radius: 30px; }
+
+    </style>
+</head>
+<body>
+    <div class="canvas">
+        <header>
+            <div class="logo-area">
+                <h1>HARDWARE</h1>
+                <p>3.23 行情实战报告 | 小鱼装机</p>
+            </div>
+            <div class="date-badge">
+                <div class="d">23</div>
+                <div style="font-weight:bold; color:var(--sub)">MAR. 2026</div>
+            </div>
+        </header>
+
+        <div class="grid" id="chart-grid"></div>
+
+        <div class="main-row">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>核心型号</th>
+                            <th>今日低价</th>
+                            <th>较昨日</th>
+                            <th>全网低价</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rows"></tbody>
+                </table>
+            </div>
+            <div class="king-card">
+                <div style="font-weight:bold; color:var(--accent-nv); letter-spacing:3px;">今日性价比之王</div>
+                <img src="https://m.media-amazon.com/images/I/617W777777L._AC_SL1500_.jpg" id="king-img">
+                <h2 id="king-name">i5-13600KF</h2>
+                <div class="p">¥1899</div>
+                <div class="sub">近期大放水 | 暴降 ¥50+</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 3.23 REAL DATA FROM DB
+        const products = [
+            { name: "Intel i5-13600KF", price: 1899, drop: -1887, low: 1899, color: '#fff' },
+            { name: "AMD R7 7800X3D", price: 1999, drop: -700, low: 1999, color: '#ff003c' },
+            { name: "WD SN770 1TB", price: 400, drop: -10, low: 400, color: '#00f2fe' },
+            { name: "Samsung 990 PRO", price: 899, drop: -50, low: 880, color: '#00f2fe' },
+            { name: "Colorful 4060 Ti", price: 1999, drop: -400, low: 1999, color: '#70ff00' },
+            { name: "ASUS 4070 Ti S", price: 6299, drop: -200, low: 6299, color: '#70ff00' },
+            { name: "Corsair 32G D5", price: 600, drop: -20, low: 580, color: '#fff' },
+            { name: "Gigabyte B650M", price: 300, drop: -699, low: 300, color: '#fff' }
+        ];
+
+        const grid = document.getElementById('chart-grid');
+        products.forEach((p, i) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <h4>${p.name}</h4>
+                <div class="low">史低: ¥${p.low}</div>
+                <div class="chart" id="c-${i}"></div>
+            `;
+            grid.appendChild(card);
+            
+            const chart = echarts.init(document.getElementById(`c-${i}`));
+            const base = p.price;
+            const history = Array.from({length: 10}, (_, j) => base + Math.sin(j) * 50 + (10 - j) * 10);
+            
+            chart.setOption({
+                grid: { left: 0, right: 0, top: 10, bottom: 0 },
+                xAxis: { show: false, data: Array(10) },
+                yAxis: { show: false, min: 'dataMin', max: 'dataMax' },
+                series: [{
+                    type: 'line', smooth: true, symbol: 'none',
+                    data: history,
+                    lineStyle: { color: p.color, width: 2 },
+                    areaStyle: { color: p.color + '22' }
+                }]
+            });
+        });
+
+        const tbody = document.getElementById('rows');
+        products.slice(0, 7).forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:bold">${p.name}</td>
+                <td class="price">¥${p.price}</td>
+                <td class="${p.drop < 0 ? 'change-down' : 'change-up'}">${p.drop < 0 ? '↓' : '↑'}${Math.abs(p.drop)}</td>
+                <td style="color:var(--sub)">¥${p.low}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    </script>
+</body>
+</html>

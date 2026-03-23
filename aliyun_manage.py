@@ -119,6 +119,19 @@ class AliyunECSManager:
         except Exception as e:
             return f"Error triggering sync: {str(e)}"
 
+    def run_remote_command(self, command: str):
+        run_command_request = ecs_20140526_models.RunCommandRequest(
+            region_id=self.region_id,
+            instance_id=[self.instance_id],
+            type='RunShellScript',
+            command_content=base64.b64encode(command.encode('utf-8')).decode('utf-8')
+        )
+        try:
+            response = self.client.run_command(run_command_request)
+            return f"Command triggered. InvokeId: {response.body.invoke_id}"
+        except Exception as e:
+            return f"Error triggering command: {str(e)}"
+
     def get_invocation_status(self, invoke_id):
         describe_invocations_request = ecs_20140526_models.DescribeInvocationsRequest(
             region_id=self.region_id,
@@ -133,10 +146,28 @@ class AliyunECSManager:
         except Exception as e:
             return f"Error: {str(e)}"
 
+    def get_invocation_output(self, invoke_id):
+        describe_invocation_results_request = ecs_20140526_models.DescribeInvocationResultsRequest(
+            region_id=self.region_id,
+            invoke_id=invoke_id
+        )
+        try:
+            response = self.client.describe_invocation_results(describe_invocation_results_request)
+            results = response.body.invocation.invocation_results.invocation_result
+            if results:
+                # Get the last result
+                output = results[0].output
+                if output:
+                    return base64.b64decode(output).decode('utf-8')
+                return "No output yet"
+            return "Result not found"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
 if __name__ == '__main__':
     manager = AliyunECSManager()
     if len(sys.argv) < 2:
-        print("Usage: python aliyun_manage.py [status|start|stop|reboot|sync-env|check <invoke_id>]")
+        print("Usage: python aliyun_manage.py [status|start|stop|reboot|sync-env|run <cmd>|output <invoke_id>|check <invoke_id>]")
         sys.exit(1)
     
     command = sys.argv[1].lower()
@@ -150,6 +181,10 @@ if __name__ == '__main__':
         print(manager.reboot_instance())
     elif command == 'sync-env':
         print(manager.sync_env_to_server())
+    elif command == 'run' and len(sys.argv) > 2:
+        print(manager.run_remote_command(sys.argv[2]))
+    elif command == 'output' and len(sys.argv) > 2:
+        print(manager.get_invocation_output(sys.argv[2]))
     elif command == 'check' and len(sys.argv) > 2:
         print(manager.get_invocation_status(sys.argv[2]))
     else:
