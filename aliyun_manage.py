@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import base64
 from typing import List
 from dotenv import load_dotenv
 
@@ -89,10 +90,53 @@ class AliyunECSManager:
         except Exception as e:
             return f"Error: {str(e)}"
 
+    def sync_env_to_server(self):
+        # Read local .env
+        try:
+            with open('.env', 'r') as f:
+                env_content = f.read()
+        except Exception as e:
+            return f"Error reading local .env: {str(e)}"
+
+        # Prepare base64 content
+        encoded_content = base64.b64encode(env_content.encode('utf-8')).decode('utf-8')
+        
+        # Shell command to write to server
+        # We use base64 to avoid quoting issues
+        remote_path = '/root/pcbuilder/.env'
+        command_content = f"echo '{encoded_content}' | base64 -d > {remote_path} && echo 'Sync successful'"
+        
+        run_command_request = ecs_20140526_models.RunCommandRequest(
+            region_id=self.region_id,
+            instance_id=[self.instance_id],
+            type='RunShellScript',
+            command_content=base64.b64encode(command_content.encode('utf-8')).decode('utf-8')
+        )
+        
+        try:
+            response = self.client.run_command(run_command_request)
+            return f"Sync command triggered. CommandId: {response.body.command_id}"
+        except Exception as e:
+            return f"Error triggering sync: {str(e)}"
+
+    def get_invocation_status(self, invoke_id):
+        describe_invocations_request = ecs_20140526_models.DescribeInvocationsRequest(
+            region_id=self.region_id,
+            invoke_id=invoke_id
+        )
+        try:
+            response = self.client.describe_invocations(describe_invocations_request)
+            invocations = response.body.invocations.invocation
+            if invocations:
+                return invocations[0].invocation_status
+            return "Invocation not found"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
 if __name__ == '__main__':
     manager = AliyunECSManager()
     if len(sys.argv) < 2:
-        print("Usage: python aliyun_manage.py [status|start|stop|reboot]")
+        print("Usage: python aliyun_manage.py [status|start|stop|reboot|sync-env|check <invoke_id>]")
         sys.exit(1)
     
     command = sys.argv[1].lower()
@@ -104,5 +148,9 @@ if __name__ == '__main__':
         print(manager.stop_instance())
     elif command == 'reboot':
         print(manager.reboot_instance())
+    elif command == 'sync-env':
+        print(manager.sync_env_to_server())
+    elif command == 'check' and len(sys.argv) > 2:
+        print(manager.get_invocation_status(sys.argv[2]))
     else:
         print(f"Unknown command: {command}")
