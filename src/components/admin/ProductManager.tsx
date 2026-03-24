@@ -343,7 +343,7 @@ export default function ProductManager() {
         <div className="space-y-6">
             <div className="flex justify-between items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
                 <div className="flex-1 min-w-0 flex flex-col gap-2">
-                    <div className="flex gap-2 overflow-x-auto pb-1 mask-gradient-right">
+                    <div className="flex gap-2 flex-wrap pb-1">
                         <button onClick={() => setFilterCat('all')} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === 'all' && !filterAi ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>全部 ({categoryCounts['total'] || 0})</button>
                         <button 
                             onClick={() => { setFilterAi(!filterAi); setPage(1); }} 
@@ -358,7 +358,7 @@ export default function ProductManager() {
                         ))}
                     </div>
                     {/* Brand Filter */}
-                    <div className="flex gap-2 overflow-x-auto pb-1 mask-gradient-right border-t border-slate-100 pt-2">
+                    <div className="flex gap-2 flex-wrap pb-1 border-t border-slate-100 pt-2 items-center">
                         <span className="text-xs font-bold text-slate-400 self-center shrink-0">品牌:</span>
                         <button onClick={() => setFilterBrand('all')} className={`shrink-0 px-3 py-1 rounded text-xs font-bold whitespace-nowrap transition-colors ${filterBrand === 'all' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>全部</button>
                         {brands.map(b => (
@@ -620,7 +620,7 @@ export default function ProductManager() {
                                             <span className="text-slate-400 text-xs">¥</span>
                                             <input
                                                 type="number"
-                                                className="w-24 text-right font-bold text-indigo-600 bg-indigo-50/30 border border-indigo-100 rounded px-2 py-1 focus:border-indigo-500 focus:outline-none transition-colors"
+                                                className="w-24 text-right font-bold text-indigo-600 bg-indigo-50/30 border border-indigo-100 rounded px-2 py-1 focus:border-indigo-500 focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 value={p.price}
                                                 onChange={(e) => handlePriceChange(p.id, Number(e.target.value))}
                                                 onBlur={() => handlePriceBlur(p.id)}
@@ -642,7 +642,7 @@ export default function ProductManager() {
                                         <div className="flex items-center justify-center">
                                             <input
                                                 type="number"
-                                                className="w-16 text-center font-mono text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all"
+                                                className="w-16 text-center font-mono text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 value={p.sortOrder}
                                                 onChange={(e) => {
                                                     const newVal = Number(e.target.value);
