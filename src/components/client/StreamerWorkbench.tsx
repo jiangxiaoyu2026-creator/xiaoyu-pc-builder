@@ -955,42 +955,39 @@ function MarketTrendsSidebar({ theme }: { theme: ThemeConfig }) {
                 </h3>
             </div>
             
-            <div className={`p-4 flex-1 overflow-y-auto space-y-4 ${theme.rowBg}`}>
-                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center justify-between">
+            <div className={`p-4 flex-1 space-y-4 ${theme.rowBg} relative overflow-hidden group`}>
+                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center justify-between sticky top-0 z-10 bg-inherit pb-2">
                     <span>基准时间: {new Date().toLocaleDateString('zh-CN')}</span>
                     <span className="text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-500/20 px-2 py-0.5 rounded">大盘波动频繁</span>
                 </div>
                 
-                {mockTrends.map(item => {
-                    const diff = Math.abs(item.newPrice - item.oldPrice);
-                    return (
-                        <div key={item.id} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
-                            <div className={`font-bold text-[13px] ${theme.textTitle}`}>{item.name}</div>
-                            <div className="flex items-center justify-between text-xs font-mono">
-                                <span className="text-slate-400 dark:text-slate-500 line-through">¥{item.oldPrice}</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-slate-800 dark:text-slate-200 font-black text-sm">¥{item.newPrice}</span>
-                                    {item.trend === 'up' ? (
-                                        <span className="text-rose-500 bg-rose-50 dark:bg-rose-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                                            <ChevronUp size={12} strokeWidth={3} /> {diff}
-                                        </span>
-                                    ) : (
-                                        <span className="text-emerald-500 bg-emerald-50 dark:bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                                            <ChevronDown size={12} strokeWidth={3} /> {diff}
-                                        </span>
-                                    )}
+                {/* Auto-scrolling container */}
+                <div className="absolute left-4 right-4 animate-scroll-vertical group-hover:[animation-play-state:paused] flex flex-col gap-4">
+                    {/* Double the list for seamless looping */}
+                    {[...mockTrends, ...mockTrends].map((item, idx) => {
+                        const diff = Math.abs(item.newPrice - item.oldPrice);
+                        return (
+                            <div key={`${item.id}-${idx}`} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-sm shrink-0">
+                                <div className={`font-bold text-[13px] ${theme.textTitle}`}>{item.name}</div>
+                                <div className="flex items-center justify-between text-xs font-mono">
+                                    <span className="text-slate-400 dark:text-slate-500 line-through">¥{item.oldPrice}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-slate-800 dark:text-slate-200 font-black text-sm">¥{item.newPrice}</span>
+                                        {item.trend === 'up' ? (
+                                            <span className="text-rose-500 bg-rose-50 dark:bg-rose-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
+                                                <ChevronUp size={12} strokeWidth={3} /> {diff}
+                                            </span>
+                                        ) : (
+                                            <span className="text-emerald-500 bg-emerald-50 dark:bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
+                                                <ChevronDown size={12} strokeWidth={3} /> {diff}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            <div className={`p-4 border-t ${theme.borderColor} ${theme.footerBg}`}>
-                <button className={`w-full py-3 rounded-xl bg-gradient-to-r ${theme.gradient} text-white font-bold text-sm shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 hover:opacity-90`}>
-                    <Sparkles size={16} />
-                    一键生成行情视频脚本
-                </button>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
@@ -1001,11 +998,14 @@ export default function StreamerWorkbenchWrapper(props: any) {
     const [themeKey, setThemeKey] = useState<ThemeColor>('default');
     return (
         <ThemeContext.Provider value={{ theme: THEMES[themeKey], currentThemeKey: themeKey, setTheme: setThemeKey }}>
-            <div className="flex flex-col xl:flex-row gap-6 items-start">
-                <div className="flex-1 min-w-0 w-full">
-                    <StreamerWorkbench {...props} />
+            <div className="flex flex-col xl:flex-row gap-6 items-stretch">
+                <div className="flex-1 min-w-0 w-full flex flex-col">
+                    {/* Wrap StreamerWorkbench in a flex container so it decides the main height */}
+                    <div className="flex-1">
+                        <StreamerWorkbench {...props} />
+                    </div>
                 </div>
-                <div className="w-full xl:w-[340px] shrink-0 sticky top-24">
+                <div className="w-full xl:w-[340px] shrink-0 sticky top-24 self-start h-[calc(100vh-8rem)]">
                     <MarketTrendsSidebar theme={THEMES[themeKey]} />
                 </div>
             </div>

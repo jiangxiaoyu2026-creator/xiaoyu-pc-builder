@@ -11,6 +11,23 @@ export const COMPATIBILITY_FIELDS: Partial<Record<Category, { key: string; label
         { key: 'memoryType', label: '内存支持', type: 'select', options: ['DDR4', 'DDR5', 'DDR4/DDR5'] },
         { key: 'wattage', label: 'TDP功耗 (W)', type: 'number' },
         { key: 'integratedGpu', label: '是否带核显', type: 'select', options: ['是', '否'] },
+        // 扩展参数
+        { key: 'architecture', label: '内核架构', type: 'text' },
+        { key: 'lithography', label: '制程工艺', type: 'text' },
+        { key: 'tdpMax', label: '最大睿频功耗', type: 'text' },
+        { key: 'l2Cache', label: '二级缓存', type: 'text' },
+        { key: 'l3Cache', label: '三级缓存', type: 'text' },
+        { key: 'pcie', label: 'PCIe版本', type: 'text' },
+        // 跑分指标
+        { key: 'cinebenchR23_single', label: 'Cinebench R23 单核', type: 'number' },
+        { key: 'cinebenchR23_multi', label: 'Cinebench R23 多核', type: 'number' },
+        { key: 'cinebench2024_single', label: 'Cinebench 2024 单核', type: 'number' },
+        { key: 'cinebench2024_multi', label: 'Cinebench 2024 多核', type: 'number' },
+        { key: 'geekbench6_single', label: 'Geekbench 6 单核', type: 'number' },
+        { key: 'geekbench6_multi', label: 'Geekbench 6 多核', type: 'number' },
+        { key: 'passmark_single', label: 'PassMark 单核', type: 'number' },
+        { key: 'passmark_multi', label: 'PassMark 多核', type: 'number' },
+        { key: 'blender', label: 'Blender 跑分', type: 'number' },
     ],
     mainboard: [
         { key: 'socket', label: 'CPU接口 (如 LGA1700)', type: 'text' },
