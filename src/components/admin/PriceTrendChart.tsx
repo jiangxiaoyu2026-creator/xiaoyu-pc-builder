@@ -116,7 +116,9 @@ export default function PriceTrendChart() {
     const [subcategories, setSubcategories] = useState<string[]>([]);
     const [selectedProductId, setSelectedProductId] = useState<string>('');
     const [days, setDays] = useState(30);
-    const [magnitudeFilter, setMagnitudeFilter] = useState<'all' | 'large' | 'small'>('all'); // Magnitude filter
+    const [magnitudeFilter, setMagnitudeFilter] = useState<'all' | 'large' | 'small'>('all');
+    const [brandFilter, setBrandFilter] = useState<string>(''); // AMD / Intel / NVIDIA etc.
+    const [gpuChipFilter, setGpuChipFilter] = useState<string>(''); // RTX 5060 / RTX 5070 etc.
 
     const fetchData = async () => {
         setLoading(true);
@@ -173,8 +175,26 @@ export default function PriceTrendChart() {
     useEffect(() => { 
         // Whenever category changes, we should reset subcategory unless we want it sticky
         if (category !== 'ram') setRamGeneration('');
+        setBrandFilter('');
+        setGpuChipFilter('');
         fetchData(); 
     }, [category, subcategory, ramGeneration, days]);
+
+    // GPU chipset series extracted from product names
+    const gpuChipSeries = (() => {
+        if (category !== 'gpu' || !trendData?.products) return [];
+        const seriesSet = new Set<string>();
+        for (const p of trendData.products) {
+            const m = p.name.match(/(?:RTX\s*\d{4}(?:\s*Ti)?|RX\s*\d{4}(?:\s*XT)?|GTX\s*\d{4})/i);
+            if (m) seriesSet.add(m[0].toUpperCase().replace(/\s+/g, ' '));
+        }
+        // Sort: newer series first
+        return Array.from(seriesSet).sort((a, b) => {
+            const na = parseInt(a.replace(/\D/g, '')) || 0;
+            const nb = parseInt(b.replace(/\D/g, '')) || 0;
+            return nb - na;
+        });
+    })();
 
     if (loading) {
         return (
@@ -279,6 +299,43 @@ export default function PriceTrendChart() {
                         </select>
                     )}
 
+                    {['cpu', 'gpu', 'mainboard'].includes(category) && (
+                        <div className="flex gap-1 border border-slate-200 rounded-lg p-0.5 bg-slate-50">
+                            {[
+                                { value: '', label: '全部' },
+                                ...(category === 'gpu'
+                                    ? [{ value: 'NVIDIA', label: 'N卡' }, { value: 'AMD', label: 'A卡' }]
+                                    : [{ value: 'AMD', label: 'AMD' }, { value: 'Intel', label: 'Intel' }]
+                                )
+                            ].map(b => (
+                                <button
+                                    key={b.value}
+                                    onClick={() => { setBrandFilter(b.value); setSelectedProductId(''); }}
+                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                                        brandFilter === b.value
+                                            ? 'bg-indigo-600 text-white shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-700 hover:bg-white'
+                                    }`}
+                                >
+                                    {b.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {category === 'gpu' && gpuChipSeries.length > 0 && (
+                        <select
+                            value={gpuChipFilter}
+                            onChange={e => { setGpuChipFilter(e.target.value); setSelectedProductId(''); }}
+                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                        >
+                            <option value="">全部芯片组</option>
+                            {gpuChipSeries.map(s => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
+                    )}
+
                     {category !== 'all' && trendData && trendData.products && (
                         <select
                             value={selectedProductId}
@@ -286,9 +343,27 @@ export default function PriceTrendChart() {
                             className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none max-w-[200px]"
                         >
                             <option value="">查看单品走势...</option>
-                            {trendData.products.map(p => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
+                            {trendData.products
+                                .filter(p => {
+                                    // Brand filter
+                                    if (brandFilter) {
+                                        const name = p.name;
+                                        const matched = name.toUpperCase().includes(brandFilter.toUpperCase())
+                                            || (brandFilter === 'NVIDIA' && /RTX|GTX|nvidia|英伟达|GeForce/i.test(name))
+                                            || (brandFilter === 'AMD' && /AMD|锐龙|Ryzen|RX\s|Radeon/i.test(name))
+                                            || (brandFilter === 'Intel' && /Intel|英特尔|酷睿|Core/i.test(name));
+                                        if (!matched) return false;
+                                    }
+                                    // GPU chip filter
+                                    if (gpuChipFilter) {
+                                        const chipRegex = new RegExp(gpuChipFilter.replace(/\s+/g, '\\s*'), 'i');
+                                        if (!chipRegex.test(p.name)) return false;
+                                    }
+                                    return true;
+                                })
+                                .map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                ))}
                         </select>
                     )}
                 </div>
@@ -606,6 +681,10 @@ export default function PriceTrendChart() {
                                     <tr 
                                         key={i} 
                                         onClick={() => {
+                                            // Auto-switch category if needed so the chart loads this product's data
+                                            if (category !== c.category) {
+                                                setCategory(c.category);
+                                            }
                                             setSelectedProductId(String(c.hardwareId));
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
