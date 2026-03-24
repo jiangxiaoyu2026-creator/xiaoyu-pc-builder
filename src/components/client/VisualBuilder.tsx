@@ -9,23 +9,7 @@ import { aiBuilder } from '../../services/aiBuilder';
 import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
 
-// Mock "Ghost Cursor" component
-function GhostCursor({ x, y, active, status }: { x: number, y: number, active: boolean, status: string }) {
-    return (
-        <div
-            className={`fixed pointer-events-none z-[100] transition-all duration-500 ease-out flex items-center justify-center -translate-x-1/2 -translate-y-1/2 ${active && status ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
-            style={{
-                left: x,
-                top: y,
-            }}
-        >
-            <div className="bg-indigo-600/95 backdrop-blur-md text-white text-[11px] px-3 py-1.5 rounded-full shadow-xl shadow-indigo-600/20 whitespace-nowrap font-bold tracking-wide border border-indigo-400/30 flex items-center gap-1.5">
-                <Sparkles size={12} className="animate-pulse" />
-                {status || '...'}
-            </div>
-        </div>
-    );
-}
+
 
 function VisualBuilder({
     buildList,
@@ -76,37 +60,12 @@ function VisualBuilder({
         }
     }, [openAiModal, onAiModalClose]);
     const [aiActiveCategory, setAiActiveCategory] = useState<Category | null>(null);
-    const [ghostPos, setGhostPos] = useState({ x: 0, y: 0 });
-    const [ghostStatus, setGhostStatus] = useState('');
-    const [isAiExecuting, setIsAiExecuting] = useState(false);
     const [aiResult, setAiResult] = useState<{ description: string } | null>(null);
 
     // Track row elements for ghost cursor target
     const rowRefs = useState<Record<string, HTMLDivElement | null>>({})[0];
     const modalSearchInputRef = useState<{ current: HTMLInputElement | null }>({ current: null })[0];
     const modalItemRefs = useState<Record<string, HTMLDivElement | null>>({})[0];
-
-    const updateGhost = (el: HTMLElement | null, status: string = '') => {
-        if (el) {
-            if (window.innerWidth < 1024) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            const initialRect = el.getBoundingClientRect();
-            const offsetX = initialRect.width / 2 + (Math.random() * 20 - 10);
-            const offsetY = initialRect.height / 2 + (Math.random() * 10 - 5);
-
-            const update = () => {
-                const rect = el.getBoundingClientRect();
-                setGhostPos({ x: rect.left + offsetX, y: rect.top + offsetY });
-            };
-
-            update();
-            const interval = setInterval(update, 50);
-            setTimeout(() => clearInterval(interval), 600);
-
-            setGhostStatus(status);
-        }
-    };
 
 
     const [sysAnnouncement, setSysAnnouncement] = useState<SystemAnnouncementSettings | null>(null);
@@ -162,10 +121,8 @@ function VisualBuilder({
             }
 
             setShowAiModal(false);
-            setIsAiExecuting(true);
 
-            setGhostStatus('AI 介入中...');
-            await new Promise(r => setTimeout(r, 400));
+            await new Promise(r => setTimeout(r, 100));
 
             for (const entry of buildList) {
                 const cat = entry.category;
@@ -173,53 +130,8 @@ function VisualBuilder({
 
                 // Added strict type guard to prevent crashes when AI returns broken JSON format.
                 if (targetItem && typeof targetItem === 'object' && typeof targetItem.model === 'string') {
-                    const rowEl = rowRefs[entry.id];
-
-                    if (rowEl) {
-                        updateGhost(rowEl, `正在规划 ${CATEGORY_MAP[entry.category]}...`);
-                        await new Promise(r => setTimeout(r, 300));
-
-                        openSelector(entry);
-                        await new Promise(r => setTimeout(r, 800)); // Increased wait for category fetch
-
-                        const searchEl = modalSearchInputRef.current;
-                        if (searchEl) {
-                            updateGhost(searchEl, '搜索型号中...');
-                            await new Promise(r => setTimeout(r, 200));
-
-                            const searchTerm = targetItem.model?.split(' ')[0] || '';
-                            for (let i = 0; i < searchTerm.length; i++) {
-                                setModalSearch(prev => prev + searchTerm[i]);
-                                await new Promise(r => setTimeout(r, 40));
-                            }
-                            await new Promise(r => setTimeout(r, 300));
-                        }
-
-                        await new Promise(r => setTimeout(r, 200));
-
-                        const itemEl = modalItemRefs[targetItem.id];
-                        if (itemEl) {
-                            updateGhost(itemEl, '目标锁定');
-                            await new Promise(r => setTimeout(r, 300));
-
-                            onUpdate(entry.id, { item: targetItem, customPrice: undefined, customName: undefined });
-
-                            setModalCategory(null);
-                            setModalEntryId(null);
-
-                            setGhostStatus('已确认');
-                            await new Promise(r => setTimeout(r, 200));
-                        } else {
-                            onUpdate(entry.id, { item: targetItem, customPrice: undefined, customName: undefined });
-                            setModalCategory(null);
-                            await new Promise(r => setTimeout(r, 100));
-                        }
-
-                        setModalSearch('');
-
-                    } else {
-                        onUpdate(entry.id, { item: targetItem, customPrice: undefined, customName: undefined });
-                    }
+                    // Update instantly, removing the chaotic fake cursor and search animation
+                    onUpdate(entry.id, { item: targetItem, customPrice: undefined, customName: undefined });
                 }
             }
 
@@ -233,7 +145,6 @@ function VisualBuilder({
             console.error("AI Generation Failed:", error);
             setShowAiModal(false);
             setAiActiveCategory(null);
-            setIsAiExecuting(false);
             alert("AI 生成失败，请重试");
         }
     }, [buildList, onUpdate, rowRefs, modalSearchInputRef, modalItemRefs]);
@@ -391,7 +302,7 @@ function VisualBuilder({
                 </div>
             )}
 
-            <GhostCursor x={ghostPos.x} y={ghostPos.y} active={isAiExecuting} status={ghostStatus} />
+
 
             {/* Mobile Column View (Compact & Premium) */}
             <div className="lg:hidden flex flex-col bg-slate-50/50 relative">
