@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import {
     XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, BarChart, Bar, Legend,
+    ResponsiveContainer,
     LineChart, Line
 } from 'recharts';
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter } from 'lucide-react';
@@ -84,27 +84,7 @@ const sortCategories = (categories: string[]) => {
     });
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-        return (
-            <div className="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 min-w-[150px]">
-                <p className="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2">{label}</p>
-                <div className="space-y-2">
-                    {payload.map((entry: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between gap-6 text-sm">
-                            <span className="flex items-center gap-2 font-medium" style={{ color: entry.color }}>
-                                <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: entry.color }} />
-                                {entry.name === 'upCount' ? '涨价数量' : '降价数量'}
-                            </span>
-                            <span className="font-bold text-slate-800">{entry.value}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
-    }
-    return null;
-};
+
 
 export default function PriceTrendChart() {
     const [data, setData] = useState<PriceTrendData | null>(null);
@@ -180,15 +160,37 @@ export default function PriceTrendChart() {
         fetchData(); 
     }, [category, subcategory, ramGeneration, days]);
 
-    // GPU chipset series extracted from product names
+    // Helper: does a product name match current brand filter?
+    const matchesBrand = (name: string): boolean => {
+        if (!brandFilter) return true;
+        return name.toUpperCase().includes(brandFilter.toUpperCase())
+            || (brandFilter === 'NVIDIA' && /RTX|GTX|nvidia|英伟达|GeForce/i.test(name))
+            || (brandFilter === 'AMD' && /AMD|锐龙|Ryzen|RX\s|Radeon/i.test(name))
+            || (brandFilter === 'Intel' && /Intel|英特尔|酷睿|Core/i.test(name));
+    };
+
+    // Helper: does a product name match current GPU chip filter?
+    const matchesChip = (name: string): boolean => {
+        if (!gpuChipFilter) return true;
+        const chipRegex = new RegExp(gpuChipFilter.replace(/([()])/g, '\\$1').replace(/\s+/g, '\\s*'), 'i');
+        return chipRegex.test(name);
+    };
+
+    // GPU chipset series extracted from product names (includes memory variant for Ti)
     const gpuChipSeries = (() => {
         if (category !== 'gpu' || !trendData?.products) return [];
         const seriesSet = new Set<string>();
         for (const p of trendData.products) {
-            const m = p.name.match(/(?:RTX\s*\d{4}(?:\s*Ti)?|RX\s*\d{4}(?:\s*XT)?|GTX\s*\d{4})/i);
-            if (m) seriesSet.add(m[0].toUpperCase().replace(/\s+/g, ' '));
+            // Match chip + optional Ti + optional memory (8G/16G/8GB/16GB)
+            const m = p.name.match(/(?:RTX\s*\d{4}(?:\s*Ti)?(?:\s*\d+G(?:B)?)?|RX\s*\d{4}(?:\s*XT)?(?:\s*\d+G(?:B)?)?|GTX\s*\d{4})/i);
+            if (m) {
+                let label = m[0].toUpperCase().replace(/\s+/g, ' ').trim();
+                // Normalize: "16GB" -> "16G"
+                label = label.replace(/(\d+)GB/i, '$1G');
+                seriesSet.add(label);
+            }
         }
-        // Sort: newer series first
+        // Sort: newer series first, then by memory size
         return Array.from(seriesSet).sort((a, b) => {
             const na = parseInt(a.replace(/\D/g, '')) || 0;
             const nb = parseInt(b.replace(/\D/g, '')) || 0;
@@ -206,7 +208,7 @@ export default function PriceTrendChart() {
 
     if (!data) return null;
 
-    const { todaySummary, chartData, recentChanges } = data;
+    const { todaySummary, recentChanges } = data;
 
     return (
         <div className="space-y-6">
@@ -344,23 +346,7 @@ export default function PriceTrendChart() {
                         >
                             <option value="">查看单品走势...</option>
                             {trendData.products
-                                .filter(p => {
-                                    // Brand filter
-                                    if (brandFilter) {
-                                        const name = p.name;
-                                        const matched = name.toUpperCase().includes(brandFilter.toUpperCase())
-                                            || (brandFilter === 'NVIDIA' && /RTX|GTX|nvidia|英伟达|GeForce/i.test(name))
-                                            || (brandFilter === 'AMD' && /AMD|锐龙|Ryzen|RX\s|Radeon/i.test(name))
-                                            || (brandFilter === 'Intel' && /Intel|英特尔|酷睿|Core/i.test(name));
-                                        if (!matched) return false;
-                                    }
-                                    // GPU chip filter
-                                    if (gpuChipFilter) {
-                                        const chipRegex = new RegExp(gpuChipFilter.replace(/\s+/g, '\\s*'), 'i');
-                                        if (!chipRegex.test(p.name)) return false;
-                                    }
-                                    return true;
-                                })
+                                .filter(p => matchesBrand(p.name) && matchesChip(p.name))
                                 .map(p => (
                                     <option key={p.id} value={p.id}>{p.name}</option>
                                 ))}
@@ -383,53 +369,6 @@ export default function PriceTrendChart() {
                 </div>
             </div>
 
-            {/* 折线图 */}
-            {chartData.length > 0 ? (
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-800 mb-4">调价次数走势</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }} barGap={8}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                            <XAxis
-                                dataKey="date"
-                                tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
-                                tickFormatter={(v: string) => v.slice(5)}
-                                axisLine={false}
-                                tickLine={false}
-                                dy={10}
-                            />
-                            <YAxis
-                                tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }}
-                                axisLine={false}
-                                tickLine={false}
-                                dx={-10}
-                            />
-                            <Tooltip
-                                content={<CustomTooltip />}
-                                cursor={{ fill: '#f8fafc' }}
-                            />
-                            <Legend
-                                wrapperStyle={{ paddingTop: '20px' }}
-                                formatter={(value: string) => {
-                                    const labels: Record<string, string> = {
-                                        upCount: '涨价 (件)',
-                                        downCount: '降价 (件)'
-                                    };
-                                    return <span className="text-sm font-medium text-slate-600 ml-1">{labels[value] || value}</span>;
-                                }}
-                            />
-                            <Bar dataKey="upCount" fill="#f43f5e" maxBarSize={32} radius={[6, 6, 0, 0]} />
-                            <Bar dataKey="downCount" fill="#10b981" maxBarSize={32} radius={[6, 6, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
-            ) : (
-                <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center">
-                    <TrendingDown size={40} className="mx-auto text-slate-300 mb-3" />
-                    <p className="text-slate-400 text-sm">暂无价格变动记录</p>
-                    <p className="text-slate-300 text-xs mt-1">修改硬件价格后，变动记录将自动显示在此处</p>
-                </div>
-            )}
 
             {/* 品类均价走势 */}
             {trendData && trendData.categoryTotalAvgTrend && trendData.categoryTotalAvgTrend.length > 0 && category !== 'all' && (() => {
@@ -673,9 +612,22 @@ export default function PriceTrendChart() {
                             <tbody className="divide-y divide-slate-100">
                                 {recentChanges
                                     .filter(c => {
-                                        if (magnitudeFilter === 'all') return true;
-                                        const absChange = Math.abs(c.changeAmount);
-                                        return magnitudeFilter === 'large' ? absChange >= 50 : absChange < 50;
+                                        // Magnitude filter
+                                        if (magnitudeFilter !== 'all') {
+                                            const absChange = Math.abs(c.changeAmount);
+                                            if (magnitudeFilter === 'large' ? absChange < 50 : absChange >= 50) return false;
+                                        }
+                                        // Brand filter (apply when a specific category is selected)
+                                        if (brandFilter && ['cpu', 'gpu', 'mainboard'].includes(category)) {
+                                            if (c.category !== category) return false;
+                                            if (!matchesBrand(c.hardwareName)) return false;
+                                        }
+                                        // GPU chip filter
+                                        if (gpuChipFilter && category === 'gpu') {
+                                            if (c.category !== 'gpu') return false;
+                                            if (!matchesChip(c.hardwareName)) return false;
+                                        }
+                                        return true;
                                     })
                                     .map((c, i) => (
                                     <tr 
