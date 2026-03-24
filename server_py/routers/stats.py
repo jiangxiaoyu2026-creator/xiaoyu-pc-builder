@@ -426,28 +426,57 @@ async def get_product_price_history(
 
     changes = session.exec(query.limit(2000)).all()
 
-    # --- Build per-product price timeline ---
-    # For each product, reconstruct a price curve from change events
-    # Each change gives us (date, newPrice), so we can build a step function
-    product_timelines = defaultdict(list)  # hardwareId -> [{date, price, name}]
+    # --- Build per-product DAILY price timeline ---
+    # Reconstruct full daily price for each product using backward reconstruction
+    # This ensures each product shows a price on every day, not just change-event days
     product_names = {}  # hardwareId -> name
+    product_changes = defaultdict(list)  # hardwareId -> [change records, newest first]
 
     for c in changes:
-        date_key = c.changedAt[:10]
-        product_timelines[c.hardwareId].append({
-            "date": date_key,
-            "price": c.newPrice,
-            "oldPrice": c.oldPrice,
-        })
         product_names[c.hardwareId] = c.hardwareName
+        product_changes[c.hardwareId].append(c)
 
-    # Format product trends for frontend
+    # Generate date range
+    current_date_for_products = datetime.utcnow() + timedelta(hours=8)
+    all_dates = sorted([(current_date_for_products - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days + 1)])
+
+    # Look up current prices for products that have changes (batch query to avoid N+1)
+    product_current_prices = {}
+    if product_names:
+        hw_ids = list(product_names.keys())
+        hw_rows = session.exec(
+            select(Hardware.id, Hardware.price).where(Hardware.id.in_(hw_ids))
+        ).all()
+        for row in hw_rows:
+            product_current_prices[row[0]] = row[1]
+
     product_trends = []
-    for hw_id, points in product_timelines.items():
+    for hw_id, hw_changes in product_changes.items():
+        # Sort changes newest-first for backward reconstruction
+        sorted_changes = sorted(hw_changes, key=lambda x: x.changedAt, reverse=True)
+        changes_by_date_product = defaultdict(list)
+        for c in sorted_changes:
+            changes_by_date_product[c.changedAt[:10]].append(c)
+
+        # Start from current price and walk backward
+        current_price = product_current_prices.get(hw_id, sorted_changes[0].newPrice)
+        daily_points = []
+
+        for d in reversed(all_dates):
+            daily_points.append({
+                "date": d,
+                "price": current_price,
+                "oldPrice": current_price,
+            })
+            # Reverse any changes on this day to get previous day's price
+            for c in changes_by_date_product.get(d, []):
+                current_price = c.oldPrice
+
+        daily_points.reverse()
         product_trends.append({
             "hardwareId": hw_id,
             "name": product_names[hw_id],
-            "points": points  # [{date, price, oldPrice}]
+            "points": daily_points
         })
 
     # --- Category average price trend ---

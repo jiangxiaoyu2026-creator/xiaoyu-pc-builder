@@ -446,27 +446,25 @@ export default function PriceTrendChart() {
                                             content={({ active, payload, label }: any) => {
                                                 if (active && payload && payload.length) {
                                                     const point = payload[0].payload;
-                                                    const diff = point.price - point.oldPrice;
+                                                    const idx = productData.points.findIndex(p => p.date === point.date);
+                                                    const prevPrice = idx > 0 ? productData.points[idx - 1].price : point.price;
+                                                    const diff = point.price - prevPrice;
                                                     return (
                                                         <div className="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50">
                                                             <p className="font-bold text-slate-800 mb-2">{label}</p>
-                                                            <div className="flex items-center justify-between gap-4 text-sm mb-1">
-                                                                <span className="text-slate-600">调整后:</span>
+                                                            <div className="flex items-center justify-between gap-4 text-sm mb-2">
+                                                                <span className="text-slate-600">当日价格:</span>
                                                                 <span className="font-bold text-slate-800">¥{point.price}</span>
                                                             </div>
-                                                            <div className="flex items-center justify-between gap-4 text-sm mb-2 pb-2 border-b border-slate-100">
-                                                                <span className="text-slate-600">调整前:</span>
-                                                                <span className="text-slate-500 line-through">¥{point.oldPrice}</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1 text-xs font-bold">
-                                                                {diff > 0 ? (
-                                                                    <span className="text-rose-500 flex items-center"><ArrowUpRight size={14} /> 涨 ¥{diff}</span>
-                                                                ) : diff < 0 ? (
-                                                                    <span className="text-emerald-500 flex items-center"><ArrowDownRight size={14} /> 降 ¥{Math.abs(diff)}</span>
-                                                                ) : (
-                                                                    <span className="text-slate-400">无变化</span>
-                                                                )}
-                                                            </div>
+                                                            {diff !== 0 && (
+                                                                <div className="flex items-center gap-1 text-xs font-bold pt-2 border-t border-slate-100">
+                                                                    {diff > 0 ? (
+                                                                        <span className="text-rose-500 flex items-center"><ArrowUpRight size={14} /> 较前日涨 ¥{diff}</span>
+                                                                    ) : (
+                                                                        <span className="text-emerald-500 flex items-center"><ArrowDownRight size={14} /> 较前日降 ¥{Math.abs(diff)}</span>
+                                                                    )}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     );
                                                 }
@@ -474,11 +472,11 @@ export default function PriceTrendChart() {
                                             }}
                                         />
                                         <Line 
-                                            type="stepAfter" 
+                                            type="monotone" 
                                             dataKey="price" 
                                             stroke="#f59e0b" 
                                             strokeWidth={3}
-                                            dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                                            dot={{ fill: '#f59e0b', strokeWidth: 2, r: 3 }}
                                             activeDot={{ r: 6, strokeWidth: 0 }}
                                         />
                                     </LineChart>
