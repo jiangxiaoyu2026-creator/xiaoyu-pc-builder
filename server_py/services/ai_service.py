@@ -125,8 +125,8 @@ class AiService:
             normal_cat_items = [i for i in items if i.id not in seen_ids]
             normal_cat_items.sort(key=lambda x: x.price)
             
-            # 每个类别最多 8 个候选项（减少上下文提升速度）
-            spots_left = 8 - len(forced_cat_items)
+            # 每个类别最多 5 个候选项（减少上下文提升速度）
+            spots_left = 5 - len(forced_cat_items)
             selected = forced_cat_items.copy()
             
             if spots_left > 0 and normal_cat_items:
@@ -145,14 +145,9 @@ class AiService:
                     "brand": item.brand,
                     "model": item.model,
                     "price": item.price,
-                    "memoryType": hw_specs.get('memoryType'),
                     "socket": hw_specs.get('socket'),
+                    "memoryType": hw_specs.get('memoryType'),
                     "formFactor": hw_specs.get('formFactor'),
-                    "maxGpuLength": hw_specs.get('maxGpuLength'),
-                    "maxCoolerHeight": hw_specs.get('maxCoolerHeight'),
-                    "length": hw_specs.get('length'),
-                    "height": hw_specs.get('height'),
-                    "specs": ", ".join(f"{k}: {v}" for k, v in list(hw_specs.items())[:5] if v and k not in important_keys)
                 })
         return final_list
 

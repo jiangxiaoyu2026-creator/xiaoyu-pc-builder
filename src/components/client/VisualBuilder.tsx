@@ -122,21 +122,26 @@ function VisualBuilder({
 
             setShowAiModal(false);
 
-            await new Promise(r => setTimeout(r, 100));
+            // 仪式感：逐个类别依次填入，每个间隔 250ms（没有混乱光标，干净利落）
+            await new Promise(r => setTimeout(r, 200));
 
             for (const entry of buildList) {
                 const cat = entry.category;
                 const targetItem = result.items[cat as keyof typeof result.items];
 
-                // Added strict type guard to prevent crashes when AI returns broken JSON format.
                 if (targetItem && typeof targetItem === 'object' && typeof targetItem.model === 'string') {
-                    // Update instantly, removing the chaotic fake cursor and search animation
+                    // 短暂高亮当前类别
+                    setAiActiveCategory(entry.category);
+                    await new Promise(r => setTimeout(r, 200));
+
+                    // 填入配置
                     onUpdate(entry.id, { item: targetItem, customPrice: undefined, customName: undefined });
+                    await new Promise(r => setTimeout(r, 150));
                 }
             }
 
             setAiActiveCategory(null);
-            await new Promise(r => setTimeout(r, 300));
+            await new Promise(r => setTimeout(r, 400));
             setAiResult({ description: result.description });
 
         } catch (error) {
