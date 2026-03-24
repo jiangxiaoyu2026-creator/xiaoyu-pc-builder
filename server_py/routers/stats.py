@@ -402,7 +402,8 @@ async def get_product_price_history(
     from datetime import timedelta
     from collections import defaultdict
 
-    cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
+    # Use CST (UTC+8) to match other endpoints and the changedAt stored with CST
+    cutoff = (datetime.utcnow() + timedelta(hours=8) - timedelta(days=days)).isoformat()
 
     # Build the query for price history records
     query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff)
@@ -463,27 +464,29 @@ async def get_product_price_history(
             hw_data = filtered_hw_data
         
         if hw_data:
+            # Build set of valid hardware IDs for quick lookup
+            valid_hw_ids = {h[0] for h in hw_data}
+            
             # Reconstruct history working backwards from today
-            current_date = datetime.utcnow()
+            # Use CST to match stored timestamps
+            current_date = datetime.utcnow() + timedelta(hours=8)
             dates = [(current_date - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days + 1)]
             dates.sort()
             
-            # Map changes by date for easy lookup
+            # Map changes by date - only for products in our filtered set
             changes_by_date = defaultdict(list)
             for c in sorted(changes, key=lambda x: x.changedAt, reverse=True):
-                # Apply subcategory filter to historical changes as well so we only reverse relevant ones
-                if subcategory and category in ['ram', 'disk']:
-                    c_label = _parse_ram_specs(c.hardwareName) if category == 'ram' else _parse_disk_specs(c.hardwareName)
-                    if subcategory not in c_label:
-                        continue
+                # Only include changes for products that belong to our filtered hw_data set
+                if c.hardwareId not in valid_hw_ids:
+                    continue
                 changes_by_date[c.changedAt[:10]].append(c)
             
-            temp_prices = {h[0]: h[3] for h in hw_data} # h.price is index 3 now
-            hw_created = {h[0]: h[4][:10] if h[4] else "2000-01-01" for h in hw_data} # h.createdAt is index 4 now
+            temp_prices = {h[0]: h[3] for h in hw_data} # h.price is index 3
+            hw_created = {h[0]: h[4][:10] if h[4] else "2000-01-01" for h in hw_data} # h.createdAt is index 4
             
             for d in reversed(dates):
-                # Only include products that were already created
-                valid_prices = [p for hid, p in temp_prices.items() if hw_created[hid] <= d]
+                # Only include products that were already created by this date
+                valid_prices = [p for hid, p in temp_prices.items() if hw_created.get(hid, "9999") <= d]
                 if valid_prices:
                     avg = sum(valid_prices) / len(valid_prices)
                     category_total_avg_trend.append({
@@ -491,7 +494,7 @@ async def get_product_price_history(
                         "avgPrice": round(avg, 2)
                     })
                 
-                # Reverse changes that happened on this day
+                # Reverse changes that happened on this day to get previous day's price
                 for c in changes_by_date.get(d, []):
                     if c.hardwareId in temp_prices:
                         temp_prices[c.hardwareId] = c.oldPrice

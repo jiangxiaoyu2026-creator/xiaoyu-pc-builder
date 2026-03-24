@@ -345,11 +345,11 @@ export default function PriceTrendChart() {
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                            {subcategory ? `${subcategory} ` : `${CATEGORY_LABELS[category] || category}品类`}历史基准均价走势
+                            {subcategory ? `${subcategory} ` : ramGeneration ? `${ramGeneration} ` : `${CATEGORY_LABELS[category] || category}品类`}历史基准均价走势
                         </h3>
                         <div className="flex gap-4">
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                <span className="w-3 h-0.5 bg-indigo-500"></span> 真实平均价格 ({subcategory ? '该规格所有商品' : '大类所有商品'})
+                                <span className="w-3 h-0.5 bg-indigo-500"></span> 真实平均价格 ({subcategory ? '该规格所有商品' : ramGeneration ? `所有${ramGeneration}商品` : '大类所有商品'})
                             </div>
                         </div>
                     </div>
