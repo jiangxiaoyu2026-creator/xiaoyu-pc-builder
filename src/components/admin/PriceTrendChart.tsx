@@ -472,9 +472,33 @@ export default function PriceTrendChart() {
                         }
                         return (
                             <>
-                                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
                                     {productData.name} 价格走势
                                 </h3>
+                                {(() => {
+                                    const pts = productData.points;
+                                    const firstPrice = pts[0]?.price;
+                                    const lastPrice = pts[pts.length - 1]?.price;
+                                    const periodChange = lastPrice && firstPrice ? lastPrice - firstPrice : 0;
+                                    const periodPct = firstPrice ? ((periodChange / firstPrice) * 100).toFixed(2) : '0';
+                                    const isUp = periodChange > 0;
+                                    const periodLabel = `${days}天`;
+                                    
+                                    return (
+                                        <div className="mb-4 flex items-center gap-3">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold ${
+                                                isUp ? 'bg-rose-50 text-rose-600 border border-rose-200' : periodChange < 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-50 text-slate-500 border border-slate-200'
+                                            }`}>
+                                                {isUp ? <ArrowUpRight size={16} /> : periodChange < 0 ? <ArrowDownRight size={16} /> : null}
+                                                {periodLabel}{isUp ? '涨幅' : periodChange < 0 ? '降幅' : '持平'}
+                                                {periodChange !== 0 && <> ¥{Math.abs(Math.round(periodChange * 100) / 100)} ({isUp ? '+' : ''}{periodPct}%)</>}
+                                            </span>
+                                            <span className="text-xs text-slate-400">
+                                                首日 ¥{firstPrice?.toFixed(2)} → 末日 ¥{lastPrice?.toFixed(2)}
+                                            </span>
+                                        </div>
+                                    );
+                                })()}
                                 <ResponsiveContainer width="100%" height={300}>
                                     <LineChart data={productData.points} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
