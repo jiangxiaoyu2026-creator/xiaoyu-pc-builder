@@ -172,36 +172,67 @@ export default function PriceTrendChart() {
     // Helper: does a product name match current GPU chip filter?
     const matchesChip = (name: string): boolean => {
         if (!gpuChipFilter) return true;
-        let pattern = gpuChipFilter.replace(/([()])/g, '\\$1').replace(/\s+/g, '\\s*');
-        // If filter doesn't include "Ti", add negative lookahead to exclude Ti variants
-        // e.g. "RTX 5060" should NOT match "RTX 5060 Ti"
-        if (!/Ti/i.test(gpuChipFilter)) {
-            pattern += '(?!\\s*Ti)';
+
+        const nameUpper = name.toUpperCase();
+        
+        // gpuChipFilter is typically "RTX 5080" or "RX 9070 XT"
+        const filterParts = gpuChipFilter.split(' ');
+        const numPart = filterParts.find(p => /\d{4}/.test(p)) || '';
+        const num = numPart.replace(/\D/g, ''); // just digits: 5080, 5090, 9070
+        const isD = /D/i.test(numPart); // e.g. 5090D
+
+        const suffixMatch = gpuChipFilter.match(/\b(TI|XTX|XT|SUPER)\b/i);
+        const suffix = suffixMatch ? suffixMatch[1].toUpperCase() : '';
+
+        // Must match the digits
+        if (!nameUpper.includes(num)) return false;
+
+        // Check for 'D' variant mismatch
+        if (!isD && nameUpper.includes(`${num}D`)) return false;
+        if (isD && !nameUpper.includes(`${num}D`)) return false;
+
+        // Check suffix (Ti, SUPER, XT, XTX)
+        if (!suffix) {
+            if (nameUpper.includes('TI')) return false;
+            if (nameUpper.includes('SUPER')) return false;
+            if (nameUpper.includes('XTX')) return false;
+            if (nameUpper.includes('XT')) return false;
+        } else {
+            if (!nameUpper.includes(suffix)) return false;
+            if (suffix === 'XT' && nameUpper.includes('XTX')) return false; // "XT" shouldn't match "XTX"
         }
-        // If filter doesn't include a memory size (e.g. "8G"), don't require it
-        const chipRegex = new RegExp(pattern, 'i');
-        return chipRegex.test(name);
+
+        return true;
     };
 
-    // GPU chipset series extracted from product names (includes memory variant for Ti)
+    // GPU chipset series extracted from product names
     const gpuChipSeries = (() => {
         if (category !== 'gpu' || !trendData?.products) return [];
         const seriesSet = new Set<string>();
         for (const p of trendData.products) {
-            // Match chip + optional Ti + optional memory (8G/16G/8GB/16GB)
-            const m = p.name.match(/(?:RTX\s*\d{4}(?:\s*Ti)?(?:\s*\d+G(?:B)?)?|RX\s*\d{4}(?:\s*XT)?(?:\s*\d+G(?:B)?)?|GTX\s*\d{4})/i);
+            // Simply extract the 4-digit number (plus 'D' if present) and the suffix
+            // This strictly groups by the core number (e.g., 5080, 5090D, 4060 Ti)
+            const m = p.name.match(/([1-9]\d{3}D?)(?:\s*(TI|SUPER|XTX|XT))?/i);
             if (m) {
-                let label = m[0].toUpperCase().replace(/\s+/g, ' ').trim();
-                // Normalize: "16GB" -> "16G"
-                label = label.replace(/(\d+)GB/i, '$1G');
+                let num = m[1].toUpperCase(); 
+                let suffix = m[2] ? m[2].toUpperCase() : '';
+                
+                let prefix = '';
+                if (num.startsWith('9') || num.startsWith('7') || num.startsWith('6')) {
+                     prefix = 'RX';
+                } else {
+                     prefix = 'RTX';
+                }
+                
+                let label = `${prefix} ${num}${suffix ? ' ' + suffix : ''}`;
                 seriesSet.add(label);
             }
         }
-        // Sort: newer series first, then by memory size
         return Array.from(seriesSet).sort((a, b) => {
             const na = parseInt(a.replace(/\D/g, '')) || 0;
             const nb = parseInt(b.replace(/\D/g, '')) || 0;
-            return nb - na;
+            if (nb !== na) return nb - na;
+            return a.localeCompare(b);
         });
     })();
 
@@ -383,28 +414,45 @@ export default function PriceTrendChart() {
                 const hasBrandOrChipFilter = !!(brandFilter || gpuChipFilter);
                 let avgTrend: Array<{ date: string; avgPrice: number }>;
 
-                if (hasBrandOrChipFilter && trendData.productTrends && trendData.productTrends.length > 0) {
-                    // Get matching product names
-                    const matchingProducts = trendData.productTrends.filter(pt => {
-                        const name = pt.name;
-                        return matchesBrand(name) && matchesChip(name);
-                    });
+                if (hasBrandOrChipFilter && trendData.products && trendData.products.length > 0) {
+                    // Get all matching active products
+                    const matchingProductsList = trendData.products.filter(p => matchesBrand(p.name) && matchesChip(p.name));
 
-                    if (matchingProducts.length > 0) {
-                        // Collect all dates and compute average price per date
-                        const dateMap = new Map<string, number[]>();
-                        for (const pt of matchingProducts) {
-                            for (const point of pt.points) {
-                                if (!dateMap.has(point.date)) dateMap.set(point.date, []);
-                                dateMap.get(point.date)!.push(point.price);
+                    if (matchingProductsList.length > 0) {
+                        const allDates = trendData.categoryTotalAvgTrend.map(t => t.date);
+                        
+                        const trendMap = new Map<string, Array<{date: string, price: number}>>();
+                        if (trendData.productTrends) {
+                            for (const pt of trendData.productTrends) {
+                                trendMap.set(String(pt.hardwareId), pt.points);
                             }
                         }
-                        avgTrend = Array.from(dateMap.entries())
-                            .map(([date, prices]) => ({
+
+                        avgTrend = allDates.map(date => {
+                            let sum = 0;
+                            let count = 0;
+                            for (const p of matchingProductsList) {
+                                const pId = String(p.id);
+                                const pTrend = trendMap.get(pId);
+                                if (pTrend) {
+                                    const point = pTrend.find(pt => pt.date === date);
+                                    if (point) {
+                                        sum += point.price;
+                                        count++;
+                                    } else {
+                                        sum += p.price;
+                                        count++;
+                                    }
+                                } else {
+                                    sum += p.price;
+                                    count++;
+                                }
+                            }
+                            return {
                                 date,
-                                avgPrice: Math.round((prices.reduce((a, b) => a + b, 0) / prices.length) * 100) / 100
-                            }))
-                            .sort((a, b) => a.date.localeCompare(b.date));
+                                avgPrice: count > 0 ? Math.round((sum / count) * 100) / 100 : 0
+                            };
+                        });
                     } else {
                         avgTrend = trendData.categoryTotalAvgTrend;
                     }
@@ -448,7 +496,7 @@ export default function PriceTrendChart() {
                         }`}>
                             {isUp ? <ArrowUpRight size={16} /> : periodChange < 0 ? <ArrowDownRight size={16} /> : null}
                             平均{periodLabel}{isUp ? '涨幅' : periodChange < 0 ? '降幅' : '持平'}
-                            {periodChange !== 0 && <> ¥{Math.abs(Math.round(periodChange * 100) / 100)} ({isUp ? '+' : ''}{periodPct}%)</>}
+                            {periodChange !== 0 && <>{isUp ? '+' : ''}{periodPct}% ¥{Math.abs(Math.round(periodChange * 100) / 100)}</>}
                         </span>
                         <span className="text-xs text-slate-400">
                             首日均价 ¥{firstPrice?.toFixed(2)} → 末日均价 ¥{lastPrice?.toFixed(2)}
@@ -554,7 +602,7 @@ export default function PriceTrendChart() {
                                             }`}>
                                                 {isUp ? <ArrowUpRight size={16} /> : periodChange < 0 ? <ArrowDownRight size={16} /> : null}
                                                 {periodLabel}{isUp ? '涨幅' : periodChange < 0 ? '降幅' : '持平'}
-                                                {periodChange !== 0 && <> ¥{Math.abs(Math.round(periodChange * 100) / 100)} ({isUp ? '+' : ''}{periodPct}%)</>}
+                                                {periodChange !== 0 && <>{isUp ? '+' : ''}{periodPct}% ¥{Math.abs(Math.round(periodChange * 100) / 100)}</>}
                                             </span>
                                             <span className="text-xs text-slate-400">
                                                 首日 ¥{firstPrice?.toFixed(2)} → 末日 ¥{lastPrice?.toFixed(2)}
