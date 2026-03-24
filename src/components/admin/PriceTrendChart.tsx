@@ -357,9 +357,18 @@ export default function PriceTrendChart() {
             )}
 
             {/* 品类均价走势 */}
-            {trendData && trendData.categoryTotalAvgTrend && trendData.categoryTotalAvgTrend.length > 0 && category !== 'all' && (
+            {trendData && trendData.categoryTotalAvgTrend && trendData.categoryTotalAvgTrend.length > 0 && category !== 'all' && (() => {
+                const avgTrend = trendData.categoryTotalAvgTrend;
+                const firstPrice = avgTrend[0]?.avgPrice;
+                const lastPrice = avgTrend[avgTrend.length - 1]?.avgPrice;
+                const periodChange = lastPrice && firstPrice ? lastPrice - firstPrice : 0;
+                const periodPct = firstPrice ? ((periodChange / firstPrice) * 100).toFixed(2) : '0';
+                const isUp = periodChange > 0;
+                const periodLabel = `${days}天`;
+
+                return (
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center justify-between mb-2">
                         <h3 className="font-bold text-slate-800 flex items-center gap-2">
                             {subcategory ? `${subcategory} ` : ramGeneration ? `${ramGeneration} ` : `${CATEGORY_LABELS[category] || category}品类`}历史基准均价走势
                         </h3>
@@ -369,9 +378,22 @@ export default function PriceTrendChart() {
                             </div>
                         </div>
                     </div>
+                    {/* 平均X天涨幅/降幅标注 */}
+                    <div className="mb-4 flex items-center gap-3">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold ${
+                            isUp ? 'bg-rose-50 text-rose-600 border border-rose-200' : periodChange < 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-50 text-slate-500 border border-slate-200'
+                        }`}>
+                            {isUp ? <ArrowUpRight size={16} /> : periodChange < 0 ? <ArrowDownRight size={16} /> : null}
+                            平均{periodLabel}{isUp ? '涨幅' : periodChange < 0 ? '降幅' : '持平'}
+                            {periodChange !== 0 && <> ¥{Math.abs(Math.round(periodChange * 100) / 100)} ({isUp ? '+' : ''}{periodPct}%)</>}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                            首日均价 ¥{firstPrice?.toFixed(2)} → 末日均价 ¥{lastPrice?.toFixed(2)}
+                        </span>
+                    </div>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart 
-                            data={trendData.categoryTotalAvgTrend} 
+                            data={avgTrend} 
                             margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -390,7 +412,10 @@ export default function PriceTrendChart() {
                             <Tooltip 
                                 content={({ active, payload, label }: any) => {
                                     if (active && payload && payload.length) {
-                                        const data = payload[0].payload;
+                                        const d = payload[0].payload;
+                                        const idx = avgTrend.findIndex(p => p.date === d.date);
+                                        const prevAvg = idx > 0 ? avgTrend[idx - 1].avgPrice : d.avgPrice;
+                                        const dailyDiff = d.avgPrice - prevAvg;
                                         return (
                                             <div className="bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 min-w-[180px]">
                                                 <p className="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2">{label}</p>
@@ -400,8 +425,16 @@ export default function PriceTrendChart() {
                                                             <div className="w-2 h-2 rounded-full bg-indigo-500" />
                                                             真实均价
                                                         </span>
-                                                        <span className="font-bold text-indigo-600">¥{data.avgPrice}</span>
+                                                        <span className="font-bold text-indigo-600">¥{d.avgPrice}</span>
                                                     </div>
+                                                    {dailyDiff !== 0 && (
+                                                        <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-100">
+                                                            <span className="text-xs text-slate-500">较前日</span>
+                                                            <span className={`text-xs font-bold ${dailyDiff > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                                {dailyDiff > 0 ? '↑' : '↓'} ¥{Math.abs(Math.round(dailyDiff * 100) / 100)}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         );
@@ -421,7 +454,8 @@ export default function PriceTrendChart() {
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
-            )}
+                );
+            })()}
 
             {/* 单品走势 */}
             {selectedProductId && trendData && (
