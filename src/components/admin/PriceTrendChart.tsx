@@ -172,7 +172,14 @@ export default function PriceTrendChart() {
     // Helper: does a product name match current GPU chip filter?
     const matchesChip = (name: string): boolean => {
         if (!gpuChipFilter) return true;
-        const chipRegex = new RegExp(gpuChipFilter.replace(/([()])/g, '\\$1').replace(/\s+/g, '\\s*'), 'i');
+        let pattern = gpuChipFilter.replace(/([()])/g, '\\$1').replace(/\s+/g, '\\s*');
+        // If filter doesn't include "Ti", add negative lookahead to exclude Ti variants
+        // e.g. "RTX 5060" should NOT match "RTX 5060 Ti"
+        if (!/Ti/i.test(gpuChipFilter)) {
+            pattern += '(?!\\s*Ti)';
+        }
+        // If filter doesn't include a memory size (e.g. "8G"), don't require it
+        const chipRegex = new RegExp(pattern, 'i');
         return chipRegex.test(name);
     };
 
@@ -372,7 +379,41 @@ export default function PriceTrendChart() {
 
             {/* 品类均价走势 */}
             {trendData && trendData.categoryTotalAvgTrend && trendData.categoryTotalAvgTrend.length > 0 && category !== 'all' && (() => {
-                const avgTrend = trendData.categoryTotalAvgTrend;
+                // When brand/chip filter is active, compute filtered average from per-product data
+                const hasBrandOrChipFilter = !!(brandFilter || gpuChipFilter);
+                let avgTrend: Array<{ date: string; avgPrice: number }>;
+
+                if (hasBrandOrChipFilter && trendData.productTrends && trendData.productTrends.length > 0) {
+                    // Get matching product names
+                    const matchingProducts = trendData.productTrends.filter(pt => {
+                        const name = pt.name;
+                        return matchesBrand(name) && matchesChip(name);
+                    });
+
+                    if (matchingProducts.length > 0) {
+                        // Collect all dates and compute average price per date
+                        const dateMap = new Map<string, number[]>();
+                        for (const pt of matchingProducts) {
+                            for (const point of pt.points) {
+                                if (!dateMap.has(point.date)) dateMap.set(point.date, []);
+                                dateMap.get(point.date)!.push(point.price);
+                            }
+                        }
+                        avgTrend = Array.from(dateMap.entries())
+                            .map(([date, prices]) => ({
+                                date,
+                                avgPrice: Math.round((prices.reduce((a, b) => a + b, 0) / prices.length) * 100) / 100
+                            }))
+                            .sort((a, b) => a.date.localeCompare(b.date));
+                    } else {
+                        avgTrend = trendData.categoryTotalAvgTrend;
+                    }
+                } else {
+                    avgTrend = trendData.categoryTotalAvgTrend;
+                }
+
+                if (avgTrend.length === 0) return null;
+
                 const firstPrice = avgTrend[0]?.avgPrice;
                 const lastPrice = avgTrend[avgTrend.length - 1]?.avgPrice;
                 const periodChange = lastPrice && firstPrice ? lastPrice - firstPrice : 0;
@@ -384,11 +425,19 @@ export default function PriceTrendChart() {
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                            {subcategory ? `${subcategory} ` : ramGeneration ? `${ramGeneration} ` : `${CATEGORY_LABELS[category] || category}品类`}历史基准均价走势
+                            {(() => {
+                                // Build dynamic title based on active filters
+                                const brandLabel = brandFilter === 'NVIDIA' ? 'N卡' : brandFilter === 'AMD' ? 'AMD' : brandFilter === 'Intel' ? 'Intel' : '';
+                                if (gpuChipFilter) return `${gpuChipFilter} 历史基准均价走势`;
+                                if (subcategory) return `${subcategory} 历史基准均价走势`;
+                                if (ramGeneration) return `${ramGeneration} 历史基准均价走势`;
+                                if (brandLabel) return `${brandLabel} ${CATEGORY_LABELS[category] || category} 历史基准均价走势`;
+                                return `${CATEGORY_LABELS[category] || category}品类历史基准均价走势`;
+                            })()}
                         </h3>
                         <div className="flex gap-4">
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                <span className="w-3 h-0.5 bg-indigo-500"></span> 真实平均价格 ({subcategory ? '该规格所有商品' : ramGeneration ? `所有${ramGeneration}商品` : '大类所有商品'})
+                                <span className="w-3 h-0.5 bg-indigo-500"></span> 真实平均价格 ({gpuChipFilter ? `所有${gpuChipFilter}商品` : subcategory ? '该规格所有商品' : ramGeneration ? `所有${ramGeneration}商品` : brandFilter ? `${brandFilter === 'NVIDIA' ? 'N卡' : brandFilter}商品` : '大类所有商品'})
                             </div>
                         </div>
                     </div>
