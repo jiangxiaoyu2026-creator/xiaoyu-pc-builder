@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import re
 import math
 import time
+import random
 from typing import Dict, Any
 
 # Ensure we can import models from the parent dir
@@ -204,41 +205,76 @@ def map_to_db_specs(raw_specs: Dict[str, str], benchmarks: Dict[str, int]) -> Di
         
     return final_specs
 
-def process_cpu(cpu: Hardware, dry_run=True):
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.2420.53",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:123.0) Gecko/20100101 Firefox/123.0"
+]
+
+def process_cpu(cpu: Hardware, dry_run=True, max_retries=3):
     slug = generate_slug(cpu.brand, cpu.model)
     url = f"https://www.topcpu.net/cpu/{slug}"
     print(f"\n[{cpu.id}] {cpu.brand} {cpu.model}")
     print(f" -> URL: {url}")
     
-    try:
-        resp = requests.get(url, cookies=COOKIES, headers=HEADERS, timeout=15)
-        if resp.status_code == 404:
-            print(f"    ERROR: 404 Not Found. Slug might be incorrect.")
-            return False
-        resp.raise_for_status()
+    for attempt in range(max_retries):
+        try:
+            headers = HEADERS.copy()
+            headers["User-Agent"] = random.choice(USER_AGENTS)
+            
+            resp = requests.get(url, cookies=COOKIES, headers=headers, timeout=15)
+            
+            if resp.status_code == 404:
+                print(f"    ERROR: 404 Not Found. Slug might be incorrect.")
+                return False
+                
+            if resp.status_code == 429:
+                wait_time = (attempt + 1) * 15 + random.uniform(5, 10)
+                print(f"    ⚠️ HTTP 429 Too Many Requests (Attempt {attempt+1}/{max_retries}). Sleeping for {wait_time:.1f}s...")
+                time.sleep(wait_time)
+                continue
+                
+            resp.raise_for_status()
+            
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            raw_specs = parse_specs(soup)
+            benchmarks = parse_benchmarks(soup, cpu.model)
+            
+            if not raw_specs:
+                print("    ERROR: Loaded page but failed to parse any specs. Might be rate limited or captcha.")
+                wait_time = (attempt + 1) * 20
+                print(f"    Sleeping {wait_time}s before retry...")
+                time.sleep(wait_time)
+                continue
+                
+            print(f"    Found {len(raw_specs)} specs, {len(benchmarks)} benchmarks")
+            
+            final_specs = map_to_db_specs(raw_specs, benchmarks)
+            
+            # Additional clean up from old map_to_db_specs if needed
+            # ... we just use the final_specs
+            
+            if not dry_run:
+                cpu.specs = final_specs
+                cpu.specsSource = 'topcpu'
+                
+            return True
         
-        soup = BeautifulSoup(resp.text, 'html.parser')
-        raw_specs = parse_specs(soup)
-        benchmarks = parse_benchmarks(soup, cpu.model)
-        
-        if not raw_specs:
-            print("    ERROR: Loaded page but failed to parse any specs. Might be rate limited or captcha.")
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 429:
+                wait_time = (attempt + 1) * 15 + random.uniform(5, 10)
+                print(f"    ⚠️ HTTP 429 Exception. Sleeping {wait_time:.1f}s...")
+                time.sleep(wait_time)
+            else:
+                print(f"    ERROR fetching page: {e}")
+                return False
+        except Exception as e:
+            print(f"    ERROR processing: {e}")
             return False
             
-        print(f"    Found {len(raw_specs)} specs, {len(benchmarks)} benchmarks")
-        
-        final_specs = map_to_db_specs(raw_specs, benchmarks)
-        print(f"    Mapped Specs: {final_specs}")
-        
-        if not dry_run:
-            cpu.specs = final_specs
-            cpu.specsSource = 'topcpu'
-            
-        return True
-    
-    except Exception as e:
-        print(f"    ERROR fetching page: {e}")
-        return False
+    print(f"    ❌ Failed after {max_retries} attempts.")
+    return False
 
 def main():
     import argparse
@@ -249,23 +285,33 @@ def main():
     print(f"Starting CPU Enrichment... Dry Run: {not args.execute}")
     
     with Session(engine) as session:
+        # Check only CPUs that don't have topcpu as spec source yet
         statement = select(Hardware).where(Hardware.category == 'cpu')
         results = session.exec(statement).all()
         
-        print(f"Found {len(results)} CPUs in DB.")
+        # Filter out already enriched
+        remaining = [cpu for cpu in results if getattr(cpu, 'specsSource', '') != 'topcpu']
+        
+        print(f"Found {len(results)} total CPUs in DB.")
+        print(f"Skipping {len(results) - len(remaining)} already enriched CPUs.")
+        print(f"Need to process {len(remaining)} remaining CPUs.")
         
         success_count = 0
-        for cpu in results:
-            time.sleep(1.5)
+        for i, cpu in enumerate(remaining):
+            # Random sleep between 3-7 seconds to emulate human browsing
+            delay = random.uniform(3.5, 7.5)
+            print(f"\n--- Progress: {i+1}/{len(remaining)} (Sleeping {delay:.1f}s to avoid ban) ---")
+            time.sleep(delay)
+            
             success = process_cpu(cpu, dry_run=not args.execute)
             if success:
                 success_count += 1
+                if args.execute:
+                    session.add(cpu)
+                    session.commit() # Commit after each success so progress is saved incrementally
+                    print("    ✅ Saved to database.")
                 
-        if args.execute:
-            session.commit()
-            print("\nDatabase changes committed.")
-            
-        print(f"\nProcess complete. Success: {success_count}/{len(results)}")
+        print(f"\nProcess complete. Success: {success_count}/{len(remaining)}")
 
 if __name__ == "__main__":
     main()

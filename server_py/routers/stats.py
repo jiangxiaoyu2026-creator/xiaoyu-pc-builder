@@ -203,6 +203,126 @@ async def get_price_trends(
         "categories": sorted([c for c in categories if c]),
     }
 
+import re
+
+def _parse_ram_specs(name: str) -> str:
+    name_upper = name.upper()
+    capacity = 0
+    m_mul = re.search(r'(\d+)[G]?\*(\d+)', name_upper)
+    if m_mul:
+        capacity = int(m_mul.group(1)) * int(m_mul.group(2))
+    else:
+        m_single = re.search(r'(\d+)G', name_upper)
+        if m_single:
+            capacity = int(m_single.group(1))
+            
+    freq = ""
+    m_freq = re.search(r'(3200|3600|4800|5200|5600|6000|6400|6800|7200|7600|8000)', name_upper)
+    if m_freq:
+        freq = m_freq.group(1)
+        
+    ddr = ""
+    if "DDR4" in name_upper:
+        ddr = "DDR4"
+    elif "DDR5" in name_upper:
+        ddr = "DDR5"
+    elif freq:
+        ddr = "DDR4" if int(freq) <= 4000 else "DDR5"
+        
+    tags = []
+    if ddr: tags.append(ddr)
+    if freq: tags.append(f"{freq}MHz")
+    if capacity: tags.append(f"{capacity}GB")
+    return " ".join(tags) if tags else "其他未分类规格"
+
+
+def _parse_disk_specs(name: str) -> str:
+    name_upper = name.upper()
+    m = re.search(r'(\d+)\s*(TB|T|GB|G)', name_upper)
+    if m:
+        num = m.group(1)
+        unit = m.group(2)
+        if unit == 'T': unit = 'TB'
+        if unit == 'G': unit = 'GB'
+        return f"{num}{unit}"
+    return "其他未分类规格"
+
+
+@router.get("/public-category-trends/{category}")
+async def get_public_category_trends(
+    category: str,
+    days: int = 7,
+    session: Session = Depends(get_session)
+):
+    """前台获取特定品类（内存/硬盘）的细分规格价格变动组"""
+    from datetime import timedelta
+    
+    if category not in ['ram', 'disk']:
+        raise HTTPException(status_code=400, detail="Only ram and disk are supported for trend categorization")
+        
+    cutoff = (datetime.utcnow() + timedelta(hours=8) - timedelta(days=days)).isoformat()
+    
+    query = select(PriceHistory).where(
+        PriceHistory.category == category, 
+        PriceHistory.changedAt >= cutoff
+    ).order_by(PriceHistory.changedAt.desc())
+    
+    changes = session.exec(query.limit(1000)).all()
+    
+    # 剔除价格变为0的数据
+    valid_changes = []
+    for c in changes:
+        if c.oldPrice and c.newPrice and c.oldPrice > 0 and c.newPrice > 0 and getattr(c, 'changeAmount', 0) != 0:
+            valid_changes.append(c)
+            
+    groups = {}
+    for c in valid_changes:
+        label = _parse_ram_specs(c.hardwareName) if category == 'ram' else _parse_disk_specs(c.hardwareName)
+        
+        if label not in groups:
+            groups[label] = {
+                "label": label,
+                "count": 0,
+                "upCount": 0,
+                "downCount": 0,
+                "totalChangeAmount": 0,
+                "items": []
+            }
+            
+        grp = groups[label]
+        grp["count"] += 1
+        grp["totalChangeAmount"] += float(c.changeAmount) if c.changeAmount else 0.0
+        
+        if c.changeAmount and c.changeAmount > 0:
+            grp["upCount"] += 1
+        elif c.changeAmount and c.changeAmount < 0:
+            grp["downCount"] += 1
+            
+        if len(grp["items"]) < 5:
+            pct = round(c.changeAmount / c.oldPrice * 100, 2) if c.oldPrice else 0
+            grp["items"].append({
+                "name": c.hardwareName,
+                "old": c.oldPrice,
+                "new": c.newPrice,
+                "change": c.changeAmount,
+                "changePercent": pct
+            })
+            
+    result = []
+    for label, grp in groups.items():
+        grp["avgChange"] = round(grp["totalChangeAmount"] / grp["count"], 2) if grp["count"] > 0 else 0
+        del grp["totalChangeAmount"]
+        result.append(grp)
+        
+    result.sort(key=lambda x: x["count"], reverse=True)
+    
+    return {
+        "category": category,
+        "totalChanges": len(valid_changes),
+        "days": days,
+        "groups": result
+    }
+
 @router.get("/public-price-trends")
 async def get_public_price_trends(
     days: int = 30, # 默认给前台看30天的
