@@ -942,10 +942,8 @@ function MarketTrendsSidebar({ theme }: { theme: ThemeConfig }) {
     const [dateLabel, setDateLabel] = useState('今日');
 
     useEffect(() => {
-        // Smart fallback: try 1 day first, if < 5 items, expand to 7 days
         const fetchTrends = async () => {
             try {
-                // First try: today (1 day)
                 const res1 = await fetch('/api/stats/public-price-trends?days=1');
                 if (res1.ok) {
                     const data1 = await res1.json();
@@ -955,7 +953,6 @@ function MarketTrendsSidebar({ theme }: { theme: ThemeConfig }) {
                         return;
                     }
                 }
-                // Fallback: 7 days
                 const res7 = await fetch('/api/stats/public-price-trends?days=7');
                 if (res7.ok) {
                     const data7 = await res7.json();
@@ -972,69 +969,111 @@ function MarketTrendsSidebar({ theme }: { theme: ThemeConfig }) {
         fetchTrends();
     }, []);
 
-    // Triple the items for seamless looping
     const displayTrends = trends.length > 0 ? [...trends, ...trends, ...trends] : [];
 
+    const categoryLabels: Record<string, string> = {
+        cpu: 'CPU', gpu: '显卡', ram: '内存', disk: '硬盘', mainboard: '主板',
+        power: '电源', cooling: '散热', case: '机箱', monitor: '显示器', fan: '风扇'
+    };
+
     return (
-        <div className={`${theme.cardBg} rounded-[32px] shadow-xl ${theme.borderColor} border overflow-hidden transition-colors duration-300 flex flex-col h-full`}>
-            <div className={`px-5 py-4 border-b ${theme.borderColor} ${theme.headerBg}`}>
-                <h3 className={`font-bold ${theme.textTitle} flex items-center gap-2`}>
-                    <Monitor size={16} className={theme.primary} />
-                    {dateLabel}硬件行情早报
-                </h3>
+        <div className="rounded-[28px] shadow-2xl overflow-hidden transition-all duration-300 flex flex-col h-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-slate-700/50">
+            {/* Premium gradient header */}
+            <div className="relative px-5 py-4 bg-gradient-to-r from-indigo-600/20 via-purple-600/10 to-cyan-600/20 border-b border-slate-700/50">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent" />
+                <div className="relative flex items-center justify-between">
+                    <h3 className="font-black text-white flex items-center gap-2.5 text-[15px] tracking-tight">
+                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                            <Zap size={16} className="text-white" />
+                        </div>
+                        {dateLabel}行情早报
+                    </h3>
+                    <div className="flex items-center gap-1.5">
+                        <span className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-semibold tracking-wider uppercase">Live</span>
+                    </div>
+                </div>
+                <div className="relative mt-2 text-[11px] text-slate-400 font-mono">
+                    {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                </div>
             </div>
             
-            <div className={`p-4 flex-1 space-y-4 ${theme.rowBg} relative overflow-hidden group`}>
-                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center justify-between sticky top-0 z-10 bg-inherit pb-2">
-                    <span>基准时间: {new Date().toLocaleDateString('zh-CN')}</span>
-                    {trends.length > 0 && (
-                        <span className="text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-500/20 px-2 py-0.5 rounded">
-                            {trends.length}条变动
-                        </span>
-                    )}
-                </div>
-                
-                {/* Auto-scrolling container */}
+            {/* Scrolling content area */}
+            <div className="flex-1 relative overflow-hidden group">
                 {trends.length > 0 ? (
                     <div 
-                        className="absolute left-4 right-4 flex flex-col gap-3 group-hover:[animation-play-state:paused]"
+                        className="absolute inset-x-0 flex flex-col gap-[2px] group-hover:[animation-play-state:paused]"
                         style={{
-                            animation: `scrollVertical ${trends.length * 3}s linear infinite`,
+                            animation: `scrollVertical ${trends.length * 2.5}s linear infinite`,
                         }}
                     >
                         {displayTrends.map((item, idx) => {
                             const isUp = item.changeAmount > 0;
                             const absAmount = Math.abs(item.changeAmount);
                             const absPercent = Math.abs(item.changePercent || 0);
+                            const catLabel = categoryLabels[item.category] || item.category;
+                            
                             return (
-                                <div key={`${item.hardwareName}-${idx}`} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-sm shrink-0">
-                                    <div className={`font-bold text-[13px] ${theme.textTitle} truncate`}>{item.hardwareName}</div>
-                                    <div className="flex items-center justify-between text-xs font-mono">
-                                        <span className="text-slate-400 dark:text-slate-500 line-through">¥{item.oldPrice}</span>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-slate-800 dark:text-slate-200 font-black text-sm">¥{item.newPrice}</span>
-                                            {isUp ? (
-                                                <span className="text-rose-500 bg-rose-50 dark:bg-rose-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                                                    <ChevronUp size={12} strokeWidth={3} /> {absAmount} ({absPercent}%)
-                                                </span>
-                                            ) : (
-                                                <span className="text-emerald-500 bg-emerald-50 dark:bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                                                    <ChevronDown size={12} strokeWidth={3} /> {absAmount} ({absPercent}%)
-                                                </span>
-                                            )}
-                                        </div>
+                                <div 
+                                    key={`${item.hardwareName}-${idx}`} 
+                                    className={`relative px-4 py-3 shrink-0 transition-colors duration-150 hover:bg-slate-800/80 border-l-[3px] ${
+                                        isUp ? 'border-l-rose-500 bg-rose-500/[0.03]' : 'border-l-emerald-500 bg-emerald-500/[0.03]'
+                                    }`}
+                                >
+                                    {/* Top row: category pill + time */}
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <span className={`text-[9px] font-bold px-1.5 py-[1px] rounded-full uppercase tracking-wider ${
+                                            isUp 
+                                                ? 'bg-rose-500/15 text-rose-400' 
+                                                : 'bg-emerald-500/15 text-emerald-400'
+                                        }`}>
+                                            {catLabel}
+                                        </span>
+                                        <span className="text-[10px] text-slate-600 font-mono">
+                                            {item.changedAt?.substring(5, 16)?.replace('T', ' ')}
+                                        </span>
                                     </div>
-                                    <div className="text-[10px] text-slate-400 dark:text-slate-500">
-                                        {item.category} · {item.changedAt?.substring(5, 16)?.replace('T', ' ')}
+                                    
+                                    {/* Product name */}
+                                    <div className="text-[13px] font-bold text-slate-200 truncate mb-1.5 leading-tight">
+                                        {item.hardwareName}
+                                    </div>
+                                    
+                                    {/* Price row */}
+                                    <div className="flex items-baseline justify-between">
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-slate-600 text-[11px] line-through font-mono">¥{item.oldPrice}</span>
+                                            <span className="text-white font-black text-[15px] font-mono tracking-tight">¥{item.newPrice}</span>
+                                        </div>
+                                        <span className={`text-xs font-black font-mono tabular-nums ${
+                                            isUp ? 'text-rose-400' : 'text-emerald-400'
+                                        }`}>
+                                            {isUp ? '↑' : '↓'} {absAmount}
+                                            <span className="text-[10px] ml-0.5 opacity-70">({absPercent}%)</span>
+                                        </span>
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
                 ) : (
-                    <div className="flex items-center justify-center h-full text-slate-400 text-sm">
-                        暂无行情波动数据
+                    <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-3 py-12">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center">
+                            <Monitor size={20} className="text-slate-600" />
+                        </div>
+                        <span className="text-sm">暂无行情波动数据</span>
                     </div>
+                )}
+                
+                {/* Top/bottom fade overlays */}
+                {trends.length > 0 && (
+                    <>
+                        <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-slate-900 to-transparent pointer-events-none z-10" />
+                        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none z-10" />
+                    </>
                 )}
             </div>
         </div>
