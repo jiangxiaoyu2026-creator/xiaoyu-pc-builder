@@ -125,8 +125,8 @@ class AiService:
             normal_cat_items = [i for i in items if i.id not in seen_ids]
             normal_cat_items.sort(key=lambda x: x.price)
             
-            # 每个类别最多扩充到 15 个候选项，确保 AI 有得选
-            spots_left = 15 - len(forced_cat_items)
+            # 每个类别最多 8 个候选项（减少上下文提升速度）
+            spots_left = 8 - len(forced_cat_items)
             selected = forced_cat_items.copy()
             
             if spots_left > 0 and normal_cat_items:
@@ -152,7 +152,7 @@ class AiService:
                     "maxCoolerHeight": hw_specs.get('maxCoolerHeight'),
                     "length": hw_specs.get('length'),
                     "height": hw_specs.get('height'),
-                    "specs": ", ".join(f"{k}: {v}" for k, v in hw_specs.items() if v and k not in important_keys)
+                    "specs": ", ".join(f"{k}: {v}" for k, v in list(hw_specs.items())[:5] if v and k not in important_keys)
                 })
         return final_list
 

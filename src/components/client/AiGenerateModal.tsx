@@ -68,17 +68,15 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
             const request = aiBuilder.parseRequest(prompt);
             const result = await aiBuilder.generateBuild(request);
 
-            // 2. Animate the Logs (Replay "Thinking")
+            // 2. Animate the Logs (Replay "Thinking") - 快速播放
             for (const log of result.logs) {
                 setThinkSteps(prev => [...prev, log]);
-
-                // Variable speed based on complexity
-                const duration = log.type === 'search' ? 800 : log.type === 'match' ? 400 : 600;
+                const duration = log.type === 'search' ? 200 : log.type === 'match' ? 150 : 100;
                 await new Promise(r => setTimeout(r, duration));
             }
 
-            // Short pause at the end
-            await new Promise(r => setTimeout(r, 600));
+            // 短暂结束动画
+            await new Promise(r => setTimeout(r, 200));
 
             // 3. Submit
             await storage.logAiGeneration();
