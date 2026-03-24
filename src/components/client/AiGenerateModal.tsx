@@ -43,7 +43,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
         if (!isThinking) return;
         const interval = setInterval(() => {
             setLoadingTipIdx(prev => (prev + 1) % loadingTips.length);
-        }, 2500);
+        }, 1200);
         return () => clearInterval(interval);
     }, [isThinking]);
 
@@ -60,20 +60,11 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
         setLoadingTipIdx(0);
 
         try {
-            // 1. Analyze & Generate (Real Logic)
+            // 1. Analyze & Generate (Real API Call)
             const request = aiBuilder.parseRequest(prompt);
             const result = await aiBuilder.generateBuild(request);
 
-            // 2. Animate the Logs (Replay "Thinking") - 极速写入
-            for (const log of result.logs) {
-                setThinkSteps(prev => [...prev, log]);
-                await new Promise(r => setTimeout(r, 50));
-            }
-
-            // 短暂结束动画
-            await new Promise(r => setTimeout(r, 50));
-
-            // 3. Submit
+            // 2. API 已返回，立即提交结果（不再等待日志动画播完）
             await storage.logAiGeneration();
             onSubmit(prompt, result);
         } catch (error) {
