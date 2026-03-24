@@ -70,6 +70,20 @@ const CATEGORY_LABELS: Record<string, string> = {
     accessory: '配件', all: '全部品类'
 };
 
+// Custom sort order for the category dropdown
+const CATEGORY_ORDER = ['cpu', 'ram', 'disk', 'gpu', 'mainboard', 'monitor'];
+
+const sortCategories = (categories: string[]) => {
+    return [...categories].sort((a, b) => {
+        const ia = CATEGORY_ORDER.indexOf(a);
+        const ib = CATEGORY_ORDER.indexOf(b);
+        if (ia !== -1 && ib !== -1) return ia - ib;
+        if (ia !== -1) return -1;
+        if (ib !== -1) return 1;
+        return (CATEGORY_LABELS[a] || a).localeCompare(CATEGORY_LABELS[b] || b);
+    });
+};
+
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
@@ -230,7 +244,7 @@ export default function PriceTrendChart() {
                         className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
                     >
                         <option value="all">全部品类</option>
-                        {data.categories.map(c => (
+                        {sortCategories(data.categories).map(c => (
                             <option key={c} value={c}>{CATEGORY_LABELS[c] || c}</option>
                         ))}
                     </select>
