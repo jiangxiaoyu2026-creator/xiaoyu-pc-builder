@@ -287,7 +287,7 @@ export default function PriceTrendChart() {
                         </h3>
                         <div className="flex gap-4">
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                <span className="w-3 h-0.5 bg-indigo-500"></span> 变动均价 (仅限调价商品)
+                                <span className="w-3 h-0.5 bg-indigo-500"></span> 平均价格 (仅限调价商品)
                             </div>
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
                                 <span className="w-3 h-0.5 bg-slate-300"></span> 全量均价 (品类合集)
@@ -338,7 +338,7 @@ export default function PriceTrendChart() {
                                                     <div className="flex items-center justify-between gap-4">
                                                         <span className="flex items-center gap-2 text-sm text-indigo-600">
                                                             <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                                                            变动均价
+                                                            平均价格
                                                         </span>
                                                         <span className="font-bold text-indigo-600">
                                                             {data.changeAvg ? `¥${data.changeAvg}` : '--'}
