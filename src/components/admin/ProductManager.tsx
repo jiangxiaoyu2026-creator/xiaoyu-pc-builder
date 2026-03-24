@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Download, Plus, ListFilter, Package, Edit3, Trash2, X, Sparkles, Image as ImageIcon, Upload, CheckCircle2, Zap } from 'lucide-react';
+import { Search, Download, Plus, ListFilter, Package, Edit3, Trash2, X, Sparkles, Upload, CheckCircle2, Zap } from 'lucide-react';
 import { HardwareItem, Category } from '../../types/adminTypes';
 import { CATEGORY_MAP, COMPATIBILITY_FIELDS } from '../../data/adminData';
 import { SortIcon } from './Shared';

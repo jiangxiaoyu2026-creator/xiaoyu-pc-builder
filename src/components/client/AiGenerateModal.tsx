@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, Sparkles, X, RefreshCw, Activity, Cpu, Zap } from 'lucide-react';
+import { Bot, Sparkles, X, RefreshCw, Activity, Zap } from 'lucide-react';
 import { aiBuilder, AIBuildResult, AIBuildLog } from '../../services/aiBuilder';
 import { storage } from '../../services/storage';
 
@@ -7,21 +7,13 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
     const [prompt, setPrompt] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const [thinkSteps, setThinkSteps] = useState<AIBuildLog[]>([]);
-    const [metrics, setMetrics] = useState({ load: 0, match: 0, latency: 0 });
-    const [personaLabel, setPersonaLabel] = useState('');
-    const [strategyLabel, setStrategyLabel] = useState('');
     const logEndRef = useRef<HTMLDivElement>(null);
 
     const [suggestions, setSuggestions] = useState<string[]>([]);
 
-    // 加载 AI 设置中的性格和策略标签
+    // 加载 AI 设置中的标签
     useEffect(() => {
         storage.getAISettings().then(s => {
-            const p = s.persona || 'toxic';
-            setPersonaLabel(p === 'toxic' ? '毒舌 (讽刺)' : p === 'professional' ? '专业 (PRO)' : p === 'enthusiastic' ? '热情' : '平衡');
-            const st = s.strategy || 'balanced';
-            setStrategyLabel(st === 'performance' ? '性能优先' : st === 'aesthetic' ? '颜值优先' : st === 'budget' ? '预算优先' : '均衡策略');
-
             if (s.suggestions && s.suggestions.length > 0) {
                 setSuggestions(s.suggestions);
             } else {
@@ -36,24 +28,28 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
         });
     }, []);
 
-    // Dynamic metrics simulation
+    const loadingTips = [
+        "正在解析装机需求...",
+        "深度检索硬件数据库...",
+        "执行物理兼容性校验...",
+        "计算供电与散热拓扑...",
+        "优化性价比模型...",
+        "生成最终配置清单..."
+    ];
+    const [loadingTipIdx, setLoadingTipIdx] = useState(0);
+
+    // Dynamic loading tips cycler
     useEffect(() => {
         if (!isThinking) return;
         const interval = setInterval(() => {
-            setMetrics({
-                load: Math.floor(Math.random() * 40) + 60,
-                match: Math.min(100, Math.floor(thinkSteps.length * (100 / 6)) + Math.floor(Math.random() * 5)),
-                latency: Math.floor(Math.random() * 200) + 100
-            });
-        }, 1500);
+            setLoadingTipIdx(prev => (prev + 1) % loadingTips.length);
+        }, 2500);
         return () => clearInterval(interval);
-    }, [isThinking, thinkSteps]);
+    }, [isThinking]);
 
     useEffect(() => {
         logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [thinkSteps]);
-
-
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -61,7 +57,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
 
         setIsThinking(true);
         setThinkSteps([]);
-        setMetrics({ load: 0, match: 0, latency: 0 });
+        setLoadingTipIdx(0);
 
         try {
             // 1. Analyze & Generate (Real Logic)
@@ -84,181 +80,95 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
         } catch (error) {
             console.error(error);
             setThinkSteps(prev => [...prev, { type: 'analysis', step: '错误', detail: '[严重错误] 神经核心溢出，强制恢复失败。' }]);
+            setIsThinking(false);
         }
-    };
-
-    const parseLogDetail = (detail: string) => {
-        const match = detail.match(/^\[(.*?)\] (.*)$/);
-        if (match) {
-            return { tag: match[1], text: match[2] };
-        }
-        return { tag: 'LOG', text: detail };
     };
 
     return (
         <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center md:p-4 bg-slate-950/60 backdrop-blur-md animate-fade-in">
-            <div className="relative w-full md:max-w-3xl h-[90vh] md:h-auto bg-slate-900 rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden animate-slide-up md:animate-scale-up ring-1 ring-white/10 group flex flex-col">
+            <div className="relative w-full md:max-w-3xl h-[90vh] md:h-auto bg-[#0b0f19] rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden animate-slide-up md:animate-scale-up ring-1 ring-white/10 flex flex-col">
                 {/* Background Effects */}
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
-                <div className="absolute -top-32 -right-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none animate-pulse-slow"></div>
-                <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute -top-32 -right-32 w-96 h-96 bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none animate-pulse-slow"></div>
+                <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
                 {/* Header */}
-                <div className="relative p-8 pb-6 border-b border-white/10 flex items-start justify-between bg-gradient-to-r from-slate-900 via-indigo-950/20 to-slate-900 backdrop-blur-2xl">
-                    <div className="flex items-center gap-5">
-                        <div className={`relative w-16 h-16 rounded-2xl p-[1.5px] group/icon overflow-hidden ${isThinking ? 'animate-pulse' : ''}`}>
-                            {/* Rotating border effect */}
-                            <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,#6366f1,#a855f7,#6366f1)] animate-[spin_4s_linear_infinite] opacity-40"></div>
-                            <div className="relative w-full h-full bg-slate-900 rounded-2xl flex items-center justify-center overflow-hidden">
-                                {isThinking ? (
-                                    <RefreshCw size={28} className="text-indigo-400 animate-spin" />
-                                ) : (
-                                    <Bot size={34} className="text-white drop-shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                                )}
-                                {/* Inner Glow */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20"></div>
-                            </div>
+                <div className="relative p-6 md:p-8 pb-6 border-b border-white/5 flex items-start justify-between bg-white/[0.02] backdrop-blur-xl">
+                    <div className="flex items-center gap-4">
+                        <div className="relative w-14 h-14 bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl flex items-center justify-center shadow-inner border border-white/10 overflow-hidden">
+                            {isThinking ? (
+                                <>
+                                    <div className="absolute inset-0 bg-indigo-500/20 animate-pulse"></div>
+                                    <RefreshCw size={24} className="text-indigo-400 animate-spin relative z-10" />
+                                </>
+                            ) : (
+                                <Bot size={28} className="text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)] relative z-10" />
+                            )}
                         </div>
                         <div>
                             <div className="flex items-center gap-3">
-                                <h2 className="text-2xl font-black text-white tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-                                    {isThinking ? '神经网络计算中' : '小鱼 AI 顾问'}
+                                <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">
+                                    {isThinking ? 'AI 构建引擎运行中' : '小鱼 AI 助手'}
                                 </h2>
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30">
-                                    <div className="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></div>
-                                    <span className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">System Online</span>
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                    <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Online</span>
                                 </div>
                             </div>
-                            <p className="text-slate-400 text-sm mt-1.5 font-medium flex items-center gap-2">
+                            <p className="text-slate-400 text-sm mt-1 flex items-center gap-1.5">
                                 <Sparkles size={14} className="text-indigo-400" />
-                                {isThinking ? '正在执行向量检索与兼容性拓扑计算...' : '基于大语言模型的硬件专家'}
+                                极速为您匹配最佳硬件组合
                             </p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all hover:rotate-90">
+                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all">
                         <X size={24} />
                     </button>
                 </div>
 
                 {/* Content Area */}
-                <div className="relative p-8 pt-6 flex-1 overflow-y-auto">
+                <div className="relative p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar">
                     {isThinking ? (
-                        <div className="flex flex-col gap-6">
-                            {/* Metrics Dashboard */}
-                            {/* Metrics Dashboard */}
-                            <div className="grid grid-cols-3 gap-5">
-                                <div className="relative bg-slate-950/40 rounded-2xl p-4 border border-white/10 overflow-hidden group/metric transition-all hover:bg-slate-950/60 hover:border-indigo-500/30">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover/metric:opacity-100 transition-opacity"></div>
-                                    <div className="relative flex flex-col gap-2">
-                                        <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-black">
-                                            <Cpu size={14} className="text-indigo-400" />
-                                            神经负载
-                                        </div>
-                                        <div className="text-2xl font-black font-mono text-white tracking-tighter flex items-baseline gap-1">
-                                            {metrics.load}<span className="text-xs text-indigo-500">%</span>
-                                        </div>
-                                        <div className="w-full h-1.5 bg-slate-800/50 rounded-full overflow-hidden mt-1 ring-1 ring-white/5">
-                                            <div className="h-full bg-gradient-to-r from-indigo-600 to-indigo-400 transition-all duration-1000 shadow-[0_0_8px_rgba(99,102,241,0.5)]" style={{ width: `${metrics.load}%` }}></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="relative bg-slate-950/40 rounded-2xl p-4 border border-white/10 overflow-hidden group/metric transition-all hover:bg-slate-950/60 hover:border-emerald-500/30">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover/metric:opacity-100 transition-opacity"></div>
-                                    <div className="relative flex flex-col gap-2">
-                                        <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-black">
-                                            <Activity size={14} className="text-emerald-400" />
-                                            匹配率
-                                        </div>
-                                        <div className="text-2xl font-black font-mono text-white tracking-tighter flex items-baseline gap-1">
-                                            {metrics.match}<span className="text-xs text-emerald-500">%</span>
-                                        </div>
-                                        <div className="w-full h-1.5 bg-slate-800/50 rounded-full overflow-hidden mt-1 ring-1 ring-white/5">
-                                            <div className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-1000 shadow-[0_0_8px_rgba(16,185,129,0.5)]" style={{ width: `${metrics.match}%` }}></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="relative bg-slate-950/40 rounded-2xl p-4 border border-white/10 overflow-hidden group/metric transition-all hover:bg-slate-950/60 hover:border-amber-500/30">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover/metric:opacity-100 transition-opacity"></div>
-                                    <div className="relative flex flex-col gap-2">
-                                        <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-black">
-                                            <Zap size={14} className="text-amber-400" />
-                                            实时延迟
-                                        </div>
-                                        <div className="text-2xl font-black font-mono text-white tracking-tighter flex items-baseline gap-1">
-                                            {metrics.latency}<span className="text-xs text-amber-500">ms</span>
-                                        </div>
-                                        <div className="w-full h-1.5 bg-slate-800/50 rounded-full overflow-hidden mt-1 ring-1 ring-white/5">
-                                            <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.5)]" style={{ width: '100%' }}></div>
-                                        </div>
-                                    </div>
+                        <div className="flex flex-col items-center justify-center py-16 md:py-20 gap-10">
+                            {/* Central Animated Orb */}
+                            <div className="relative flex items-center justify-center">
+                                {/* Outer Glows */}
+                                <div className="absolute inset-0 bg-indigo-500 rounded-full blur-[60px] opacity-20 animate-pulse-slow"></div>
+                                <div className="absolute inset-0 bg-purple-500 rounded-full blur-[40px] opacity-10 animate-ping"></div>
+                                
+                                {/* Inner Rings */}
+                                <div className="relative w-32 h-32 rounded-full border border-slate-800 bg-slate-950 flex flex-col items-center justify-center shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]">
+                                    <div className="absolute inset-[-1px] rounded-full border-t-2 border-indigo-500 animate-spin"></div>
+                                    <div className="absolute inset-2 rounded-full border-b-2 border-purple-500 animate-[spin_1.5s_linear_infinite_reverse]"></div>
+                                    <div className="absolute inset-4 rounded-full border border-slate-800"></div>
+                                    
+                                    <Bot size={36} className="text-indigo-400 animate-pulse" />
                                 </div>
                             </div>
 
-                            {/* Terminal Window */}
-                            <div className="min-h-[300px] max-h-[400px] bg-black/40 rounded-2xl border border-white/5 p-6 font-mono text-sm relative overflow-y-auto no-scrollbar shadow-inner ring-1 ring-white/5">
-                                {/* Terminal Scanline & Blur */}
-                                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/[0.03] to-transparent h-48 w-full animate-scan pointer-events-none"></div>
-                                <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:20px_20px]"></div>
-
-                                {/* Active Stats Row */}
-                                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/5 relative z-10 shrink-0">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">认知模式</span>
-                                        <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs w-fit flex items-center gap-1.5 shadow-[0_0_10px_rgba(99,102,241,0.2)]">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
-                                            {personaLabel || '加载中...'}
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">启发式策略</span>
-                                        <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs w-fit flex items-center gap-1.5 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                            {strategyLabel || '加载中...'}
-                                        </span>
-                                    </div>
+                            {/* Status Text & Loading Bar */}
+                            <div className="flex flex-col items-center gap-5 w-full max-w-sm">
+                                <div className="text-center space-y-2">
+                                    <h3 className="text-xl font-bold text-white tracking-wide animate-fade-in key={loadingTipIdx}">
+                                        {loadingTips[loadingTipIdx]}
+                                    </h3>
+                                    <p className="text-slate-400 text-sm flex items-center justify-center gap-2">
+                                        <RefreshCw size={14} className="animate-spin text-indigo-400" />
+                                        <span>AI 模型正在高速运算，请稍候</span>
+                                    </p>
                                 </div>
-
-                                <div className="space-y-4 relative z-10">
-                                    {thinkSteps.map((log, i) => {
-                                        const { tag, text } = parseLogDetail(log.detail);
-                                        const isSystem = tag === 'SYSTEM' || tag === 'ENV';
-                                        const isCritical = tag === 'CRITICAL' || tag === 'CRIT';
-                                        const isCore = tag === 'CORE';
-
-                                        return (
-                                            <div key={i} className="flex flex-col gap-1.5 animate-fade-in group/log">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-[10px] text-slate-600 font-bold tracking-tighter opacity-50">
-                                                        {new Date().toLocaleTimeString('en-GB', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                                    </span>
-                                                    <span className={`px-1.5 py-0.5 rounded-[4px] text-[9px] font-black tracking-widest uppercase border ${isSystem ? 'bg-slate-500/10 text-slate-400 border-slate-500/20' :
-                                                        isCritical ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
-                                                            isCore ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
-                                                                'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                                        }`}>
-                                                        {tag}
-                                                    </span>
-                                                    <div className="h-[1px] flex-grow bg-white/5 group-hover/log:bg-white/10 transition-colors"></div>
-                                                </div>
-                                                <div className="pl-14">
-                                                    <span className={`leading-relaxed ${isCritical ? 'text-rose-300' :
-                                                        isCore ? 'text-white font-medium' :
-                                                            'text-slate-300'
-                                                        }`}>
-                                                        {text}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                    <div ref={logEndRef} className="h-2" />
-                                    {isThinking && (
-                                        <div className="flex items-center gap-2 pl-14 text-indigo-500/60 animate-pulse">
-                                            <RefreshCw size={12} className="animate-spin" />
-                                            <span className="text-[10px] font-bold tracking-widest uppercase">处理缓冲区...</span>
-                                        </div>
-                                    )}
+                                
+                                {/* Progress Bar */}
+                                <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden relative shadow-inner border border-white/5">
+                                    <div className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 w-1/2 rounded-full animate-[progressX_1.5s_ease-in-out_infinite] shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
                                 </div>
+                                
+                                {/* Embedded keyframe for progress animation */}
+                                <style dangerouslySetInnerHTML={{__html: `
+                                    @keyframes progressX {
+                                        0% { left: -50%; }
+                                        100% { left: 100%; }
+                                    }
+                                `}} />
                             </div>
                         </div>
                     ) : (

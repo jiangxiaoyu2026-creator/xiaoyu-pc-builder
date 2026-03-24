@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { 
     TrendingUp, 
     Download, 
@@ -12,7 +12,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import { ApiService } from '../../services/api';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, Tooltip, CartesianGrid } from 'recharts';
 import html2canvas from 'html2canvas';
 
 type TopDrop = {
