@@ -516,14 +516,14 @@ function VisualBuilder({
                         setShowAiModal(true);
                     }} className="flex-1 group relative cursor-pointer transition-all duration-500 hover:-translate-y-1">
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-[24px] blur-md opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                        <div className="relative flex items-center gap-4 bg-white/90 backdrop-blur-xl rounded-[20px] p-4 md:p-5 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden">
+                        <div className="relative flex items-center gap-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[20px] p-4 md:p-5 border border-white dark:border-slate-700 shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                             <div className="w-12 h-12 rounded-[16px] bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-lg shadow-indigo-500/30">
                                 <Sparkles size={22} className="animate-pulse" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-baseline gap-2 mb-1">
-                                    <h3 className="font-extrabold text-base text-slate-900 tracking-tight">AI 智能装机</h3>
+                                    <h3 className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">AI 智能装机</h3>
                                     <span className="text-[9px] font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm">Pro</span>
                                 </div>
                                 <p className="text-slate-500 text-xs font-medium leading-none tracking-wide">智能语义分析，一挥而就</p>
@@ -536,12 +536,12 @@ function VisualBuilder({
 
                     <div onClick={onOpenLibrary} className="flex-1 group relative cursor-pointer transition-all duration-500 hover:-translate-y-1">
                         <div className="absolute -inset-0.5 bg-slate-200 rounded-[24px] blur-md opacity-0 group-hover:opacity-50 transition duration-500"></div>
-                        <div className="relative flex items-center gap-4 bg-white/80 backdrop-blur-xl rounded-[20px] p-4 md:p-5 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] group-hover:border-indigo-100 transition-all overflow-hidden">
+                        <div className="relative flex items-center gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[20px] p-4 md:p-5 border border-white/60 dark:border-slate-700 shadow-[0_8px_30px_rgb(0,0,0,0.04)] group-hover:border-indigo-100 transition-all overflow-hidden">
                             <div className="w-12 h-12 bg-slate-100 text-slate-600 rounded-[16px] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-50 group-hover:text-indigo-600">
                                 <FileText size={22} />
                             </div>
                             <div className="flex-1">
-                                <h3 className="font-extrabold text-slate-800 text-base mb-1 tracking-tight">快速装机</h3>
+                                <h3 className="font-extrabold text-slate-800 dark:text-white text-base mb-1 tracking-tight">快速装机</h3>
                                 <p className="text-slate-500 text-xs font-medium leading-none tracking-wide">浏览社区精选优质配置单</p>
                             </div>
                             <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
@@ -558,12 +558,12 @@ function VisualBuilder({
                             ref={(el) => { if (el) rowRefs[entry.id] = el; }}
                             onClick={() => openSelector(entry)}
                             className={`relative rounded-[20px] p-3 border transition-all duration-300 cursor-pointer group flex items-center gap-4 ${entry.item || entry.customName
-                                ? 'bg-white/80 backdrop-blur-md border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.12)] hover:border-indigo-200/50 hover:-translate-y-0.5'
-                                : 'bg-white/40 backdrop-blur-sm border-dashed border-slate-300/60 hover:bg-white hover:border-indigo-300 hover:shadow-sm'
+                                ? 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/60 dark:border-slate-600 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.12)] hover:border-indigo-200/50 hover:-translate-y-0.5'
+                                : 'bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm border-dashed border-slate-300/60 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:border-indigo-300 hover:shadow-sm'
                                 }`}
                         >
                             <div 
-                                className={`w-11 h-11 rounded-[16px] flex items-center justify-center text-xl shrink-0 transition-all duration-500 shadow-sm relative overflow-hidden ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white group-hover:scale-105 group-hover:shadow-indigo-500/25 group-hover:shadow-lg' : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-400'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
+                                className={`w-11 h-11 rounded-[16px] flex items-center justify-center text-xl shrink-0 transition-all duration-500 shadow-sm relative overflow-hidden ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white group-hover:scale-105 group-hover:shadow-indigo-500/25 group-hover:shadow-lg' : 'bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-400'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
                                 onClick={(e) => {
                                     if (entry.item?.image) {
                                         e.stopPropagation();
@@ -580,14 +580,14 @@ function VisualBuilder({
                                 {entry.category === 'accessory' ? (
                                     <input
                                         type="text"
-                                        className="w-full bg-transparent border-none p-0 text-slate-800 font-extrabold placeholder-slate-300 focus:ring-0 truncate text-sm"
+                                        className="w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-extrabold placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 truncate text-sm"
                                         placeholder="快捷输入附件..."
                                         value={entry.customName || ''}
                                         onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : entry.item ? (
-                                    <div className="font-extrabold text-slate-800 text-sm group-hover:text-indigo-600 transition-colors leading-snug tracking-tight">{entry.item.brand} {entry.item.model}</div>
+                                    <div className="font-extrabold text-slate-800 dark:text-slate-100 text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug tracking-tight">{entry.item.brand} {entry.item.model}</div>
                                 ) : entry.category === aiActiveCategory ? (
                                     <div className="text-indigo-500 text-xs font-bold flex items-center gap-2 animate-pulse bg-indigo-50 w-max px-3 py-1.5 rounded-full">
                                         <Sparkles size={14} className="animate-spin-slow" />
@@ -609,7 +609,7 @@ function VisualBuilder({
                                         ) : null
                                     )}
                                 </div>
-                                <div className="text-right font-black text-slate-900 text-sm font-mono tracking-tight">
+                                <div className="text-right font-black text-slate-900 dark:text-slate-200 text-sm font-mono tracking-tight">
                                     {entry.item || entry.customName ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : <span className="text-slate-200">-</span>}
                                 </div>
                             </div>
@@ -640,7 +640,7 @@ function VisualBuilder({
             </div>
             {/* Merged Sidebar */}
             <div className="w-full lg:w-[380px] shrink-0">
-                <div className="bg-white/90 backdrop-blur-2xl rounded-[32px] border border-white/60 shadow-2xl shadow-indigo-100/50 flex flex-col relative overflow-hidden mt-2 lg:mt-0 mb-28 lg:mb-0">
+                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[32px] border border-white/60 dark:border-slate-800 shadow-2xl shadow-indigo-100/50 dark:shadow-none flex flex-col relative overflow-hidden mt-2 lg:mt-0 mb-28 lg:mb-0">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
@@ -649,7 +649,7 @@ function VisualBuilder({
                         {sysAnnouncement?.enabled && (
                             <div className="relative p-6 rounded-[28px] bg-sky-50/30 border border-sky-100 shadow-sm overflow-hidden mb-2">
                             <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full blur-3xl -mr-12 -mt-12"></div>
-                            <h3 className="font-extrabold text-slate-900 mb-4 flex items-center gap-2 text-sm">
+                            <h3 className="font-extrabold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-sm">
                                 <FileText size={16} className="text-sky-500" />
                                 系统公告
                             </h3>
@@ -664,7 +664,7 @@ function VisualBuilder({
                                         const config = typeConfig[item.type as keyof typeof typeConfig] || typeConfig.info;
 
                                         const content = (
-                                            <div className={`group relative text-[12px] leading-relaxed text-slate-600 bg-white border border-slate-100 p-3 rounded-xl shadow-sm transition-all ${item.linkUrl ? 'hover:border-sky-300 hover:shadow-md cursor-pointer pr-8' : ''}`}>
+                                            <div className={`group relative text-[12px] leading-relaxed text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl shadow-sm transition-all ${item.linkUrl ? 'hover:border-sky-300 hover:shadow-md cursor-pointer pr-8' : ''}`}>
                                                 <div className="flex items-center gap-2 mb-1.5">
                                                     <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${config.bg}`}>
                                                         {config.icon}
@@ -699,7 +699,7 @@ function VisualBuilder({
 
                         {/* Box 2: Price Details (Hidden on Mobile) */}
                         <div className="hidden lg:block">
-                            <h3 className="font-extrabold text-slate-800 mb-4 flex items-center gap-2 text-sm"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
+                            <h3 className="font-extrabold text-slate-800 dark:text-white mb-4 flex items-center gap-2 text-sm"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
                             <div className="space-y-3 mb-5">
                                 <div className="flex justify-between items-center text-xs font-medium px-1">
                                     <span className="text-slate-500">基础总价</span>
@@ -709,13 +709,13 @@ function VisualBuilder({
                                     <span className="text-slate-500">优惠前金额</span>
                                     <span className="font-black text-slate-400 line-through decoration-slate-300">¥{Math.floor(pricing.standardPrice || 0)}</span>
                                 </div>
-                                <div className="flex justify-between items-end bg-slate-50 rounded-2xl border border-slate-100 p-4 shadow-sm relative overflow-hidden">
+                                <div className="flex justify-between items-end bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-100 dark:border-slate-700/80 p-4 shadow-sm relative overflow-hidden">
                                     {(pricing.savedAmount || 0) > 0 && (
                                         <div className="absolute top-0 right-0 bg-emerald-100 text-emerald-700 text-[10px] px-2 py-1 rounded-bl-xl font-bold border-b border-l border-emerald-200/50">
                                             已省 ¥{pricing.savedAmount}
                                         </div>
                                     )}
-                                    <span className="text-slate-600 font-extrabold text-[13px] mb-1">实付预估</span>
+                                    <span className="text-slate-600 dark:text-slate-300 font-extrabold text-[13px] mb-1">实付预估</span>
                                     <span className="text-3xl font-black text-indigo-600 tracking-tight font-mono">¥{pricing.finalPrice || 0}</span>
                                 </div>
                             </div>
@@ -725,7 +725,7 @@ function VisualBuilder({
                                     <select
                                         value={pricing.discountRate}
                                         onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
-                                        className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+                                        className="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
                                     >
                                         {pricing.discountTiers?.map((tier: any) => (
                                             <option key={tier.id} value={tier.multiplier}>
@@ -758,11 +758,11 @@ function VisualBuilder({
 
                         {/* Health Check */}
                         <div className={`relative p-5 rounded-[28px] border transition-all duration-500 ${health.status === 'perfect'
-                            ? 'bg-emerald-50/30 border-emerald-100/60'
-                            : 'bg-amber-50/30 border-amber-100/60'
+                            ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-emerald-100/60 dark:border-emerald-800/30'
+                            : 'bg-amber-50/30 dark:bg-amber-900/10 border-amber-100/60 dark:border-amber-800/30'
                             }`}>
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                                <h3 className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
                                     <Zap size={16} className={health.status === 'perfect' ? 'text-emerald-500' : 'text-amber-500'} />
                                     兼容性检测
                                 </h3>
@@ -795,7 +795,7 @@ function VisualBuilder({
             {/* Premium Modal Category Selector */}
             {modalCategory && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-                    <div className="bg-slate-50 rounded-[36px] w-full max-w-3xl h-[88vh] flex flex-col shadow-[0_32px_120px_rgba(0,0,0,0.5)] overflow-hidden animate-scale-up border border-white/20">
+                    <div className="bg-slate-50 dark:bg-slate-900 rounded-[36px] w-full max-w-3xl h-[88vh] flex flex-col shadow-[0_32px_120px_rgba(0,0,0,0.5)] dark:shadow-[0_32px_120px_rgba(0,0,0,0.8)] overflow-hidden animate-scale-up border border-white/20 dark:border-slate-700/50">
                         {/* Modal Header */}
                         <div className="p-6 border-b border-slate-200/60 flex flex-col gap-5 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
                             <div className="flex justify-between items-center text-slate-900">
