@@ -343,7 +343,7 @@ export default function ProductManager() {
         <div className="space-y-6">
             <div className="flex justify-between items-center gap-4 bg-white p-4 rounded-xl border border-slate-200">
                 <div className="flex-1 min-w-0 flex flex-col gap-2">
-                    <div className="flex gap-2 flex-wrap pb-1">
+                    <div className="flex gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-track]:bg-transparent">
                         <button onClick={() => setFilterCat('all')} className={`shrink-0 px-4 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${filterCat === 'all' && !filterAi ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>全部 ({categoryCounts['total'] || 0})</button>
                         <button 
                             onClick={() => { setFilterAi(!filterAi); setPage(1); }} 
@@ -358,7 +358,7 @@ export default function ProductManager() {
                         ))}
                     </div>
                     {/* Brand Filter */}
-                    <div className="flex gap-2 flex-wrap pb-1 border-t border-slate-100 pt-2 items-center">
+                    <div className="flex gap-2 overflow-x-auto pb-2 border-t border-slate-100 pt-2 items-center [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-track]:bg-transparent">
                         <span className="text-xs font-bold text-slate-400 self-center shrink-0">品牌:</span>
                         <button onClick={() => setFilterBrand('all')} className={`shrink-0 px-3 py-1 rounded text-xs font-bold whitespace-nowrap transition-colors ${filterBrand === 'all' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50'}`}>全部</button>
                         {brands.map(b => (
@@ -366,7 +366,7 @@ export default function ProductManager() {
                         ))}
                     </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                         <input type="text" placeholder="搜型号/品牌..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none" />
