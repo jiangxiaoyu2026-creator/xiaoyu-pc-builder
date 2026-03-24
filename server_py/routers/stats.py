@@ -128,6 +128,7 @@ async def log_event(
 async def get_price_trends(
     days: int = 30,
     category: Optional[str] = None,
+    subcategory: Optional[str] = None,
     session: Session = Depends(get_session),
     admin: User = Depends(get_current_admin)
 ):
@@ -142,10 +143,20 @@ async def get_price_trends(
         query = query.where(PriceHistory.category == category)
     query = query.order_by(PriceHistory.changedAt.desc())
     
-    changes = session.exec(query.limit(500)).all()
+    changes = session.exec(query.limit(1000)).all()
     
+    # Optional subcategory filtering (DDR4/5 or specific spec)
+    if subcategory and category in ['ram', 'disk']:
+        filtered_changes = []
+        for c in changes:
+            label = _parse_ram_specs(c.hardwareName) if category == 'ram' else _parse_disk_specs(c.hardwareName)
+            if subcategory in label:
+                filtered_changes.append(c)
+        changes = filtered_changes
+
     # Today's summary
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    # Use CST to match stored timestamps
+    today = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d")
     today_changes = [c for c in changes if c.changedAt.startswith(today)]
     today_up = [c for c in today_changes if c.changeAmount > 0]
     today_down = [c for c in today_changes if c.changeAmount < 0]

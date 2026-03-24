@@ -27,6 +27,7 @@ interface PriceTrendData {
     }>;
     recentChanges: Array<{
         id: number;
+        hardwareId: number;
         hardwareName: string;
         category: string;
         oldPrice: number;
@@ -101,6 +102,7 @@ export default function PriceTrendChart() {
     const [subcategories, setSubcategories] = useState<string[]>([]);
     const [selectedProductId, setSelectedProductId] = useState<string>('');
     const [days, setDays] = useState(30);
+    const [magnitudeFilter, setMagnitudeFilter] = useState<'all' | 'large' | 'small'>('all'); // Magnitude filter
 
     const fetchData = async () => {
         setLoading(true);
@@ -134,7 +136,7 @@ export default function PriceTrendChart() {
             const backendFilter = currentSubcat || (category === 'ram' ? ramGeneration : '');
 
             const [resStats, resHistory] = await Promise.all([
-                fetch(`/api/stats/price-trends?days=${days}&category=${category === 'all' ? '' : category}`, { headers }),
+                fetch(`/api/stats/price-trends?days=${days}&category=${category === 'all' ? '' : category}&subcategory=${backendFilter}`, { headers }),
                 fetch(`/api/stats/product-price-history?days=${days}&category=${category === 'all' ? '' : category}&subcategory=${backendFilter}`, { headers })
             ]);
 
@@ -490,14 +492,32 @@ export default function PriceTrendChart() {
             {/* 最近变更记录 */}
             {recentChanges.length > 0 && (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-slate-100">
+                    <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                         <h3 className="font-bold text-slate-800">最近价格变更</h3>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-400 mr-2">变动幅度:</span>
+                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                {(['all', 'large', 'small'] as const).map(f => (
+                                    <button
+                                        key={f}
+                                        onClick={() => setMagnitudeFilter(f)}
+                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                                            magnitudeFilter === f 
+                                            ? 'bg-white text-indigo-600 shadow-sm' 
+                                            : 'text-slate-500 hover:text-slate-700'
+                                        }`}
+                                    >
+                                        {f === 'all' ? '全部' : f === 'large' ? '大额 (¥50+)' : '微调 (<¥50)'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-slate-50">
                                 <tr>
-                                    <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">硬件名称</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">硬件名称 (点击查看模型走势)</th>
                                     <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">品类</th>
                                     <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">原价</th>
                                     <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">新价</th>
@@ -506,9 +526,24 @@ export default function PriceTrendChart() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {recentChanges.map((c, i) => (
-                                    <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-4 py-3 font-medium text-slate-700">{c.hardwareName}</td>
+                                {recentChanges
+                                    .filter(c => {
+                                        if (magnitudeFilter === 'all') return true;
+                                        const absChange = Math.abs(c.changeAmount);
+                                        return magnitudeFilter === 'large' ? absChange >= 50 : absChange < 50;
+                                    })
+                                    .map((c, i) => (
+                                    <tr 
+                                        key={i} 
+                                        onClick={() => {
+                                            setSelectedProductId(String(c.hardwareId));
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        className={`group cursor-pointer hover:bg-indigo-50/50 transition-colors ${String(c.hardwareId) === selectedProductId ? 'bg-indigo-50 shadow-inner' : ''}`}
+                                    >
+                                        <td className="px-4 py-3 font-medium text-slate-700 group-hover:text-indigo-600 transition-colors">
+                                            {c.hardwareName}
+                                        </td>
                                         <td className="px-4 py-3 text-slate-500">{CATEGORY_LABELS[c.category] || c.category}</td>
                                         <td className="px-4 py-3 text-right text-slate-500">¥{c.oldPrice}</td>
                                         <td className="px-4 py-3 text-right font-bold text-slate-800">¥{c.newPrice}</td>
