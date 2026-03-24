@@ -446,7 +446,7 @@ async def get_product_price_history(
     if category and category != "all":
         # Get current prices and creation dates for all active products in category
         hw_data = session.exec(
-            select(Hardware.id, Hardware.name, Hardware.price, Hardware.createdAt)
+            select(Hardware.id, Hardware.brand, Hardware.model, Hardware.price, Hardware.createdAt)
             .where(Hardware.category == category, Hardware.status == "active")
         ).all()
         
@@ -454,10 +454,11 @@ async def get_product_price_history(
         if subcategory and category in ['ram', 'disk']:
             filtered_hw_data = []
             for h in hw_data:
-                hw_name = h[1] # h.name is index 1
-                if not hw_name: continue
+                hw_name = f"{h[1]} {h[2]}" # h.brand + h.model
+                if not hw_name.strip(): continue
                 label = _parse_ram_specs(hw_name) if category == 'ram' else _parse_disk_specs(hw_name)
-                if label == subcategory:
+                # substring match to allow matching "DDR4" to "DDR4 3600MHz..."
+                if subcategory in label:
                     filtered_hw_data.append(h)
             hw_data = filtered_hw_data
         
@@ -470,10 +471,15 @@ async def get_product_price_history(
             # Map changes by date for easy lookup
             changes_by_date = defaultdict(list)
             for c in sorted(changes, key=lambda x: x.changedAt, reverse=True):
+                # Apply subcategory filter to historical changes as well so we only reverse relevant ones
+                if subcategory and category in ['ram', 'disk']:
+                    c_label = _parse_ram_specs(c.hardwareName) if category == 'ram' else _parse_disk_specs(c.hardwareName)
+                    if subcategory not in c_label:
+                        continue
                 changes_by_date[c.changedAt[:10]].append(c)
             
-            temp_prices = {h[0]: h[2] for h in hw_data} # h.price is index 2
-            hw_created = {h[0]: h[3][:10] if h[3] else "2000-01-01" for h in hw_data} # h.createdAt is index 3
+            temp_prices = {h[0]: h[3] for h in hw_data} # h.price is index 3 now
+            hw_created = {h[0]: h[4][:10] if h[4] else "2000-01-01" for h in hw_data} # h.createdAt is index 4 now
             
             for d in reversed(dates):
                 # Only include products that were already created
@@ -499,11 +505,20 @@ async def get_product_price_history(
     products_query = products_query.where(Hardware.status == "active").order_by(Hardware.brand, Hardware.model)
     product_rows = session.exec(products_query).all()
 
+    # Apply subcategory filter to the products dropdown list so it matches the chart content
     products_list = []
     for row in product_rows:
+        hw_name = f"{row[1]} {row[2]}"
+        
+        # Subcategory match check
+        if subcategory and category in ['ram', 'disk']:
+            lbl = _parse_ram_specs(hw_name) if category == 'ram' else _parse_disk_specs(hw_name)
+            if subcategory not in lbl: 
+                continue
+
         products_list.append({
             "id": row[0],
-            "name": f"{row[1]} {row[2]}",
+            "name": hw_name,
             "price": row[3],
             "category": row[4],
         })

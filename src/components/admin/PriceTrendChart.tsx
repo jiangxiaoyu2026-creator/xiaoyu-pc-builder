@@ -96,6 +96,7 @@ export default function PriceTrendChart() {
     const [trendData, setTrendData] = useState<ProductPriceTrendData | null>(null);
     const [loading, setLoading] = useState(true);
     const [category, setCategory] = useState('all');
+    const [ramGeneration, setRamGeneration] = useState('');
     const [subcategory, setSubcategory] = useState('');
     const [subcategories, setSubcategories] = useState<string[]>([]);
     const [selectedProductId, setSelectedProductId] = useState<string>('');
@@ -128,10 +129,13 @@ export default function PriceTrendChart() {
             if (currentSubcat !== subcategory && ['ram', 'disk'].includes(category)) {
                 setSubcategory(currentSubcat);
             }
+            
+            // Pass the most specific filter: if subcat exists, pass it; else if ramGen exists, pass it
+            const backendFilter = currentSubcat || (category === 'ram' ? ramGeneration : '');
 
             const [resStats, resHistory] = await Promise.all([
                 fetch(`/api/stats/price-trends?days=${days}&category=${category === 'all' ? '' : category}`, { headers }),
-                fetch(`/api/stats/product-price-history?days=${days}&category=${category === 'all' ? '' : category}&subcategory=${currentSubcat}`, { headers })
+                fetch(`/api/stats/product-price-history?days=${days}&category=${category === 'all' ? '' : category}&subcategory=${backendFilter}`, { headers })
             ]);
 
             if (resStats.ok && resHistory.ok) {
@@ -152,8 +156,9 @@ export default function PriceTrendChart() {
 
     useEffect(() => { 
         // Whenever category changes, we should reset subcategory unless we want it sticky
+        if (category !== 'ram') setRamGeneration('');
         fetchData(); 
-    }, [category, subcategory, days]);
+    }, [category, subcategory, ramGeneration, days]);
 
     if (loading) {
         return (
@@ -228,16 +233,33 @@ export default function PriceTrendChart() {
                         ))}
                     </select>
 
+                    {category === 'ram' && (
+                        <select
+                            value={ramGeneration}
+                            onChange={e => {
+                                setRamGeneration(e.target.value);
+                                setSubcategory(''); // Reset specific spec when generation changes
+                            }}
+                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                        >
+                            <option value="">全部代数 (DDR4/5)</option>
+                            <option value="DDR4">DDR4 专区</option>
+                            <option value="DDR5">DDR5 专区</option>
+                        </select>
+                    )}
+
                     {subcategories.length > 0 && (
                         <select
                             value={subcategory}
                             onChange={e => setSubcategory(e.target.value)}
                             className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
                         >
-                            <option value="">全部规格</option>
-                            {subcategories.map(s => (
-                                <option key={s} value={s}>{s}</option>
-                            ))}
+                            <option value="">全部具体规格</option>
+                            {subcategories
+                                .filter(s => !ramGeneration || s.includes(ramGeneration))
+                                .map(s => (
+                                    <option key={s} value={s}>{s}</option>
+                                ))}
                         </select>
                     )}
 
