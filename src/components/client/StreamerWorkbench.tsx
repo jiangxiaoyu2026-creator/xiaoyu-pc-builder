@@ -9,7 +9,6 @@ import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
 import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
-import { ApiService } from '../../services/api';
 
 // --- Theme System ---
 export type ThemeColor = 'default' | 'cosmic' | 'jade' | 'rosegold' | 'ocean' | 'midnight';
@@ -940,57 +939,93 @@ function StreamerWorkbench({
 
 function MarketTrendsSidebar({ theme }: { theme: ThemeConfig }) {
     const [trends, setTrends] = useState<any[]>([]);
+    const [dateLabel, setDateLabel] = useState('今日');
 
     useEffect(() => {
-        ApiService.get('/admin/marketing/daily-summary')
-            .then(res => {
-                if (res && res.topDrops) {
-                    setTrends(res.topDrops);
+        // Smart fallback: try 1 day first, if < 5 items, expand to 7 days
+        const fetchTrends = async () => {
+            try {
+                // First try: today (1 day)
+                const res1 = await fetch('/api/stats/public-price-trends?days=1');
+                if (res1.ok) {
+                    const data1 = await res1.json();
+                    if (data1.recentChanges && data1.recentChanges.length >= 5) {
+                        setTrends(data1.recentChanges);
+                        setDateLabel('今日');
+                        return;
+                    }
                 }
-            })
-            .catch(err => console.error('Failed to fetch market trends', err));
+                // Fallback: 7 days
+                const res7 = await fetch('/api/stats/public-price-trends?days=7');
+                if (res7.ok) {
+                    const data7 = await res7.json();
+                    if (data7.recentChanges && data7.recentChanges.length > 0) {
+                        setTrends(data7.recentChanges);
+                        setDateLabel('近7日');
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch market trends', err);
+            }
+        };
+        fetchTrends();
     }, []);
 
-    // Double the items for seamless looping if we have any
-    const displayTrends = trends.length > 0 ? [...trends, ...trends] : [];
+    // Triple the items for seamless looping
+    const displayTrends = trends.length > 0 ? [...trends, ...trends, ...trends] : [];
 
     return (
         <div className={`${theme.cardBg} rounded-[32px] shadow-xl ${theme.borderColor} border overflow-hidden transition-colors duration-300 flex flex-col h-full`}>
             <div className={`px-5 py-4 border-b ${theme.borderColor} ${theme.headerBg}`}>
                 <h3 className={`font-bold ${theme.textTitle} flex items-center gap-2`}>
                     <Monitor size={16} className={theme.primary} />
-                    今日硬件行情早报
+                    {dateLabel}硬件行情早报
                 </h3>
             </div>
             
             <div className={`p-4 flex-1 space-y-4 ${theme.rowBg} relative overflow-hidden group`}>
                 <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center justify-between sticky top-0 z-10 bg-inherit pb-2">
                     <span>基准时间: {new Date().toLocaleDateString('zh-CN')}</span>
-                    <span className="text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-500/20 px-2 py-0.5 rounded">大盘波动频繁</span>
+                    {trends.length > 0 && (
+                        <span className="text-indigo-500 font-bold bg-indigo-50 dark:bg-indigo-500/20 px-2 py-0.5 rounded">
+                            {trends.length}条变动
+                        </span>
+                    )}
                 </div>
                 
                 {/* Auto-scrolling container */}
                 {trends.length > 0 ? (
-                    <div className="absolute left-4 right-4 animate-scroll-vertical group-hover:[animation-play-state:paused] flex flex-col gap-4">
+                    <div 
+                        className="absolute left-4 right-4 flex flex-col gap-3 group-hover:[animation-play-state:paused]"
+                        style={{
+                            animation: `scrollVertical ${trends.length * 3}s linear infinite`,
+                        }}
+                    >
                         {displayTrends.map((item, idx) => {
-                            const diff = Math.abs(item.drop);
+                            const isUp = item.changeAmount > 0;
+                            const absAmount = Math.abs(item.changeAmount);
+                            const absPercent = Math.abs(item.changePercent || 0);
                             return (
-                                <div key={`${item.name}-${idx}`} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-sm shrink-0">
-                                    <div className={`font-bold text-[13px] ${theme.textTitle} truncate`}>{item.name}</div>
+                                <div key={`${item.hardwareName}-${idx}`} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-sm shrink-0">
+                                    <div className={`font-bold text-[13px] ${theme.textTitle} truncate`}>{item.hardwareName}</div>
                                     <div className="flex items-center justify-between text-xs font-mono">
                                         <span className="text-slate-400 dark:text-slate-500 line-through">¥{item.oldPrice}</span>
                                         <div className="flex items-center gap-2">
                                             <span className="text-slate-800 dark:text-slate-200 font-black text-sm">¥{item.newPrice}</span>
-                                            {item.trend === 'up' ? (
+                                            {isUp ? (
                                                 <span className="text-rose-500 bg-rose-50 dark:bg-rose-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                                                    <ChevronUp size={12} strokeWidth={3} /> {diff}
+                                                    <ChevronUp size={12} strokeWidth={3} /> {absAmount} ({absPercent}%)
                                                 </span>
                                             ) : (
                                                 <span className="text-emerald-500 bg-emerald-50 dark:bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                                                    <ChevronDown size={12} strokeWidth={3} /> {diff}
+                                                    <ChevronDown size={12} strokeWidth={3} /> {absAmount} ({absPercent}%)
                                                 </span>
                                             )}
                                         </div>
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 dark:text-slate-500">
+                                        {item.category} · {item.changedAt?.substring(5, 16)?.replace('T', ' ')}
                                     </div>
                                 </div>
                             );

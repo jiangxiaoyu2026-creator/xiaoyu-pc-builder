@@ -211,14 +211,14 @@ async def get_public_price_trends(
     """前台获取公开价格变化趋势（所有人可用）"""
     from datetime import timedelta
     
-    cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
+    cutoff = (datetime.utcnow() + timedelta(hours=8) - timedelta(days=days)).isoformat()
     
     # Get recent price changes
     query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff).order_by(PriceHistory.changedAt.desc())
     changes = session.exec(query.limit(200)).all() # 限制给前台的数据量
     
     # Today's summary
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d")
     today_changes = [c for c in changes if c.changedAt.startswith(today)]
     today_up = [c for c in today_changes if c.changeAmount > 0]
     today_down = [c for c in today_changes if c.changeAmount < 0]
@@ -245,9 +245,9 @@ async def get_public_price_trends(
         del entry["changes"]
         chart_data.append(entry)
     
-    # Recent changes list (latest 20 for public)
+    # Recent changes list (latest 50 for public)
     recent = []
-    for c in changes[:20]:
+    for c in changes[:50]:
         recent.append({
             "id": c.id,
             "hardwareName": c.hardwareName,
