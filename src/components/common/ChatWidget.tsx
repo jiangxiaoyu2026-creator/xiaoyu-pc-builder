@@ -143,7 +143,7 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
     };
 
     return (
-        <div className="fixed bottom-[84px] md:bottom-6 right-4 md:right-6 z-50 flex flex-col items-end">
+        <div className="fixed bottom-[140px] md:bottom-6 right-4 md:right-6 z-[100] flex flex-col items-end">
             {/* Chat Window */}
             {isOpen && (
                 <div className="mb-4 w-[calc(100vw-2rem)] md:w-[360px] h-[65vh] md:h-[520px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-10 fade-in duration-300">
