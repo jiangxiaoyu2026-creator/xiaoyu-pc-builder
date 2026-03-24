@@ -625,6 +625,7 @@ export default function ProductManager() {
                                                 value={p.price}
                                                 onChange={(e) => handlePriceChange(p.id, Number(e.target.value))}
                                                 onBlur={() => handlePriceBlur(p.id)}
+                                                onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                             />
                                         </div>
                                     </td>
@@ -650,6 +651,7 @@ export default function ProductManager() {
                                                     setProducts(prev => prev.map(item => String(item.id) === String(p.id) ? { ...item, sortOrder: newVal } : item));
                                                 }}
                                                 onBlur={() => handleSortOrderBlur(p.id)}
+                                                onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                             />
                                         </div>
                                     </td>
@@ -866,6 +868,7 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                         setFormData({ ...formData, costPrice: cp, price: Number(newPrice.toFixed(2)) });
                                     }} 
                                     placeholder="输入进货价"
+                                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                 />
                                 
                                 <div className="grid grid-cols-2 gap-2">
@@ -907,6 +910,7 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                                 }
                                                 setFormData({ ...formData, profitValue: pv, price: Number(newPrice.toFixed(2)) });
                                             }}
+                                            onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                         />
                                     </div>
                                 </div>
@@ -922,6 +926,7 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                         className="w-full border-2 border-indigo-100 bg-indigo-50/30 rounded-lg p-2 text-lg font-mono font-bold text-indigo-600 focus:border-indigo-500 outline-none" 
                                         value={formData.price} 
                                         onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} 
+                                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                         required 
                                     />
                                     <div className="mt-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
@@ -937,7 +942,7 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 mb-1">排序权重</label>
-                                    <input type="number" className="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono text-slate-500" value={formData.sortOrder} onChange={e => setFormData({ ...formData, sortOrder: Number(e.target.value) })} />
+                                    <input type="number" className="w-full border border-slate-200 rounded-lg p-2 text-sm font-mono text-slate-500" value={formData.sortOrder} onChange={e => setFormData({ ...formData, sortOrder: Number(e.target.value) })} onWheel={(e) => (e.target as HTMLInputElement).blur()} />
                                 </div>
                             </div>
                         </div>
