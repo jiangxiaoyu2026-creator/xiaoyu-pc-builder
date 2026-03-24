@@ -393,11 +393,12 @@ async def get_public_price_trends(
 async def get_product_price_history(
     hardware_id: Optional[str] = None,
     category: Optional[str] = None,
+    subcategory: Optional[str] = None,
     days: int = 30,
     session: Session = Depends(get_session),
     admin: User = Depends(get_current_admin)
 ):
-    """获取产品级别价格历史趋势（品类均价 + 单品走势）"""
+    """获取产品级别价格历史趋势（真实品类/细分均价 + 单品走势）"""
     from datetime import timedelta
     from collections import defaultdict
 
@@ -438,29 +439,27 @@ async def get_product_price_history(
         })
 
     # --- Category average price trend ---
-    # 1. Average of CHANGED items (original "变动均价")
-    daily_prices = defaultdict(list)
-    for c in changes:
-        date_key = c.changedAt[:10]
-        daily_prices[date_key].append(c.newPrice)
+    category_avg_trend = [] # Legacy field to avoid breaking frontend blindly, leaving empty
 
-    category_avg_trend = []
-    for date_key in sorted(daily_prices.keys()):
-        prices = daily_prices[date_key]
-        category_avg_trend.append({
-            "date": date_key,
-            "avgPrice": round(sum(prices) / len(prices), 2),
-            "count": len(prices),
-        })
-
-    # 2. Total category average (new "全量均价")
+    # 2. Total category average (new "全量均价" or "细分规格均价")
     category_total_avg_trend = []
     if category and category != "all":
         # Get current prices and creation dates for all active products in category
         hw_data = session.exec(
-            select(Hardware.id, Hardware.price, Hardware.createdAt)
+            select(Hardware.id, Hardware.name, Hardware.price, Hardware.createdAt)
             .where(Hardware.category == category, Hardware.status == "active")
         ).all()
+        
+        # Filter by subcategory if requested
+        if subcategory and category in ['ram', 'disk']:
+            filtered_hw_data = []
+            for h in hw_data:
+                hw_name = h[1] # h.name is index 1
+                if not hw_name: continue
+                label = _parse_ram_specs(hw_name) if category == 'ram' else _parse_disk_specs(hw_name)
+                if label == subcategory:
+                    filtered_hw_data.append(h)
+            hw_data = filtered_hw_data
         
         if hw_data:
             # Reconstruct history working backwards from today
@@ -473,8 +472,8 @@ async def get_product_price_history(
             for c in sorted(changes, key=lambda x: x.changedAt, reverse=True):
                 changes_by_date[c.changedAt[:10]].append(c)
             
-            temp_prices = {h[0]: h[1] for h in hw_data}
-            hw_created = {h[0]: h[2][:10] for h in hw_data}
+            temp_prices = {h[0]: h[2] for h in hw_data} # h.price is index 2
+            hw_created = {h[0]: h[3][:10] if h[3] else "2000-01-01" for h in hw_data} # h.createdAt is index 3
             
             for d in reversed(dates):
                 # Only include products that were already created

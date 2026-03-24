@@ -96,6 +96,8 @@ export default function PriceTrendChart() {
     const [trendData, setTrendData] = useState<ProductPriceTrendData | null>(null);
     const [loading, setLoading] = useState(true);
     const [category, setCategory] = useState('all');
+    const [subcategory, setSubcategory] = useState('');
+    const [subcategories, setSubcategories] = useState<string[]>([]);
     const [selectedProductId, setSelectedProductId] = useState<string>('');
     const [days, setDays] = useState(30);
 
@@ -105,9 +107,31 @@ export default function PriceTrendChart() {
             const token = localStorage.getItem('xiaoyu_token');
             const headers = { 'Authorization': `Bearer ${token}` };
             
+            // If category is ram/disk, fetch the subcategories first if we don't have them
+            let availableSubcats: string[] = [];
+            if (['ram', 'disk'].includes(category)) {
+                try {
+                    const resSub = await fetch(`/api/stats/public-category-trends/${category}?days=${days}`, { headers });
+                    if (resSub.ok) {
+                        const subData = await resSub.json();
+                        availableSubcats = subData.groups?.map((g: any) => g.label) || [];
+                        setSubcategories(availableSubcats);
+                    }
+                } catch(e) { console.error('Failed to load subcategories', e) }
+            } else {
+                setSubcategories([]);
+                setSubcategory('');
+            }
+
+            // Ensure current subcategory is still valid
+            const currentSubcat = category === 'all' ? '' : (availableSubcats.includes(subcategory) ? subcategory : '');
+            if (currentSubcat !== subcategory && ['ram', 'disk'].includes(category)) {
+                setSubcategory(currentSubcat);
+            }
+
             const [resStats, resHistory] = await Promise.all([
                 fetch(`/api/stats/price-trends?days=${days}&category=${category === 'all' ? '' : category}`, { headers }),
-                fetch(`/api/stats/product-price-history?days=${days}&category=${category === 'all' ? '' : category}`, { headers })
+                fetch(`/api/stats/product-price-history?days=${days}&category=${category === 'all' ? '' : category}&subcategory=${currentSubcat}`, { headers })
             ]);
 
             if (resStats.ok && resHistory.ok) {
@@ -126,7 +150,10 @@ export default function PriceTrendChart() {
         }
     };
 
-    useEffect(() => { fetchData(); }, [category, days]);
+    useEffect(() => { 
+        // Whenever category changes, we should reset subcategory unless we want it sticky
+        fetchData(); 
+    }, [category, subcategory, days]);
 
     if (loading) {
         return (
@@ -200,6 +227,19 @@ export default function PriceTrendChart() {
                             <option key={c} value={c}>{CATEGORY_LABELS[c] || c}</option>
                         ))}
                     </select>
+
+                    {subcategories.length > 0 && (
+                        <select
+                            value={subcategory}
+                            onChange={e => setSubcategory(e.target.value)}
+                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                        >
+                            <option value="">全部规格</option>
+                            {subcategories.map(s => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
+                    )}
 
                     {category !== 'all' && trendData && trendData.products && (
                         <select
@@ -283,28 +323,17 @@ export default function PriceTrendChart() {
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                            {CATEGORY_LABELS[category] || category} 品类价格走势
+                            {subcategory ? `${subcategory} ` : `${CATEGORY_LABELS[category] || category}品类`}历史基准均价走势
                         </h3>
                         <div className="flex gap-4">
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                <span className="w-3 h-0.5 bg-indigo-500"></span> 平均价格 (仅限调价商品)
-                            </div>
-                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                <span className="w-3 h-0.5 bg-slate-300"></span> 全量均价 (品类合集)
+                                <span className="w-3 h-0.5 bg-indigo-500"></span> 真实平均价格 ({subcategory ? '该规格所有商品' : '大类所有商品'})
                             </div>
                         </div>
                     </div>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart 
-                            data={trendData.categoryTotalAvgTrend.map(totalItem => {
-                                const changeItem = trendData.categoryAvgTrend.find(c => c.date === totalItem.date);
-                                return {
-                                    date: totalItem.date,
-                                    totalAvg: totalItem.avgPrice,
-                                    changeAvg: changeItem?.avgPrice,
-                                    count: changeItem?.count || 0
-                                };
-                            })} 
+                            data={trendData.categoryTotalAvgTrend} 
                             margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -329,24 +358,12 @@ export default function PriceTrendChart() {
                                                 <p className="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2">{label}</p>
                                                 <div className="space-y-2.5">
                                                     <div className="flex items-center justify-between gap-4">
-                                                        <span className="flex items-center gap-2 text-sm text-slate-600">
-                                                            <div className="w-2 h-2 rounded-full bg-slate-300" />
-                                                            全量均价
-                                                        </span>
-                                                        <span className="font-bold text-slate-800">¥{data.totalAvg}</span>
-                                                    </div>
-                                                    <div className="flex items-center justify-between gap-4">
                                                         <span className="flex items-center gap-2 text-sm text-indigo-600">
                                                             <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                                                            平均价格
+                                                            真实均价
                                                         </span>
-                                                        <span className="font-bold text-indigo-600">
-                                                            {data.changeAvg ? `¥${data.changeAvg}` : '--'}
-                                                        </span>
+                                                        <span className="font-bold text-indigo-600">¥{data.avgPrice}</span>
                                                     </div>
-                                                    {data.count > 0 && (
-                                                        <div className="text-[10px] text-slate-400 text-right">调价采样: {data.count}件</div>
-                                                    )}
                                                 </div>
                                             </div>
                                         );
@@ -356,26 +373,11 @@ export default function PriceTrendChart() {
                             />
                             <Line 
                                 type="monotone" 
-                                dataKey="totalAvg" 
-                                stroke="#cbd5e1" 
-                                strokeWidth={2}
-                                strokeDasharray="5 5"
-                                dot={false}
-                                activeDot={{ r: 4, strokeWidth: 0 }}
-                            />
-                            <Line 
-                                type="monotone" 
-                                dataKey="changeAvg" 
+                                dataKey="avgPrice" 
                                 stroke="#6366f1" 
                                 strokeWidth={3}
                                 connectNulls={true}
-                                dot={(props: any) => {
-                                    const { cx, cy, payload } = props;
-                                    if (payload.count > 0) {
-                                        return <circle key={payload.date} cx={cx} cy={cy} r={4} fill="#6366f1" stroke="none" />;
-                                    }
-                                    return null;
-                                }}
+                                dot={{ fill: '#6366f1', strokeWidth: 2, r: 3 }}
                                 activeDot={{ r: 6, strokeWidth: 0 }}
                             />
                         </LineChart>
