@@ -200,7 +200,7 @@ async def get_admin_products(
     }
 
 @router.post("/admin/autofill-images")
-async def autofill_images(
+def autofill_images(
     limit: int = 50,
     session: Session = Depends(get_session),
     admin: User = Depends(get_current_admin)
@@ -237,7 +237,7 @@ async def autofill_images(
     }
 
 @router.post("/admin/autofill-specs")
-async def autofill_specs(
+def autofill_specs(
     limit: int = 50,
     session: Session = Depends(get_session),
     admin: User = Depends(get_current_admin)

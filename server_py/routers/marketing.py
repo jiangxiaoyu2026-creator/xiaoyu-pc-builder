@@ -24,14 +24,15 @@ async def get_marketing_summary(
     """
     try:
         now = datetime.utcnow()
+        start_date = (now - timedelta(days=7)).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
-        yesterday_start = (now - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
         
-        # 1. Fetch Today's Changes
-        today_changes = session.exec(
+        # 1. Fetch 7-day Volatility
+        recent_changes = session.exec(
             select(PriceHistory)
-            .where(PriceHistory.changedAt >= today_start)
-            .order_by(PriceHistory.changeAmount.asc()) # Biggest drops first
+            .where(PriceHistory.changedAt >= start_date)
+            .order_by(func.abs(PriceHistory.changeAmount).desc()) # Biggest absolute changes
+            .limit(50)
         ).all()
         
         # 2. Fetch All-time Lows (Simple approximation: min price in history or current)
@@ -88,12 +89,13 @@ async def get_marketing_summary(
             "date": now.strftime("%Y-%m-%d"),
             "topDrops": [
                 {
-                    "name": c.hardwareName,
+                    "name": f"[{c.brand}] {c.hardwareName}" if hasattr(c, 'brand') else c.hardwareName,
                     "category": c.category,
                     "oldPrice": c.oldPrice,
                     "newPrice": c.newPrice,
-                    "drop": c.changeAmount
-                } for c in today_changes[:10]
+                    "drop": c.changeAmount,
+                    "trend": "down" if c.changeAmount < 0 else "up"
+                } for c in recent_changes
             ],
             "categoryHighlights": highlights
         }
@@ -107,7 +109,7 @@ class GenerateDailyRequest(BaseModel):
     external_news: str = ""
 
 @router.post("/generate-daily")
-async def generate_daily_marketing(
+def generate_daily_marketing(
     request: GenerateDailyRequest,
     session: Session = Depends(get_session),
     admin: User = Depends(get_current_admin)

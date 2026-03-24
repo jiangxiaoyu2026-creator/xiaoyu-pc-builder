@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 from sqlmodel import SQLModel, Field, create_engine, Session, select, Column, JSON
 import json
@@ -55,7 +55,7 @@ class PriceHistory(SQLModel, table=True):
     newPrice: float
     changeAmount: float  # newPrice - oldPrice
     changePercent: float  # (newPrice - oldPrice) / oldPrice * 100
-    changedAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    changedAt: str = Field(default_factory=lambda: (datetime.utcnow() + timedelta(hours=8)).isoformat())
 
 class Config(SQLModel, table=True):
     __tablename__ = "configs"

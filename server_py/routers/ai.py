@@ -13,7 +13,7 @@ class AIGenerateRequest(BaseModel):
     appearance: str = 'black' # black, white, rgb
 
 @router.post("/generate")
-async def generate_build_endpoint(
+def generate_build_endpoint(
     req: AIGenerateRequest,
     session: Session = Depends(get_session)
 ):

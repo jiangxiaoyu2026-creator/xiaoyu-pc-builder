@@ -9,6 +9,7 @@ import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
 import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
+import { ApiService } from '../../services/api';
 
 // --- Theme System ---
 export type ThemeColor = 'default' | 'cosmic' | 'jade' | 'rosegold' | 'ocean' | 'midnight';
@@ -938,16 +939,23 @@ function StreamerWorkbench({
 }
 
 function MarketTrendsSidebar({ theme }: { theme: ThemeConfig }) {
-    const mockTrends = [
-        { id: 1, name: 'RTX 4090 D 24G', oldPrice: 14599, newPrice: 14999, trend: 'up' },
-        { id: 2, name: 'i5-13400F 散片', oldPrice: 949, newPrice: 929, trend: 'down' },
-        { id: 3, name: '金士顿 2TB PCIe 4.0', oldPrice: 899, newPrice: 929, trend: 'up' },
-        { id: 4, name: '海韵 850W 金牌全模', oldPrice: 799, newPrice: 769, trend: 'down' },
-        { id: 5, name: 'B760M 迫击炮 WIFI', oldPrice: 1149, newPrice: 1129, trend: 'down' },
-    ];
+    const [trends, setTrends] = useState<any[]>([]);
+
+    useEffect(() => {
+        ApiService.get('/admin/marketing/daily-summary')
+            .then(res => {
+                if (res && res.topDrops) {
+                    setTrends(res.topDrops);
+                }
+            })
+            .catch(err => console.error('Failed to fetch market trends', err));
+    }, []);
+
+    // Double the items for seamless looping if we have any
+    const displayTrends = trends.length > 0 ? [...trends, ...trends] : [];
 
     return (
-        <div className={`${theme.cardBg} rounded-[32px] shadow-xl ${theme.borderColor} border overflow-hidden transition-colors duration-300 flex flex-col h-full min-h-[500px]`}>
+        <div className={`${theme.cardBg} rounded-[32px] shadow-xl ${theme.borderColor} border overflow-hidden transition-colors duration-300 flex flex-col h-full`}>
             <div className={`px-5 py-4 border-b ${theme.borderColor} ${theme.headerBg}`}>
                 <h3 className={`font-bold ${theme.textTitle} flex items-center gap-2`}>
                     <Monitor size={16} className={theme.primary} />
@@ -962,32 +970,37 @@ function MarketTrendsSidebar({ theme }: { theme: ThemeConfig }) {
                 </div>
                 
                 {/* Auto-scrolling container */}
-                <div className="absolute left-4 right-4 animate-scroll-vertical group-hover:[animation-play-state:paused] flex flex-col gap-4">
-                    {/* Double the list for seamless looping */}
-                    {[...mockTrends, ...mockTrends].map((item, idx) => {
-                        const diff = Math.abs(item.newPrice - item.oldPrice);
-                        return (
-                            <div key={`${item.id}-${idx}`} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-sm shrink-0">
-                                <div className={`font-bold text-[13px] ${theme.textTitle}`}>{item.name}</div>
-                                <div className="flex items-center justify-between text-xs font-mono">
-                                    <span className="text-slate-400 dark:text-slate-500 line-through">¥{item.oldPrice}</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-slate-800 dark:text-slate-200 font-black text-sm">¥{item.newPrice}</span>
-                                        {item.trend === 'up' ? (
-                                            <span className="text-rose-500 bg-rose-50 dark:bg-rose-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                                                <ChevronUp size={12} strokeWidth={3} /> {diff}
-                                            </span>
-                                        ) : (
-                                            <span className="text-emerald-500 bg-emerald-50 dark:bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
-                                                <ChevronDown size={12} strokeWidth={3} /> {diff}
-                                            </span>
-                                        )}
+                {trends.length > 0 ? (
+                    <div className="absolute left-4 right-4 animate-scroll-vertical group-hover:[animation-play-state:paused] flex flex-col gap-4">
+                        {displayTrends.map((item, idx) => {
+                            const diff = Math.abs(item.drop);
+                            return (
+                                <div key={`${item.name}-${idx}`} className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-sm shrink-0">
+                                    <div className={`font-bold text-[13px] ${theme.textTitle} truncate`}>{item.name}</div>
+                                    <div className="flex items-center justify-between text-xs font-mono">
+                                        <span className="text-slate-400 dark:text-slate-500 line-through">¥{item.oldPrice}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-slate-800 dark:text-slate-200 font-black text-sm">¥{item.newPrice}</span>
+                                            {item.trend === 'up' ? (
+                                                <span className="text-rose-500 bg-rose-50 dark:bg-rose-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
+                                                    <ChevronUp size={12} strokeWidth={3} /> {diff}
+                                                </span>
+                                            ) : (
+                                                <span className="text-emerald-500 bg-emerald-50 dark:bg-emerald-500/20 px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
+                                                    <ChevronDown size={12} strokeWidth={3} /> {diff}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center h-full text-slate-400 text-sm">
+                        暂无行情波动数据
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -1005,7 +1018,7 @@ export default function StreamerWorkbenchWrapper(props: any) {
                         <StreamerWorkbench {...props} />
                     </div>
                 </div>
-                <div className="w-full xl:w-[340px] shrink-0 sticky top-24 self-start h-[calc(100vh-8rem)]">
+                <div className="w-full xl:w-[340px] shrink-0">
                     <MarketTrendsSidebar theme={THEMES[themeKey]} />
                 </div>
             </div>
