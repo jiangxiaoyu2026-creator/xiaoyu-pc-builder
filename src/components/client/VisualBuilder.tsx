@@ -136,9 +136,7 @@ function VisualBuilder({
             }
 
             setAiActiveCategory(null);
-            setGhostStatus('配置清单已生成');
-            await new Promise(r => setTimeout(r, 600));
-            setIsAiExecuting(false);
+            await new Promise(r => setTimeout(r, 300));
             setAiResult({ description: result.description });
 
         } catch (error) {
