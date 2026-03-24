@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { Zap, X, Sparkles, Trash2, ChevronDown, ChevronUp, Save, RefreshCw, Share2, Download, Monitor } from 'lucide-react';
+import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Monitor } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
@@ -937,7 +937,7 @@ function StreamerWorkbench({
     );
 }
 
-function MarketTrendsSidebar({ theme }: { theme: ThemeConfig }) {
+function MarketTrendsSidebar({ theme: _theme }: { theme: ThemeConfig }) {
     const [trends, setTrends] = useState<any[]>([]);
     const [dateLabel, setDateLabel] = useState('今日');
 
