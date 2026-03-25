@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>DIYXX.COM 视频封面生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700;900&display=swap');
+        
+        body { font-family: 'Noto Sans SC', sans-serif; background: #e2e8f0; }
+
+        /* The actual exportable canvas sizes */
+        .canvas-16-9 { width: 1920px; height: 1080px; }
+        .canvas-9-16 { width: 1080px; height: 1920px; }
+
+        /* Cyberpunk Glowing Effects */
+        .glow-text-gold { text-shadow: 0 0 10px rgba(250, 204, 21, 0.6), 0 0 20px rgba(250, 204, 21, 0.4), 2px 2px 0px #9a3412; }
+        .glow-text-blue { text-shadow: 0 0 10px rgba(96, 165, 250, 0.6), 0 0 20px rgba(96, 165, 250, 0.4), 2px 2px 0px #1e3a8a; }
+        .glow-box-cyan { box-shadow: 0 0 15px rgba(34, 211, 238, 0.4), inset 0 0 15px rgba(34, 211, 238, 0.2); }
+        .glow-box-red { box-shadow: 0 0 15px rgba(248, 113, 113, 0.4), inset 0 0 15px rgba(248, 113, 113, 0.2); }
+        .glow-box-green { box-shadow: 0 0 15px rgba(74, 222, 128, 0.4), inset 0 0 15px rgba(74, 222, 128, 0.2); }
+
+        /* Diagonal background lines */
+        .bg-cyber {
+            background-color: #050b14;
+            background-image: 
+                linear-gradient(45deg, rgba(34, 211, 238, 0.03) 25%, transparent 25%, transparent 75%, rgba(34, 211, 238, 0.03) 75%, rgba(34, 211, 238, 0.03)),
+                linear-gradient(45deg, rgba(34, 211, 238, 0.03) 25%, transparent 25%, transparent 75%, rgba(34, 211, 238, 0.03) 75%, rgba(34, 211, 238, 0.03));
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Abstract glowing orbs in background */
+        .bg-cyber::before {
+            content: ''; position: absolute; top: -10%; left: -10%; width: 40%; height: 40%;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%);
+            z-index: -1;
+        }
+        .bg-cyber::after {
+            content: ''; position: absolute; bottom: -10%; right: -10%; width: 50%; height: 50%;
+            background: radial-gradient(circle, rgba(225, 29, 72, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        /* Scaler to fit preview nicely in laptop screen */
+        .preview-wrapper {
+            transform: scale(0.45);
+            transform-origin: top center;
+            height: 520px; /* roughly 1080 * 0.45 */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+        }
+        .preview-wrapper.vertical {
+            transform: scale(0.35);
+            height: 700px;
+        }
+    </style>
+</head>
+<body class="p-8">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-xl border border-slate-200 mb-8">
+        <h1 class="text-2xl font-bold text-slate-800 mb-4 flex justify-between items-center">
+            <span>✨ 3月25日 爆款封面生成器 (根据今日文案自动填入)</span>
+            <div class="flex gap-2">
+                <button onclick="setFormat('horizontal')" id="btn-h" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-sm">横版 (16:9)</button>
+                <button onclick="setFormat('vertical')" id="btn-v" class="bg-slate-200 text-slate-700 hover:bg-slate-300 px-4 py-2 rounded-lg font-bold text-sm">竖版 (9:16)</button>
+                <button onclick="downloadCover()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold text-sm ml-4 shadow-lg shadow-emerald-500/30 flex items-center gap-2">
+                    ⬇️ 一键下载无水印成图
+                </button>
+            </div>
+        </h1>
+        
+        <p class="text-slate-500 text-sm mb-4">内容已根据您提供的 "3月25日 内存全线回调 / 12400F降价 / 5600上涨" 文案自动预填。您可以点击画板里的文字直接进行修改！</p>
+    </div>
+
+    <!-- The actual Export Canvas Wrapper -->
+    <div id="wrapper" class="preview-wrapper">
+        <div id="export-node" class="bg-cyber canvas-16-9 flex flex-col items-center justify-between p-[50px] relative overflow-hidden ring-4 ring-cyan-900/30">
+            
+            <!-- 顶部大标题 -->
+            <div class="w-full flex justify-center items-center gap-6 mt-[20px] mb-[40px] z-10">
+                <div class="text-[85px] font-black italic text-yellow-400 glow-text-gold tracking-wider font-['ZCOOL_KuaiLe']" contenteditable="true">
+                    3月25日 显卡日报
+                </div>
+                <div class="w-3 h-[80px] bg-cyan-400 rotate-12 shadow-[0_0_15px_rgba(34,211,238,0.8)]"></div>
+                <div class="text-[75px] font-black italic text-cyan-300 glow-text-blue tracking-wider" contenteditable="true">
+                    - 价格行情速递 -
+                </div>
+            </div>
+
+            <!-- 核心三卡片区 -->
+            <div id="cards-container" class="flex w-full gap-[40px] flex-1 px-[20px] z-10">
+                
+                <!-- 卡片1: 内存 (金百达降价) -->
+                <div class="flex-1 rounded-[30px] border-[6px] border-cyan-400 glow-box-cyan bg-slate-900/80 backdrop-blur-md flex flex-col items-center p-[40px] relative">
+                    <div class="absolute -top-[30px] bg-cyan-500 text-white text-[32px] font-black px-[40px] py-[10px] rounded-full border-4 border-slate-900" contenteditable="true">
+                        内存降价 跌幅2.17%
+                    </div>
+                    <div class="mt-[60px] text-cyan-100 text-[40px] font-bold" contenteditable="true">金百达星刃白 32G 6000</div>
+                    <div class="flex items-center gap-4 mt-[40px]">
+                        <div class="text-[110px] font-black text-emerald-400 leading-none drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]" contenteditable="true">2900<span class="text-[60px]">元</span></div>
+                        <div class="text-[120px] text-emerald-400 font-bold -mt-4">⬇</div>
+                    </div>
+                    <div class="mt-[30px] bg-emerald-500/20 text-emerald-300 text-[38px] font-black px-[30px] py-[15px] rounded-2xl border border-emerald-500/30" contenteditable="true">
+                        比昨日再降 27 元！
+                    </div>
+                    <div class="mt-auto text-yellow-300 text-[45px] font-black tracking-widest drop-shadow-[0_0_10px_rgba(253,224,71,0.5)]" contenteditable="true">
+                        年后最低价格
+                    </div>
+                </div>
+
+                <!-- 卡片2: Intel CPU (12400 降价) -->
+                <div class="flex-1 rounded-[30px] border-[6px] border-emerald-400 glow-box-green bg-slate-900/80 backdrop-blur-md flex flex-col items-center p-[40px] relative">
+                    <div class="absolute -top-[30px] bg-emerald-500 text-white text-[32px] font-black px-[40px] py-[10px] rounded-full border-4 border-slate-900" contenteditable="true">
+                        Intel CPU 突发降价！
+                    </div>
+                    <div class="mt-[60px] text-emerald-100 text-[40px] font-bold" contenteditable="true">i5-12400F 散片</div>
+                    <div class="flex items-center gap-4 mt-[40px]">
+                        <div class="text-[110px] font-black text-emerald-400 leading-none drop-shadow-[0_0_20px_rgba(52,211,153,0.5)]" contenteditable="true">1220<span class="text-[60px]">元</span></div>
+                        <div class="text-[120px] text-emerald-400 font-bold -mt-4">⬇</div>
+                    </div>
+                    <div class="mt-[30px] bg-emerald-500/20 text-emerald-300 text-[38px] font-black px-[30px] py-[15px] rounded-2xl border border-emerald-500/30" contenteditable="true">
+                        昨天吐槽，今天掉价
+                    </div>
+                    <div class="mt-auto text-emerald-300 text-[45px] font-black tracking-widest border-b-4 border-emerald-400 pb-2" contenteditable="true">
+                        推荐入手时机
+                    </div>
+                </div>
+
+                <!-- 卡片3: AMD CPU (5600 逆势上涨) -->
+                <div class="flex-1 rounded-[30px] border-[6px] border-rose-500 glow-box-red bg-slate-900/80 backdrop-blur-md flex flex-col items-center p-[40px] relative">
+                    <div class="absolute -top-[30px] bg-rose-600 text-white text-[32px] font-black px-[40px] py-[10px] rounded-full border-4 border-slate-900" contenteditable="true">
+                        AMD CPU 逆势微涨！
+                    </div>
+                    <div class="mt-[60px] text-rose-100 text-[40px] font-bold" contenteditable="true">AMD 5600/5600GT</div>
+                    <div class="flex items-center gap-4 mt-[40px]">
+                        <div class="text-[110px] font-black text-rose-500 leading-none drop-shadow-[0_0_20px_rgba(244,63,94,0.5)]" contenteditable="true">行情涨<span class="text-[60px]"></span></div>
+                        <div class="text-[120px] text-rose-500 font-bold -mt-4">⬆</div>
+                    </div>
+                    <div class="mt-[30px] bg-rose-500/20 text-rose-300 text-[38px] font-black px-[30px] py-[15px] rounded-2xl border border-rose-500/30" contenteditable="true">
+                        上涨 10 ~ 20 元
+                    </div>
+                    <div class="mt-auto text-rose-300 text-[45px] font-black tracking-widest" contenteditable="true">
+                        其余型号平稳
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 底部通栏 -->
+            <div class="w-full mt-[40px] mb-[20px] border-4 border-cyan-500/50 rounded-2xl bg-cyan-900/30 backdrop-blur-md p-[25px] flex items-center justify-between px-[40px] z-10">
+                <div class="text-[40px] font-black text-white flex items-center gap-6">
+                    <span class="bg-cyan-500 text-white px-4 py-1 rounded-lg">硬盘动向</span>
+                    <span contenteditable="true">1TB均价1070元，暂无波动。</span>
+                </div>
+                <div class="text-[46px] font-black text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)] tracking-wider" contenteditable="true">
+                    内存大趋势依然看涨！
+                </div>
+            </div>
+
+            <!-- DIYXX水印 -->
+            <div class="absolute bottom-4 right-8 text-cyan-500/30 text-[30px] font-black tracking-widest pointer-events-none z-0">
+                DIYXX.COM 数据支持
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let currentFormat = 'horizontal';
+        
+        function setFormat(format) {
+            currentFormat = format;
+            const node = document.getElementById('export-node');
+            const wrapper = document.getElementById('wrapper');
+            const cardsContainer = document.getElementById('cards-container');
+            
+            const btnH = document.getElementById('btn-h');
+            const btnV = document.getElementById('btn-v');
+
+            if (format === 'vertical') {
+                // Change classes for Vertical 9:16
+                node.classList.remove('canvas-16-9');
+                node.classList.add('canvas-9-16');
+                
+                cardsContainer.classList.remove('flex-row');
+                cardsContainer.classList.add('flex-col');
+                
+                wrapper.classList.add('vertical');
+
+                // Button UI
+                btnV.classList.replace('bg-slate-200', 'bg-indigo-600');
+                btnV.classList.replace('text-slate-700', 'text-white');
+                btnH.classList.replace('bg-indigo-600', 'bg-slate-200');
+                btnH.classList.replace('text-white', 'text-slate-700');
+            } else {
+                // Change classes for Horizontal 16:9
+                node.classList.remove('canvas-9-16');
+                node.classList.add('canvas-16-9');
+                
+                cardsContainer.classList.remove('flex-col');
+                cardsContainer.classList.add('flex-row');
+                
+                wrapper.classList.remove('vertical');
+
+                // Button UI
+                btnH.classList.replace('bg-slate-200', 'bg-indigo-600');
+                btnH.classList.replace('text-slate-700', 'text-white');
+                btnV.classList.replace('bg-indigo-600', 'bg-slate-200');
+                btnV.classList.replace('text-white', 'text-slate-700');
+            }
+        }
+
+        function downloadCover() {
+            const node = document.getElementById('export-node');
+            
+            // 为了保证截取清晰度，我们在导出前先临时移除 scale
+            const wrapper = document.getElementById('wrapper');
+            const originalTransform = wrapper.style.transform;
+            wrapper.style.transform = 'scale(1)';
+            
+            // html-to-image 导出
+            htmlToImage.toPng(node, {
+                quality: 1.0,
+                pixelRatio: 1 // 本身已经是1080p/4k物理像素大小，不需要再乘倍数
+            }).then(function (dataUrl) {
+                const link = document.createElement('a');
+                link.download = `显卡日报_爆款封面_${currentFormat}.png`;
+                link.href = dataUrl;
+                link.click();
+                
+                // 恢复显示比例
+                wrapper.style.transform = originalTransform;
+            }).catch(function (error) {
+                console.error('oops, something went wrong!', error);
+                wrapper.style.transform = originalTransform;
+            });
+        }
+    </script>
+</body>
+</html>

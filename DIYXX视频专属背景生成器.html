@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>DIYXX.COM 视频专属背景生成器</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background: #0f172a; 
+            color: white; 
+            font-family: system-ui, -apple-system, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+        }
+        .header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .header h1 { margin: 0 0 10px 0; font-size: 24px; color: #a5b4fc; }
+        .header p { margin: 0; color: #64748b; font-size: 14px; }
+        .controls { 
+            background: rgba(255,255,255,0.05); 
+            padding: 20px 30px; 
+            border-radius: 16px; 
+            margin-bottom: 30px; 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 10; 
+            display: flex; 
+            gap: 25px; 
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        label { font-size: 14px; font-weight: 600; color: #cbd5e1; }
+        select {
+            background: rgba(0,0,0,0.3);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+        select:focus { border-color: #6366f1; }
+        button { 
+            background: linear-gradient(135deg, #6366f1, #8b5cf6); 
+            color: white; 
+            border: none; 
+            padding: 10px 24px; 
+            border-radius: 10px; 
+            font-weight: 800; 
+            cursor: pointer; 
+            font-size: 15px; 
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+        button:active { transform: translateY(0); }
+        .preview-container {
+            position: relative;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            border: 1px dashed rgba(255,255,255,0.1);
+        }
+        canvas { 
+            max-width: 900px; 
+            width: 100%;
+            height: auto;
+            border-radius: 8px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✨ 小鱼专属视频背景生成器</h1>
+        <p>调整好您喜欢的颜色和比例，点击下载即可获得无水印超清背景图，直接拖入剪映使用</p>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>🎨 主题风格</label>
+            <select id="themeSelect">
+                <option value="dark">科技暗夜 (推荐 绝佳对比度)</option>
+                <option value="cyber">赛博霓虹 (潮酷风格)</option>
+                <option value="light">极简白净 (清新风格)</option>
+                <option value="emerald">黑客帝国 (矩阵绿)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>📐 视频画幅</label>
+            <select id="resSelect">
+                <option value="16:9_1080">横屏 1080P (1920x1080 - 适合B站/西瓜)</option>
+                <option value="16:9_4k">横屏 4K (3840x2160 - 适合高画质)</option>
+                <option value="9:16_1080">竖屏 1080P (1080x1920 - 适合抖音/小红书)</option>
+            </select>
+        </div>
+        <button onclick="downloadBg()">⬇️ 立即下载高清背景</button>
+    </div>
+    
+    <div class="preview-container">
+        <canvas id="bgCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        const themeSelect = document.getElementById('themeSelect');
+        const resSelect = document.getElementById('resSelect');
+
+        function draw() {
+            const format = resSelect.value;
+            let width, height;
+            
+            if (format === '16:9_1080') { width = 1920; height = 1080; }
+            else if (format === '16:9_4k') { width = 3840; height = 2160; }
+            else if (format === '9:16_1080') { width = 1080; height = 1920; }
+            
+            canvas.width = width;
+            canvas.height = height;
+
+            const theme = themeSelect.value;
+            const is4K = width > 2000;
+
+            // 1. 绘制基础渐变色底
+            let grad = ctx.createLinearGradient(0, 0, width, height);
+            if (theme === 'dark') {
+                grad.addColorStop(0, '#0f172a'); // slate-900
+                grad.addColorStop(0.5, '#1e1b4b'); // indigo-950
+                grad.addColorStop(1, '#020617'); // slate-950
+            } else if (theme === 'light') {
+                grad.addColorStop(0, '#f8fafc');
+                grad.addColorStop(1, '#e2e8f0');
+            } else if (theme === 'cyber') {
+                grad.addColorStop(0, '#2e1065'); // purple-900
+                grad.addColorStop(0.5, '#4c1d95'); // violet-900
+                grad.addColorStop(1, '#831843'); // pink-900
+            } else if (theme === 'emerald') {
+                grad.addColorStop(0, '#064e3b'); // emerald-900
+                grad.addColorStop(0.5, '#022c22'); // emerald-950
+                grad.addColorStop(1, '#000000'); // black
+            }
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+
+            // 2. 绘制错落有致的斜向文字水印
+            ctx.save();
+            const angle = -25 * Math.PI / 180; // 倾斜25度，更自然
+            // 将原点移到中心以便于旋转
+            ctx.translate(width / 2, height / 2);
+            ctx.rotate(angle);
+
+            // 水印字体设置
+            const baseFontSize = is4K ? 65 : 40;
+            ctx.font = `900 ${baseFontSize}px "Arial Black", "Impact", sans-serif`;
+            
+            // 水印颜色及透明度（极低透明度，显得高级不抢戏）
+            if (theme === 'light') {
+                ctx.fillStyle = 'rgba(0,0,0,0.035)';
+            } else {
+                ctx.fillStyle = 'rgba(255,255,255,0.025)';
+            }
+            
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const text = "DIYXX.COM";
+            
+            // 为了覆盖旋转后的画布，我们需要画一个足够大的网格
+            const diagonal = Math.sqrt(width * width + height * height);
+            const extra = Number(diagonal) + 500;
+            
+            // 间距计算
+            const stepX = is4K ? 450 : 280;
+            const stepY = is4K ? 180 : 110;
+
+            for (let y = -extra; y < extra; y += stepY) {
+                // 每行交错显示，形成类似砖墙的错落排布
+                const rowOffset = (Math.round(y / stepY) % 2 === 0) ? (stepX / 2) : 0;
+                for (let x = -extra; x < extra; x += stepX) {
+                    ctx.fillText(text, x + rowOffset, y);
+                }
+            }
+            ctx.restore();
+            
+            // 3. 增加高级质感暗角 (Vignette)
+            const vignette = ctx.createRadialGradient(width/2, height/2, height/2.5, width/2, height/2, diagonal/1.8);
+            if (theme === 'light') {
+                vignette.addColorStop(0, 'rgba(0,0,0,0)');
+                vignette.addColorStop(1, 'rgba(0,0,0,0.12)');
+            } else {
+                vignette.addColorStop(0, 'rgba(0,0,0,0)');
+                vignette.addColorStop(1, 'rgba(0,0,0,0.6)');
+            }
+            ctx.fillStyle = vignette;
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        themeSelect.addEventListener('change', draw);
+        resSelect.addEventListener('change', draw);
+
+        function downloadBg() {
+            const link = document.createElement('a');
+            const formatLabel = resSelect.options[resSelect.selectedIndex].text.split(' ')[0];
+            const themeLabel = themeSelect.options[themeSelect.selectedIndex].text.split(' ')[0];
+            link.download = `DIYXX_视频专属背景_${themeLabel}_${formatLabel}.jpg`;
+            // 使用最高质量 JPEG 保证体积不过大，但画质清晰
+            link.href = canvas.toDataURL('image/jpeg', 0.98);
+            link.click();
+        }
+
+        // 首次加载绘制
+        // 等待字体可能加载完成，稍微延迟一点画一次，以防字体没生效
+        draw();
+        setTimeout(draw, 100);
+    </script>
+</body>
+</html>

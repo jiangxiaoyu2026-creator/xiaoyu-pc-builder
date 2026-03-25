@@ -14,10 +14,20 @@ const VIP_OPTIONS = [
     { label: '365天', days: 365 },
 ];
 
+// STREAMER 时长选项
+const STREAMER_OPTIONS = [
+    { label: '1天', days: 1 },
+    { label: '2天', days: 2 },
+    { label: '3天', days: 3 },
+    { label: '7天', days: 7 },
+];
+
 export default function UserManager() {
     const [users, setUsers] = useState<UserItem[]>([]);
     const [newUser, setNewUser] = useState({ username: '', password: '', role: 'user' as UserItem['role'] });
     const [showVipModal, setShowVipModal] = useState<string | null>(null);
+    const [showStreamerModal, setShowStreamerModal] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [filterType, setFilterType] = useState<'all' | 'admin' | 'streamer' | 'vip' | 'banned'>('all');
 
@@ -129,10 +139,42 @@ export default function UserManager() {
         }
     };
 
+    const setStreamerDays = async (userId: string, days: number) => {
+        const user = users.find(u => u.id === userId || (u as any)._id === userId);
+        if (user) {
+            try {
+                const now = Date.now();
+                const currentExpire = user.streamerExpireAt && new Date(user.streamerExpireAt).getTime() > now 
+                    ? new Date(user.streamerExpireAt).getTime() 
+                    : now;
+                const newExpire = currentExpire + days * 24 * 60 * 60 * 1000;
+                
+                await storage.saveUser({ ...user, role: 'streamer', streamerExpireAt: newExpire } as any);
+                await fetchUsers();
+                setShowStreamerModal(null);
+            } catch (error) {
+                alert('设置主播时长失败');
+            }
+        }
+    };
+
+    const removeStreamer = async (userId: string) => {
+        const user = users.find(u => u.id === userId || (u as any)._id === userId);
+        if (user) {
+            try {
+                await storage.saveUser({ ...user, role: user.role === 'streamer' ? 'user' : user.role, streamerExpireAt: undefined } as any);
+                await fetchUsers();
+            } catch (error) {
+                alert('取消主播失败');
+            }
+        }
+    };
+
     const isVip = (user: UserItem) => user.vipExpireAt && new Date(user.vipExpireAt).getTime() > Date.now();
     const vipUsers = users.filter(isVip);
 
     const filteredUsers = users.filter(user => {
+        if (searchTerm && !user.username.toLowerCase().includes(searchTerm.toLowerCase())) return false;
         if (filterType === 'admin') return user.role === 'admin';
         if (filterType === 'streamer') return user.role === 'streamer';
         if (filterType === 'vip') return isVip(user);
@@ -157,6 +199,16 @@ export default function UserManager() {
                             <User size={20} className="text-indigo-600" />
                             用户与权限管理
                         </h3>
+                        {/* Search Input */}
+                        <div className="relative w-64">
+                            <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                className="w-full bg-white border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:border-indigo-500"
+                                placeholder="搜索用户名..."
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <button
@@ -300,12 +352,21 @@ export default function UserManager() {
                                                     {isVip(user) ? (
                                                         <span className="text-xs text-amber-600 font-medium flex items-center gap-1">
                                                             <Calendar size={10} />
-                                                            {formatVipExpire(user.vipExpireAt!)}
+                                                            VIP: {formatVipExpire(user.vipExpireAt!)}
                                                         </span>
                                                     ) : (
                                                         <span className="text-xs text-slate-400">
                                                             {user.lastLogin ? `登录: ${new Date(user.lastLogin).toLocaleDateString()}` : '从未登录'}
                                                         </span>
+                                                    )}
+                                                    {user.role === 'streamer' && user.streamerExpireAt && (
+                                                        <>
+                                                            <div className="h-3 w-[1px] bg-slate-200"></div>
+                                                            <span className="text-xs text-purple-600 font-medium flex items-center gap-1">
+                                                                <Zap size={10} />
+                                                                主播: {formatVipExpire(user.streamerExpireAt)}
+                                                            </span>
+                                                        </>
                                                     )}
                                                 </div>
                                             </div>
@@ -343,6 +404,44 @@ export default function UserManager() {
                                                                     className="w-full text-left px-3 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                                                                 >
                                                                     取消 VIP
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Streamer Button */}
+                                            <div className="relative">
+                                                <button
+                                                    onClick={() => setShowStreamerModal(showStreamerModal === userId ? null : userId)}
+                                                    className={`p-2 rounded-lg transition-colors ${user.role === 'streamer' ? 'text-purple-500 bg-purple-50' : 'text-slate-400 hover:text-purple-500 hover:bg-purple-50'}`}
+                                                    title="主播时长管理"
+                                                >
+                                                    <Zap size={18} />
+                                                </button>
+
+                                                {/* Streamer Dropdown */}
+                                                {showStreamerModal === userId && (
+                                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-10 p-2">
+                                                        <div className="text-xs font-bold text-slate-500 px-2 py-1 mb-1">开通主播时长</div>
+                                                        {STREAMER_OPTIONS.map(opt => (
+                                                            <button
+                                                                key={opt.days}
+                                                                onClick={() => setStreamerDays(userId, opt.days)}
+                                                                className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                                                            >
+                                                                + {opt.label}
+                                                            </button>
+                                                        ))}
+                                                        {user.role === 'streamer' && (
+                                                            <>
+                                                                <div className="border-t border-slate-100 my-1"></div>
+                                                                <button
+                                                                    onClick={() => removeStreamer(userId)}
+                                                                    className="w-full text-left px-3 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                                                                >
+                                                                    取消主播身份
                                                                 </button>
                                                             </>
                                                         )}

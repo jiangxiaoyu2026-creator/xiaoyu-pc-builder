@@ -37,6 +37,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: Session
     user = session.exec(statement).first()
     if user is None:
         raise credentials_exception
+
+    # Check streamer expiration
+    current_time_ms = int(datetime.utcnow().timestamp() * 1000)
+    if user.role == 'streamer' and user.streamerExpireAt and user.streamerExpireAt < current_time_ms:
+        user.role = 'user'
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+
     return user
 
 async def get_current_user_optional(
@@ -299,6 +308,12 @@ async def login(
     
     # Update last login
     user.lastLogin = datetime.utcnow().isoformat()
+    
+    # Check streamer expiration
+    current_time_ms = int(datetime.utcnow().timestamp() * 1000)
+    if user.role == 'streamer' and user.streamerExpireAt and user.streamerExpireAt < current_time_ms:
+        user.role = 'user'
+
     session.add(user)
     session.commit()
     
@@ -406,8 +421,11 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 @router.get("/users", response_model=List[User])
-async def get_users(session: Session = Depends(get_session), admin: User = Depends(get_current_admin)):
-    return session.exec(select(User)).all()
+async def get_users(search: Optional[str] = None, session: Session = Depends(get_session), admin: User = Depends(get_current_admin)):
+    query = select(User)
+    if search:
+        query = query.where(User.username.contains(search))
+    return session.exec(query).all()
 
 @router.post("/users", response_model=User)
 @router.post("/users/", response_model=User)
