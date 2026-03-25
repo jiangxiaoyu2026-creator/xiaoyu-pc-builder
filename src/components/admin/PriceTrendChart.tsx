@@ -169,40 +169,35 @@ export default function PriceTrendChart() {
             || (brandFilter === 'Intel' && /Intel|英特尔|酷睿|Core/i.test(name));
     };
 
+    // Helper: extract GPU chip info from a product name
+    const extractChipInfo = (name: string): { num: string; isD: boolean; suffix: string } | null => {
+        // Match 4-digit model number, optional D (only if followed by non-letter or end),
+        // and optional suffix (TI/SUPER/XTX/XT/GRE)
+        const m = name.toUpperCase().match(/(\d{4})(D(?![A-Z]))?\s*(TI|SUPER|XTX|XT|GRE)?/);
+        if (!m) return null;
+        return {
+            num: m[1],
+            isD: !!m[2],
+            suffix: m[3] || ''
+        };
+    };
+
     // Helper: does a product name match current GPU chip filter?
     const matchesChip = (name: string): boolean => {
         if (!gpuChipFilter) return true;
 
-        const nameUpper = name.toUpperCase();
-        
-        // gpuChipFilter is typically "RTX 5080" or "RX 9070 XT"
-        const filterParts = gpuChipFilter.split(' ');
-        const numPart = filterParts.find(p => /\d{4}/.test(p)) || '';
-        const num = numPart.replace(/\D/g, ''); // just digits: 5080, 5090, 9070
-        const isD = /D/i.test(numPart); // e.g. 5090D
+        // Extract chip info from the filter label (e.g. "RTX 5060 TI", "RX 9070 XT")
+        const filterInfo = extractChipInfo(gpuChipFilter);
+        if (!filterInfo) return true; // safety fallback
 
-        const suffixMatch = gpuChipFilter.match(/\b(TI|XTX|XT|SUPER)\b/i);
-        const suffix = suffixMatch ? suffixMatch[1].toUpperCase() : '';
+        // Extract chip info from the product name
+        const productInfo = extractChipInfo(name);
+        if (!productInfo) return false; // no chip number found in product
 
-        // Must match the digits
-        if (!nameUpper.includes(num)) return false;
-
-        // Check for 'D' variant mismatch
-        if (!isD && nameUpper.includes(`${num}D`)) return false;
-        if (isD && !nameUpper.includes(`${num}D`)) return false;
-
-        // Check suffix (Ti, SUPER, XT, XTX)
-        if (!suffix) {
-            if (nameUpper.includes('TI')) return false;
-            if (nameUpper.includes('SUPER')) return false;
-            if (nameUpper.includes('XTX')) return false;
-            if (nameUpper.includes('XT')) return false;
-        } else {
-            if (!nameUpper.includes(suffix)) return false;
-            if (suffix === 'XT' && nameUpper.includes('XTX')) return false; // "XT" shouldn't match "XTX"
-        }
-
-        return true;
+        // All three fields must match exactly
+        return productInfo.num === filterInfo.num
+            && productInfo.isD === filterInfo.isD
+            && productInfo.suffix === filterInfo.suffix;
     };
 
     // GPU chipset series extracted from product names
@@ -210,21 +205,13 @@ export default function PriceTrendChart() {
         if (category !== 'gpu' || !trendData?.products) return [];
         const seriesSet = new Set<string>();
         for (const p of trendData.products) {
-            // Simply extract the 4-digit number (plus 'D' if present) and the suffix
-            // This strictly groups by the core number (e.g., 5080, 5090D, 4060 Ti)
-            const m = p.name.match(/([1-9]\d{3}D?)(?:\s*(TI|SUPER|XTX|XT))?/i);
-            if (m) {
-                let num = m[1].toUpperCase(); 
-                let suffix = m[2] ? m[2].toUpperCase() : '';
-                
-                let prefix = '';
-                if (num.startsWith('9') || num.startsWith('7') || num.startsWith('6')) {
-                     prefix = 'RX';
-                } else {
-                     prefix = 'RTX';
-                }
-                
-                let label = `${prefix} ${num}${suffix ? ' ' + suffix : ''}`;
+            const info = extractChipInfo(p.name);
+            if (info) {
+                // Determine AMD (RX) vs NVIDIA (RTX) prefix by first digit
+                const prefix = info.num.startsWith('9') || info.num.startsWith('7') || info.num.startsWith('6')
+                    ? 'RX' : 'RTX';
+                const dSuffix = info.isD ? 'D' : '';
+                const label = `${prefix} ${info.num}${dSuffix}${info.suffix ? ' ' + info.suffix : ''}`;
                 seriesSet.add(label);
             }
         }
