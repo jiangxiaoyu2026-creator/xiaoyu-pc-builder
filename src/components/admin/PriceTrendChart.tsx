@@ -816,7 +816,7 @@ export default function PriceTrendChart() {
                     <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-sm font-bold text-slate-400">
                             <div className="w-6 h-6 bg-indigo-500 rounded-md flex items-center justify-center text-white text-xs font-black">鱼</div>
-                            小鱼电脑 · 显卡日报
+                            DIYXX.COM 数据支持
                         </div>
                         <span className="text-xs text-slate-300 font-medium">数据来源：小鱼平台 · {new Date().toLocaleDateString('zh-CN')}</span>
                     </div>
@@ -907,7 +907,7 @@ export default function PriceTrendChart() {
                     <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
                         <div className="flex items-center gap-2 text-sm font-bold text-slate-400">
                             <div className="w-6 h-6 bg-indigo-500 rounded-md flex items-center justify-center text-white text-xs font-black">鱼</div>
-                            小鱼电脑 · 显卡日报
+                            DIYXX.COM 数据支持
                         </div>
                         <span className="text-xs text-slate-300 font-medium">数据来源：小鱼平台 · {new Date().toLocaleDateString('zh-CN')}</span>
                     </div>
