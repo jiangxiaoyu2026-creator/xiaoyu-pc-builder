@@ -15,6 +15,7 @@ import {
     Gift,
     BookOpen,
     TrendingUp,
+    BarChart3,
 } from 'lucide-react';
 import { NavButton } from '../components/admin/Shared';
 import { PricingStrategy, UserItem } from '../types/adminTypes';
@@ -37,9 +38,10 @@ const AboutUsSettings = lazy(() => import('../components/admin/AboutUsSettings')
 const InvitationManager = lazy(() => import('../components/admin/InvitationManager'));
 const ArticleManager = lazy(() => import('../components/admin/ArticleManager'));
 const MarketingManager = lazy(() => import('../components/admin/MarketingManager'));
+const PriceTrendChart = lazy(() => import('../components/admin/PriceTrendChart'));
 
 export default function AdminApp() {
-    const [currentTab, setCurrentTab] = useState<'dashboard' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles' | 'marketing'>('dashboard');
+    const [currentTab, setCurrentTab] = useState<'dashboard' | 'price_trends' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles' | 'marketing'>('dashboard');
 
     const [pricingStrategy, setPricingStrategy] = useState<PricingStrategy>({
         serviceFeeRate: 0.06,
@@ -138,6 +140,8 @@ export default function AdminApp() {
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
                     <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-6 uppercase">运营与互动</div>
                     <NavButton active={currentTab === 'dashboard'} onClick={() => setCurrentTab('dashboard')} icon={<LayoutDashboard size={18} />} label="数据概览" />
+                    <NavButton active={currentTab === 'price_trends'} onClick={() => setCurrentTab('price_trends')} icon={<BarChart3 size={18} />} label="价格趋势分析" />
+                    <NavButton active={currentTab === 'products'} onClick={() => setCurrentTab('products')} icon={<Package size={18} />} label="硬件价格管理" />
                     <NavButton active={currentTab === 'configs'} onClick={() => setCurrentTab('configs')} icon={<ListFilter size={18} />} label="配置单管理" />
                     <NavButton active={currentTab === 'comments'} onClick={() => setCurrentTab('comments')} icon={<MessageSquare size={18} />} label="评论管理" />
                     <NavButton active={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} icon={<MessageCircle size={18} />} label="客户咨询" />
@@ -157,19 +161,8 @@ export default function AdminApp() {
                             <NavButton active={currentTab === 'about_us'} onClick={() => setCurrentTab('about_us')} icon={<Info size={18} />} label="关于我们" />
                             <NavButton active={currentTab === 'payment'} onClick={() => setCurrentTab('payment')} icon={<CreditCard size={18} />} label="支付设置" />
                             <NavButton active={currentTab === 'invitations'} onClick={() => setCurrentTab('invitations')} icon={<Gift size={18} />} label="邀请码管理" />
-                            {/* <NavButton active={currentTab === 'verifications'} onClick={() => setCurrentTab('verifications')} icon={<ShieldCheck size={18} />} label="验证码管理" />
-                            <button
-                                onClick={() => setShowSmsSettings(true)}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                            >
-                                <Smartphone size={18} />
-                                <span className="font-medium text-sm">短信服务配置</span>
-                            </button> */}
                         </>
                     )}
-
-                    <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-6 uppercase">硬件库</div>
-                    <NavButton active={currentTab === 'products'} onClick={() => setCurrentTab('products')} icon={<Package size={18} />} label="硬件价格管理" />
                 </nav>
 
                 <div className="p-4 border-t border-zinc-800">
@@ -196,6 +189,7 @@ export default function AdminApp() {
                 <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm shrink-0">
                     <h2 className="text-xl font-bold text-slate-800 uppercase tracking-tight">
                         {currentTab === 'dashboard' && '运营概览'}
+                        {currentTab === 'price_trends' && '价格趋势分析'}
                         {currentTab === 'products' && '硬件库与价格库'}
                         {currentTab === 'settings' && '全局系统设置 (价格/弹窗/备份)'}
                         {currentTab === 'ai' && 'AI 配置中枢'}
@@ -228,6 +222,7 @@ export default function AdminApp() {
                         ) : (
                             <div className="max-w-7xl mx-auto">
                                 {currentTab === 'dashboard' && <DashboardView />}
+                                {currentTab === 'price_trends' && <PriceTrendChart />}
                                 {currentTab === 'products' && <ProductManager />}
                                 {currentTab === 'configs' && <ConfigManager />}
                                 {currentTab === 'used_items' && <UsedManager />}
