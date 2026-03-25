@@ -8,7 +8,7 @@ import {
     ResponsiveContainer,
     LineChart, Line
 } from 'recharts';
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter, Minus } from 'lucide-react';
 
 interface PriceTrendData {
     todaySummary: {
@@ -131,9 +131,11 @@ export default function PriceTrendChart() {
             // Pass the most specific filter: if subcat exists, pass it; else if ramGen exists, pass it
             const backendFilter = currentSubcat || (category === 'ram' ? ramGeneration : '');
 
+            const fetchDays = 30; // 强制获取 30 天数据以计算对比表
+
             const [resStats, resHistory] = await Promise.all([
-                fetch(`/api/stats/price-trends?days=${days}&category=${category === 'all' ? '' : category}&subcategory=${backendFilter}`, { headers }),
-                fetch(`/api/stats/product-price-history?days=${days}&category=${category === 'all' ? '' : category}&subcategory=${backendFilter}`, { headers })
+                fetch(`/api/stats/price-trends?days=${fetchDays}&category=${category === 'all' ? '' : category}&subcategory=${backendFilter}`, { headers }),
+                fetch(`/api/stats/product-price-history?days=${fetchDays}&category=${category === 'all' ? '' : category}&subcategory=${backendFilter}`, { headers })
             ]);
 
             if (resStats.ok && resHistory.ok) {
@@ -158,7 +160,7 @@ export default function PriceTrendChart() {
         setBrandFilter('');
         setGpuChipFilter('');
         fetchData(); 
-    }, [category, subcategory, ramGeneration, days]);
+    }, [category, subcategory, ramGeneration]);
 
     // Helper: does a product name match current brand filter?
     const matchesBrand = (name: string): boolean => {
@@ -261,10 +263,18 @@ export default function PriceTrendChart() {
 
     // --- Spec price comparison table data ---
     const specPriceTable = (() => {
-        if (!['ram', 'disk'].includes(category) || !trendData?.products?.length) return null;
+        const isTargetCat = ['ram', 'disk', 'gpu'].includes(category);
+        if (!isTargetCat || !trendData?.products?.length) return null;
         if (!trendData.categoryTotalAvgTrend?.length) return null;
+        if (category === 'gpu' && !brandFilter) return null;
 
-        const parseFn = category === 'ram' ? parseRamSpecs : parseDiskSpecs;
+        const parseFn = category === 'ram' ? parseRamSpecs : category === 'disk' ? parseDiskSpecs : (name: string) => {
+            const info = extractChipInfo(name);
+            if (!info) return '其他芯片组';
+            const prefix = info.num.startsWith('9') || info.num.startsWith('7') || info.num.startsWith('6') ? 'RX' : 'RTX';
+            const dSuffix = info.isD ? 'D' : '';
+            return `${prefix} ${info.num}${dSuffix}${info.suffix ? ' ' + info.suffix : ''}`;
+        };
         const allDates = trendData.categoryTotalAvgTrend.map(t => t.date);
         const trendMap = new Map<string, Array<{date: string; price: number}>>();
         if (trendData.productTrends) {
@@ -277,8 +287,11 @@ export default function PriceTrendChart() {
         const groups = new Map<string, typeof trendData.products>();
         for (const p of trendData.products) {
             if (p.price <= 0) continue;
+            if (category === 'gpu' && !matchesBrand(p.name)) continue;
+            
             const label = parseFn(p.name);
-            if (ramGeneration && !label.includes(ramGeneration)) continue;
+            if (ramGeneration && category === 'ram' && !label.includes(ramGeneration)) continue;
+            
             if (!groups.has(label)) groups.set(label, []);
             groups.get(label)!.push(p);
         }
@@ -332,11 +345,17 @@ export default function PriceTrendChart() {
             rows.push({ label, count: products.length, currentAvg, changes });
         }
 
-        // Sort: by DDR generation then by frequency then capacity
+        // Sort: by DDR generation then by frequency then capacity for RAM, else alphabetically
         rows.sort((a, b) => {
-            const aHas5 = a.label.includes('DDR5');
-            const bHas5 = b.label.includes('DDR5');
-            if (aHas5 !== bHas5) return aHas5 ? -1 : 1;
+            if (category === 'ram') {
+                const aHas5 = a.label.includes('DDR5');
+                const bHas5 = b.label.includes('DDR5');
+                if (aHas5 !== bHas5) return aHas5 ? -1 : 1;
+            } else if (category === 'gpu') {
+                const na = parseInt(a.label.replace(/\D/g, '')) || 0;
+                const nb = parseInt(b.label.replace(/\D/g, '')) || 0;
+                if (nb !== na) return nb - na;
+            }
             return a.label.localeCompare(b.label);
         });
 
@@ -569,12 +588,13 @@ export default function PriceTrendChart() {
 
                 if (avgTrend.length === 0) return null;
 
-                const firstPrice = avgTrend[0]?.avgPrice;
-                const lastPrice = avgTrend[avgTrend.length - 1]?.avgPrice;
+                const chartAvgTrend = avgTrend.slice(-days); // Slice to match user selected days
+
+                const firstPrice = chartAvgTrend[0]?.avgPrice;
+                const lastPrice = chartAvgTrend[chartAvgTrend.length - 1]?.avgPrice;
                 const periodChange = lastPrice && firstPrice ? lastPrice - firstPrice : 0;
                 const periodPct = firstPrice ? ((periodChange / firstPrice) * 100).toFixed(2) : '0';
                 const isUp = periodChange > 0;
-                const periodLabel = `${days}天`;
 
                 return (
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -598,20 +618,44 @@ export default function PriceTrendChart() {
                     </div>
                     {/* 平均X天涨幅/降幅标注 */}
                     <div className="mb-4 flex items-center gap-3">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold ${
-                            isUp ? 'bg-rose-50 text-rose-600 border border-rose-200' : periodChange < 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-50 text-slate-500 border border-slate-200'
+                        <div className={`flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-full border ${
+                            isUp ? 'bg-rose-50/50 border-rose-100' : periodChange < 0 ? 'bg-emerald-50/50 border-emerald-100' : 'bg-slate-50 border-slate-100'
                         }`}>
-                            {isUp ? <ArrowUpRight size={16} /> : periodChange < 0 ? <ArrowDownRight size={16} /> : null}
-                            平均{periodLabel}{isUp ? '涨幅' : periodChange < 0 ? '降幅' : '持平'}
-                            {periodChange !== 0 && <>{isUp ? '+' : ''}{periodPct}% ¥{Math.abs(Math.round(periodChange * 100) / 100)}</>}
-                        </span>
-                        <span className="text-xs text-slate-400">
-                            首日均价 ¥{firstPrice?.toFixed(2)} → 末日均价 ¥{lastPrice?.toFixed(2)}
-                        </span>
+                            {/* Status Icon with background */}
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                                isUp ? 'bg-rose-100 text-rose-600' : periodChange < 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'
+                            }`}>
+                                {isUp ? <ArrowUpRight size={14} strokeWidth={3} /> : periodChange < 0 ? <ArrowDownRight size={14} strokeWidth={3} /> : <Minus size={14} strokeWidth={3} />}
+                            </div>
+                            
+                            {/* Text content */}
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-xs font-medium text-slate-500">较 {days} 天前</span>
+                                
+                                {periodChange !== 0 ? (
+                                    <>
+                                        <span className={`text-sm font-extrabold ${isUp ? 'text-rose-600' : 'text-emerald-600'}`}>
+                                            {isUp ? '上涨' : '下降'} ¥{Math.abs(Math.round(periodChange * 100) / 100).toFixed(2)}
+                                        </span>
+                                        <span className={`text-xs font-bold ${isUp ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                            ({Math.abs(parseFloat(periodPct))}%)
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="text-sm font-extrabold text-slate-600">价格持平</span>
+                                )}
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-xs font-medium text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                            <span>起: ¥{firstPrice?.toFixed(2)}</span>
+                            <span className="text-slate-300">→</span>
+                            <span>止: ¥{lastPrice?.toFixed(2)}</span>
+                        </div>
                     </div>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart 
-                            data={avgTrend} 
+                            data={chartAvgTrend} 
                             margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -675,18 +719,21 @@ export default function PriceTrendChart() {
                 );
             })()}
 
-            {/* 规格价格对比表 (RAM/Disk) */}
+            {/* 规格价格对比表 (RAM/Disk/GPU) */}
             {specPriceTable && specPriceTable.length > 0 && (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-100">
-                        <h3 className="font-bold text-slate-800">📊 {ramGeneration || (category === 'disk' ? '硬盘' : '内存')}各规格实时均价与涨跌</h3>
-                        <p className="text-xs text-slate-400 mt-1">基于当前在售产品均价计算，涨跌幅对比历史同期均价{days < 30 ? '（切换到30天可查看更多区间对比）' : ''}</p>
+                        <h3 className="font-bold text-slate-800">📊 {
+                            category === 'gpu' ? `${brandFilter === 'NVIDIA' ? 'N卡' : 'A卡'}芯片组`
+                            : ramGeneration || (category === 'disk' ? '硬盘' : '内存')
+                        }实时均价与行情波动</h3>
+                        <p className="text-xs text-slate-400 mt-1">基于当前在售产品均价计算（下方默认显示近30天完整对比）</p>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-slate-50">
                                 <tr>
-                                    <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">规格</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">{category === 'gpu' ? '芯片组' : '规格'}</th>
                                     <th className="text-center px-3 py-2.5 text-xs font-bold text-slate-400">在售数量</th>
                                     <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400">当前均价</th>
                                     {specPriceTable[0]?.changes.map(c => (
@@ -698,12 +745,21 @@ export default function PriceTrendChart() {
                                 {specPriceTable.map((row) => (
                                     <tr 
                                         key={row.label} 
-                                        className={`hover:bg-indigo-50/50 transition-colors cursor-pointer ${subcategory === row.label ? 'bg-indigo-50' : ''}`}
-                                        onClick={() => setSubcategory(subcategory === row.label ? '' : row.label)}
+                                        className={`hover:bg-indigo-50/50 transition-colors cursor-pointer ${(category === 'gpu' ? gpuChipFilter : subcategory) === row.label ? 'bg-indigo-50' : ''}`}
+                                        onClick={() => {
+                                            if (category === 'gpu') {
+                                                setGpuChipFilter(gpuChipFilter === row.label ? '' : row.label);
+                                            } else {
+                                                setSubcategory(subcategory === row.label ? '' : row.label);
+                                            }
+                                        }}
                                     >
                                         <td className="px-4 py-3 font-medium text-slate-700">
                                             <div className="flex items-center gap-2">
-                                                <span className={`inline-block w-2 h-2 rounded-full ${row.label.includes('DDR5') ? 'bg-violet-500' : 'bg-blue-500'}`} />
+                                                <span className={`inline-block w-2 h-2 rounded-full ${
+                                                    category === 'gpu' ? (brandFilter === 'NVIDIA' ? 'bg-green-500' : 'bg-red-500')
+                                                    : row.label.includes('DDR5') ? 'bg-violet-500' : 'bg-blue-500'
+                                                }`} />
                                                 {row.label}
                                             </div>
                                         </td>
@@ -758,25 +814,43 @@ export default function PriceTrendChart() {
                                     const periodChange = lastPrice && firstPrice ? lastPrice - firstPrice : 0;
                                     const periodPct = firstPrice ? ((periodChange / firstPrice) * 100).toFixed(2) : '0';
                                     const isUp = periodChange > 0;
-                                    const periodLabel = `${days}天`;
                                     
                                     return (
                                         <div className="mb-4 flex items-center gap-3">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold ${
-                                                isUp ? 'bg-rose-50 text-rose-600 border border-rose-200' : periodChange < 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-50 text-slate-500 border border-slate-200'
+                                            <div className={`flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-full border ${
+                                                isUp ? 'bg-rose-50/50 border-rose-100' : periodChange < 0 ? 'bg-emerald-50/50 border-emerald-100' : 'bg-slate-50 border-slate-100'
                                             }`}>
-                                                {isUp ? <ArrowUpRight size={16} /> : periodChange < 0 ? <ArrowDownRight size={16} /> : null}
-                                                {periodLabel}{isUp ? '涨幅' : periodChange < 0 ? '降幅' : '持平'}
-                                                {periodChange !== 0 && <>{isUp ? '+' : ''}{periodPct}% ¥{Math.abs(Math.round(periodChange * 100) / 100)}</>}
-                                            </span>
-                                            <span className="text-xs text-slate-400">
-                                                首日 ¥{firstPrice?.toFixed(2)} → 末日 ¥{lastPrice?.toFixed(2)}
-                                            </span>
+                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                                                    isUp ? 'bg-rose-100 text-rose-600' : periodChange < 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'
+                                                }`}>
+                                                    {isUp ? <ArrowUpRight size={14} strokeWidth={3} /> : periodChange < 0 ? <ArrowDownRight size={14} strokeWidth={3} /> : <Minus size={14} strokeWidth={3} />}
+                                                </div>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-xs font-medium text-slate-500">较 {days} 天前</span>
+                                                    {periodChange !== 0 ? (
+                                                        <>
+                                                            <span className={`text-sm font-extrabold ${isUp ? 'text-rose-600' : 'text-emerald-600'}`}>
+                                                                {isUp ? '上涨' : '下降'} ¥{Math.abs(Math.round(periodChange * 100) / 100).toFixed(2)}
+                                                            </span>
+                                                            <span className={`text-xs font-bold ${isUp ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                                                ({Math.abs(parseFloat(periodPct))}%)
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-sm font-extrabold text-slate-600">价格持平</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs font-medium text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                                                <span>开始: ¥{firstPrice?.toFixed(2)}</span>
+                                                <span className="text-slate-300">→</span>
+                                                <span>结束: ¥{lastPrice?.toFixed(2)}</span>
+                                            </div>
                                         </div>
                                     );
                                 })()}
                                 <ResponsiveContainer width="100%" height={300}>
-                                    <LineChart data={productData.points} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
+                                    <LineChart data={productData.points.slice(-days)} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                         <XAxis 
                                             dataKey="date" 
