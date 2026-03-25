@@ -220,6 +220,9 @@ export default function PriceTrendChart() {
         if (category !== 'gpu' || !trendData?.products) return [];
         const seriesSet = new Set<string>();
         for (const p of trendData.products) {
+            if (p.price <= 0) continue;
+            if (!matchesBrand(p.name)) continue;
+            
             const info = extractChipInfo(p.name);
             if (info) {
                 // Determine AMD (RX) vs NVIDIA (RTX) prefix by first digit
