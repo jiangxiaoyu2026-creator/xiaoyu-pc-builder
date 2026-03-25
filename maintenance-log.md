@@ -32,6 +32,7 @@
 
 **涉及文件**：
 - `src/components/admin/PriceTrendChart.tsx`（第 449-451 行、第 555-557 行）
+
 ---
 
 #### 3. 显卡芯片组筛选功能失效
