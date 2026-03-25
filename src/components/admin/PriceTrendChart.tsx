@@ -2,13 +2,14 @@
  * 价格趋势图表组件
  * 展示硬件价格变化趋势和今日涨跌统计
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
     XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer,
     LineChart, Line
 } from 'recharts';
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter, Minus, Download } from 'lucide-react';
+import { toPng } from 'html-to-image';
 
 interface PriceTrendData {
     todaySummary: {
@@ -99,6 +100,31 @@ export default function PriceTrendChart() {
     const [magnitudeFilter, setMagnitudeFilter] = useState<'all' | 'large' | 'small'>('all');
     const [brandFilter, setBrandFilter] = useState<string>(''); // AMD / Intel / NVIDIA etc.
     const [gpuChipFilter, setGpuChipFilter] = useState<string>(''); // RTX 5060 / RTX 5070 etc.
+
+    // Refs for downloadable sections
+    const chartRef = useRef<HTMLDivElement>(null);
+    const tableRef = useRef<HTMLDivElement>(null);
+    const [downloading, setDownloading] = useState<string | null>(null);
+
+    const handleDownloadImage = useCallback(async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
+        if (!ref.current) return;
+        setDownloading(filename);
+        try {
+            const dataUrl = await toPng(ref.current, {
+                pixelRatio: 2,
+                backgroundColor: '#ffffff',
+                style: { borderRadius: '0' }
+            });
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = dataUrl;
+            link.click();
+        } catch (err) {
+            console.error('下载图片失败:', err);
+        } finally {
+            setDownloading(null);
+        }
+    }, []);
 
     const fetchData = async () => {
         setLoading(true);
@@ -659,7 +685,7 @@ export default function PriceTrendChart() {
                 const isUp = periodChange > 0;
 
                 return (
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div ref={chartRef} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="font-bold text-slate-800 flex items-center gap-2">
                             {(() => {
@@ -672,10 +698,19 @@ export default function PriceTrendChart() {
                                 return `${CATEGORY_LABELS[category] || category}品类历史基准均价走势`;
                             })()}
                         </h3>
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 items-center">
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
                                 <span className="w-3 h-0.5 bg-indigo-500"></span> 真实平均价格 ({gpuChipFilter ? `所有${gpuChipFilter}商品` : subcategory ? '该规格所有商品' : ramGeneration ? `所有${ramGeneration}商品` : brandFilter ? `${brandFilter === 'NVIDIA' ? 'N卡' : brandFilter}商品` : '大类所有商品'})
                             </div>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleDownloadImage(chartRef, `均价走势_${CATEGORY_LABELS[category] || category}_${new Date().toISOString().slice(0,10)}.png`); }}
+                                disabled={downloading === '均价走势'}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-all"
+                                title="下载为高清图片 (适合视频插图)"
+                            >
+                                <Download size={13} />
+                                {downloading ? '生成中...' : '下载图片'}
+                            </button>
                         </div>
                     </div>
                     {/* 平均X天涨幅/降幅标注 */}
@@ -783,14 +818,25 @@ export default function PriceTrendChart() {
 
             {/* 规格价格对比表 (RAM/Disk/GPU/CPU) */}
             {specPriceTable && specPriceTable.length > 0 && (
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-slate-100">
-                        <h3 className="font-bold text-slate-800">📊 {
-                            category === 'gpu' ? `${brandFilter === 'NVIDIA' ? 'N卡' : brandFilter === 'AMD' ? 'A卡' : ''}芯片组`
-                            : category === 'cpu' ? `${brandFilter ? brandFilter : ''}处理器代数`
-                            : ramGeneration || (category === 'disk' ? '硬盘' : '内存')
-                        }实时均价与行情波动</h3>
-                        <p className="text-xs text-slate-400 mt-1">基于当前在售产品均价计算（下方默认显示近30天完整对比）</p>
+                <div ref={tableRef} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                        <div>
+                            <h3 className="font-bold text-slate-800">📊 {
+                                category === 'gpu' ? `${brandFilter === 'NVIDIA' ? 'N卡' : brandFilter === 'AMD' ? 'A卡' : ''}芯片组`
+                                : category === 'cpu' ? `${brandFilter ? brandFilter : ''}处理器代数`
+                                : ramGeneration || (category === 'disk' ? '硬盘' : '内存')
+                            }实时均价与行情波动</h3>
+                            <p className="text-xs text-slate-400 mt-1">基于当前在售产品均价计算（下方默认显示近30天完整对比）</p>
+                        </div>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); handleDownloadImage(tableRef, `行情对比表_${CATEGORY_LABELS[category] || category}_${new Date().toISOString().slice(0,10)}.png`); }}
+                            disabled={!!downloading}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-all shrink-0"
+                            title="下载为高清图片 (适合视频插图)"
+                        >
+                            <Download size={13} />
+                            {downloading ? '生成中...' : '下载图片'}
+                        </button>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
