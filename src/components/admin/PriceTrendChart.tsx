@@ -277,14 +277,38 @@ export default function PriceTrendChart() {
         return '其他未分类规格';
     };
 
+    const parseCpuSpecs = (name: string): string => {
+        const upper = name.toUpperCase();
+        
+        // AMD parsing
+        if (upper.includes('AMD') || upper.includes('R3-') || upper.includes('R5-') || upper.includes('R7-') || upper.includes('R9-') || /R\d\s/.test(upper) || /\d{4}X/.test(upper) || upper.includes('X3D')) {
+            if (upper.includes('X3D')) return 'AMD X3D 系列';
+            const m = upper.match(/(5|7|9)\d{3}/);
+            if (m) return `AMD ${m[1]}000 系列`;
+            return 'AMD 其他型号';
+        }
+
+        // Intel parsing (includes Core and Ultra)
+        const intelMatch = upper.match(/(?:I\d-)?(12|13|14|15)\d{3}/) || upper.match(/(12|13|14|15)\d{2}F/);
+        if (intelMatch) {
+            const gen = intelMatch[1];
+            return `Intel 第${gen === '12' ? '十二' : gen === '13' ? '十三' : gen === '14' ? '十四' : gen === '15' ? '十五' : gen}代`;
+        }
+        if (upper.includes('ULTRA')) return 'Intel Core Ultra 系列';
+        
+        return 'Intel 其他型号';
+    };
+
     // --- Spec price comparison table data ---
     const specPriceTable = (() => {
-        const isTargetCat = ['ram', 'disk', 'gpu'].includes(category);
+        const isTargetCat = ['ram', 'disk', 'gpu', 'cpu'].includes(category);
         if (!isTargetCat || !trendData?.products?.length) return null;
         if (!trendData.categoryTotalAvgTrend?.length) return null;
-        if (category === 'gpu' && !brandFilter) return null;
 
-        const parseFn = category === 'ram' ? parseRamSpecs : category === 'disk' ? parseDiskSpecs : (name: string) => {
+        const parseFn = category === 'ram' ? parseRamSpecs 
+                      : category === 'disk' ? parseDiskSpecs 
+                      : category === 'cpu' ? parseCpuSpecs
+                      : (name: string) => {
             const info = extractChipInfo(name);
             if (!info) return '其他芯片组';
             const prefix = info.num.startsWith('9') || info.num.startsWith('7') || info.num.startsWith('6') ? 'RX' : 'RTX';
@@ -303,7 +327,7 @@ export default function PriceTrendChart() {
         const groups = new Map<string, typeof trendData.products>();
         for (const p of trendData.products) {
             if (p.price <= 0) continue;
-            if (category === 'gpu' && !matchesBrand(p.name)) continue;
+            if ((category === 'gpu' || category === 'cpu') && !matchesBrand(p.name)) continue;
             
             const label = parseFn(p.name);
             if (ramGeneration && category === 'ram' && !label.includes(ramGeneration)) continue;
@@ -371,6 +395,28 @@ export default function PriceTrendChart() {
                 const na = parseInt(a.label.replace(/\D/g, '')) || 0;
                 const nb = parseInt(b.label.replace(/\D/g, '')) || 0;
                 if (nb !== na) return nb - na;
+            } else if (category === 'cpu') {
+                // Determine order for CPU grouping
+                const getCpuScore = (lbl: string) => {
+                    if (lbl.includes('Intel')) {
+                        if (lbl.includes('十五')) return 115;
+                        if (lbl.includes('十四')) return 114;
+                        if (lbl.includes('十三')) return 113;
+                        if (lbl.includes('十二')) return 112;
+                        if (lbl.includes('Ultra')) return 116;
+                        return 100; // other intel
+                    } else if (lbl.includes('AMD')) {
+                        if (lbl.includes('9000')) return 209;
+                        if (lbl.includes('X3D')) return 208; // X3D right near newest ones
+                        if (lbl.includes('7000')) return 207;
+                        if (lbl.includes('5000')) return 205;
+                        return 200; // other amd
+                    }
+                    return 0;
+                };
+                const sa = getCpuScore(a.label);
+                const sb = getCpuScore(b.label);
+                if (sa !== sb) return sb - sa; // Descending (newest gen first)
             }
             return a.label.localeCompare(b.label);
         });
@@ -735,12 +781,13 @@ export default function PriceTrendChart() {
                 );
             })()}
 
-            {/* 规格价格对比表 (RAM/Disk/GPU) */}
+            {/* 规格价格对比表 (RAM/Disk/GPU/CPU) */}
             {specPriceTable && specPriceTable.length > 0 && (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-100">
                         <h3 className="font-bold text-slate-800">📊 {
-                            category === 'gpu' ? `${brandFilter === 'NVIDIA' ? 'N卡' : 'A卡'}芯片组`
+                            category === 'gpu' ? `${brandFilter === 'NVIDIA' ? 'N卡' : brandFilter === 'AMD' ? 'A卡' : ''}芯片组`
+                            : category === 'cpu' ? `${brandFilter ? brandFilter : ''}处理器代数`
                             : ramGeneration || (category === 'disk' ? '硬盘' : '内存')
                         }实时均价与行情波动</h3>
                         <p className="text-xs text-slate-400 mt-1">基于当前在售产品均价计算（下方默认显示近30天完整对比）</p>
@@ -749,7 +796,7 @@ export default function PriceTrendChart() {
                         <table className="w-full text-sm">
                             <thead className="bg-slate-50">
                                 <tr>
-                                    <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">{category === 'gpu' ? '芯片组' : '规格'}</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">{category === 'gpu' ? '芯片组' : category === 'cpu' ? '代数 / 阵营' : '规格'}</th>
                                     <th className="text-center px-3 py-2.5 text-xs font-bold text-slate-400">在售数量</th>
                                     <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400">当前均价</th>
                                     {specPriceTable[0]?.changes.map(c => (
@@ -773,8 +820,8 @@ export default function PriceTrendChart() {
                                         <td className="px-4 py-3 font-medium text-slate-700">
                                             <div className="flex items-center gap-2">
                                                 <span className={`inline-block w-2 h-2 rounded-full ${
-                                                    category === 'gpu' ? (brandFilter === 'NVIDIA' ? 'bg-green-500' : 'bg-red-500')
-                                                    : row.label.includes('DDR5') ? 'bg-violet-500' : 'bg-blue-500'
+                                                    (category === 'gpu' || category === 'cpu') ? (row.label.includes('AMD') || row.label.includes('RX') ? 'bg-red-500' : 'bg-blue-500')
+                                                    : row.label.includes('DDR5') ? 'bg-violet-500' : 'bg-emerald-500'
                                                 }`} />
                                                 {row.label}
                                             </div>
