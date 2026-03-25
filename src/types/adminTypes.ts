@@ -58,6 +58,7 @@ export interface UserItem {
     status: 'active' | 'banned';
     lastLogin: string;
     vipExpireAt?: number; // Timestamp
+    streamerExpireAt?: number; // Timestamp
     // 邀请系统
     inviteCode?: string;      // 用户专属邀请码 (6位)
     invitedBy?: string;       // 通过谁的邀请码注册

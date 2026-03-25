@@ -1,9 +1,20 @@
 
 import { useState, useEffect } from 'react';
-import { UserPlus, Trash2, Ban, CheckCircle2, KeyRound, Mic2 } from 'lucide-react';
+import { UserPlus, Trash2, Ban, CheckCircle2, KeyRound, Mic2, X } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { UserItem } from '../../types/adminTypes';
 import ConfirmModal from '../common/ConfirmModal';
+
+const STREAMER_OPTIONS = [
+    { label: '1天', days: 1 },
+    { label: '7天', days: 7 },
+    { label: '30天', days: 30 },
+    { label: '90天', days: 90 },
+    { label: '365天', days: 365 },
+];
+
+const isStreamerValid = (user: UserItem) => user.streamerExpireAt && new Date(user.streamerExpireAt).getTime() > Date.now();
+
 
 export default function StreamerManager() {
     // Filter only streamers
@@ -77,6 +88,27 @@ export default function StreamerManager() {
         user.status = newStatus;
         await storage.saveUser(user);
         await refreshStreamers();
+    };
+
+    const setStreamerDays = async (user: UserItem, days: number) => {
+        try {
+            await storage.updateStreamerPermission(user.id, days);
+            await refreshStreamers();
+        } catch (error) {
+            console.error('Failed to set streamer days:', error);
+            alert('设置失败');
+        }
+    };
+
+    const removeStreamerPerm = async (user: UserItem) => {
+        if (!confirm(`确定要取消 ${user.username} 的主播权限吗？`)) return;
+        try {
+            await storage.removeStreamerPermission(user.id);
+            await refreshStreamers();
+        } catch (error) {
+            console.error('Failed to remove streamer perm:', error);
+            alert('取消失败');
+        }
     };
 
     const handleOpenPasswordModal = (user: UserItem) => {
@@ -179,6 +211,39 @@ export default function StreamerManager() {
                                         {user.password && <span className="text-emerald-600 font-medium ml-2">• 已设置密码</span>}
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 ml-auto mr-4">
+                                <select
+                                    className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white outline-none focus:border-purple-500 shadow-sm transition-colors"
+                                    onChange={(e) => {
+                                        if (e.target.value) setStreamerDays(user, parseInt(e.target.value));
+                                        e.target.value = ""; // reset
+                                    }}
+                                >
+                                    <option value="">延长有效期...</option>
+                                    {STREAMER_OPTIONS.map(opt => (
+                                        <option key={opt.days} value={opt.days}>{opt.label}</option>
+                                    ))}
+                                </select>
+                                {isStreamerValid(user) ? (
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-xs text-purple-700 bg-purple-100 px-2 py-1 rounded-lg font-bold flex items-center gap-1 border border-purple-200">
+                                            剩余 {Math.ceil((user.streamerExpireAt! - Date.now()) / (1000 * 60 * 60 * 24))} 天
+                                        </span>
+                                        <button
+                                            onClick={() => removeStreamerPerm(user)}
+                                            className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1 rounded-lg transition-colors"
+                                            title="取消主播权限"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <span className="text-xs text-slate-500 font-bold bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                                        已过期
+                                    </span>
+                                )}
                             </div>
 
                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

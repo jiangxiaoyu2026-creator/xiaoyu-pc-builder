@@ -313,6 +313,7 @@ async def login(
 
             "inviteCode": user.inviteCode,
             "vipExpireAt": user.vipExpireAt,
+            "streamerExpireAt": user.streamerExpireAt,
             "inviteCount": user.inviteCount,
             "inviteVipDays": user.inviteVipDays
         }
@@ -353,6 +354,7 @@ async def login_sms(data: dict, session: Session = Depends(get_session)):
 
             "inviteCode": user.inviteCode,
             "vipExpireAt": user.vipExpireAt,
+            "streamerExpireAt": user.streamerExpireAt,
             "inviteCount": user.inviteCount,
             "inviteVipDays": user.inviteVipDays
         }
@@ -393,6 +395,7 @@ async def login_email(data: dict, session: Session = Depends(get_session)):
             "email": user.email,
             "inviteCode": user.inviteCode,
             "vipExpireAt": user.vipExpireAt,
+            "streamerExpireAt": user.streamerExpireAt,
             "inviteCount": user.inviteCount,
             "inviteVipDays": user.inviteVipDays
         }

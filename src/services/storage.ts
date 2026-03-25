@@ -436,6 +436,31 @@ class StorageService {
         }
     }
 
+    async updateStreamerPermission(userId: string, durationDays: number) {
+        const users = await this.getUsers();
+        const user = users.find(u => u.id === userId || (u as any)._id === userId);
+        if (user) {
+            const now = Date.now();
+            const currentExpire = user.streamerExpireAt ? new Date(user.streamerExpireAt).getTime() : 0;
+            const startTime = currentExpire > now ? currentExpire : now;
+            user.streamerExpireAt = startTime + durationDays * 24 * 60 * 60 * 1000;
+            // Ensure role is set to streamer
+            if (user.role !== 'admin') {
+                user.role = 'streamer';
+            }
+            await this.saveUser(user);
+        }
+    }
+
+    async removeStreamerPermission(userId: string) {
+        const users = await this.getUsers();
+        const user = users.find(u => u.id === userId || (u as any)._id === userId);
+        if (user) {
+            (user as any).streamerExpireAt = null;
+            await this.saveUser(user);
+        }
+    }
+
     // --- Invite System ---
     generateInviteCode(): string {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 排除容易混淆的字符

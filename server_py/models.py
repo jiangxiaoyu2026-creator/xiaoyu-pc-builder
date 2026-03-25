@@ -16,6 +16,7 @@ class User(SQLModel, table=True):
     status: str = Field(default="active")
     lastLogin: Optional[str] = None
     vipExpireAt: Optional[int] = None
+    streamerExpireAt: Optional[int] = None
     inviteCode: Optional[str] = None
     invitedBy: Optional[str] = None
     inviteCount: int = Field(default=0)

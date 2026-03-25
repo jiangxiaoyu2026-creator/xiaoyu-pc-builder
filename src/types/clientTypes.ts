@@ -9,6 +9,7 @@ export interface UserItem {
     status: 'active' | 'banned';
     lastLogin: string;
     vipExpireAt?: number;
+    streamerExpireAt?: number;
 }
 
 export type Category = 'cpu' | 'mainboard' | 'gpu' | 'ram' | 'disk' | 'power' | 'cooling' | 'fan' | 'case' | 'monitor' | 'mouse' | 'keyboard' | 'accessory';

@@ -55,7 +55,9 @@ export default function ClientApp() {
     // Check permission for Streamer Center
     const hasStreamerPermission = useMemo(() => {
         if (!currentUser) return false;
-        return currentUser.role === 'streamer' || currentUser.role === 'admin';
+        if (currentUser.role === 'admin') return true;
+        if (currentUser.role === 'streamer' && currentUser.streamerExpireAt && currentUser.streamerExpireAt > Date.now()) return true;
+        return false;
     }, [currentUser]);
 
     const [allProducts, setAllProducts] = useState<import('../types/clientTypes').HardwareItem[]>([]);
@@ -79,10 +81,11 @@ export default function ClientApp() {
                 if (updatedUser) {
                     const needsUpdate =
                         updatedUser.role !== activeUser.role ||
-                        updatedUser.vipExpireAt !== activeUser.vipExpireAt;
+                        updatedUser.vipExpireAt !== activeUser.vipExpireAt ||
+                        updatedUser.streamerExpireAt !== activeUser.streamerExpireAt;
 
                     if (needsUpdate) {
-                        activeUser = { ...activeUser, role: updatedUser.role, vipExpireAt: updatedUser.vipExpireAt };
+                        activeUser = { ...activeUser, role: updatedUser.role, vipExpireAt: updatedUser.vipExpireAt, streamerExpireAt: updatedUser.streamerExpireAt };
                         // Silently update local storage without triggering another loadData loop
                         localStorage.setItem('xiaoyu_current_user', JSON.stringify(activeUser));
                     }
