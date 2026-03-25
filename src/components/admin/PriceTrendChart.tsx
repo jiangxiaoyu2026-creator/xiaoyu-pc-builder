@@ -685,9 +685,9 @@ export default function PriceTrendChart() {
                 const isUp = periodChange > 0;
 
                 return (
-                <div ref={chartRef} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div ref={chartRef} className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm" style={{ minHeight: 520 }}>
                     <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                        <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
                             {(() => {
                                 // Build dynamic title based on active filters
                                 const brandLabel = brandFilter === 'NVIDIA' ? 'N卡' : brandFilter === 'AMD' ? 'AMD' : brandFilter === 'Intel' ? 'Intel' : '';
@@ -719,22 +719,22 @@ export default function PriceTrendChart() {
                             isUp ? 'bg-rose-50/50 border-rose-100' : periodChange < 0 ? 'bg-emerald-50/50 border-emerald-100' : 'bg-slate-50 border-slate-100'
                         }`}>
                             {/* Status Icon with background */}
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                                 isUp ? 'bg-rose-100 text-rose-600' : periodChange < 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'
                             }`}>
-                                {isUp ? <ArrowUpRight size={14} strokeWidth={3} /> : periodChange < 0 ? <ArrowDownRight size={14} strokeWidth={3} /> : <Minus size={14} strokeWidth={3} />}
+                                {isUp ? <ArrowUpRight size={18} strokeWidth={3} /> : periodChange < 0 ? <ArrowDownRight size={18} strokeWidth={3} /> : <Minus size={18} strokeWidth={3} />}
                             </div>
                             
                             {/* Text content */}
                             <div className="flex items-baseline gap-2">
-                                <span className="text-xs font-medium text-slate-500">较 {days} 天前</span>
+                                <span className="text-sm font-semibold text-slate-500">较 {days} 天前</span>
                                 
                                 {periodChange !== 0 ? (
                                     <>
-                                        <span className={`text-sm font-extrabold ${isUp ? 'text-rose-600' : 'text-emerald-600'}`}>
+                                        <span className={`text-base font-black ${isUp ? 'text-rose-600' : 'text-emerald-600'}`}>
                                             {isUp ? '上涨' : '下降'} ¥{Math.abs(Math.round(periodChange * 100) / 100).toFixed(2)}
                                         </span>
-                                        <span className={`text-xs font-bold ${isUp ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                        <span className={`text-sm font-bold ${isUp ? 'text-rose-400' : 'text-emerald-400'}`}>
                                             ({Math.abs(parseFloat(periodPct))}%)
                                         </span>
                                     </>
@@ -744,13 +744,13 @@ export default function PriceTrendChart() {
                             </div>
                         </div>
                         
-                        <div className="flex items-center gap-2 text-xs font-medium text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-slate-400 bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
                             <span>起: ¥{firstPrice?.toFixed(2)}</span>
                             <span className="text-slate-300">→</span>
                             <span>止: ¥{lastPrice?.toFixed(2)}</span>
                         </div>
                     </div>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={380}>
                         <LineChart 
                             data={chartAvgTrend} 
                             margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
@@ -758,12 +758,12 @@ export default function PriceTrendChart() {
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                             <XAxis 
                                 dataKey="date" 
-                                tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 500 }}
+                                tick={{ fontSize: 13, fill: '#64748b', fontWeight: 600 }}
                                 tickFormatter={(v: string) => v.slice(5)}
                                 axisLine={false} tickLine={false} dy={10} 
                             />
                             <YAxis 
-                                tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 500 }}
+                                tick={{ fontSize: 13, fill: '#64748b', fontWeight: 600 }}
                                 axisLine={false} tickLine={false} dx={-10}
                                 domain={['auto', 'auto']}
                                 tickFormatter={(v) => `¥${v}`}
@@ -805,13 +805,21 @@ export default function PriceTrendChart() {
                                 type="monotone" 
                                 dataKey="avgPrice" 
                                 stroke="#6366f1" 
-                                strokeWidth={3}
+                                strokeWidth={4}
                                 connectNulls={true}
-                                dot={{ fill: '#6366f1', strokeWidth: 2, r: 3 }}
-                                activeDot={{ r: 6, strokeWidth: 0 }}
+                                dot={{ fill: '#6366f1', strokeWidth: 2, r: 5 }}
+                                activeDot={{ r: 8, strokeWidth: 0 }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
+                    {/* 品牌水印 - 导出图片时显示 */}
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-bold text-slate-400">
+                            <div className="w-6 h-6 bg-indigo-500 rounded-md flex items-center justify-center text-white text-xs font-black">鱼</div>
+                            小鱼电脑 · 显卡日报
+                        </div>
+                        <span className="text-xs text-slate-300 font-medium">数据来源：小鱼平台 · {new Date().toLocaleDateString('zh-CN')}</span>
+                    </div>
                 </div>
                 );
             })()}
@@ -819,9 +827,9 @@ export default function PriceTrendChart() {
             {/* 规格价格对比表 (RAM/Disk/GPU/CPU) */}
             {specPriceTable && specPriceTable.length > 0 && (
                 <div ref={tableRef} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                    <div className="p-5 border-b border-slate-100 flex items-center justify-between">
                         <div>
-                            <h3 className="font-bold text-slate-800">📊 {
+                            <h3 className="text-lg font-extrabold text-slate-800">📊 {
                                 category === 'gpu' ? `${brandFilter === 'NVIDIA' ? 'N卡' : brandFilter === 'AMD' ? 'A卡' : ''}芯片组`
                                 : category === 'cpu' ? `${brandFilter ? brandFilter : ''}处理器代数`
                                 : ramGeneration || (category === 'disk' ? '硬盘' : '内存')
@@ -863,17 +871,17 @@ export default function PriceTrendChart() {
                                             }
                                         }}
                                     >
-                                        <td className="px-4 py-3 font-medium text-slate-700">
+                                        <td className="px-4 py-4 font-semibold text-slate-700">
                                             <div className="flex items-center gap-2">
-                                                <span className={`inline-block w-2 h-2 rounded-full ${
+                                                <span className={`inline-block w-2.5 h-2.5 rounded-full ${
                                                     (category === 'gpu' || category === 'cpu') ? (row.label.includes('AMD') || row.label.includes('RX') ? 'bg-red-500' : 'bg-blue-500')
                                                     : row.label.includes('DDR5') ? 'bg-violet-500' : 'bg-emerald-500'
                                                 }`} />
                                                 {row.label}
                                             </div>
                                         </td>
-                                        <td className="text-center px-3 py-3 text-slate-400">{row.count}款</td>
-                                        <td className="text-right px-4 py-3 font-bold text-slate-800">¥{row.currentAvg}</td>
+                                        <td className="text-center px-3 py-4 text-slate-400 font-medium">{row.count}款</td>
+                                        <td className="text-right px-4 py-4 font-extrabold text-slate-800 text-base">¥{row.currentAvg}</td>
                                         {row.changes.map(c => (
                                             <td key={c.period} className="text-right px-3 py-3">
                                                 {c.pct !== null ? (
@@ -894,6 +902,14 @@ export default function PriceTrendChart() {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                    {/* 品牌水印 - 导出图片时显示 */}
+                    <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <div className="flex items-center gap-2 text-sm font-bold text-slate-400">
+                            <div className="w-6 h-6 bg-indigo-500 rounded-md flex items-center justify-center text-white text-xs font-black">鱼</div>
+                            小鱼电脑 · 显卡日报
+                        </div>
+                        <span className="text-xs text-slate-300 font-medium">数据来源：小鱼平台 · {new Date().toLocaleDateString('zh-CN')}</span>
                     </div>
                 </div>
             )}
