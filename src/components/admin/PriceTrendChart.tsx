@@ -162,11 +162,24 @@ export default function PriceTrendChart() {
         fetchData(); 
     }, [category, subcategory, ramGeneration]);
 
+
+
     // Helper: does a product name match current brand filter?
     const matchesBrand = (name: string): boolean => {
         if (!brandFilter) return true;
-        return name.toUpperCase().includes(brandFilter.toUpperCase())
-            || (brandFilter === 'NVIDIA' && /RTX|GTX|nvidia|英伟达|GeForce/i.test(name))
+        
+        if (name.toUpperCase().includes(brandFilter.toUpperCase())) return true;
+        
+        if (category === 'gpu') {
+            const info = extractChipInfo(name);
+            if (info) {
+                const isAMD = info.num.startsWith('9') || info.num.startsWith('7') || info.num.startsWith('6');
+                if (brandFilter === 'NVIDIA') return !isAMD;
+                if (brandFilter === 'AMD') return isAMD;
+            }
+        }
+
+        return (brandFilter === 'NVIDIA' && /RTX|GTX|nvidia|英伟达|GeForce/i.test(name))
             || (brandFilter === 'AMD' && /AMD|锐龙|Ryzen|RX\s|Radeon/i.test(name))
             || (brandFilter === 'Intel' && /Intel|英特尔|酷睿|Core/i.test(name));
     };
