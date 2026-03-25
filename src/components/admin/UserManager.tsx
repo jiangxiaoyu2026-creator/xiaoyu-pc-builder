@@ -20,6 +20,10 @@ const STREAMER_OPTIONS = [
     { label: '2天', days: 2 },
     { label: '3天', days: 3 },
     { label: '7天', days: 7 },
+    { label: '1个月', days: 30 },
+    { label: '3个月', days: 90 },
+    { label: '半年', days: 180 },
+    { label: '1年', days: 365 },
 ];
 
 export default function UserManager() {
