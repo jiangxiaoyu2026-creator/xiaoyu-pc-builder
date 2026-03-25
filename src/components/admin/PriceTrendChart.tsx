@@ -61,6 +61,22 @@ interface ProductPriceTrendData {
         price: number;
         category: string;
     }>;
+    historicalLows?: Array<{
+        hardwareId: string;
+        name: string;
+        category: string;
+        currentPrice: number;
+        changeAmount: number;
+        changePercent: number;
+    }>;
+    historicalHighs?: Array<{
+        hardwareId: string;
+        name: string;
+        category: string;
+        currentPrice: number;
+        changeAmount: number;
+        changePercent: number;
+    }>;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -104,6 +120,8 @@ export default function PriceTrendChart() {
     // Refs for downloadable sections
     const chartRef = useRef<HTMLDivElement>(null);
     const tableRef = useRef<HTMLDivElement>(null);
+    const lowRef = useRef<HTMLDivElement>(null);
+    const highRef = useRef<HTMLDivElement>(null);
     const [downloading, setDownloading] = useState<string | null>(null);
 
     const handleDownloadImage = useCallback(async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
@@ -507,6 +525,103 @@ export default function PriceTrendChart() {
                     </div>
                 </div>
             </div>
+
+            {/* 30天史低 / 史高 预警榜 */}
+            {trendData && trendData.historicalLows && trendData.historicalHighs && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* 史低榜单 */}
+                    <div ref={lowRef} className="bg-[#f0fdf4] p-6 rounded-2xl border border-emerald-200 relative overflow-hidden" style={{ minHeight: 460 }}>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
+                        <div className="flex items-center justify-between mb-4 relative z-10 w-full">
+                            <h3 className="text-xl font-black text-emerald-800 flex items-center gap-2 whitespace-nowrap">
+                                📉 30天·破冰底价榜
+                            </h3>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); handleDownloadImage(lowRef, `史低榜单_${new Date().toISOString().slice(0,10)}.png`); }}
+                                disabled={downloading === `史低榜单_${new Date().toISOString().slice(0,10)}.png`}
+                                className="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg hover:bg-emerald-200 transition-colors shrink-0 whitespace-nowrap"
+                            >
+                                ⬇️ 下载素材
+                            </button>
+                        </div>
+                        <div className="space-y-3 relative z-10">
+                            {trendData.historicalLows.slice(0, 5).map((item, idx) => (
+                                <div key={item.hardwareId} className="flex items-center justify-between bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-emerald-100/50">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <div className="w-6 h-6 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">{idx + 1}</div>
+                                        <div className="overflow-hidden">
+                                            <div className="text-sm font-bold text-slate-800 truncate" title={item.name}>{item.name}</div>
+                                            <div className="text-xs text-emerald-600 font-medium">比昨日跌 ¥{Math.abs(item.changeAmount).toFixed(2)}</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right pl-2 shrink-0">
+                                        <div className="text-lg font-black text-emerald-600">¥{item.currentPrice}</div>
+                                        <div className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">历史新低</div>
+                                    </div>
+                                </div>
+                            ))}
+                            {trendData.historicalLows.length === 0 && (
+                                <div className="text-center py-6 text-emerald-600/60 font-medium text-sm">今日暂无跌破30天底价的商品</div>
+                            )}
+                        </div>
+                        
+                        {/* 水印 */}
+                        <div className="mt-6 pt-3 flex items-center justify-between relative z-10 border-t border-emerald-100">
+                            <div className="flex items-center gap-2 text-sm font-bold text-emerald-700/60">
+                                <div className="w-5 h-5 bg-emerald-500/80 rounded flex items-center justify-center text-white text-[10px] font-black">鱼</div>
+                                DIYXX.COM 数据支持
+                            </div>
+                            <span className="text-xs text-emerald-700/40 font-bold">{new Date().toLocaleDateString('zh-CN')}</span>
+                        </div>
+                    </div>
+
+                    {/* 史高榜单 */}
+                    <div ref={highRef} className="bg-[#fff1f2] p-6 rounded-2xl border border-rose-200 relative overflow-hidden" style={{ minHeight: 460 }}>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
+                        <div className="flex items-center justify-between mb-4 relative z-10 w-full">
+                            <h3 className="text-xl font-black text-rose-800 flex items-center gap-2 whitespace-nowrap">
+                                📈 30天·高光预警榜
+                            </h3>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); handleDownloadImage(highRef, `史高榜单_${new Date().toISOString().slice(0,10)}.png`); }}
+                                disabled={downloading === `史高榜单_${new Date().toISOString().slice(0,10)}.png`}
+                                className="px-3 py-1.5 bg-rose-100 text-rose-700 text-xs font-bold rounded-lg hover:bg-rose-200 transition-colors shrink-0 whitespace-nowrap"
+                            >
+                                ⬇️ 下载素材
+                            </button>
+                        </div>
+                        <div className="space-y-3 relative z-10">
+                            {trendData.historicalHighs.slice(0, 5).map((item, idx) => (
+                                <div key={item.hardwareId} className="flex items-center justify-between bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-rose-100/50">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <div className="w-6 h-6 shrink-0 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">{idx + 1}</div>
+                                        <div className="overflow-hidden">
+                                            <div className="text-sm font-bold text-slate-800 truncate" title={item.name}>{item.name}</div>
+                                            <div className="text-xs text-rose-600 font-medium">比昨日涨 ¥{item.changeAmount.toFixed(2)}</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right pl-2 shrink-0">
+                                        <div className="text-lg font-black text-rose-600">¥{item.currentPrice}</div>
+                                        <div className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">历史新高</div>
+                                    </div>
+                                </div>
+                            ))}
+                            {trendData.historicalHighs.length === 0 && (
+                                <div className="text-center py-6 text-rose-600/60 font-medium text-sm">今日暂无涨破30天最高价的商品</div>
+                            )}
+                        </div>
+                        
+                        {/* 水印 */}
+                        <div className="mt-6 pt-3 flex items-center justify-between relative z-10 border-t border-rose-100">
+                            <div className="flex items-center gap-2 text-sm font-bold text-rose-700/60">
+                                <div className="w-5 h-5 bg-rose-500/80 rounded flex items-center justify-center text-white text-[10px] font-black">鱼</div>
+                                DIYXX.COM 数据支持
+                            </div>
+                            <span className="text-xs text-rose-700/40 font-bold">{new Date().toLocaleDateString('zh-CN')}</span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* 筛选器 */}
             <div className="flex items-center gap-4 flex-wrap">

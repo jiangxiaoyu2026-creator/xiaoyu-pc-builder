@@ -571,10 +571,59 @@ async def get_product_price_history(
     # Available categories
     categories = session.exec(select(Hardware.category).distinct()).all()
 
+    # --- 30-Day Historical Highs & Lows ---
+    historical_lows = []
+    historical_highs = []
+    
+    # We analyze the generated daily price array to find extremes
+    for trend in product_trends:
+        points = trend["points"]
+        if len(points) < 2:
+            continue
+            
+        prices = [p["price"] for p in points]
+        today_price = prices[-1]
+        yesterday_price = prices[-2]
+        
+        change_from_yesterday = today_price - yesterday_price
+        
+        # Need product category for UI labels
+        product_detail = next((p for p in products_list if p["id"] == trend["hardwareId"]), None)
+        if not product_detail:
+            continue
+            
+        # If it dropped today AND the price is the absolute lowest in the window
+        if change_from_yesterday < 0 and today_price <= min(prices):
+            historical_lows.append({
+                "hardwareId": trend["hardwareId"],
+                "name": trend["name"],
+                "category": product_detail["category"],
+                "currentPrice": today_price,
+                "changeAmount": change_from_yesterday,
+                "changePercent": round(change_from_yesterday / yesterday_price * 100, 2) if yesterday_price else 0,
+            })
+            
+        # If it rose today AND the price is the absolute highest in the window
+        elif change_from_yesterday > 0 and today_price >= max(prices):
+            historical_highs.append({
+                "hardwareId": trend["hardwareId"],
+                "name": trend["name"],
+                "category": product_detail["category"],
+                "currentPrice": today_price,
+                "changeAmount": change_from_yesterday,
+                "changePercent": round(change_from_yesterday / yesterday_price * 100, 2) if yesterday_price else 0,
+            })
+            
+    # Sort them by most impactful change
+    historical_lows.sort(key=lambda x: x["changeAmount"]) # Most negative first
+    historical_highs.sort(key=lambda x: x["changeAmount"], reverse=True) # Most positive first
+
     return {
         "productTrends": product_trends,
         "categoryAvgTrend": category_avg_trend,
         "categoryTotalAvgTrend": category_total_avg_trend,
         "products": products_list,
         "categories": sorted([c for c in categories if c]),
+        "historicalLows": historical_lows,
+        "historicalHighs": historical_highs,
     }
