@@ -486,9 +486,10 @@ async def get_product_price_history(
     category_total_avg_trend = []
     if category and category != "all":
         # Get current prices and creation dates for all active products in category
+        # Exclude products with price=0 (unpriced/discontinued items would corrupt the average)
         hw_data = session.exec(
             select(Hardware.id, Hardware.brand, Hardware.model, Hardware.price, Hardware.createdAt)
-            .where(Hardware.category == category, Hardware.status == "active")
+            .where(Hardware.category == category, Hardware.status == "active", Hardware.price > 0)
         ).all()
         
         # Filter by subcategory if requested
@@ -525,8 +526,8 @@ async def get_product_price_history(
             hw_created = {h[0]: h[4][:10] if h[4] else "2000-01-01" for h in hw_data} # h.createdAt is index 4
             
             for d in reversed(dates):
-                # Only include products that were already created by this date
-                valid_prices = [p for hid, p in temp_prices.items() if hw_created.get(hid, "9999") <= d]
+                # Only include products that were already created by this date AND have non-zero price
+                valid_prices = [p for hid, p in temp_prices.items() if hw_created.get(hid, "9999") <= d and p and p > 0]
                 if valid_prices:
                     avg = sum(valid_prices) / len(valid_prices)
                     category_total_avg_trend.append({
@@ -542,10 +543,11 @@ async def get_product_price_history(
             category_total_avg_trend.reverse()
 
     # --- Product list for this category ---
+    # Exclude price=0 products (unpriced/discontinued) to avoid corrupting frontend averages
     products_query = select(Hardware.id, Hardware.brand, Hardware.model, Hardware.price, Hardware.category)
     if category and category != "all":
         products_query = products_query.where(Hardware.category == category)
-    products_query = products_query.where(Hardware.status == "active").order_by(Hardware.brand, Hardware.model)
+    products_query = products_query.where(Hardware.status == "active", Hardware.price > 0).order_by(Hardware.brand, Hardware.model)
     product_rows = session.exec(products_query).all()
 
     # Apply subcategory filter to the products dropdown list so it matches the chart content

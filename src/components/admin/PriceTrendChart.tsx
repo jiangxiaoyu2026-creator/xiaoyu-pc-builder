@@ -223,6 +223,126 @@ export default function PriceTrendChart() {
         });
     })();
 
+    // --- Spec label parser (mirrors backend _parse_ram_specs / _parse_disk_specs) ---
+    const parseRamSpecs = (name: string): string => {
+        const upper = name.toUpperCase();
+        let capacity = 0;
+        const mMul = upper.match(/(\d+)[G]?\*(\d+)/);
+        if (mMul) {
+            capacity = parseInt(mMul[1]) * parseInt(mMul[2]);
+        } else {
+            const mSingle = upper.match(/(\d+)G/);
+            if (mSingle) capacity = parseInt(mSingle[1]);
+        }
+        let freq = '';
+        const mFreq = upper.match(/(3200|3600|4800|5200|5600|6000|6400|6800|7200|7600|8000)/);
+        if (mFreq) freq = mFreq[1];
+        let ddr = '';
+        if (upper.includes('DDR4')) ddr = 'DDR4';
+        else if (upper.includes('DDR5')) ddr = 'DDR5';
+        else if (freq) ddr = parseInt(freq) <= 4000 ? 'DDR4' : 'DDR5';
+        const tags: string[] = [];
+        if (ddr) tags.push(ddr);
+        if (freq) tags.push(`${freq}MHz`);
+        if (capacity) tags.push(`${capacity}GB`);
+        return tags.length ? tags.join(' ') : '其他未分类规格';
+    };
+
+    const parseDiskSpecs = (name: string): string => {
+        const m = name.toUpperCase().match(/(\d+)\s*(TB|T|GB|G)/);
+        if (m) {
+            let unit = m[2];
+            if (unit === 'T') unit = 'TB';
+            if (unit === 'G') unit = 'GB';
+            return `${m[1]}${unit}`;
+        }
+        return '其他未分类规格';
+    };
+
+    // --- Spec price comparison table data ---
+    const specPriceTable = (() => {
+        if (!['ram', 'disk'].includes(category) || !trendData?.products?.length) return null;
+        if (!trendData.categoryTotalAvgTrend?.length) return null;
+
+        const parseFn = category === 'ram' ? parseRamSpecs : parseDiskSpecs;
+        const allDates = trendData.categoryTotalAvgTrend.map(t => t.date);
+        const trendMap = new Map<string, Array<{date: string; price: number}>>();
+        if (trendData.productTrends) {
+            for (const pt of trendData.productTrends) {
+                trendMap.set(String(pt.hardwareId), pt.points);
+            }
+        }
+
+        // Group products by spec label, filtered by ramGeneration if set
+        const groups = new Map<string, typeof trendData.products>();
+        for (const p of trendData.products) {
+            if (p.price <= 0) continue;
+            const label = parseFn(p.name);
+            if (ramGeneration && !label.includes(ramGeneration)) continue;
+            if (!groups.has(label)) groups.set(label, []);
+            groups.get(label)!.push(p);
+        }
+
+        // For each group, compute average price at each date
+        const computeAvgAtDate = (products: typeof trendData.products, date: string): number => {
+            let sum = 0, count = 0;
+            for (const p of products) {
+                const pts = trendMap.get(String(p.id));
+                if (pts) {
+                    const point = pts.find(pt => pt.date === date);
+                    sum += point ? point.price : p.price;
+                } else {
+                    sum += p.price;
+                }
+                count++;
+            }
+            return count > 0 ? Math.round(sum / count) : 0;
+        };
+
+        const today = allDates[allDates.length - 1];
+        const findDateAgo = (daysAgo: number): string | null => {
+            const idx = allDates.length - 1 - daysAgo;
+            return idx >= 0 ? allDates[idx] : null;
+        };
+
+        const rows: Array<{
+            label: string;
+            count: number;
+            currentAvg: number;
+            changes: { period: string; pct: number | null }[];
+        }> = [];
+
+        for (const [label, products] of groups) {
+            const currentAvg = computeAvgAtDate(products, today);
+            if (currentAvg <= 0) continue;
+            const changes: { period: string; pct: number | null }[] = [];
+            for (const [periodLabel, daysAgo] of [['1日', 1], ['7日', 7], ['14日', 14], ['30日', 30]] as const) {
+                const pastDate = findDateAgo(daysAgo);
+                if (pastDate) {
+                    const pastAvg = computeAvgAtDate(products, pastDate);
+                    if (pastAvg > 0) {
+                        changes.push({ period: periodLabel, pct: Math.round(((currentAvg - pastAvg) / pastAvg) * 10000) / 100 });
+                    } else {
+                        changes.push({ period: periodLabel, pct: null });
+                    }
+                } else {
+                    changes.push({ period: periodLabel, pct: null });
+                }
+            }
+            rows.push({ label, count: products.length, currentAvg, changes });
+        }
+
+        // Sort: by DDR generation then by frequency then capacity
+        rows.sort((a, b) => {
+            const aHas5 = a.label.includes('DDR5');
+            const bHas5 = b.label.includes('DDR5');
+            if (aHas5 !== bHas5) return aHas5 ? -1 : 1;
+            return a.label.localeCompare(b.label);
+        });
+
+        return rows;
+    })();
+
     if (loading) {
         return (
             <div className="flex justify-center items-center py-16">
@@ -554,6 +674,64 @@ export default function PriceTrendChart() {
                 </div>
                 );
             })()}
+
+            {/* 规格价格对比表 (RAM/Disk) */}
+            {specPriceTable && specPriceTable.length > 0 && (
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-slate-100">
+                        <h3 className="font-bold text-slate-800">📊 {ramGeneration || (category === 'disk' ? '硬盘' : '内存')}各规格实时均价与涨跌</h3>
+                        <p className="text-xs text-slate-400 mt-1">基于当前在售产品均价计算，涨跌幅对比历史同期均价{days < 30 ? '（切换到30天可查看更多区间对比）' : ''}</p>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-slate-50">
+                                <tr>
+                                    <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">规格</th>
+                                    <th className="text-center px-3 py-2.5 text-xs font-bold text-slate-400">在售数量</th>
+                                    <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400">当前均价</th>
+                                    {specPriceTable[0]?.changes.map(c => (
+                                        <th key={c.period} className="text-right px-3 py-2.5 text-xs font-bold text-slate-400">vs {c.period}前</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {specPriceTable.map((row) => (
+                                    <tr 
+                                        key={row.label} 
+                                        className={`hover:bg-indigo-50/50 transition-colors cursor-pointer ${subcategory === row.label ? 'bg-indigo-50' : ''}`}
+                                        onClick={() => setSubcategory(subcategory === row.label ? '' : row.label)}
+                                    >
+                                        <td className="px-4 py-3 font-medium text-slate-700">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`inline-block w-2 h-2 rounded-full ${row.label.includes('DDR5') ? 'bg-violet-500' : 'bg-blue-500'}`} />
+                                                {row.label}
+                                            </div>
+                                        </td>
+                                        <td className="text-center px-3 py-3 text-slate-400">{row.count}款</td>
+                                        <td className="text-right px-4 py-3 font-bold text-slate-800">¥{row.currentAvg}</td>
+                                        {row.changes.map(c => (
+                                            <td key={c.period} className="text-right px-3 py-3">
+                                                {c.pct !== null ? (
+                                                    <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-bold ${
+                                                        c.pct > 0 ? 'bg-rose-50 text-rose-600' 
+                                                        : c.pct < 0 ? 'bg-emerald-50 text-emerald-600' 
+                                                        : 'bg-slate-50 text-slate-400'
+                                                    }`}>
+                                                        {c.pct > 0 ? '↑' : c.pct < 0 ? '↓' : '—'}
+                                                        {c.pct !== 0 ? `${Math.abs(c.pct)}%` : '持平'}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs text-slate-300">—</span>
+                                                )}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
 
             {/* 单品走势 */}
             {selectedProductId && trendData && (
