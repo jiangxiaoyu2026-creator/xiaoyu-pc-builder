@@ -602,7 +602,7 @@ export default function PriceTrendChart() {
                 </div>
             </div>
 
-            {/* 30天史低 / 史高 预警榜 */}
+            {/* 30天史低 / 破价 预警榜 */}
             {trendData && trendData.historicalLows && trendData.historicalHighs && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* 史低榜单 */}
@@ -610,7 +610,7 @@ export default function PriceTrendChart() {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
                         <div className="flex items-center justify-between mb-4 relative z-10 w-full">
                             <h3 className="text-xl font-black text-emerald-800 flex items-center gap-2 whitespace-nowrap">
-                                📉 30天·破冰底价榜
+                                📉 30天·史低降价榜
                             </h3>
                             <button 
                                 onClick={(e) => { e.stopPropagation(); handleDownloadImage(lowRef, `史低榜单_${new Date().toISOString().slice(0,10)}.png`); }}
@@ -632,12 +632,12 @@ export default function PriceTrendChart() {
                                     </div>
                                     <div className="text-right pl-2 shrink-0">
                                         <div className="text-lg font-black text-emerald-600">¥{item.currentPrice}</div>
-                                        <div className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">历史新低</div>
+                                        <div className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">30天新低</div>
                                     </div>
                                 </div>
                             ))}
                             {trendData.historicalLows.length === 0 && (
-                                <div className="text-center py-6 text-emerald-600/60 font-medium text-sm">今日暂无跌破30天底价的商品</div>
+                                <div className="text-center py-6 text-emerald-600/60 font-medium text-sm">今日暂无跌破30天最低价的商品</div>
                             )}
                         </div>
                         
@@ -656,7 +656,7 @@ export default function PriceTrendChart() {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
                         <div className="flex items-center justify-between mb-4 relative z-10 w-full">
                             <h3 className="text-xl font-black text-rose-800 flex items-center gap-2 whitespace-nowrap">
-                                📈 30天·高光预警榜
+                                📈 30天·破价涨价榜
                             </h3>
                             <button 
                                 onClick={(e) => { e.stopPropagation(); handleDownloadImage(highRef, `史高榜单_${new Date().toISOString().slice(0,10)}.png`); }}
@@ -678,7 +678,7 @@ export default function PriceTrendChart() {
                                     </div>
                                     <div className="text-right pl-2 shrink-0">
                                         <div className="text-lg font-black text-rose-600">¥{item.currentPrice}</div>
-                                        <div className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">历史新高</div>
+                                        <div className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">30天新高</div>
                                     </div>
                                 </div>
                             ))}
