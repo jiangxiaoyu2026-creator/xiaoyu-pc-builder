@@ -370,7 +370,7 @@ export default function PriceTrendChart() {
                 }
                 count++;
             }
-            return count > 0 ? Math.round(sum / count) : 0;
+            return count > 0 ? Math.round((sum / count) * 100) / 100 : 0;
         };
 
         const today = allDates[allDates.length - 1];
