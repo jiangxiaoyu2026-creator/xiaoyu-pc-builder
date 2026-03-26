@@ -110,7 +110,6 @@ export default function PriceTrendChart() {
     const [category, setCategory] = useState('all');
     const [ramGeneration, setRamGeneration] = useState('');
     const [subcategory, setSubcategory] = useState('');
-    const [subcategories, setSubcategories] = useState<string[]>([]);
     const [selectedProductId, setSelectedProductId] = useState<string>('');
     const [days, setDays] = useState(30);
     const [brandFilter, setBrandFilter] = useState<string>(''); // AMD / Intel / NVIDIA etc.
@@ -150,30 +149,8 @@ export default function PriceTrendChart() {
             const token = localStorage.getItem('xiaoyu_token');
             const headers = { 'Authorization': `Bearer ${token}` };
             
-            // If category is ram/disk, fetch the subcategories first if we don't have them
-            let availableSubcats: string[] = [];
-            if (['ram', 'disk'].includes(category)) {
-                try {
-                    const resSub = await fetch(`/api/stats/public-category-trends/${category}?days=${days}`, { headers });
-                    if (resSub.ok) {
-                        const subData = await resSub.json();
-                        availableSubcats = subData.groups?.map((g: any) => g.label) || [];
-                        setSubcategories(availableSubcats);
-                    }
-                } catch(e) { console.error('Failed to load subcategories', e) }
-            } else {
-                setSubcategories([]);
-                setSubcategory('');
-            }
-
-            // Ensure current subcategory is still valid
-            const currentSubcat = category === 'all' ? '' : (availableSubcats.includes(subcategory) ? subcategory : '');
-            if (currentSubcat !== subcategory && ['ram', 'disk'].includes(category)) {
-                setSubcategory(currentSubcat);
-            }
-            
             // Pass the most specific filter: if subcat exists, pass it; else if ramGen exists, pass it
-            const backendFilter = currentSubcat || (category === 'ram' ? ramGeneration : '');
+            const backendFilter = (category === 'all' ? '' : subcategory) || (category === 'ram' ? ramGeneration : '');
 
             const fetchDays = 30; // 强制获取 30 天数据以计算对比表
 
@@ -752,18 +729,33 @@ export default function PriceTrendChart() {
                         </select>
                     )}
 
-                    {subcategories.length > 0 && (
+                    
+
+                    {/* GPU Dropdown is explicitly Chipset */}
+                    {category === 'gpu' && gpuChipSeries.length > 0 && (
+                        <select
+                            value={gpuChipFilter}
+                            onChange={e => { setGpuChipFilter(e.target.value); setSelectedProductId(''); }}
+                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                        >
+                            <option value="">全部芯片组</option>
+                            {gpuChipSeries.map(s => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
+                    )}
+
+                    {/* General Subcategory Dropdown for CPU, Disk, RAM derived from specPriceTable */}
+                    {category !== 'gpu' && category !== 'all' && specPriceTable && specPriceTable.length > 0 && (
                         <select
                             value={subcategory}
                             onChange={e => setSubcategory(e.target.value)}
                             className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
                         >
-                            <option value="">全部具体规格</option>
-                            {subcategories
-                                .filter(s => !ramGeneration || s.includes(ramGeneration))
-                                .map(s => (
-                                    <option key={s} value={s}>{s}</option>
-                                ))}
+                            <option value="">全部{category === 'cpu' ? '代数' : '具体规格'}</option>
+                            {specPriceTable.map(row => (
+                                <option key={row.label} value={row.label}>{row.label}</option>
+                            ))}
                         </select>
                     )}
 
@@ -791,18 +783,7 @@ export default function PriceTrendChart() {
                         </div>
                     )}
 
-                    {category === 'gpu' && gpuChipSeries.length > 0 && (
-                        <select
-                            value={gpuChipFilter}
-                            onChange={e => { setGpuChipFilter(e.target.value); setSelectedProductId(''); }}
-                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                        >
-                            <option value="">全部芯片组</option>
-                            {gpuChipSeries.map(s => (
-                                <option key={s} value={s}>{s}</option>
-                            ))}
-                        </select>
-                    )}
+
 
                     {category !== 'all' && trendData && trendData.products && (
                         <select
