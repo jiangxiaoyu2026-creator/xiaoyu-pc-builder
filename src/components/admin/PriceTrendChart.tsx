@@ -487,6 +487,17 @@ export default function PriceTrendChart() {
             }
         }
 
+        const parseFn = category === 'ram' ? parseRamSpecs 
+                      : category === 'disk' ? parseDiskSpecs 
+                      : category === 'cpu' ? parseCpuSpecs
+                      : (name: string) => {
+            const info = extractChipInfo(name);
+            if (!info) return '其他芯片组';
+            const prefix = info.num.startsWith('9') || info.num.startsWith('7') || info.num.startsWith('6') ? 'RX' : 'RTX';
+            const dSuffix = info.isD ? 'D' : '';
+            return `${prefix} ${info.num}${dSuffix}${info.suffix ? ' ' + info.suffix : ''}`;
+        };
+
         const rows = trendData.products.filter(p => {
             if (p.price <= 0) return false;
             if (category !== 'all' && p.category !== category) return false;
@@ -494,8 +505,10 @@ export default function PriceTrendChart() {
 
             if (brandFilter && ['cpu', 'gpu', 'mainboard'].includes(category) && !matchesBrand(p.name)) return false;
             if (gpuChipFilter && category === 'gpu' && !matchesChip(p.name)) return false;
-            if (ramGeneration && category === 'ram' && !p.name.includes(ramGeneration)) return false;
-            if (subcategory && !parseRamSpecs(p.name).includes(subcategory) && !parseDiskSpecs(p.name).includes(subcategory) && !parseCpuSpecs(p.name).includes(subcategory) && category !== 'gpu') return false; 
+            
+            const specLabel = parseFn(p.name);
+            if (ramGeneration && category === 'ram' && !specLabel.includes(ramGeneration)) return false;
+            if (subcategory && specLabel !== subcategory) return false; 
             
             return true;
         }).map(p => {
