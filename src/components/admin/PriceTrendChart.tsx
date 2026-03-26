@@ -826,13 +826,33 @@ export default function PriceTrendChart() {
 
             {/* 品类均价走势 */}
             {trendData && trendData.categoryTotalAvgTrend && trendData.categoryTotalAvgTrend.length > 0 && category !== 'all' && (() => {
-                // When brand/chip filter is active, compute filtered average from per-product data
-                const hasBrandOrChipFilter = !!(brandFilter || gpuChipFilter);
+                // When any filter is active, compute filtered average from per-product data
+                const hasAnyFilter = !!(brandFilter || gpuChipFilter || subcategory || ramGeneration);
                 let avgTrend: Array<{ date: string; avgPrice: number }>;
 
-                if (hasBrandOrChipFilter && trendData.products && trendData.products.length > 0) {
-                    // Get all matching active products
-                    const matchingProductsList = trendData.products.filter(p => matchesBrand(p.name) && matchesChip(p.name));
+                if (hasAnyFilter && trendData.products && trendData.products.length > 0) {
+                    // Build the same parseFn used by the spec table
+                    const chartParseFn = category === 'ram' ? parseRamSpecs 
+                                  : category === 'disk' ? parseDiskSpecs 
+                                  : category === 'cpu' ? parseCpuSpecs
+                                  : (name: string) => {
+                        const info = extractChipInfo(name);
+                        if (!info) return '其他芯片组';
+                        const prefix = info.num.startsWith('9') || info.num.startsWith('7') || info.num.startsWith('6') ? 'RX' : 'RTX';
+                        const dSuffix = info.isD ? 'D' : '';
+                        return `${prefix} ${info.num}${dSuffix}${info.suffix ? ' ' + info.suffix : ''}`;
+                    };
+
+                    // Get all matching active products with ALL filters applied
+                    const matchingProductsList = trendData.products.filter(p => {
+                        if (p.price <= 0) return false;
+                        if (!matchesBrand(p.name)) return false;
+                        if (!matchesChip(p.name)) return false;
+                        const specLabel = chartParseFn(p.name);
+                        if (ramGeneration && category === 'ram' && !specLabel.includes(ramGeneration)) return false;
+                        if (subcategory && specLabel !== subcategory) return false;
+                        return true;
+                    });
 
                     if (matchingProductsList.length > 0) {
                         const allDates = trendData.categoryTotalAvgTrend.map(t => t.date);
