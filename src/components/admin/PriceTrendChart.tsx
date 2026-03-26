@@ -705,7 +705,14 @@ export default function PriceTrendChart() {
                     <Filter size={14} className="text-slate-400" />
                     <select
                         value={category}
-                        onChange={e => setCategory(e.target.value)}
+                        onChange={e => {
+                            setCategory(e.target.value);
+                            setSubcategory('');
+                            setBrandFilter('');
+                            setGpuChipFilter('');
+                            setRamGeneration('');
+                            setSelectedProductId('');
+                        }}
                         className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
                     >
                         <option value="all">全部品类</option>
