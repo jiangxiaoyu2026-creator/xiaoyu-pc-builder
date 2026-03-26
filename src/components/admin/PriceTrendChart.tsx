@@ -1136,7 +1136,7 @@ export default function PriceTrendChart() {
                                     {productData.name} 价格走势
                                 </h3>
                                 {(() => {
-                                    const pts = productData.points;
+                                    const pts = productData.points.slice(-days);
                                     const firstPrice = pts[0]?.price;
                                     const lastPrice = pts[pts.length - 1]?.price;
                                     const periodChange = lastPrice && firstPrice ? lastPrice - firstPrice : 0;
