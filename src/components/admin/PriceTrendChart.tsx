@@ -113,7 +113,6 @@ export default function PriceTrendChart() {
     const [subcategories, setSubcategories] = useState<string[]>([]);
     const [selectedProductId, setSelectedProductId] = useState<string>('');
     const [days, setDays] = useState(30);
-    const [magnitudeFilter, setMagnitudeFilter] = useState<'all' | 'large' | 'small'>('all');
     const [brandFilter, setBrandFilter] = useState<string>(''); // AMD / Intel / NVIDIA etc.
     const [gpuChipFilter, setGpuChipFilter] = useState<string>(''); // RTX 5060 / RTX 5070 etc.
 
@@ -123,6 +122,7 @@ export default function PriceTrendChart() {
     const lowRef = useRef<HTMLDivElement>(null);
     const highRef = useRef<HTMLDivElement>(null);
     const [downloading, setDownloading] = useState<string | null>(null);
+    const [sortConfig, setSortConfig] = useState<{key: '1d'|'7d'|'14d'|'30d', direction: 'asc'|'desc'} | null>(null);
 
     const handleDownloadImage = useCallback(async (ref: React.RefObject<HTMLDivElement | null>, filename: string) => {
         if (!ref.current) return;
@@ -468,6 +468,92 @@ export default function PriceTrendChart() {
         return rows;
     })();
 
+    const productTableData = (() => {
+        if (!trendData?.products) return [];
+        
+        const allDates = trendData.categoryTotalAvgTrend?.map(t => t.date) || [];
+        const today = allDates[allDates.length - 1];
+        if (!today) return [];
+
+        const findDateAgo = (daysAgo: number): string | null => {
+            const idx = allDates.length - 1 - daysAgo;
+            return idx >= 0 ? allDates[idx] : null;
+        };
+
+        const trendMap = new Map<string, Array<{date: string, price: number}>>();
+        if (trendData.productTrends) {
+            for (const pt of trendData.productTrends) {
+                trendMap.set(String(pt.hardwareId), pt.points);
+            }
+        }
+
+        const rows = trendData.products.filter(p => {
+            if (p.price <= 0) return false;
+            if (category !== 'all' && p.category !== category) return false;
+            if (category === 'all') return true; 
+
+            if (brandFilter && ['cpu', 'gpu', 'mainboard'].includes(category) && !matchesBrand(p.name)) return false;
+            if (gpuChipFilter && category === 'gpu' && !matchesChip(p.name)) return false;
+            if (ramGeneration && category === 'ram' && !p.name.includes(ramGeneration)) return false;
+            if (subcategory && !parseRamSpecs(p.name).includes(subcategory) && !parseDiskSpecs(p.name).includes(subcategory) && !parseCpuSpecs(p.name).includes(subcategory) && category !== 'gpu') return false; 
+            
+            return true;
+        }).map(p => {
+            const pts = trendMap.get(String(p.id)) || [];
+            const getPriceAtDate = (date: string | null) => {
+                if (!date) return p.price;
+                const pt = pts.find(x => x.date === date);
+                return pt ? pt.price : p.price;
+            };
+            
+            const currentPrice = getPriceAtDate(today);
+            
+            const changes: Record<'1d'|'7d'|'14d'|'30d', {amt: number, pct: number}> = {
+                '1d': {amt: 0, pct: 0},
+                '7d': {amt: 0, pct: 0},
+                '14d': {amt: 0, pct: 0},
+                '30d': {amt: 0, pct: 0},
+            };
+
+            for (const [key, daysAgo] of Object.entries({'1d': 1, '7d': 7, '14d': 14, '30d': 30}) as Array<[keyof typeof changes, number]>) {
+                const pastDate = findDateAgo(daysAgo);
+                if (pastDate) {
+                    const pastPrice = getPriceAtDate(pastDate);
+                    const amt = currentPrice - pastPrice;
+                    const pct = pastPrice > 0 ? (amt / pastPrice) * 100 : 0;
+                    changes[key] = {amt, pct};
+                }
+            }
+            
+            return {
+                id: p.id,
+                name: p.name,
+                category: p.category,
+                currentPrice,
+                changes
+            };
+        });
+
+        if (sortConfig) {
+            rows.sort((a, b) => {
+                const aVal = a.changes[sortConfig.key].amt;
+                const bVal = b.changes[sortConfig.key].amt;
+                return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
+            });
+        } else {
+            rows.sort((a, b) => {
+                if (a.changes['1d'].amt !== b.changes['1d'].amt) return a.changes['1d'].amt - b.changes['1d'].amt;
+                return a.changes['7d'].amt - b.changes['7d'].amt;
+            });
+        }
+
+        if (category === 'all') {
+            return rows.filter(r => r.changes['1d'].amt !== 0 || r.changes['7d'].amt !== 0 || r.changes['14d'].amt !== 0 || r.changes['30d'].amt !== 0);
+        }
+
+        return rows;
+    })();
+
     if (loading) {
         return (
             <div className="flex justify-center items-center py-16">
@@ -478,7 +564,7 @@ export default function PriceTrendChart() {
 
     if (!data) return null;
 
-    const { todaySummary, recentChanges } = data;
+    const { todaySummary } = data;
 
     return (
         <div className="space-y-6">
@@ -1151,88 +1237,73 @@ export default function PriceTrendChart() {
                 </div>
             )}
 
-            {/* 最近变更记录 */}
-            {recentChanges.length > 0 && (
+            {productTableData.length > 0 && (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                        <h3 className="font-bold text-slate-800">最近价格变更</h3>
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-400 mr-2">变动幅度:</span>
-                            <div className="flex bg-slate-100 p-1 rounded-lg">
-                                {(['all', 'large', 'small'] as const).map(f => (
-                                    <button
-                                        key={f}
-                                        onClick={() => setMagnitudeFilter(f)}
-                                        className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-                                            magnitudeFilter === f 
-                                            ? 'bg-white text-indigo-600 shadow-sm' 
-                                            : 'text-slate-500 hover:text-slate-700'
-                                        }`}
-                                    >
-                                        {f === 'all' ? '全部' : f === 'large' ? '大额 (¥50+)' : '微调 (<¥50)'}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                        <h3 className="font-bold text-slate-800">具体型号行情清单</h3>
+                        <p className="text-xs text-slate-400">点击表头中的涨跌指标即可排序</p>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-slate-50">
+                    <div className="overflow-x-auto" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+                        <table className="w-full text-sm relative">
+                            <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
                                 <tr>
-                                    <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">硬件名称 (点击查看模型走势)</th>
-                                    <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">品类</th>
-                                    <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">原价</th>
-                                    <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">新价</th>
-                                    <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">变动</th>
-                                    <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">时间</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase bg-slate-50">硬件名称 (点击查看)</th>
+                                    <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400 uppercase bg-slate-50">当前价格</th>
+                                    {(['1d', '7d', '14d', '30d'] as const).map(k => (
+                                        <th 
+                                            key={k} 
+                                            className="text-right px-4 py-2.5 text-xs font-bold text-slate-400 uppercase cursor-pointer hover:bg-slate-100 transition-colors bg-slate-50"
+                                            onClick={() => {
+                                                setSortConfig(prev => {
+                                                    if (prev?.key === k) {
+                                                        return { key: k, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+                                                    }
+                                                    return { key: k, direction: 'asc' };
+                                                });
+                                            }}
+                                        >
+                                            较{k.replace('d', '天')}前
+                                            <span className={`inline-block w-4 text-center ml-1 ${sortConfig?.key === k ? 'text-indigo-500' : 'text-slate-300'}`}>
+                                                {sortConfig?.key === k ? (sortConfig.direction === 'asc' ? '↓' : '↑') : '↕'}
+                                            </span>
+                                        </th>
+                                    ))}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {recentChanges
-                                    .filter(c => {
-                                        // Magnitude filter
-                                        if (magnitudeFilter !== 'all') {
-                                            const absChange = Math.abs(c.changeAmount);
-                                            if (magnitudeFilter === 'large' ? absChange < 50 : absChange >= 50) return false;
-                                        }
-                                        // Brand filter (apply when a specific category is selected)
-                                        if (brandFilter && ['cpu', 'gpu', 'mainboard'].includes(category)) {
-                                            if (c.category !== category) return false;
-                                            if (!matchesBrand(c.hardwareName)) return false;
-                                        }
-                                        // GPU chip filter
-                                        if (gpuChipFilter && category === 'gpu') {
-                                            if (c.category !== 'gpu') return false;
-                                            if (!matchesChip(c.hardwareName)) return false;
-                                        }
-                                        return true;
-                                    })
-                                    .map((c, i) => (
+                                {productTableData.map((p) => (
                                     <tr 
-                                        key={i} 
+                                        key={p.id} 
                                         onClick={() => {
-                                            // Auto-switch category if needed so the chart loads this product's data
-                                            if (category !== c.category) {
-                                                setCategory(c.category);
+                                            if (category !== p.category && category !== 'all') {
+                                                setCategory(p.category);
                                             }
-                                            setSelectedProductId(String(c.hardwareId));
+                                            setSelectedProductId(String(p.id));
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
-                                        className={`group cursor-pointer hover:bg-indigo-50/50 transition-colors ${String(c.hardwareId) === selectedProductId ? 'bg-indigo-50 shadow-inner' : ''}`}
+                                        className={`group cursor-pointer hover:bg-indigo-50/50 transition-colors ${String(p.id) === selectedProductId ? 'bg-indigo-50 shadow-inner' : ''}`}
                                     >
                                         <td className="px-4 py-3 font-medium text-slate-700 group-hover:text-indigo-600 transition-colors">
-                                            {c.hardwareName}
+                                            {p.name}
                                         </td>
-                                        <td className="px-4 py-3 text-slate-500">{CATEGORY_LABELS[c.category] || c.category}</td>
-                                        <td className="px-4 py-3 text-right text-slate-500">¥{c.oldPrice}</td>
-                                        <td className="px-4 py-3 text-right font-bold text-slate-800">¥{c.newPrice}</td>
-                                        <td className={`px-4 py-3 text-right font-bold ${c.changeAmount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                            {c.changeAmount > 0 ? '+' : ''}{c.changeAmount}
-                                            <span className="text-xs ml-1">({c.changePercent > 0 ? '+' : ''}{c.changePercent}%)</span>
-                                        </td>
-                                        <td className="px-4 py-3 text-right text-xs text-slate-400">
-                                            {new Date(c.changedAt).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                                        </td>
+                                        <td className="px-4 py-3 text-right font-extrabold text-slate-800 text-base">¥{p.currentPrice}</td>
+                                        {(['1d', '7d', '14d', '30d'] as const).map(k => {
+                                            const {amt, pct} = p.changes[k];
+                                            return (
+                                                <td key={k} className="px-4 py-3 text-right">
+                                                    {amt !== 0 ? (
+                                                        <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-bold ${
+                                                            amt > 0 ? 'bg-rose-50 text-rose-600' 
+                                                            : 'bg-emerald-50 text-emerald-600'
+                                                        }`}>
+                                                            {amt > 0 ? '↑' : '↓'} {Math.abs(pct).toFixed(2)}% (¥{Math.abs(amt)})
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs text-slate-300">—</span>
+                                                    )}
+                                                </td>
+                                            );
+                                        })}
                                     </tr>
                                 ))}
                             </tbody>
