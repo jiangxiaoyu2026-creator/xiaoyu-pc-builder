@@ -68,6 +68,11 @@ async def get_stats(
             select(func.count(Config.id)).where(Config.createdAt.startswith(today))
         ).first() or 0
         
+        # 今日新增用户
+        today_new_users = session.exec(
+            select(func.count(User.id)).where(User.createdAt.startswith(today))
+        ).first() or 0
+        
         # 硬件总数
         total_hardware = session.exec(select(func.count(Hardware.id))).first() or 0
         active_hardware = session.exec(
@@ -82,6 +87,7 @@ async def get_stats(
             # 新增实时统计
             "todayNewHardware": today_new_hardware,
             "todayNewConfigs": today_new_configs,
+            "todayNewUsers": today_new_users,
             "todayNewUsed": today_new_used,
             "activeVipCount": active_vip_count,
             "totalHardware": total_hardware,

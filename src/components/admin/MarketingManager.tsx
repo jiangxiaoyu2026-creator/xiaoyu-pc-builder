@@ -9,11 +9,13 @@ import {
     MessageCircle,
     Copy,
     CheckCircle2,
-    RefreshCw
+    RefreshCw,
+    Image as ImageIcon
 } from 'lucide-react';
 import { ApiService } from '../../services/api';
 import { ResponsiveContainer, AreaChart, Area, Tooltip, CartesianGrid } from 'recharts';
 import html2canvas from 'html2canvas';
+import { MediaAssetDownloader, MediaAsset } from './MediaAssetDownloader';
 
 type TopDrop = {
     category: string;
@@ -23,12 +25,13 @@ type TopDrop = {
     drop: number;
 };
 
-type GeneratedResult = {
+interface GeneratedResult {
     article_title: string;
     official_account: string;
-    xiaohongshu: string;
     moments: string;
+    xiaohongshu: string;
     video_script: string;
+    media_assets?: MediaAsset[];
 };
 
 type DailyData = {
@@ -42,7 +45,7 @@ export default function MarketingManager() {
     const [error, setError] = useState<string | null>(null);
     const [generatedData, setGeneratedData] = useState<GeneratedResult | null>(null);
     const [dailyData, setDailyData] = useState<DailyData | null>(null);
-    const [activeTab, setActiveTab] = useState<'video' | 'xhs' | 'moments' | 'article'>('video');
+    const [activeTab, setActiveTab] = useState<'video' | 'xhs' | 'moments' | 'article' | 'assets'>('video');
     const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
 
     const boardRef = useRef<HTMLDivElement>(null);
@@ -54,7 +57,7 @@ export default function MarketingManager() {
         setDailyData(null);
         
         try {
-            const result = await ApiService.post('/admin/marketing/generate-daily', { external_news: externalNews });
+            const result = await ApiService.post('/marketing/generate-daily', { external_news: externalNews });
             
             if (result && result.status === 'success') {
                 setGeneratedData(result.data);
@@ -63,7 +66,7 @@ export default function MarketingManager() {
             }
             
             try {
-                const summaryData = await ApiService.get('/admin/marketing/daily-summary');
+                const summaryData = await ApiService.get('/marketing/daily-summary');
                 if (summaryData && summaryData.topDrops) {
                     setDailyData({
                        date: summaryData.date,
@@ -120,9 +123,9 @@ export default function MarketingManager() {
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <TrendingUp className="text-indigo-600" /> 
-                        自动化硬件大盘与营销中心
+                        行情与营销中心
                     </h1>
-                    <p className="text-slate-500 mt-1">一键聚合今日行情，输出 B站/小红书/朋友圈 爆款文案与专业图片</p>
+                    <p className="text-slate-500 mt-1">一键生成视频素材与四大平台爆款文案</p>
                 </div>
             </div>
 
@@ -262,10 +265,10 @@ export default function MarketingManager() {
                             </div>
 
                             {/* --- AI 矩阵文案分发区 --- */}
-                            <div className="flex flex-col flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div className="flex border-b border-slate-200 bg-slate-50">
+                            <div className="flex flex-col flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[500px]">
+                                <div className="flex border-b border-slate-200 bg-slate-50 flex-wrap">
                                     <button 
-                                        className={`flex-1 py-3 text-sm font-medium flex justify-center items-center gap-2 transition-colors ${activeTab === 'video' ? 'bg-white text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}
+                                        className={`flex-1 py-3 px-2 text-xs md:text-sm font-medium flex justify-center items-center gap-2 transition-colors ${activeTab === 'video' ? 'bg-white text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'}`}
                                         onClick={() => setActiveTab('video')}
                                     >
                                         <Video size={16} /> B站/抖音脚本
@@ -288,24 +291,32 @@ export default function MarketingManager() {
                                     >
                                         <FileText size={16} /> 网站/公众号头条
                                     </button>
+                                    <button 
+                                        className={`flex-1 py-3 text-sm font-medium flex justify-center items-center gap-2 transition-colors ${activeTab === 'assets' ? 'bg-indigo-600 text-white shadow-inner font-bold' : 'bg-slate-100 text-indigo-600 hover:bg-indigo-50 border border-indigo-100'}`}
+                                        onClick={() => setActiveTab('assets')}
+                                    >
+                                        <ImageIcon size={16} /> 配套素材一键下载 <span className="bg-rose-500 text-white text-[10px] px-1 rounded-full relative -top-0.5 ml-1 animate-pulse">HOT</span>
+                                    </button>
                                 </div>
 
                                 <div className="p-5 flex-1 overflow-y-auto relative bg-slate-50/50">
-                                    <button 
-                                        onClick={() => {
-                                            const contentMap = {
-                                                'video': generatedData.video_script,
-                                                'xhs': generatedData.xiaohongshu,
-                                                'moments': generatedData.moments,
-                                                'article': generatedData.article_title + '\n\n' + generatedData.official_account
-                                            };
-                                            handleCopy(contentMap[activeTab], activeTab);
-                                        }}
-                                        className="absolute top-4 right-4 p-2 bg-white border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 rounded-lg shadow-sm transition"
-                                        title="一键复制全篇"
-                                    >
-                                        {copiedStates[activeTab] ? <CheckCircle2 size={18} className="text-emerald-500" /> : <Copy size={18} />}
-                                    </button>
+                                    {activeTab !== 'assets' && (
+                                        <button 
+                                            onClick={() => {
+                                                const contentMap = {
+                                                    'video': generatedData.video_script,
+                                                    'xhs': generatedData.xiaohongshu,
+                                                    'moments': generatedData.moments,
+                                                    'article': generatedData.article_title + '\n\n' + generatedData.official_account
+                                                };
+                                                handleCopy(contentMap[activeTab as keyof typeof contentMap], activeTab);
+                                            }}
+                                            className="absolute top-4 right-4 p-2 bg-white border border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 rounded-lg shadow-sm transition"
+                                            title="一键复制全篇"
+                                        >
+                                            {copiedStates[activeTab] ? <CheckCircle2 size={18} className="text-emerald-500" /> : <Copy size={18} />}
+                                        </button>
+                                    )}
 
                                     {activeTab === 'video' && (
                                         <div className="whitespace-pre-wrap font-mono text-sm leading-7 text-slate-700 max-w-3xl">
@@ -334,6 +345,11 @@ export default function MarketingManager() {
                                                     {generatedData.official_account}
                                                 </div>
                                             </div>
+                                        </div>
+                                    )}
+                                    {activeTab === 'assets' && (
+                                        <div className="h-full">
+                                            <MediaAssetDownloader assets={generatedData.media_assets || []} />
                                         </div>
                                     )}
                                 </div>

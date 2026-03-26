@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
-from sqlmodel import Session, select, func
+from sqlmodel import Session, select, func, or_
 from typing import List, Optional, Dict, Any
 from ..db import get_session
 from ..models import Hardware, PriceHistory, User
@@ -117,7 +117,7 @@ def generate_daily_marketing(
     """
     Generate the 4-platform marketing content using AI based on today's hardware price drops.
     """
-    # 1. 抓取当日大盘行情数据（复用 summary 逻辑或简化提取）
+    # 1. 抓取当日大盘行情数据 — 尽可能丰富
     now = datetime.utcnow()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
     
@@ -125,32 +125,187 @@ def generate_daily_marketing(
         select(PriceHistory)
         .where(PriceHistory.changedAt >= today_start)
         .order_by(PriceHistory.changeAmount.asc())
-        .limit(15)
+        .limit(30)
     ).all()
     
-    top_drops_data = [
-        {
-            "category": c.category,
-            "hardwareName": c.hardwareName,
-            "oldPrice": c.oldPrice,
-            "newPrice": c.newPrice,
-            "drop": c.changeAmount
-        } for c in today_changes
-    ]
+    # 按品类分组，给 AI 更有结构的数据
+    grouped: dict = {}
+    for c in today_changes:
+        cat = c.category or '其他'
+        if cat not in grouped:
+            grouped[cat] = []
+        grouped[cat].append({
+            "名称": c.hardwareName,
+            "旧价": c.oldPrice,
+            "新价": c.newPrice,
+            "降幅(元)": round(c.changeAmount, 2),
+            "降幅(%)": round(c.changePercent, 2)
+        })
+    
+    # 构建摘要
+    total_items = len(today_changes)
+    avg_drop = round(sum(c.changeAmount for c in today_changes) / total_items, 2) if total_items > 0 else 0
+    biggest_drop = today_changes[0] if today_changes else None
     
     daily_data = {
-        "date": now.strftime("%Y-%m-%d"),
-        "top_drops_today": top_drops_data
+        "日期": now.strftime("%Y-%m-%d"),
+        "今日总计变价商品数": total_items,
+        "平均降幅(元)": avg_drop,
+        "今日降价王": f"{biggest_drop.hardwareName} 暴降 {abs(biggest_drop.changeAmount):.0f}元 ({biggest_drop.changePercent:.1f}%)" if biggest_drop else "暂无",
+        "各品类详细数据": grouped
     }
     
-    # 2. 调用 AI 服务生成多端文案
     ai_service = AiService(session)
     result = ai_service.generate_marketing_content(daily_data, request.external_news)
     
     if not result:
         raise HTTPException(status_code=500, detail="AI 生成文案失败，请稍后重试或检查配置。")
+
+    media_assets = []
+    relevant_models = result.get("relevant_hardware_models", [])
+    if isinstance(relevant_models, list):
+        for model_str in relevant_models:
+            words = model_str.split()
+            stmt = select(Hardware).where(Hardware.status == 'active')
+            for w in words:
+                stmt = stmt.where(
+                    or_(
+                        Hardware.model.ilike(f"%{w}%"),
+                        Hardware.brand.ilike(f"%{w}%")
+                    )
+                )
+            stmt = stmt.limit(1)
+            matched = session.exec(stmt).first()
+            if matched and matched.image:
+                media_assets.append({
+                    "id": matched.id,
+                    "brand": matched.brand,
+                    "model": matched.model,
+                    "image": matched.image,
+                    "keyword": model_str
+                })
+            else:
+                media_assets.append({
+                    "id": None,
+                    "brand": "",
+                    "model": model_str,
+                    "image": None,
+                    "keyword": model_str
+                })
+    
+    result["media_assets"] = media_assets
         
     return {
         "status": "success",
         "data": result
     }
+
+@router.get("/category-trends")
+def get_category_trends(
+    category: str,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """
+    Returns the table data for Douyin Video 实时均价与行情波动 table.
+    Groups items by specs (or model if specs are missing), and calculates vs 1, 7 days.
+    """
+    now = datetime.utcnow()
+    day1_start = (now - timedelta(days=1)).isoformat()
+    day7_start = (now - timedelta(days=7)).isoformat()
+    
+    # Get active hardware in category
+    # DDR4 and DDR5 can be distinguished using model names from 'ram'
+    real_category = "ram" if category.lower() in ["ddr4", "ddr5"] else category
+    
+    items = session.exec(select(Hardware).where(Hardware.category == real_category, Hardware.status == "active")).all()
+    
+    # Group items by a key, e.g., specs or model
+    # For ram, we usually use model + capacity string, or brand + model
+    grouped = collections.defaultdict(list)
+    for item in items:
+        # If it's ram, separate by DDR4/DDR5 if requested
+        if real_category == "ram" and category.upper() not in item.model.upper():
+            continue
+            
+        group_key = item.model
+        if "GB" in group_key or "MHz" in group_key: # Good enough for grouping RAM
+             # Extract the standard spec ignoring brand, or simply use model
+             group_key = f"{category.upper()} {item.model.split()[-1] if ' ' in item.model else item.model}"
+        
+        # CPU grouping
+        if real_category == "cpu":
+             group_key = f"{item.brand} {item.model}"
+             
+        grouped[group_key].append(item)
+        
+    results = []
+    for spec, hw_list in grouped.items():
+        count = len(hw_list)
+        if count == 0: continue
+            
+        current_avg = sum(item.price for item in hw_list) / count
+        
+        # Fetch historic prices for these items
+        hw_ids = [item.id for item in hw_list]
+        
+        # Price 1 day ago
+        # To get the average price X days ago, we need the closest price chronologically.
+        def get_avg_at_date(day_start):
+            total = 0
+            for item in hw_list:
+                # 1. Try to find the latest price BEFORE or AT day_start
+                ph_before = session.exec(
+                    select(PriceHistory)
+                    .where(PriceHistory.hardwareId == item.id, PriceHistory.changedAt <= day_start)
+                    .order_by(PriceHistory.changedAt.desc())
+                ).first()
+                
+                if ph_before:
+                    total += ph_before.newPrice
+                    continue
+                    
+                # 2. If no history before, find the EARLIEST price AFTER day_start
+                # This represents the price before the first recorded change!
+                ph_after = session.exec(
+                    select(PriceHistory)
+                    .where(PriceHistory.hardwareId == item.id, PriceHistory.changedAt > day_start)
+                    .order_by(PriceHistory.changedAt.asc())
+                ).first()
+                
+                if ph_after:
+                    total += ph_after.oldPrice
+                    continue
+                    
+                # 3. If no history at all, the price hasn't changed since creation
+                total += item.price
+                
+            return total / count
+
+        avg_1day = get_avg_at_date(day1_start)
+        avg_7day = get_avg_at_date(day7_start)
+
+        # Calculate percentages
+        def calc_pct(old_val, new_val):
+            if old_val == 0: return 0
+            return round((new_val - old_val) / old_val * 100, 2)
+            
+        vs1 = calc_pct(avg_1day, current_avg)
+        vs7 = calc_pct(avg_7day, current_avg)
+        
+        # Only add if we have a reasonable average
+        if current_avg > 0:
+            results.append({
+                "spec": spec,
+                "count": count,
+                "currentAvg": round(current_avg),
+                "vs1": vs1,
+                "vs7": vs7,
+                "vs14": 0, # Placeholder
+                "vs30": 0  # Placeholder
+            })
+            
+    # Sort by current average price ascending
+    results.sort(key=lambda x: x["currentAvg"])
+    return results[:15] # Limit to 15 rows for neatness
+

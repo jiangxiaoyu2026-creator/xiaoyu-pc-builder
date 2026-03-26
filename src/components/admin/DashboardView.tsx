@@ -76,7 +76,7 @@ export default function DashboardView() {
                     title="注册用户总数"
                     value={counts.users}
                     unit="人"
-                    desc={`今日新增: ${todayStat?.newUsers || 0}`}
+                    desc={`今日新增: ${extra.todayNewUsers || 0}`}
                     icon={<Users size={24} />}
                     color="emerald"
                 />
@@ -147,7 +147,7 @@ export default function DashboardView() {
                     )}
                     <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 border border-blue-100">
                         <CheckCircle2 size={16} />
-                        <span>今日新增 {todayStat?.newUsers || 0} 位注册用户，{extra.todayNewHardware || 0} 件硬件上架，系统运行平稳。</span>
+                        <span>今日新增 {extra.todayNewUsers || 0} 位注册用户，{extra.todayNewHardware || 0} 件硬件上架，系统运行平稳。</span>
                     </div>
                 </div>
             </div>
