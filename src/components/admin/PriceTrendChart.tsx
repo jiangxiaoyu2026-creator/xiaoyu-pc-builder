@@ -890,6 +890,7 @@ export default function PriceTrendChart() {
                                         const idx = avgTrend.findIndex(p => p.date === d.date);
                                         const prevAvg = idx > 0 ? avgTrend[idx - 1].avgPrice : d.avgPrice;
                                         const dailyDiff = d.avgPrice - prevAvg;
+                                        const dailyPct = prevAvg > 0 ? ((dailyDiff / prevAvg) * 100).toFixed(2) : '0.00';
                                         return (
                                             <div className="bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 min-w-[180px]">
                                                 <p className="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2">{label}</p>
@@ -905,7 +906,7 @@ export default function PriceTrendChart() {
                                                         <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-100">
                                                             <span className="text-xs text-slate-500">较前日</span>
                                                             <span className={`text-xs font-bold ${dailyDiff > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                                                {dailyDiff > 0 ? '↑' : '↓'} ¥{Math.abs(Math.round(dailyDiff * 100) / 100)}
+                                                                {dailyDiff > 0 ? '↑' : '↓'} {Math.abs(Number(dailyPct))}% (¥{Math.abs(Math.round(dailyDiff * 100) / 100)})
                                                             </span>
                                                         </div>
                                                     )}
@@ -1111,6 +1112,7 @@ export default function PriceTrendChart() {
                                                     const idx = productData.points.findIndex(p => p.date === point.date);
                                                     const prevPrice = idx > 0 ? productData.points[idx - 1].price : point.price;
                                                     const diff = point.price - prevPrice;
+                                                    const pct = prevPrice > 0 ? ((diff / prevPrice) * 100).toFixed(2) : '0.00';
                                                     return (
                                                         <div className="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50">
                                                             <p className="font-bold text-slate-800 mb-2">{label}</p>
@@ -1121,9 +1123,9 @@ export default function PriceTrendChart() {
                                                             {diff !== 0 && (
                                                                 <div className="flex items-center gap-1 text-xs font-bold pt-2 border-t border-slate-100">
                                                                     {diff > 0 ? (
-                                                                        <span className="text-rose-500 flex items-center"><ArrowUpRight size={14} /> 较前日涨 ¥{diff}</span>
+                                                                        <span className="text-rose-500 flex items-center"><ArrowUpRight size={14} /> 较前日涨 {Math.abs(Number(pct))}% (¥{diff.toFixed(2)})</span>
                                                                     ) : (
-                                                                        <span className="text-emerald-500 flex items-center"><ArrowDownRight size={14} /> 较前日降 ¥{Math.abs(diff)}</span>
+                                                                        <span className="text-emerald-500 flex items-center"><ArrowDownRight size={14} /> 较前日降 {Math.abs(Number(pct))}% (¥{Math.abs(diff).toFixed(2)})</span>
                                                                     )}
                                                                 </div>
                                                             )}
