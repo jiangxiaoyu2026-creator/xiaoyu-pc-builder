@@ -552,175 +552,44 @@ export default function PriceTrendChart() {
         );
     }
 
-    if (!data) return (
-        <div className="flex flex-col items-center justify-center py-24 text-slate-400 animate-page-enter">
-            <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
-                <TrendingUp size={28} className="text-slate-300" />
-            </div>
-            <p className="text-sm font-bold text-slate-500 mb-1">暂无价格趋势数据</p>
-            <p className="text-xs text-slate-400 mb-4">请确认后端服务运行正常后刷新</p>
-            <button
-                onClick={() => fetchData()}
-                className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors btn-press flex items-center gap-2"
-            >
-                <RefreshCw size={14} /> 重新加载
-            </button>
-        </div>
-    );
-
-    const { todaySummary } = data;
+    // 提供安全回退值，确保在无数据时右侧面板也能正常渲染
+    const todaySummary = data?.todaySummary || {
+        upCount: 0,
+        downCount: 0,
+        totalChanges: 0,
+        avgUpAmount: 0,
+        avgDownAmount: 0
+    };
 
     return (
-        <div className="space-y-6">
-            {/* 今日涨跌概览 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-br from-rose-50 to-rose-100 p-5 rounded-2xl border border-rose-200">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="text-xs font-bold text-rose-400 uppercase tracking-wider mb-1">今日涨价</div>
-                            <div className="text-3xl font-extrabold text-rose-600">{todaySummary.upCount}</div>
-                            <div className="text-xs text-rose-400 mt-1">
-                                {todaySummary.avgUpAmount > 0 ? `平均涨幅 ¥${todaySummary.avgUpAmount}` : '暂无涨价'}
-                            </div>
+        <div className="flex gap-6" style={{ height: 'calc(100vh - 8rem)' }}>
+            {/* ====== 中间主内容区（可滚动） ====== */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-5 pr-2">
+                {!data ? (
+                    // 无数据时的空状态（替代原先占据全版的空白）
+                    <div className="flex flex-col items-center justify-center py-32 text-slate-400 animate-page-enter h-full">
+                        <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                            <TrendingUp size={28} className="text-slate-300" />
                         </div>
-                        <div className="w-12 h-12 rounded-xl bg-rose-200/60 flex items-center justify-center">
-                            <ArrowUpRight size={24} className="text-rose-600" />
-                        </div>
+                        <p className="text-sm font-bold text-slate-500 mb-1">暂无价格趋势数据</p>
+                        <p className="text-xs text-slate-400 mb-4">请确认后端服务运行正常后刷新</p>
+                        <button
+                            onClick={() => fetchData()}
+                            className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors btn-press flex items-center gap-2"
+                        >
+                            <RefreshCw size={14} /> 重新加载
+                        </button>
                     </div>
-                </div>
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-5 rounded-2xl border border-emerald-200">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-1">今日降价</div>
-                            <div className="text-3xl font-extrabold text-emerald-600">{todaySummary.downCount}</div>
-                            <div className="text-xs text-emerald-400 mt-1">
-                                {todaySummary.avgDownAmount < 0 ? `平均降幅 ¥${Math.abs(todaySummary.avgDownAmount)}` : '暂无降价'}
-                            </div>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-emerald-200/60 flex items-center justify-center">
-                            <ArrowDownRight size={24} className="text-emerald-600" />
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-2xl border border-blue-200">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">今日总变动</div>
-                            <div className="text-3xl font-extrabold text-blue-600">{todaySummary.totalChanges}</div>
-                            <div className="text-xs text-blue-400 mt-1">件硬件价格调整</div>
-                        </div>
-                        <div className="w-12 h-12 rounded-xl bg-blue-200/60 flex items-center justify-center">
-                            <TrendingUp size={24} className="text-blue-600" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* 30天史低 / 破价 预警榜 */}
-            {trendData && trendData.historicalLows && trendData.historicalHighs && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* 史低榜单 */}
-                    <div ref={lowRef} className="bg-[#f0fdf4] p-6 rounded-2xl border border-emerald-200 relative overflow-hidden" style={{ minHeight: 460 }}>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
-                        <div className="flex items-center justify-between mb-4 relative z-10 w-full">
-                            <h3 className="text-xl font-black text-emerald-800 flex items-center gap-2 whitespace-nowrap">
-                                📉 30天·史低降价榜
-                            </h3>
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); handleDownloadImage(lowRef, `史低榜单_${new Date().toISOString().slice(0,10)}.png`); }}
-                                disabled={downloading === `史低榜单_${new Date().toISOString().slice(0,10)}.png`}
-                                className="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg hover:bg-emerald-200 transition-colors shrink-0 whitespace-nowrap"
-                            >
-                                ⬇️ 下载素材
-                            </button>
-                        </div>
-                        <div className="space-y-3 relative z-10">
-                            {trendData.historicalLows.slice(0, 5).map((item, idx) => (
-                                <div key={item.hardwareId} className="flex items-center justify-between bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-emerald-100/50">
-                                    <div className="flex items-center gap-3 overflow-hidden">
-                                        <div className="w-6 h-6 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">{idx + 1}</div>
-                                        <div className="overflow-hidden">
-                                            <div className="text-sm font-bold text-slate-800 truncate" title={item.name}>{item.name}</div>
-                                            <div className="text-xs text-emerald-600 font-medium">比昨日跌 ¥{Math.abs(item.changeAmount).toFixed(2)}</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right pl-2 shrink-0">
-                                        <div className="text-lg font-black text-emerald-600">¥{item.currentPrice}</div>
-                                        <div className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">30天新低</div>
-                                    </div>
-                                </div>
-                            ))}
-                            {trendData.historicalLows.length === 0 && (
-                                <div className="text-center py-6 text-emerald-600/60 font-medium text-sm">今日暂无跌破30天最低价的商品</div>
-                            )}
-                        </div>
-                        
-                        {/* 水印 */}
-                        <div className="mt-6 pt-3 flex items-center justify-between relative z-10 border-t border-emerald-100">
-                            <div className="flex items-center gap-2 text-sm font-bold text-emerald-700/60">
-                                <div className="w-5 h-5 bg-emerald-500/80 rounded flex items-center justify-center text-white text-[10px] font-black">鱼</div>
-                                DIYXX.COM 数据支持
-                            </div>
-                            <span className="text-xs text-emerald-700/40 font-bold">{new Date().toLocaleDateString('zh-CN')}</span>
-                        </div>
-                    </div>
-
-                    {/* 史高榜单 */}
-                    <div ref={highRef} className="bg-[#fff1f2] p-6 rounded-2xl border border-rose-200 relative overflow-hidden" style={{ minHeight: 460 }}>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl -mr-10 -mt-10" />
-                        <div className="flex items-center justify-between mb-4 relative z-10 w-full">
-                            <h3 className="text-xl font-black text-rose-800 flex items-center gap-2 whitespace-nowrap">
-                                📈 30天·破价涨价榜
-                            </h3>
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); handleDownloadImage(highRef, `史高榜单_${new Date().toISOString().slice(0,10)}.png`); }}
-                                disabled={downloading === `史高榜单_${new Date().toISOString().slice(0,10)}.png`}
-                                className="px-3 py-1.5 bg-rose-100 text-rose-700 text-xs font-bold rounded-lg hover:bg-rose-200 transition-colors shrink-0 whitespace-nowrap"
-                            >
-                                ⬇️ 下载素材
-                            </button>
-                        </div>
-                        <div className="space-y-3 relative z-10">
-                            {trendData.historicalHighs.slice(0, 5).map((item, idx) => (
-                                <div key={item.hardwareId} className="flex items-center justify-between bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-rose-100/50">
-                                    <div className="flex items-center gap-3 overflow-hidden">
-                                        <div className="w-6 h-6 shrink-0 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">{idx + 1}</div>
-                                        <div className="overflow-hidden">
-                                            <div className="text-sm font-bold text-slate-800 truncate" title={item.name}>{item.name}</div>
-                                            <div className="text-xs text-rose-600 font-medium">比昨日涨 ¥{item.changeAmount.toFixed(2)}</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right pl-2 shrink-0">
-                                        <div className="text-lg font-black text-rose-600">¥{item.currentPrice}</div>
-                                        <div className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">30天新高</div>
-                                    </div>
-                                </div>
-                            ))}
-                            {trendData.historicalHighs.length === 0 && (
-                                <div className="text-center py-6 text-rose-600/60 font-medium text-sm">今日暂无涨破30天最高价的商品</div>
-                            )}
-                        </div>
-                        
-                        {/* 水印 */}
-                        <div className="mt-6 pt-3 flex items-center justify-between relative z-10 border-t border-rose-100">
-                            <div className="flex items-center gap-2 text-sm font-bold text-rose-700/60">
-                                <div className="w-5 h-5 bg-rose-500/80 rounded flex items-center justify-center text-white text-[10px] font-black">鱼</div>
-                                DIYXX.COM 数据支持
-                            </div>
-                            <span className="text-xs text-rose-700/40 font-bold">{new Date().toLocaleDateString('zh-CN')}</span>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* 筛选器 */}
-            <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-2">
-                    <Filter size={14} className="text-slate-400" />
-                    <select
-                        value={category}
-                        onChange={e => {
-                            setCategory(e.target.value);
+                ) : (
+                    <>
+                        {/* 筛选器 - 粘性顶部 */}
+                        <div className="flex items-center gap-4 flex-wrap sticky top-0 z-10 bg-slate-50 py-3 -mt-3 border-b border-slate-100 mb-2">
+                            <div className="flex items-center gap-2">
+                                <Filter size={14} className="text-slate-400" />
+                                <select
+                                    value={category}
+                                    onChange={e => {
+                                        setCategory(e.target.value);
                             setSubcategory('');
                             setBrandFilter('');
                             setGpuChipFilter('');
@@ -1346,6 +1215,160 @@ export default function PriceTrendChart() {
                     </div>
                 </div>
             )}
+            </>
+            )}
+            </div>
+
+            {/* ====== 右侧固定面板（3 个卡片 + 30天榜单，独立滚动） ====== */}
+            <aside className="w-[340px] shrink-0 overflow-y-auto custom-scrollbar space-y-4 pr-2 pl-4 border-l border-slate-200">
+                {/* ---------- 今日概览（竖向排列） ---------- */}
+                <div className="bg-gradient-to-br from-rose-50 to-rose-100 p-4 rounded-xl border border-rose-200 shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
+                    <div className="flex items-center justify-between relative z-10">
+                        <div>
+                            <div className="text-[10px] font-black text-rose-400 uppercase tracking-wider mb-1">今日涨价</div>
+                            <div className="text-2xl font-black text-rose-600 tracking-tight leading-none">{todaySummary.upCount}</div>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-rose-200/60 flex items-center justify-center shrink-0">
+                            <ArrowUpRight strokeWidth={3} size={20} className="text-rose-600" />
+                        </div>
+                    </div>
+                    <div className="text-xs font-bold text-rose-500/80 mt-2 bg-rose-100/50 px-2 py-1 rounded inline-block">
+                        {todaySummary.avgUpAmount > 0 ? `均涨 ¥${todaySummary.avgUpAmount}` : '暂无数据'}
+                    </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-xl border border-emerald-200 shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
+                    <div className="flex items-center justify-between relative z-10">
+                        <div>
+                            <div className="text-[10px] font-black text-emerald-400 uppercase tracking-wider mb-1">今日降价</div>
+                            <div className="text-2xl font-black text-emerald-600 tracking-tight leading-none">{todaySummary.downCount}</div>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-emerald-200/60 flex items-center justify-center shrink-0">
+                            <ArrowDownRight strokeWidth={3} size={20} className="text-emerald-600" />
+                        </div>
+                    </div>
+                    <div className="text-xs font-bold text-emerald-500/80 mt-2 bg-emerald-100/50 px-2 py-1 rounded inline-block">
+                        {todaySummary.avgDownAmount < 0 ? `均降 ¥${Math.abs(todaySummary.avgDownAmount)}` : '暂无数据'}
+                    </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
+                    <div className="flex items-center justify-between relative z-10">
+                        <div>
+                            <div className="text-[10px] font-black text-blue-400 uppercase tracking-wider mb-1">今日总变动</div>
+                            <div className="text-2xl font-black text-blue-600 tracking-tight leading-none">{todaySummary.totalChanges}</div>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-blue-200/60 flex items-center justify-center shrink-0">
+                            <TrendingUp strokeWidth={3} size={20} className="text-blue-600" />
+                        </div>
+                    </div>
+                    <div className="text-xs font-bold text-blue-500/80 mt-2 bg-blue-100/50 px-2 py-1 rounded inline-block">
+                        件硬件价格波动
+                    </div>
+                </div>
+
+                {/* ---------- 30天榜单（叠加在右侧） ---------- */}
+                {trendData && trendData.historicalLows && trendData.historicalHighs && (
+                    <div className="space-y-4 pt-2">
+                        {/* 史低榜单 */}
+                        <div ref={lowRef} className="bg-[#f0fdf4] p-5 rounded-2xl border border-emerald-200 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+                            <div className="flex items-center justify-between mb-4 relative z-10 w-full">
+                                <h3 className="text-[15px] font-black text-emerald-800 flex items-center gap-1.5 whitespace-nowrap">
+                                    📉 30天·史低榜
+                                </h3>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); handleDownloadImage(lowRef, `史低榜单_${new Date().toISOString().slice(0,10)}.png`); }}
+                                    disabled={downloading === `史低榜单_${new Date().toISOString().slice(0,10)}.png`}
+                                    className="px-2.5 py-1 bg-emerald-100/80 backdrop-blur text-emerald-700 text-[10px] font-black rounded-lg hover:bg-emerald-200 transition-colors shrink-0 btn-press uppercase"
+                                >
+                                    ⬇️ 海报
+                                </button>
+                            </div>
+                            <div className="space-y-2.5 relative z-10">
+                                {trendData.historicalLows.slice(0, 5).map((item, idx) => (
+                                    <div key={item.hardwareId} className="flex flex-col bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-emerald-100/50 hover:bg-white transition-colors">
+                                        <div className="flex items-center gap-2.5 mb-2 overflow-hidden">
+                                            <div className="w-5 h-5 shrink-0 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[11px] font-black shadow-sm">{idx + 1}</div>
+                                            <div className="text-[13px] font-bold text-slate-800 truncate" title={item.name}>{item.name}</div>
+                                        </div>
+                                        <div className="flex items-end justify-between pl-[30px]">
+                                            <div className="text-[11px] font-bold text-emerald-600/80 flex items-center gap-1">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                                昨日跌 ¥{Math.abs(item.changeAmount).toFixed(0)}
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                                <div className="text-base font-black text-emerald-600 tracking-tight">¥{item.currentPrice}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {trendData.historicalLows.length === 0 && (
+                                    <div className="text-center py-5 text-emerald-600/50 font-bold text-xs">无史低商品</div>
+                                )}
+                            </div>
+                            {/* 水印 */}
+                            <div className="mt-4 pt-3 flex items-center justify-between relative z-10 border-t border-emerald-100/60">
+                                <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-700/50 uppercase">
+                                    <div className="w-4 h-4 bg-emerald-500/80 rounded-[4px] flex items-center justify-center text-white text-[9px]">鱼</div>
+                                    DIYXX 数据
+                                </div>
+                                <span className="text-[10px] text-emerald-700/40 font-bold font-mono">{new Date().toLocaleDateString('zh-CN').replace(/\//g, '.')}</span>
+                            </div>
+                        </div>
+
+                        {/* 史高榜单 */}
+                        <div ref={highRef} className="bg-[#fff1f2] p-5 rounded-2xl border border-rose-200 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+                            <div className="flex items-center justify-between mb-4 relative z-10 w-full">
+                                <h3 className="text-[15px] font-black text-rose-800 flex items-center gap-1.5 whitespace-nowrap">
+                                    📈 30天·破价榜
+                                </h3>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); handleDownloadImage(highRef, `史高榜单_${new Date().toISOString().slice(0,10)}.png`); }}
+                                    disabled={downloading === `史高榜单_${new Date().toISOString().slice(0,10)}.png`}
+                                    className="px-2.5 py-1 bg-rose-100/80 backdrop-blur text-rose-700 text-[10px] font-black rounded-lg hover:bg-rose-200 transition-colors shrink-0 btn-press uppercase"
+                                >
+                                    ⬇️ 海报
+                                </button>
+                            </div>
+                            <div className="space-y-2.5 relative z-10">
+                                {trendData.historicalHighs.slice(0, 5).map((item, idx) => (
+                                    <div key={item.hardwareId} className="flex flex-col bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-rose-100/50 hover:bg-white transition-colors">
+                                        <div className="flex items-center gap-2.5 mb-2 overflow-hidden">
+                                            <div className="w-5 h-5 shrink-0 rounded-full bg-rose-500 text-white flex items-center justify-center text-[11px] font-black shadow-sm">{idx + 1}</div>
+                                            <div className="text-[13px] font-bold text-slate-800 truncate" title={item.name}>{item.name}</div>
+                                        </div>
+                                        <div className="flex items-end justify-between pl-[30px]">
+                                            <div className="text-[11px] font-bold text-rose-600/80 flex items-center gap-1">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                                                昨日涨 ¥{item.changeAmount.toFixed(0)}
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                                <div className="text-base font-black text-rose-600 tracking-tight">¥{item.currentPrice}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {trendData.historicalHighs.length === 0 && (
+                                    <div className="text-center py-5 text-rose-600/50 font-bold text-xs">无破价商品</div>
+                                )}
+                            </div>
+                            {/* 水印 */}
+                            <div className="mt-4 pt-3 flex items-center justify-between relative z-10 border-t border-rose-100/60">
+                                <div className="flex items-center gap-1.5 text-[10px] font-black text-rose-700/50 uppercase">
+                                    <div className="w-4 h-4 bg-rose-500/80 rounded-[4px] flex items-center justify-center text-white text-[9px]">鱼</div>
+                                    DIYXX 数据
+                                </div>
+                                <span className="text-[10px] text-rose-700/40 font-bold font-mono">{new Date().toLocaleDateString('zh-CN').replace(/\//g, '.')}</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </aside>
         </div>
     );
 }

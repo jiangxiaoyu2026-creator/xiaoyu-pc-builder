@@ -272,7 +272,7 @@ export default function AdminApp() {
                             {currentTab === 'chat' ? (
                                 <ChatManager />
                             ) : (
-                                <div className="max-w-7xl mx-auto">
+                                <div className="w-full h-full">
                                     {currentTab === 'dashboard' && <DashboardView />}
                                     {currentTab === 'price_trends' && <PriceTrendChart />}
                                     {currentTab === 'products' && <ProductManager />}
