@@ -1226,15 +1226,15 @@ export default function PriceTrendChart() {
                     <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
                     <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <div className="text-[10px] font-black text-rose-400 uppercase tracking-wider mb-1">今日涨价</div>
-                            <div className="text-2xl font-black text-rose-600 tracking-tight leading-none">{todaySummary.upCount}</div>
+                            <div className="text-[10px] font-black text-rose-400 uppercase tracking-wider mb-1">本月涨价</div>
+                            <div className="text-2xl font-black text-rose-600 tracking-tight leading-none">{todaySummary.monthUpCount ?? todaySummary.upCount}</div>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-rose-200/60 flex items-center justify-center shrink-0">
                             <ArrowUpRight strokeWidth={3} size={20} className="text-rose-600" />
                         </div>
                     </div>
                     <div className="text-xs font-bold text-rose-500/80 mt-2 bg-rose-100/50 px-2 py-1 rounded inline-block">
-                        {todaySummary.avgUpAmount > 0 ? `均涨 ¥${todaySummary.avgUpAmount}` : '暂无数据'}
+                        今日涨价: {todaySummary.todayUpCount ?? todaySummary.upCount} 件
                     </div>
                 </div>
 
@@ -1242,15 +1242,15 @@ export default function PriceTrendChart() {
                     <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
                     <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <div className="text-[10px] font-black text-emerald-400 uppercase tracking-wider mb-1">今日降价</div>
-                            <div className="text-2xl font-black text-emerald-600 tracking-tight leading-none">{todaySummary.downCount}</div>
+                            <div className="text-[10px] font-black text-emerald-400 uppercase tracking-wider mb-1">本月降价</div>
+                            <div className="text-2xl font-black text-emerald-600 tracking-tight leading-none">{todaySummary.monthDownCount ?? todaySummary.downCount}</div>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-emerald-200/60 flex items-center justify-center shrink-0">
                             <ArrowDownRight strokeWidth={3} size={20} className="text-emerald-600" />
                         </div>
                     </div>
                     <div className="text-xs font-bold text-emerald-500/80 mt-2 bg-emerald-100/50 px-2 py-1 rounded inline-block">
-                        {todaySummary.avgDownAmount < 0 ? `均降 ¥${Math.abs(todaySummary.avgDownAmount)}` : '暂无数据'}
+                        今日降价: {todaySummary.todayDownCount ?? todaySummary.downCount} 件
                     </div>
                 </div>
 
@@ -1258,15 +1258,15 @@ export default function PriceTrendChart() {
                     <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
                     <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <div className="text-[10px] font-black text-blue-400 uppercase tracking-wider mb-1">今日总变动</div>
-                            <div className="text-2xl font-black text-blue-600 tracking-tight leading-none">{todaySummary.totalChanges}</div>
+                            <div className="text-[10px] font-black text-blue-400 uppercase tracking-wider mb-1">本月总变动</div>
+                            <div className="text-2xl font-black text-blue-600 tracking-tight leading-none">{todaySummary.monthTotalChanges ?? todaySummary.totalChanges}</div>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-blue-200/60 flex items-center justify-center shrink-0">
                             <TrendingUp strokeWidth={3} size={20} className="text-blue-600" />
                         </div>
                     </div>
                     <div className="text-xs font-bold text-blue-500/80 mt-2 bg-blue-100/50 px-2 py-1 rounded inline-block">
-                        件硬件价格波动
+                        今日变动: {todaySummary.todayTotalChanges ?? todaySummary.totalChanges} 件
                     </div>
                 </div>
 

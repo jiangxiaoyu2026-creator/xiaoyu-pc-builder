@@ -167,6 +167,10 @@ async def get_price_trends(
     today_up = [c for c in today_changes if c.changeAmount > 0]
     today_down = [c for c in today_changes if c.changeAmount < 0]
     
+    # Monthly (window) summary
+    month_up = [c for c in changes if c.changeAmount > 0]
+    month_down = [c for c in changes if c.changeAmount < 0]
+    
     # Group by date for chart data
     date_map = {}
     for c in changes:
@@ -209,6 +213,15 @@ async def get_price_trends(
     
     return {
         "todaySummary": {
+            # Monthly (window) stats
+            "monthUpCount": len(month_up),
+            "monthDownCount": len(month_down),
+            "monthTotalChanges": len(changes),
+            # Today stats
+            "todayUpCount": len(today_up),
+            "todayDownCount": len(today_down),
+            "todayTotalChanges": len(today_changes),
+            # Legacy fields for backward compatibility
             "upCount": len(today_up),
             "downCount": len(today_down),
             "totalChanges": len(today_changes),
@@ -589,35 +602,45 @@ async def get_product_price_history(
             
         prices = [p["price"] for p in points]
         today_price = prices[-1]
-        yesterday_price = prices[-2]
-        
-        change_from_yesterday = today_price - yesterday_price
         
         # Need product category for UI labels
         product_detail = next((p for p in products_list if p["id"] == trend["hardwareId"]), None)
         if not product_detail:
             continue
             
-        # If it dropped today AND the price is the absolute lowest in the window
-        if change_from_yesterday < 0 and today_price <= min(prices):
+        # Find the last time the price was different from today's price
+        previous_price = None
+        for p in reversed(prices[:-1]):
+            if p != today_price:
+                previous_price = p
+                break
+                
+        # If there hasn't been any price change in the window, skip it
+        if previous_price is None:
+            continue
+            
+        change_amount = today_price - previous_price
+        
+        # If the price is the absolute lowest in the window
+        if today_price <= min(prices) and today_price < max(prices):
             historical_lows.append({
                 "hardwareId": trend["hardwareId"],
                 "name": trend["name"],
                 "category": product_detail["category"],
                 "currentPrice": today_price,
-                "changeAmount": change_from_yesterday,
-                "changePercent": round(change_from_yesterday / yesterday_price * 100, 2) if yesterday_price else 0,
+                "changeAmount": change_amount,
+                "changePercent": round(change_amount / previous_price * 100, 2) if previous_price else 0,
             })
             
-        # If it rose today AND the price is the absolute highest in the window
-        elif change_from_yesterday > 0 and today_price >= max(prices):
+        # If the price is the absolute highest in the window
+        elif today_price >= max(prices) and today_price > min(prices):
             historical_highs.append({
                 "hardwareId": trend["hardwareId"],
                 "name": trend["name"],
                 "category": product_detail["category"],
                 "currentPrice": today_price,
-                "changeAmount": change_from_yesterday,
-                "changePercent": round(change_from_yesterday / yesterday_price * 100, 2) if yesterday_price else 0,
+                "changeAmount": change_amount,
+                "changePercent": round(change_amount / previous_price * 100, 2) if previous_price else 0,
             })
             
     # Sort them by most impactful change
