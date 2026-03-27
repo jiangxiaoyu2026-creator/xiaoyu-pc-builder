@@ -1,5 +1,5 @@
 
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import {
     LayoutDashboard,
     Package,
@@ -21,6 +21,7 @@ import { NavButton } from '../components/admin/Shared';
 import { PricingStrategy, UserItem } from '../types/adminTypes';
 import { storage } from '../services/storage';
 import LoginModal from '../components/common/LoginModal';
+import { ToastProvider } from '../components/common/Toast';
 
 // Views
 const DashboardView = lazy(() => import('../components/admin/DashboardView'));
@@ -123,7 +124,35 @@ export default function AdminApp() {
     const isAdmin = currentUser.role === 'admin';
     const isSubAdmin = currentUser.role === 'sub_admin';
 
+    // Live clock for professional recording feel
+    const [currentTime, setCurrentTime] = useState(new Date());
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    // Title mapping for header
+    const titleMap: Record<string, string> = useMemo(() => ({
+        dashboard: '运营概览',
+        price_trends: '价格趋势分析',
+        products: '硬件库与价格库',
+        settings: '全局系统设置 (价格/弹窗/备份)',
+        ai: 'AI 配置中枢',
+        users: '系统权限管理',
+        comments: '评论与留言',
+        chat: '在线客服反馈',
+        used_items: '二手商品管理',
+        recycle_requests: '回收申请管理',
+        payment: '支付设置',
+        about_us: '品牌页面管理',
+        verifications: '邮箱验证码安全审计',
+        invitations: '注册邀请码管理',
+        articles: '头条管理',
+        marketing: '今日自动化大盘与营销中心',
+    }), []);
+
     return (
+        <ToastProvider>
         <div className="flex h-screen bg-slate-50 font-sans text-slate-800">
             {/* Sidebar */}
             <aside className="w-64 bg-zinc-900 text-white flex flex-col shadow-xl z-20 shrink-0">
@@ -138,7 +167,7 @@ export default function AdminApp() {
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
-                    <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-6 uppercase">运营与互动</div>
+                    <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-2 uppercase">运营与互动</div>
                     <NavButton active={currentTab === 'dashboard'} onClick={() => setCurrentTab('dashboard')} icon={<LayoutDashboard size={18} />} label="数据概览" />
                     <NavButton active={currentTab === 'price_trends'} onClick={() => setCurrentTab('price_trends')} icon={<BarChart3 size={18} />} label="价格趋势分析" />
                     <NavButton active={currentTab === 'products'} onClick={() => setCurrentTab('products')} icon={<Package size={18} />} label="硬件价格管理" />
@@ -167,17 +196,24 @@ export default function AdminApp() {
 
                 <div className="p-4 border-t border-zinc-800">
                     <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-zinc-800/50 rounded-lg">
-                        <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold">
-                            {currentUser.username[0].toUpperCase()}
+                        <div className="relative">
+                            <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold">
+                                {currentUser.username[0].toUpperCase()}
+                            </div>
+                            {/* Online status dot */}
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-zinc-900 animate-pulse" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-white truncate">{currentUser.username}</p>
-                            <p className="text-xs text-zinc-400">管理员</p>
+                            <p className="text-xs text-zinc-400 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                                在线 · 管理员
+                            </p>
                         </div>
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-2 w-full text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+                        className="flex items-center gap-3 px-4 py-2 w-full text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-all duration-200 active:scale-[0.97]"
                     >
                         <LogOut size={18} /><span>退出系统</span>
                     </button>
@@ -187,58 +223,75 @@ export default function AdminApp() {
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm shrink-0">
-                    <h2 className="text-xl font-bold text-slate-800 uppercase tracking-tight">
-                        {currentTab === 'dashboard' && '运营概览'}
-                        {currentTab === 'price_trends' && '价格趋势分析'}
-                        {currentTab === 'products' && '硬件库与价格库'}
-                        {currentTab === 'settings' && '全局系统设置 (价格/弹窗/备份)'}
-                        {currentTab === 'ai' && 'AI 配置中枢'}
-                        {currentTab === 'users' && '系统权限管理'}
-                        {currentTab === 'comments' && '评论与留言'}
-                        {currentTab === 'chat' && '在线客服反馈'}
-                        {currentTab === 'used_items' && '二手商品管理'}
-                        {currentTab === 'recycle_requests' && '回收申请管理'}
-                        {currentTab === 'payment' && '支付设置'}
-                        {currentTab === 'about_us' && '品牌页面管理'}
-                        {currentTab === 'verifications' && '邮箱验证码安全审计'}
-                        {currentTab === 'invitations' && '注册邀请码管理'}
-                        {currentTab === 'marketing' && '今日自动化大盘与营销中心'}
+                    <h2 key={currentTab} className="text-xl font-bold text-slate-800 uppercase tracking-tight animate-title-fade">
+                        {titleMap[currentTab] || currentTab}
                     </h2>
-                    <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span className="text-sm text-slate-500 font-medium">系统监控正常</span>
+                    <div className="flex items-center gap-4">
+                        <div className="text-xs font-mono text-slate-400 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                            {currentTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span className="text-sm text-slate-500 font-medium">系统监控正常</span>
+                        </div>
                     </div>
                 </header>
 
                 <main className="flex-1 overflow-y-auto p-8 bg-slate-50">
                     <Suspense fallback={
-                        <div className="flex flex-col items-center justify-center h-full py-20 text-slate-400 gap-4">
-                            <div className="w-8 h-8 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>
-                            <span className="text-xs font-bold animate-pulse">模块加载中...</span>
+                        <div className="animate-page-enter">
+                            <div className="max-w-7xl mx-auto space-y-6">
+                                {/* Skeleton stat cards */}
+                                <div className="grid grid-cols-4 gap-6">
+                                    {[1,2,3,4].map(i => (
+                                        <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                                            <div className="h-3 w-20 bg-slate-200 rounded animate-pulse mb-3" />
+                                            <div className="h-7 w-16 bg-slate-100 rounded animate-pulse mb-2" />
+                                            <div className="h-2 w-24 bg-slate-100 rounded animate-pulse" />
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* Skeleton content block */}
+                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                    <div className="h-4 w-32 bg-slate-200 rounded animate-pulse mb-6" />
+                                    <div className="space-y-3">
+                                        {[1,2,3].map(i => (
+                                            <div key={i} className="h-12 bg-slate-50 rounded-lg animate-pulse" style={{ animationDelay: `${i * 150}ms` }} />
+                                        ))}
+                                    </div>
+                                </div>
+                                {/* Loading indicator */}
+                                <div className="flex items-center justify-center gap-3 py-8 text-slate-400">
+                                    <div className="w-5 h-5 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
+                                    <span className="text-sm font-medium animate-pulse">模块加载中...</span>
+                                </div>
+                            </div>
                         </div>
                     }>
-                        {currentTab === 'chat' ? (
-                            <ChatManager />
-                        ) : (
-                            <div className="max-w-7xl mx-auto">
-                                {currentTab === 'dashboard' && <DashboardView />}
-                                {currentTab === 'price_trends' && <PriceTrendChart />}
-                                {currentTab === 'products' && <ProductManager />}
-                                {currentTab === 'configs' && <ConfigManager />}
-                                {currentTab === 'used_items' && <UsedManager />}
-                                {currentTab === 'recycle_requests' && <RecycleManager />}
-                                {currentTab === 'settings' && <SettingsView strategy={pricingStrategy} setStrategy={handleUpdateSettings} />}
-                                {currentTab === 'ai' && <AiManager />}
-                                {currentTab === 'users' && <UserManager />}
-                                {currentTab === 'comments' && <CommentManager />}
-                                {currentTab === 'payment' && <PaymentSettings />}
-                                {currentTab === 'about_us' && <AboutUsSettings />}
-                                {/* {currentTab === 'verifications' && <VerificationManager />} */}
-                                {currentTab === 'invitations' && <InvitationManager />}
-                                {currentTab === 'articles' && <ArticleManager />}
-                                {currentTab === 'marketing' && <MarketingManager />}
-                            </div>
-                        )}
+                        <div key={currentTab} className="animate-page-enter">
+                            {currentTab === 'chat' ? (
+                                <ChatManager />
+                            ) : (
+                                <div className="max-w-7xl mx-auto">
+                                    {currentTab === 'dashboard' && <DashboardView />}
+                                    {currentTab === 'price_trends' && <PriceTrendChart />}
+                                    {currentTab === 'products' && <ProductManager />}
+                                    {currentTab === 'configs' && <ConfigManager />}
+                                    {currentTab === 'used_items' && <UsedManager />}
+                                    {currentTab === 'recycle_requests' && <RecycleManager />}
+                                    {currentTab === 'settings' && <SettingsView strategy={pricingStrategy} setStrategy={handleUpdateSettings} />}
+                                    {currentTab === 'ai' && <AiManager />}
+                                    {currentTab === 'users' && <UserManager />}
+                                    {currentTab === 'comments' && <CommentManager />}
+                                    {currentTab === 'payment' && <PaymentSettings />}
+                                    {currentTab === 'about_us' && <AboutUsSettings />}
+                                    {/* {currentTab === 'verifications' && <VerificationManager />} */}
+                                    {currentTab === 'invitations' && <InvitationManager />}
+                                    {currentTab === 'articles' && <ArticleManager />}
+                                    {currentTab === 'marketing' && <MarketingManager />}
+                                </div>
+                            )}
+                        </div>
                     </Suspense>
                 </main>
             </div>
@@ -246,5 +299,6 @@ export default function AdminApp() {
             {/* SMS Settings Modal (Hidden) */}
             {/* {showSmsSettings && <SmsSettingsModal onClose={() => setShowSmsSettings(false)} />} */}
         </div>
+        </ToastProvider>
     );
 }

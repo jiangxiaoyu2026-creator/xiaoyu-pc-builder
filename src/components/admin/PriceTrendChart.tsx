@@ -552,7 +552,21 @@ export default function PriceTrendChart() {
         );
     }
 
-    if (!data) return null;
+    if (!data) return (
+        <div className="flex flex-col items-center justify-center py-24 text-slate-400 animate-page-enter">
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                <TrendingUp size={28} className="text-slate-300" />
+            </div>
+            <p className="text-sm font-bold text-slate-500 mb-1">暂无价格趋势数据</p>
+            <p className="text-xs text-slate-400 mb-4">请确认后端服务运行正常后刷新</p>
+            <button
+                onClick={() => fetchData()}
+                className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors btn-press flex items-center gap-2"
+            >
+                <RefreshCw size={14} /> 重新加载
+            </button>
+        </div>
+    );
 
     const { todaySummary } = data;
 

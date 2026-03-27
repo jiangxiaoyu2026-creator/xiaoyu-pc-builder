@@ -6,13 +6,21 @@ export function NavButton({ active, onClick, icon, label }: { active: boolean, o
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50 font-bold'
-                : 'text-zinc-400 hover:bg-zinc-800 hover:text-white font-medium'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden group
+                active:scale-[0.97] active:transition-transform active:duration-75
+                ${active
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50 font-bold'
+                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white font-medium'
                 }`}
         >
-            {icon}
-            {label}
+            {/* Active indicator bar */}
+            {active && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-lg shadow-white/30" />
+            )}
+            <span className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:translate-x-0.5 group-hover:scale-105'}`}>
+                {icon}
+            </span>
+            <span className="transition-transform duration-200 group-hover:translate-x-0.5">{label}</span>
         </button>
     );
 }
@@ -30,7 +38,7 @@ export function StatCard({ title, value, unit, desc, icon, color }: any) {
         gray: 'bg-gray-100 text-gray-600'
     }
     return (
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between card-hover-lift">
             <div>
                 <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">{title}</div>
                 <div className="flex items-baseline gap-1">

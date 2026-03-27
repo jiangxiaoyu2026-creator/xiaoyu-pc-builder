@@ -8,8 +8,10 @@ import { storage } from '../../services/storage';
 import { ApiService } from '../../services/api';
 import ConfirmModal from '../common/ConfirmModal';
 import Pagination from '../common/Pagination';
+import { useToast } from '../common/Toast';
 
 export default function ProductManager() {
+    const { showToast } = useToast();
     const [products, setProducts] = useState<HardwareItem[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
@@ -92,10 +94,15 @@ export default function ProductManager() {
         setProducts(prev => prev.map(x => String(x.id) === String(id) ? { ...x, price: newPrice } : x));
     };
 
-    const handlePriceBlur = async (id: string) => {
+    const handlePriceBlur = async (id: string, e?: React.FocusEvent<HTMLInputElement>) => {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
         await storage.saveProduct(p);
+        // Save flash feedback
+        if (e?.target) {
+            e.target.classList.add('animate-save-flash');
+            setTimeout(() => e.target.classList.remove('animate-save-flash'), 600);
+        }
     };
 
     const handleSortOrderBlur = async (id: string) => {
@@ -190,7 +197,7 @@ export default function ProductManager() {
             setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
             await storage.saveProduct(updated);
         } else {
-            alert('图片上传失败，请稍后重试');
+            showToast('图片上传失败，请稍后重试', 'error');
         }
     };
 
@@ -233,7 +240,7 @@ export default function ProductManager() {
             await storage.saveProduct(updated);
             setSpecEditingId(null);
         } catch (e) {
-            alert('JSON 格式错误，请检查！');
+            showToast('JSON 格式错误，请检查！', 'error');
         }
     };
 
@@ -259,11 +266,11 @@ export default function ProductManager() {
         try {
             const res = await storage.autofillImages();
             if (res) {
-                alert(res.message);
+                showToast(res.message, 'success');
                 loadProducts();
             }
         } catch (e) {
-            alert('自动补全失败');
+            showToast('自动补全失败', 'error');
         } finally {
             setIsAutofilling(false);
         }
@@ -294,11 +301,11 @@ export default function ProductManager() {
         try {
             const res = await storage.autofillSpecs();
             if (res) {
-                alert(res.message);
+                showToast(res.message, 'success');
                 loadProducts();
             }
         } catch (e) {
-            alert('参数自动补全失败');
+            showToast('参数自动补全失败', 'error');
         } finally {
             setIsAutofillingSpecs(false);
         }
@@ -333,7 +340,7 @@ export default function ProductManager() {
             setDeleteId(null);
         } catch (error) {
             console.error('删除失败:', error);
-            alert('删除失败，请重试');
+            showToast('删除失败，请重试', 'error');
         } finally {
             setIsDeleting(false);
         }
@@ -438,7 +445,7 @@ export default function ProductManager() {
                             }
 
                             return (
-                                <tr key={p.id} className={`hover:bg-slate-50/50 ${p.status === 'archived' ? 'opacity-60 grayscale' : ''}`}>
+                                <tr key={p.id} className={`table-row-hover ${p.status === 'archived' ? 'opacity-60 grayscale' : ''}`}>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col gap-2">
                                             <button onClick={() => toggleStatus(p.id)} className={`px-2 py-1 rounded text-xs font-bold w-fit ${p.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
@@ -624,7 +631,7 @@ export default function ProductManager() {
                                                 className="w-24 text-right font-bold text-indigo-600 bg-indigo-50/30 border border-indigo-100 rounded px-2 py-1 focus:border-indigo-500 focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 value={p.price}
                                                 onChange={(e) => handlePriceChange(p.id, Number(e.target.value))}
-                                                onBlur={() => handlePriceBlur(p.id)}
+                                                onBlur={(e) => handlePriceBlur(p.id, e)}
                                                 onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                             />
                                         </div>
@@ -695,6 +702,7 @@ export default function ProductManager() {
 }
 
 function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem | null, onClose: () => void, onSave: (p: HardwareItem, keepOpen?: boolean) => void }) {
+    const { showToast } = useToast();
     const [formData, setFormData] = useState<Partial<HardwareItem>>(
         product || { category: 'cpu', brand: '', model: '', price: 0, sortOrder: 99, status: 'active', specs: {}, costPrice: 0, profitType: 'fixed', profitValue: 0 }
     );
@@ -813,7 +821,7 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                             if (res) {
                                                 setFormData({ ...formData, image: res.url });
                                             } else {
-                                                alert('上传失败');
+                                                showToast('上传失败', 'error');
                                             }
                                         }
                                     }}

@@ -217,4 +217,151 @@
   .animate-scroll-vertical {
     animation: scrollVertical 20s linear infinite;
   }
+
+  /* ===== Screen Recording UX Enhancements ===== */
+
+  /* Toast notifications */
+  @keyframes toastEnter {
+    from {
+      opacity: 0;
+      transform: translateX(100%) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  @keyframes toastExit {
+    from {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(100%) scale(0.95);
+    }
+  }
+
+  @keyframes toastProgress {
+    from { width: 100%; }
+    to { width: 0%; }
+  }
+
+  .animate-toast-enter {
+    animation: toastEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-toast-exit {
+    animation: toastExit 0.3s ease-in forwards;
+  }
+
+  /* Page / Tab content transition */
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-page-enter {
+    animation: pageEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Header title fade transition */
+  @keyframes titleFade {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-title-fade {
+    animation: titleFade 0.3s ease-out forwards;
+  }
+
+  /* Button press feedback */
+  .btn-press {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-press:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-press:active {
+    transform: scale(0.97) translateY(0);
+    box-shadow: none;
+    transition: transform 0.08s ease;
+  }
+
+  /* Save flash animation */
+  @keyframes saveFlash {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    50% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+
+  .animate-save-flash {
+    animation: saveFlash 0.6s ease-out;
+  }
+
+  /* Table row hover enhancement */
+  .table-row-hover {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    position: relative;
+  }
+
+  .table-row-hover:hover {
+    background-color: rgba(241, 245, 249, 0.8);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .table-row-hover::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, #6366f1, #818cf8);
+    border-radius: 0 2px 2px 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .table-row-hover:hover::before {
+    opacity: 1;
+  }
+
+  /* Nav item active indicator */
+  @keyframes navIndicatorPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  /* Card hover lift */
+  .card-hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card-hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Sidebar nav group divider animation */
+  @keyframes dividerExpand {
+    from { width: 0; }
+    to { width: 100%; }
+  }
 }
