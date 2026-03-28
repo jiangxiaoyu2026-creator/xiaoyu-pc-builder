@@ -119,6 +119,7 @@ export default function PriceTrendChart() {
     const [selectedProductId, setSelectedProductId] = useState<string>('');
     const [days, setDays] = useState(30);
     const [brandFilter, setBrandFilter] = useState<string>(''); // AMD / Intel / NVIDIA etc.
+    const [actualBrandFilter, setActualBrandFilter] = useState<string>(''); // ASUS, Kingston, Samsung, etc.
     const [gpuChipFilter, setGpuChipFilter] = useState<string>(''); // RTX 5060 / RTX 5070 etc.
 
     // Refs for downloadable sections
@@ -185,11 +186,20 @@ export default function PriceTrendChart() {
         // Whenever category changes, we should reset subcategory unless we want it sticky
         if (category !== 'ram') setRamGeneration('');
         setBrandFilter('');
+        setActualBrandFilter('');
         setGpuChipFilter('');
         fetchData(); 
     }, [category, subcategory, ramGeneration]);
 
 
+
+    // Helper: does a product name match the actual hardware brand?
+    const matchesActualBrand = (name: string): boolean => {
+        if (!actualBrandFilter) return true;
+        const m = name.match(/^([^\s\(（]+)/);
+        const b = m ? m[1] : '';
+        return b === actualBrandFilter;
+    };
 
     // Helper: does a product name match current brand filter?
     const matchesBrand = (name: string): boolean => {
@@ -355,6 +365,7 @@ export default function PriceTrendChart() {
         for (const p of trendData.products) {
             if (p.price <= 0) continue;
             if ((category === 'gpu' || category === 'cpu') && !matchesBrand(p.name)) continue;
+            if (actualBrandFilter && !matchesActualBrand(p.name)) continue;
             
             const label = parseFn(p.name);
             if (ramGeneration && category === 'ram' && !label.includes(ramGeneration)) continue;
@@ -487,6 +498,7 @@ export default function PriceTrendChart() {
             if (category === 'all') return true; 
 
             if (brandFilter && ['cpu', 'gpu', 'mainboard'].includes(category) && !matchesBrand(p.name)) return false;
+            if (actualBrandFilter && !matchesActualBrand(p.name)) return false;
             if (gpuChipFilter && category === 'gpu' && !matchesChip(p.name)) return false;
             
             const specLabel = parseFn(p.name);
@@ -598,6 +610,7 @@ export default function PriceTrendChart() {
                                         setCategory(e.target.value);
                             setSubcategory('');
                             setBrandFilter('');
+                            setActualBrandFilter('');
                             setGpuChipFilter('');
                             setRamGeneration('');
                             setSelectedProductId('');
@@ -639,6 +652,32 @@ export default function PriceTrendChart() {
                                 <option key={s} value={s}>{s}</option>
                             ))}
                         </select>
+                    )}
+
+                    {/* Dynamic Brand Dropdown for specific OEM brands */}
+                    {['ram', 'disk', 'gpu', 'motherboard', 'monitor', 'cooler', 'power', 'case', 'peripheral'].includes(category) && trendData && trendData.products && (
+                        (() => {
+                            const brands = Array.from(new Set(
+                                trendData.products
+                                    .filter(p => p.price > 0 && p.category === category)
+                                    .map(p => {
+                                        const m = p.name.match(/^([^\s\(（]+)/);
+                                        return m ? m[1] : '';
+                                    })
+                                    .filter(b => b.length > 0 && b.length < 15)
+                            )).sort();
+                            if (brands.length === 0) return null;
+                            return (
+                                <select
+                                    value={actualBrandFilter}
+                                    onChange={e => { setActualBrandFilter(e.target.value); setSelectedProductId(''); }}
+                                    className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none max-w-[150px]"
+                                >
+                                    <option value="">全部品牌</option>
+                                    {brands.map(b => <option key={b} value={b}>{b}</option>)}
+                                </select>
+                            );
+                        })()
                     )}
 
                     {/* General Subcategory Dropdown for CPU, Disk, RAM derived from specPriceTable */}
@@ -736,6 +775,7 @@ export default function PriceTrendChart() {
                     const matchingProductsList = trendData.products.filter(p => {
                         if (p.price <= 0) return false;
                         if (!matchesBrand(p.name)) return false;
+                        if (!matchesActualBrand(p.name)) return false;
                         if (!matchesChip(p.name)) return false;
                         const specLabel = chartParseFn(p.name);
                         if (ramGeneration && category === 'ram' && !specLabel.includes(ramGeneration)) return false;
@@ -801,12 +841,12 @@ export default function PriceTrendChart() {
                         <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
                             {(() => {
                                 // Build dynamic title based on active filters
-                                const brandLabel = brandFilter === 'NVIDIA' ? 'N卡' : brandFilter === 'AMD' ? 'AMD' : brandFilter === 'Intel' ? 'Intel' : '';
-                                if (gpuChipFilter) return `${gpuChipFilter} 历史基准均价走势`;
-                                if (subcategory) return `${subcategory} 历史基准均价走势`;
-                                if (ramGeneration) return `${ramGeneration} 历史基准均价走势`;
-                                if (brandLabel) return `${brandLabel} ${CATEGORY_LABELS[category] || category} 历史基准均价走势`;
-                                return `${CATEGORY_LABELS[category] || category}品类历史基准均价走势`;
+                                const brandCampLabel = brandFilter === 'NVIDIA' ? 'N卡' : brandFilter === 'AMD' ? 'AMD' : brandFilter === 'Intel' ? 'Intel' : '';
+                                const prefix = actualBrandFilter ? `${actualBrandFilter} ` : brandCampLabel ? `${brandCampLabel} ` : '';
+                                if (gpuChipFilter) return `${prefix}${gpuChipFilter} 历史基准均价走势`;
+                                if (subcategory) return `${prefix}${subcategory} 历史基准均价走势`;
+                                if (ramGeneration) return `${prefix}${ramGeneration} 历史基准均价走势`;
+                                return `${prefix}${CATEGORY_LABELS[category] || category}品类历史基准均价走势`;
                             })()}
                         </h3>
                         <div className="flex gap-4 items-center">
