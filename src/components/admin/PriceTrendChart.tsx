@@ -169,6 +169,21 @@ export default function PriceTrendChart() {
             if (resStats.ok && resHistory.ok) {
                 setData(await resStats.json());
                 const hData = await resHistory.json();
+                
+                // --- 过滤掉30天内价格毫无变化的产品 ---
+                if (hData.products && hData.productTrends) {
+                    const tMap = new Map();
+                    for (const pt of hData.productTrends) {
+                        tMap.set(String(pt.hardwareId), pt.points);
+                    }
+                    hData.products = hData.products.filter((p: any) => {
+                        const pts = tMap.get(String(p.id));
+                        if (!pts || pts.length === 0) return false;
+                        // 只要有任何一天的历史价格与当前最新价格不同，说明有过改价/波动
+                        return pts.some((pt: any) => pt.price !== p.price);
+                    });
+                }
+                
                 setTrendData(hData);
                 // Reset product selection if category changes, or auto-select first
                 if (!hData.products.find((p: any) => String(p.id) === selectedProductId)) {
