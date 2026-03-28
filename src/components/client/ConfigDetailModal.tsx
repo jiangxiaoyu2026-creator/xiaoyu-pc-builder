@@ -254,7 +254,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                         </div>
                                         <div className="flex-1">
                                             <div className="text-[10px] text-slate-400 font-bold">商品已下架</div>
-                                            <div className="text-xs font-mono text-slate-300">ID: {itemId}</div>
+                                            <div className="text-xs font-mono text-slate-300">ID: {typeof itemId === 'object' ? (itemId as any).id || (itemId as any).name || JSON.stringify(itemId) : itemId}</div>
                                         </div>
                                     </div>
                                 );
