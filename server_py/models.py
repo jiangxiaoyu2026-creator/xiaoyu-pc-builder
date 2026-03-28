@@ -225,3 +225,17 @@ class Article(SQLModel, table=True):
     createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     updatedAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
+class RecyclingPrice(SQLModel, table=True):
+    __tablename__ = "recycling_prices"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    category: str = Field(index=True)       # 品类：gpu/cpu/motherboard/ram/disk/psu/case/monitor/cooler/peripheral
+    model: str                              # 型号名称
+    recyclePrice: float                     # 回收价（我们收的价格）
+    resalePrice: float                      # 闲鱼出售参考价
+    livePrice: Optional[float] = None       # 直播回收价
+    newPrice: Optional[float] = None        # 全新价
+    validity: str = Field(default="active") # active / expired
+    updatedAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    updatedBy: Optional[str] = None         # 最后修改人
+    note: Optional[str] = None              # 备注
+    imageUrl: Optional[str] = None          # 图片链接

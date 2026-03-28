@@ -4,7 +4,7 @@ from .db import init_db
 import logging
 
 
-from .routers import auth, configs, used, payment, settings, sms, recycle, products, stats, email, invitations, chat, ai, articles, upload, marketing
+from .routers import auth, configs, used, payment, settings, sms, recycle, products, stats, email, invitations, chat, ai, articles, upload, marketing, recycling_prices
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
@@ -55,6 +55,7 @@ app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
 app.include_router(articles.router, prefix="/api/articles", tags=["articles"])
 app.include_router(upload.router, prefix="/api/upload", tags=["upload"])
 app.include_router(marketing.router, prefix="/api/marketing", tags=["marketing"])
+app.include_router(recycling_prices.router, prefix="/api/recycling-prices", tags=["recycling-prices"])
 
 # 静态文件和 SPA 路由处理
 DIST_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dist")

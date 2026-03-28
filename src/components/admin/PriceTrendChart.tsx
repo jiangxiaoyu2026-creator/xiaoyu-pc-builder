@@ -18,6 +18,12 @@ interface PriceTrendData {
         totalChanges: number;
         avgUpAmount: number;
         avgDownAmount: number;
+        monthUpCount?: number;
+        todayUpCount?: number;
+        monthDownCount?: number;
+        todayDownCount?: number;
+        monthTotalChanges?: number;
+        todayTotalChanges?: number;
     };
     chartData: Array<{
         date: string;

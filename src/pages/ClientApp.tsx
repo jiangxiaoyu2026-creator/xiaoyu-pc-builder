@@ -17,7 +17,7 @@ import { UserCenterModal } from '../components/client/UserCenterModal';
 import { PaymentModal } from '../components/client/UiComponents/PaymentModal';
 import UsedMarket from '../components/client/UsedMarket';
 import SellModal from '../components/client/SellModal';
-import RecycleModal from '../components/client/RecycleModal';
+import RecycleEstimator from '../components/client/RecycleEstimator';
 import UsedItemDetail from '../components/client/UsedItemDetail';
 import { UsedItem } from '../types/adminTypes';
 import DailyPopup from '../components/client/DailyPopup';
@@ -965,7 +965,7 @@ export default function ClientApp() {
             )}
 
             {showRecycleModal && currentUser && (
-                <RecycleModal
+                <RecycleEstimator
                     onClose={() => setShowRecycleModal(false)}
                     onSuccess={() => { }}
                     currentUser={currentUser}

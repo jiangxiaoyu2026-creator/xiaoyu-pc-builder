@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { X, Search, CheckCircle2, Camera, AlertCircle, Plus, Trash2, Cpu, Monitor, HardDrive, Keyboard, Box, ChevronRight, Zap } from 'lucide-react';
+import { X, Search, CheckCircle2, Camera, AlertCircle, Plus, Trash2, ChevronRight, Zap } from 'lucide-react';
 import { UserItem } from '../../types/adminTypes';
 import { storage } from '../../services/storage';
 import { getIconByCategory } from './Shared';
-import { CATEGORY_MAP } from '../../data/clientData';
 
 interface RecycleEstimatorProps {
     onClose: () => void;

@@ -16,6 +16,7 @@ import {
     BookOpen,
     TrendingUp,
     BarChart3,
+    FileSpreadsheet,
 } from 'lucide-react';
 import { NavButton } from '../components/admin/Shared';
 import { PricingStrategy, UserItem } from '../types/adminTypes';
@@ -40,9 +41,10 @@ const InvitationManager = lazy(() => import('../components/admin/InvitationManag
 const ArticleManager = lazy(() => import('../components/admin/ArticleManager'));
 const MarketingManager = lazy(() => import('../components/admin/MarketingManager'));
 const PriceTrendChart = lazy(() => import('../components/admin/PriceTrendChart'));
+const RecyclingPriceManager = lazy(() => import('../components/admin/RecyclingPriceManager'));
 
 export default function AdminApp() {
-    const [currentTab, setCurrentTab] = useState<'dashboard' | 'price_trends' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles' | 'marketing'>('dashboard');
+    const [currentTab, setCurrentTab] = useState<'dashboard' | 'price_trends' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'recycling_prices' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles' | 'marketing'>('dashboard');
 
     const [pricingStrategy, setPricingStrategy] = useState<PricingStrategy>({
         serviceFeeRate: 0.06,
@@ -179,6 +181,7 @@ export default function AdminApp() {
 
                     <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-6 uppercase">二手市场</div>
                     <NavButton active={currentTab === 'used_items'} onClick={() => setCurrentTab('used_items')} icon={<Package size={18} />} label="二手商品" />
+                    <NavButton active={currentTab === 'recycling_prices'} onClick={() => setCurrentTab('recycling_prices')} icon={<FileSpreadsheet size={18} />} label="回收价格库" />
                     <NavButton active={currentTab === 'recycle_requests'} onClick={() => setCurrentTab('recycle_requests')} icon={<ListFilter size={18} />} label="回收申请" />
 
                     {isAdmin && (
@@ -278,6 +281,7 @@ export default function AdminApp() {
                                     {currentTab === 'products' && <ProductManager />}
                                     {currentTab === 'configs' && <ConfigManager />}
                                     {currentTab === 'used_items' && <UsedManager />}
+                                    {currentTab === 'recycling_prices' && <RecyclingPriceManager />}
                                     {currentTab === 'recycle_requests' && <RecycleManager />}
                                     {currentTab === 'settings' && <SettingsView strategy={pricingStrategy} setStrategy={handleUpdateSettings} />}
                                     {currentTab === 'ai' && <AiManager />}

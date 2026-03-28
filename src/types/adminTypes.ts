@@ -254,6 +254,21 @@ export interface RecycleRequest {
     createdAt: string;
 }
 
+export interface RecyclingPrice {
+    id?: number;
+    category: string;
+    model: string;
+    recyclePrice: number;
+    resalePrice: number;
+    livePrice?: number | null;
+    newPrice?: number | null;
+    validity: 'active' | 'expired';
+    updatedAt: string;
+    updatedBy?: string;
+    note?: string;
+    imageUrl?: string;
+}
+
 export interface PopupSettings {
     enabled: boolean;       // 是否开启
     title: string;          // 弹窗标题
