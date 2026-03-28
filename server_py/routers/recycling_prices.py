@@ -279,7 +279,7 @@ async def import_from_excel(
                     continue
                 
                 validity_text = str(cells.get(4, ""))
-                validity = "active" if validity_text in ("一周内", "一月内", "半月内", "三天内") else "expired"
+                validity = "active" if validity_text in ("一周内", "一月内", "半月内", "三天内", "长期有效") else "expired"
                 
                 live_col = 14 if sheet_name == "处理器" else 12
                 live_price = float(cells.get(live_col, 0) or 0) if cells.get(live_col) else None
