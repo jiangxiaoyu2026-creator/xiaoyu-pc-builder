@@ -9,7 +9,7 @@ import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
 import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
-import StreamerPriceTrend from './StreamerPriceTrend';
+import PriceTrendChart from '../admin/PriceTrendChart';
 import RecycleEstimator from './RecycleEstimator';
 
 // --- Theme System ---
@@ -715,7 +715,7 @@ function StreamerWorkbench({
                         </div>
                         <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 mb-2">商家专业版权限中心</h3>
                         <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium px-4 text-sm">
-                            赋能电脑终端销售与二手回收，打造利润增长的终极引擎。
+                            极尽偷懒的商机获取方案，彻底释放您每天查价格、做报价、改清单的人工时间。
                         </p>
 
                         <div className="text-left space-y-4 mb-8 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/80 dark:to-slate-800/40 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 shadow-sm relative overflow-hidden">
@@ -724,32 +724,32 @@ function StreamerWorkbench({
                             <div className="flex items-start gap-3 relative z-10">
                                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-orange-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
                                 <div>
-                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">全网行情雷达与价格追踪</div>
-                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">实时监控底层波动，抄底囤货抢占先机</div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">每日海量底层行情直连</div>
+                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">告别手工收集报价表！每天自动无感更新最新底价，彻底省去自己天天苦盯并改价格的烦恼。</div>
                                 </div>
                             </div>
                             
                             <div className="flex items-start gap-3 relative z-10">
                                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
                                 <div>
-                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">二手回收利润测算体系</div>
-                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">精准锁定硬件残值，远离接盘与倒挂风险</div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">全自动二手回收利润核算</div>
+                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">自带11000+全网最新二手硬件回收底价库，不用人工去翻小红书比价，精准锁定硬件残值。</div>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3 relative z-10">
                                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
                                 <div>
-                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">AI专业装机与极速报价</div>
-                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">一键生成完美套机方案与多级折扣防穿透</div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">告别算错账的极速智能报价</div>
+                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">底层网价实时生效防穿透，用它报价永远不会报亏，甚至都不需要您自己再去掏计算器。</div>
                                 </div>
                             </div>
 
                             <div className="flex items-start gap-3 relative z-10">
                                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
                                 <div>
-                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">私域营销裂变海报系统</div>
-                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">高清长图自动排版，制霸朋友圈与小红书</div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">全自动私域营销宣传工场</div>
+                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">再也不用请人做海报！根据当日低价自动排版生成高清促单长图，一键称霸朋友圈与自媒体。</div>
                                 </div>
                             </div>
                         </div>
@@ -1025,8 +1025,8 @@ function StreamerWorkbench({
                 }
                 </>
                 ) : activeTab === 'trends' ? (
-                    <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50">
-                        <StreamerPriceTrend />
+                    <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 p-2 md:p-6 overflow-hidden">
+                        <PriceTrendChart />
                     </div>
                 ) : (
                     <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 p-4 md:p-6">
@@ -1062,165 +1062,12 @@ function StreamerWorkbench({
     );
 }
 
-function MarketTrendsSidebar({ theme: _theme }: { theme: ThemeConfig }) {
-    const [trends, setTrends] = useState<any[]>([]);
-    const [dateLabel, setDateLabel] = useState('今日');
 
-    useEffect(() => {
-        const fetchTrends = async () => {
-            try {
-                const res1 = await fetch('/api/stats/public-price-trends?days=1');
-                if (res1.ok) {
-                    const data1 = await res1.json();
-                    if (data1.recentChanges && data1.recentChanges.length >= 5) {
-                        setTrends(data1.recentChanges);
-                        setDateLabel('今日');
-                        return;
-                    }
-                }
-                const res7 = await fetch('/api/stats/public-price-trends?days=7');
-                if (res7.ok) {
-                    const data7 = await res7.json();
-                    if (data7.recentChanges && data7.recentChanges.length > 0) {
-                        setTrends(data7.recentChanges);
-                        setDateLabel('近7日');
-                        return;
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to fetch market trends', err);
-            }
-        };
-        fetchTrends();
-    }, []);
-
-    const displayTrends = trends.length > 0 ? [...trends, ...trends, ...trends] : [];
-
-    const categoryLabels: Record<string, string> = {
-        cpu: 'CPU', gpu: '显卡', ram: '内存', disk: '硬盘', mainboard: '主板',
-        power: '电源', cooling: '散热', case: '机箱', monitor: '显示器', fan: '风扇'
-    };
-
-    return (
-        <div className="rounded-[28px] shadow-2xl overflow-hidden transition-all duration-300 flex flex-col h-full bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-slate-700/50">
-            {/* Premium gradient header */}
-            <div className="relative px-5 py-4 bg-gradient-to-r from-indigo-600/20 via-purple-600/10 to-cyan-600/20 border-b border-slate-700/50">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent" />
-                <div className="relative flex items-center justify-between">
-                    <h3 className="font-black text-white flex items-center gap-2.5 text-[15px] tracking-tight">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                            <Zap size={16} className="text-white" />
-                        </div>
-                        {dateLabel}行情早报
-                    </h3>
-                    <div className="flex items-center gap-1.5">
-                        <span className="relative flex h-2.5 w-2.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-                        </span>
-                        <span className="text-[10px] text-emerald-400 font-semibold tracking-wider uppercase">Live</span>
-                    </div>
-                </div>
-                <div className="relative mt-2 text-[11px] text-slate-400 font-mono">
-                    {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })}
-                </div>
-            </div>
-            
-            {/* Scrolling content area */}
-            <div className="flex-1 relative overflow-hidden group">
-                {trends.length > 0 ? (
-                    <div 
-                        className="absolute inset-x-0 flex flex-col gap-[2px] group-hover:[animation-play-state:paused]"
-                        style={{
-                            animation: `scrollVertical ${trends.length * 2.5}s linear infinite`,
-                        }}
-                    >
-                        {displayTrends.map((item, idx) => {
-                            const isUp = item.changeAmount > 0;
-                            const absAmount = Math.abs(item.changeAmount);
-                            const absPercent = Math.abs(item.changePercent || 0);
-                            const catLabel = categoryLabels[item.category] || item.category;
-                            
-                            return (
-                                <div 
-                                    key={`${item.hardwareName}-${idx}`} 
-                                    className={`relative px-4 py-3 shrink-0 transition-colors duration-150 hover:bg-slate-800/80 border-l-[3px] ${
-                                        isUp ? 'border-l-rose-500 bg-rose-500/[0.03]' : 'border-l-emerald-500 bg-emerald-500/[0.03]'
-                                    }`}
-                                >
-                                    {/* Top row: category pill + time */}
-                                    <div className="flex items-center justify-between mb-1.5">
-                                        <span className={`text-[9px] font-bold px-1.5 py-[1px] rounded-full uppercase tracking-wider ${
-                                            isUp 
-                                                ? 'bg-rose-500/15 text-rose-400' 
-                                                : 'bg-emerald-500/15 text-emerald-400'
-                                        }`}>
-                                            {catLabel}
-                                        </span>
-                                        <span className="text-[10px] text-slate-600 font-mono">
-                                            {item.changedAt?.substring(5, 16)?.replace('T', ' ')}
-                                        </span>
-                                    </div>
-                                    
-                                    {/* Product name */}
-                                    <div className="text-[13px] font-bold text-slate-200 truncate mb-1.5 leading-tight">
-                                        {item.hardwareName}
-                                    </div>
-                                    
-                                    {/* Price row */}
-                                    <div className="flex items-baseline justify-between">
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-slate-600 text-[11px] line-through font-mono">¥{item.oldPrice}</span>
-                                            <span className="text-white font-black text-[15px] font-mono tracking-tight">¥{item.newPrice}</span>
-                                        </div>
-                                        <span className={`text-xs font-black font-mono tabular-nums ${
-                                            isUp ? 'text-rose-400' : 'text-emerald-400'
-                                        }`}>
-                                            {isUp ? '↑' : '↓'} {absAmount}
-                                            <span className="text-[10px] ml-0.5 opacity-70">({absPercent}%)</span>
-                                        </span>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-3 py-12">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center">
-                            <Monitor size={20} className="text-slate-600" />
-                        </div>
-                        <span className="text-sm">暂无行情波动数据</span>
-                    </div>
-                )}
-                
-                {/* Top/bottom fade overlays */}
-                {trends.length > 0 && (
-                    <>
-                        <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-slate-900 to-transparent pointer-events-none z-10" />
-                        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none z-10" />
-                    </>
-                )}
-            </div>
-        </div>
-    );
-}
-
-// Wrapper to provide context
 export default function StreamerWorkbenchWrapper(props: any) {
     const [themeKey, setThemeKey] = useState<ThemeColor>('default');
     return (
         <ThemeContext.Provider value={{ theme: THEMES[themeKey], currentThemeKey: themeKey, setTheme: setThemeKey }}>
-            <div className="flex flex-col xl:flex-row gap-6 items-stretch">
-                <div className="flex-1 min-w-0 w-full flex flex-col">
-                    {/* Wrap StreamerWorkbench in a flex container so it decides the main height */}
-                    <div className="flex-1">
-                        <StreamerWorkbench {...props} />
-                    </div>
-                </div>
-                <div className="w-full xl:w-[340px] shrink-0">
-                    <MarketTrendsSidebar theme={THEMES[themeKey]} />
-                </div>
-            </div>
+            <StreamerWorkbench {...props} />
         </ThemeContext.Provider>
     );
 }
