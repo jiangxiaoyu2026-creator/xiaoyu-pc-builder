@@ -708,33 +708,54 @@ function StreamerWorkbench({
                         <div className={`mb-6 inline-flex p-4 ${theme.bgLight} rounded-full ${theme.primary} ring-4 ${theme.bgLight.replace('bg-', 'ring-')}/50`}>
                             <Zap size={40} />
                         </div>
-                        <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">专业装机中心</h3>
-                        <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium px-4">
-                            专为高效装机打造的强大工具。
+                        <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 mb-2">商家专业版权限中心</h3>
+                        <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium px-4 text-sm">
+                            赋能电脑终端销售与二手回收，打造利润增长的终极引擎。
                         </p>
 
-                        <div className="text-left space-y-3 mb-8 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
-                            <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
-                                <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
-                                快速报价 & 装机单生成
+                        <div className="text-left space-y-4 mb-8 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/80 dark:to-slate-800/40 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 shadow-sm relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl -mt-10 -mr-10 pointer-events-none"></div>
+                            
+                            <div className="flex items-start gap-3 relative z-10">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-orange-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
+                                <div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">全网行情雷达与价格追踪</div>
+                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">实时监控底层波动，抄底囤货抢占先机</div>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
-                                <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
-                                多级折扣方案管理
+                            
+                            <div className="flex items-start gap-3 relative z-10">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
+                                <div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">二手回收利润测算体系</div>
+                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">精准锁定硬件残值，远离接盘与倒挂风险</div>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
-                                <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
-                                一键生成配置图
+
+                            <div className="flex items-start gap-3 relative z-10">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
+                                <div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">AI专业装机与极速报价</div>
+                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">一键生成完美套机方案与多级折扣防穿透</div>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300 font-medium">
-                                <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0"><span className="text-xs font-bold">✓</span></div>
-                                营销海报生成器
+
+                            <div className="flex items-start gap-3 relative z-10">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
+                                <div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">私域营销裂变海报系统</div>
+                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">高清长图自动排版，制霸朋友圈与小红书</div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="bg-indigo-50 dark:bg-indigo-500/10 rounded-xl p-4 mb-6 border border-indigo-100 dark:border-indigo-500/20">
-                            <p className="text-indigo-900 dark:text-indigo-300 text-sm font-bold mb-1">联系管理员开通权限</p>
-                            <p className="text-indigo-600 dark:text-indigo-400 font-mono text-lg font-bold select-all">手机: 13793195989</p>
+                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/40 dark:to-purple-900/40 rounded-xl p-5 mb-4 border border-indigo-100/80 dark:border-indigo-500/30 relative mt-2">
+                            <div className="absolute top-0 right-0 py-1 px-3 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[10px] font-bold rounded-bl-lg rounded-tr-xl">限时特权名额</div>
+                            <p className="text-indigo-900 dark:text-indigo-300 text-sm font-black mb-1.5 flex items-center justify-center gap-1.5">
+                                🚀 抢先入驻，让成交翻倍！
+                            </p>
+                            <p className="text-slate-500 dark:text-slate-400 text-xs font-medium mt-1 mb-2">联系商务经理为您开通高级账号</p>
+                            <p className="text-indigo-600 dark:text-indigo-400 font-mono text-xl font-black select-all pt-1 border-t border-indigo-200/50 dark:border-indigo-700/50 tracking-wider">137-9319-5989</p>
                         </div>
 
                     </div>
