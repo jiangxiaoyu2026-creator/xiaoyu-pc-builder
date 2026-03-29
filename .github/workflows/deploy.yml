@@ -49,14 +49,29 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
-          command_timeout: 30m
+          command_timeout: 60m
           script: |
             cd /root/pcbuilder
-            
+
             # 基础信息打印
             df -h && free -m
-            
-            # 极其保守的 Docker Compose 命令检测
+
+            # 配置 Docker 阿里云镜像加速器（解决国内拉取慢的问题）
+            mkdir -p /etc/docker
+            cat > /etc/docker/daemon.json <<'EOF'
+            {
+              "registry-mirrors": [
+                "https://registry.cn-hangzhou.aliyuncs.com",
+                "https://mirror.ccs.tencentyun.com",
+                "https://docker.mirrors.ustc.edu.cn"
+              ]
+            }
+            EOF
+            systemctl daemon-reload && systemctl restart docker || true
+            sleep 3
+            echo "Docker mirror configured"
+
+            # 检测 Docker Compose 命令
             if docker compose version >/dev/null 2>&1; then
               DC="docker compose"
             elif docker-compose version >/dev/null 2>&1; then
@@ -65,17 +80,17 @@ jobs:
               echo "Error: Docker Compose not found"
               exit 1
             fi
-            
+
             echo "Using command: $DC"
-            
-            # 清理空间（可选但保留，确保构建成功）
+
+            # 清理空间
             docker system prune -f
-            
+
             # 基础部署流程
             $DC stop || true
             $DC rm -f || true
-            $DC build
+            $DC build --pull=false
             $DC up -d
-            
+
             echo "--- Ready ---"
             docker ps
