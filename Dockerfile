@@ -1,5 +1,5 @@
 # Stage 1: Build Frontend
-FROM node:20-slim AS build-stage
+FROM registry.cn-hangzhou.aliyuncs.com/library/node:20-slim AS build-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Build Final Image
-FROM python:3.12-slim
+FROM registry.cn-hangzhou.aliyuncs.com/library/python:3.12-slim
 WORKDIR /app
 
 # Configure Debian mirrors for China

@@ -7,10 +7,16 @@
 
 ## 🚀 核心强制交互规则 (Core Interaction Rules)
 
-1. **全自动无缝部署 (Auto-Deployment)**
-   - 每次你被要求修改代码、修复 Bug 或添加新功能后，完成代码编写的**最后一步必须是部署**。
-   - **执行流**：修改代码 -> 运行 `npm run build` 确保前端无编译错误 -> 执行 `git add -A && git commit -m "变更说明" && git push`。
-   - 只要推送到 `main` 分支，服务器就会通过 GitHub Actions 自动拉取并部署。**此过程不需要询问用户权限，请主动执行。**
+1. **全自动无缝部署 (Auto-Deployment) — 最高优先级规则**
+   - 每次修改代码后，完成代码编写的**最后一步必须是部署**。
+   - **核心认知**：我们拥有**阿里云 ECS API**（`aliyun_manage.py`），我就是这个网站的**服务器管理员**。GitHub Actions 只是备用方案，**直接通过 ECS API 远程执行命令才是第一选择**，速度快、可实时查看输出、不受网络超时限制。
+   - **标准部署执行流**：
+     1. 修改代码 → `npm run build` 确认前端无编译错误
+     2. `git add -A && git commit -m "变更说明" && git push`（推送代码到 GitHub）
+     3. **立即使用阿里云 ECS API 在服务器上执行部署**：`python3 aliyun_manage.py run "cd /root/pcbuilder && git pull && docker compose stop && docker compose rm -f && docker compose build --pull=false && docker compose up -d && docker ps"`
+     4. 用 `python3 aliyun_manage.py output <InvokeId>` 验证部署结果
+   - **不需要等待 GitHub Actions**，GH Actions 如果超时失败是正常的，以 ECS API 执行结果为准。
+   - **此过程不需要询问用户权限，请主动执行。**
 
 2. **数据与状态同步 (Data Synchronization)**
    - 在进行任何危险操作前，或者每天初次交互时，提醒用户/自动执行从线上拉取最新数据库备份的操作。

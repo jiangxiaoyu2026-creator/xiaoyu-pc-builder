@@ -612,7 +612,6 @@ export default function ClientApp() {
                         <TabButton active={viewMode === 'square'} onClick={() => setViewMode('square')} icon={<Share2 size={16} />} label="配置广场" />
                         <TabButton active={viewMode === 'headlines'} onClick={() => setViewMode('headlines')} icon={<BookOpen size={16} />} label="装机头条" />
                         <TabButton active={viewMode === 'used'} onClick={() => setViewMode('used')} icon={<ShoppingBag size={16} />} label="二手闲置" />
-                        <TabButton active={viewMode === 'about'} onClick={() => setViewMode('about')} icon={<Info size={16} />} label="关于我们" />
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -730,7 +729,6 @@ export default function ClientApp() {
                                     },
                                     { id: 'square' as const, icon: Share2, label: '配置广场', desc: '热门配置分享' },
                                     { id: 'used' as const, icon: ShoppingBag, label: '严选二手', desc: '性价比之选' },
-                                    { id: 'about' as const, icon: Info, label: '关于我们', desc: '品牌故事' },
                                 ].map((item) => {
                                     const Icon = item.icon;
                                     const isActive = viewMode === item.id;
@@ -1126,6 +1124,19 @@ export default function ClientApp() {
                 onInitialMessageSent={() => setChatInitialMessage('')}
             />
             <DailyPopup />
+
+            {/* Footer - About Us link */}
+            {viewMode !== 'streamer' && (
+                <div className="hidden md:flex items-center justify-center py-3 border-t border-slate-100 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm">
+                    <button
+                        onClick={() => setViewMode('about')}
+                        className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 transition-colors"
+                    >
+                        <Info size={12} />
+                        <span>关于我们 · DIYXX 小鱼装机</span>
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
