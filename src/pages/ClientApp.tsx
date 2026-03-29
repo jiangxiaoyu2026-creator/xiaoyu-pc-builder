@@ -28,6 +28,8 @@ import { useTheme } from '../hooks/useTheme';
 
 export default function ClientApp() {
     const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'headlines'>(() => {
+        const path = window.location.pathname.toLowerCase();
+        if (path === '/vip' || path === '/vip/') return 'streamer';
         const params = new URLSearchParams(window.location.search);
         const tab = params.get('tab');
         if (tab === 'headlines') return 'headlines';
@@ -39,9 +41,16 @@ export default function ClientApp() {
     });
 
     useEffect(() => {
-        const url = new URL(window.location.href);
-        url.searchParams.set('tab', viewMode);
-        window.history.replaceState({}, '', url.toString());
+        if (viewMode === 'streamer') {
+            window.history.replaceState({}, '', '/VIP');
+        } else {
+            const base = window.location.pathname.toLowerCase() === '/vip' ? '/' : window.location.pathname;
+            const url = new URL(base, window.location.origin);
+            if (viewMode !== 'visual') {
+                url.searchParams.set('tab', viewMode);
+            }
+            window.history.replaceState({}, '', url.toString());
+        }
     }, [viewMode]);
 
     const [buildList, setBuildList] = useState<BuildEntry[]>(() =>
@@ -823,7 +832,8 @@ export default function ClientApp() {
                                 setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
                             }}
                             hasPermission={hasStreamerPermission}
-
+                            currentUser={currentUser}
+                            showToast={showToast}
                             onAiCheck={handleAiPermission}
                             onOpenLibrary={() => setShowLibraryModal(true)}
                         />

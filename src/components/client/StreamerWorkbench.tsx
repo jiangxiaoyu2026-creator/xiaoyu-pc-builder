@@ -1,8 +1,8 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Monitor } from 'lucide-react';
+import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Monitor, TrendingUp, Recycle } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import { BuildEntry, HardwareItem } from '../../types/clientTypes';
+import { BuildEntry, HardwareItem, UserItem } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
 import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
@@ -10,6 +10,7 @@ import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
 import StreamerPriceTrend from './StreamerPriceTrend';
+import RecycleEstimator from './RecycleEstimator';
 
 // --- Theme System ---
 export type ThemeColor = 'default' | 'cosmic' | 'jade' | 'rosegold' | 'ocean' | 'midnight';
@@ -435,6 +436,8 @@ function StreamerWorkbench({
     handleSave,
     clearBuild,
     hasPermission,
+    currentUser,
+    showToast,
     onAiCheck,
     onOpenLibrary
 }: {
@@ -448,11 +451,13 @@ function StreamerWorkbench({
     handleSave: () => void,
     clearBuild: () => void,
     hasPermission: boolean,
+    currentUser?: UserItem | null,
+    showToast?: (msg: string) => void,
     onAiCheck?: () => boolean,
     onOpenLibrary: () => void
 
 }) {
-    const [activeTab, setActiveTab] = useState<'builder' | 'trends'>('builder');
+    const [activeTab, setActiveTab] = useState<'builder' | 'trends' | 'recycle'>('builder');
     const [pricingStrategy, setPricingStrategy] = useState<import('../../types/adminTypes').PricingStrategy | null>(null);
     const [strategies, setStrategies] = useState<{ value: number; label: string }[]>([]);
 
@@ -789,7 +794,8 @@ function StreamerWorkbench({
                     
                     <div className="hidden lg:flex items-center bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl shadow-inner border border-slate-300/30 dark:border-slate-700/50">
                         <button onClick={() => setActiveTab('builder')} className={`px-5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'builder' ? 'bg-white dark:bg-slate-700 shadow text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>专业装机</button>
-                        <button onClick={() => setActiveTab('trends')} className={`px-5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'trends' ? 'bg-white dark:bg-slate-700 shadow text-purple-600 dark:text-purple-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>价格行情</button>
+                        <button onClick={() => setActiveTab('trends')} className={`px-5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'trends' ? 'bg-white dark:bg-slate-700 shadow text-purple-600 dark:text-purple-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>行情分析</button>
+                        <button onClick={() => setActiveTab('recycle')} className={`px-5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'recycle' ? 'bg-white dark:bg-slate-700 shadow text-teal-600 dark:text-teal-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>二手回收</button>
                     </div>
 
                     <div className="flex gap-2">
@@ -814,9 +820,60 @@ function StreamerWorkbench({
                     </div>
                 </div>
 
-                <div className="lg:hidden flex items-center bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                    <button onClick={() => setActiveTab('builder')} className={`flex-1 py-3 text-sm font-bold transition-all ${activeTab === 'builder' ? `bg-white dark:bg-slate-800 ${theme.primary} border-b-2 border-indigo-500` : 'text-slate-500 dark:text-slate-400'}`}>专业装机</button>
-                    <button onClick={() => setActiveTab('trends')} className={`flex-1 py-3 text-sm font-bold transition-all ${activeTab === 'trends' ? `bg-white dark:bg-slate-800 ${theme.primary} border-b-2 border-purple-500` : 'text-slate-500 dark:text-slate-400'}`}>价格行情</button>
+                {/* === Premium Tab Navigation === */}
+                <div className="px-3 md:px-5 py-3 border-b border-slate-200 dark:border-slate-700/80 bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900">
+                    <div className="grid grid-cols-3 gap-2 md:gap-3">
+                        {/* 专业装机 Tab */}
+                        <button
+                            onClick={() => setActiveTab('builder')}
+                            className={`group relative flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 ${activeTab === 'builder'
+                                ? `bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-[1.02]`
+                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md'}`}
+                        >
+                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'builder' ? 'bg-white/20' : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20'}`}>
+                                <Zap size={20} />
+                            </div>
+                            <div className="text-center">
+                                <div className={`text-xs md:text-sm font-black tracking-tight ${activeTab === 'builder' ? '' : 'text-slate-700 dark:text-slate-200'}`}>专业装机</div>
+                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden sm:block ${activeTab === 'builder' ? 'text-white/70' : 'text-slate-400 dark:text-slate-500'}`}>AI报价 · 海报生成</div>
+                            </div>
+                            {activeTab === 'builder' && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-white rounded-full shadow-sm"></div>}
+                        </button>
+
+                        {/* 行情分析 Tab */}
+                        <button
+                            onClick={() => setActiveTab('trends')}
+                            className={`group relative flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 ${activeTab === 'trends'
+                                ? `bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30 scale-[1.02]`
+                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md'}`}
+                        >
+                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'trends' ? 'bg-white/20' : 'bg-purple-50 dark:bg-purple-500/10 text-purple-500 dark:text-purple-400 group-hover:bg-purple-100 dark:group-hover:bg-purple-500/20'}`}>
+                                <TrendingUp size={20} />
+                            </div>
+                            <div className="text-center">
+                                <div className={`text-xs md:text-sm font-black tracking-tight ${activeTab === 'trends' ? '' : 'text-slate-700 dark:text-slate-200'}`}>行情分析</div>
+                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden sm:block ${activeTab === 'trends' ? 'text-white/70' : 'text-slate-400 dark:text-slate-500'}`}>价格追踪 · 异动监控</div>
+                            </div>
+                            {activeTab === 'trends' && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-white rounded-full shadow-sm"></div>}
+                        </button>
+
+                        {/* 二手回收 Tab */}
+                        <button
+                            onClick={() => setActiveTab('recycle')}
+                            className={`group relative flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 ${activeTab === 'recycle'
+                                ? `bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30 scale-[1.02]`
+                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-teal-300 dark:hover:border-teal-600 hover:shadow-md'}`}
+                        >
+                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'recycle' ? 'bg-white/20' : 'bg-teal-50 dark:bg-teal-500/10 text-teal-500 dark:text-teal-400 group-hover:bg-teal-100 dark:group-hover:bg-teal-500/20'}`}>
+                                <Recycle size={20} />
+                            </div>
+                            <div className="text-center">
+                                <div className={`text-xs md:text-sm font-black tracking-tight ${activeTab === 'recycle' ? '' : 'text-slate-700 dark:text-slate-200'}`}>二手回收</div>
+                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden sm:block ${activeTab === 'recycle' ? 'text-white/70' : 'text-slate-400 dark:text-slate-500'}`}>残值测算 · 极速变现</div>
+                            </div>
+                            {activeTab === 'recycle' && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-white rounded-full shadow-sm"></div>}
+                        </button>
+                    </div>
                 </div>
 
                 {activeTab === 'builder' ? (
@@ -967,9 +1024,26 @@ function StreamerWorkbench({
                     )
                 }
                 </>
-                ) : (
+                ) : activeTab === 'trends' ? (
                     <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50">
                         <StreamerPriceTrend />
+                    </div>
+                ) : (
+                    <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 p-4 md:p-6">
+                        {currentUser ? (
+                            <RecycleEstimator
+                                onClose={() => setActiveTab('builder')}
+                                onSuccess={() => setActiveTab('builder')}
+                                currentUser={currentUser as any}
+                                showToast={showToast || (() => {})}
+                                inline
+                            />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                                <Recycle size={48} className="mb-4 opacity-30" />
+                                <p className="font-bold">请先登录后使用二手回收功能</p>
+                            </div>
+                        )}
                     </div>
                 )}
                 {/* Image Preview Modal */}

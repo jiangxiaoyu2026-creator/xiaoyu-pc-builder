@@ -9,6 +9,7 @@ interface RecycleEstimatorProps {
     onSuccess: () => void;
     currentUser: UserItem;
     showToast: (msg: string) => void;
+    inline?: boolean;
 }
 
 // Ensure the same categories as used in visual builder or recycle categories
@@ -25,7 +26,7 @@ const RECYCLE_CATEGORIES = [
     { code: 'peripheral', label: '外设' }
 ];
 
-export default function RecycleEstimator({ onClose, onSuccess, currentUser, showToast }: RecycleEstimatorProps) {
+export default function RecycleEstimator({ onClose, onSuccess, currentUser, showToast, inline }: RecycleEstimatorProps) {
     const [step, setStep] = useState<'list' | 'success'>('list');
     
     // selected components by category code
@@ -216,9 +217,16 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
         );
     }
 
+    const wrapperClass = inline
+        ? 'w-full animate-fade-in'
+        : 'fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in';
+    const innerClass = inline
+        ? 'bg-white dark:bg-slate-900 rounded-3xl w-full shadow-xl flex flex-col overflow-hidden relative border border-slate-200 dark:border-slate-700'
+        : 'bg-white rounded-3xl w-full max-w-2xl shadow-2xl animate-scale-up flex flex-col h-[85vh] md:h-[800px] overflow-hidden relative';
+
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl animate-scale-up flex flex-col h-[85vh] md:h-[800px] overflow-hidden relative">
+        <div className={wrapperClass}>
+            <div className={innerClass}>
                 
                 {/* Header */}
                 <div className="p-6 pb-4 border-b border-slate-100 flex justify-between items-center bg-white z-10 shrink-0">
