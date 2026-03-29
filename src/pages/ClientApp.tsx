@@ -31,9 +31,19 @@ export default function ClientApp() {
         const params = new URLSearchParams(window.location.search);
         const tab = params.get('tab');
         if (tab === 'headlines') return 'headlines';
-        if (params.get('config')) return 'square';
+        if (params.get('config') || tab === 'square') return 'square';
+        if (tab === 'used') return 'used';
+        if (tab === 'about') return 'about';
+        if (tab === 'streamer') return 'streamer';
         return 'visual';
     });
+
+    useEffect(() => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', viewMode);
+        window.history.replaceState({}, '', url.toString());
+    }, [viewMode]);
+
     const [buildList, setBuildList] = useState<BuildEntry[]>(() =>
         DEFAULT_BUILD_TEMPLATE.map(i => ({ ...i, item: null, customPrice: undefined, quantity: 1 }))
     );

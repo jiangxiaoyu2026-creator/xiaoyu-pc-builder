@@ -9,6 +9,7 @@ import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
 import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
+import StreamerPriceTrend from './StreamerPriceTrend';
 
 // --- Theme System ---
 export type ThemeColor = 'default' | 'cosmic' | 'jade' | 'rosegold' | 'ocean' | 'midnight';
@@ -451,6 +452,7 @@ function StreamerWorkbench({
     onOpenLibrary: () => void
 
 }) {
+    const [activeTab, setActiveTab] = useState<'builder' | 'trends'>('builder');
     const [pricingStrategy, setPricingStrategy] = useState<import('../../types/adminTypes').PricingStrategy | null>(null);
     const [strategies, setStrategies] = useState<{ value: number; label: string }[]>([]);
 
@@ -763,22 +765,44 @@ function StreamerWorkbench({
                             ))}
                         </div>
                     </div>
+                    
+                    <div className="hidden lg:flex items-center bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl shadow-inner border border-slate-300/30 dark:border-slate-700/50">
+                        <button onClick={() => setActiveTab('builder')} className={`px-5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'builder' ? 'bg-white dark:bg-slate-700 shadow text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>专业装机</button>
+                        <button onClick={() => setActiveTab('trends')} className={`px-5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'trends' ? 'bg-white dark:bg-slate-700 shadow text-purple-600 dark:text-purple-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>价格行情</button>
+                    </div>
+
                     <div className="flex gap-2">
-                        <button onClick={onOpenLibrary} className="flex items-center gap-1 px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-full transition-colors active:scale-95 border border-slate-200 dark:border-slate-700">
-                            <Zap size={12} className="text-amber-500" /> 快速装机
-                        </button>
-                        <button onClick={() => {
-                            if (onAiCheck && !onAiCheck()) return;
-                            setShowAiModal(true);
-                        }} className={`flex items-center gap-1 px-3 py-1 bg-gradient-to-r ${theme.gradient} text-white text-[11px] font-bold rounded-full shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0`}>
-                            <Sparkles size={12} /> AI装机
-                        </button>
+                        {activeTab === 'builder' && (
+                            <>
+                                <button onClick={onOpenLibrary} className="flex items-center gap-1 px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-full transition-colors active:scale-95 border border-slate-200 dark:border-slate-700">
+                                    <Zap size={12} className="text-amber-500" /> 快速装机
+                                </button>
+                                <button onClick={() => {
+                                    if (onAiCheck && !onAiCheck()) return;
+                                    setShowAiModal(true);
+                                }} className={`flex items-center gap-1 px-3 py-1 bg-gradient-to-r ${theme.gradient} text-white text-[11px] font-bold rounded-full shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0`}>
+                                    <Sparkles size={12} /> AI装机
+                                </button>
+                            </>
+                        )}
+                        {activeTab === 'trends' && (
+                            <div className="flex items-center px-4 py-1">
+                                <span className={`text-xs font-bold ${theme.primary}`}>每日全网行情雷达</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <div className="min-w-[600px]">
-                        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-1.5 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-[11px] font-bold ${theme.primary} uppercase tracking-wider transition-colors duration-300`}>
+                <div className="lg:hidden flex items-center bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+                    <button onClick={() => setActiveTab('builder')} className={`flex-1 py-3 text-sm font-bold transition-all ${activeTab === 'builder' ? `bg-white dark:bg-slate-800 ${theme.primary} border-b-2 border-indigo-500` : 'text-slate-500 dark:text-slate-400'}`}>专业装机</button>
+                    <button onClick={() => setActiveTab('trends')} className={`flex-1 py-3 text-sm font-bold transition-all ${activeTab === 'trends' ? `bg-white dark:bg-slate-800 ${theme.primary} border-b-2 border-purple-500` : 'text-slate-500 dark:text-slate-400'}`}>价格行情</button>
+                </div>
+
+                {activeTab === 'builder' ? (
+                    <>
+                        <div className="overflow-x-auto">
+                            <div className="min-w-[600px]">
+                                <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-1.5 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-[11px] font-bold ${theme.primary} uppercase tracking-wider transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
@@ -921,6 +945,12 @@ function StreamerWorkbench({
                         </div>
                     )
                 }
+                </>
+                ) : (
+                    <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50">
+                        <StreamerPriceTrend />
+                    </div>
+                )}
                 {/* Image Preview Modal */}
                 {previewImage && (
                     <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setPreviewImage(null)}>
