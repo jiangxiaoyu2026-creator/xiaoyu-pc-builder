@@ -139,16 +139,16 @@ export default function StreamerRecycleTab() {
             <div className="overflow-x-auto w-full">
                 <div className="min-w-[900px]">
                     {/* Header */}
-                    <div className={`grid grid-cols-[80px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 py-1.5 border-b ${theme.borderColor} ${theme.tableHeaderBg} text-[11px] font-bold ${theme.primary} uppercase tracking-wider sticky top-0 z-20`}>
-                        <div>类别</div>
-                        <div>搜索配件 (智能搜索)</div>
-                        <div className="text-center">数量</div>
-                        <div className="text-right">客户报价</div>
-                        <div className="text-right">闲鱼参考价</div>
-                        <div className="text-center">利润空间(%)</div>
-                        <div className="text-right">单件利润</div>
-                        <div></div>
-                    </div>
+                <div className={`grid grid-cols-[90px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 py-4 text-[11px] font-black uppercase tracking-wider text-slate-500 border-b border-dashed ${theme.borderColor}`}>
+                    <div className="text-center">类别</div>
+                    <div className="text-slate-400">搜索配件 (智能搜索)</div>
+                    <div className="text-center text-slate-400">数量</div>
+                    <div className="text-right text-slate-400">客户报价</div>
+                    <div className="text-right text-slate-400">闲鱼参考价</div>
+                    <div className="text-center text-slate-400">利润空间(%)</div>
+                    <div className="text-right text-slate-400">单件利润</div>
+                    <div></div>
+                </div>
 
                     {/* Rows */}
                     <div className={`divide-y ${theme.divider} ${theme.rowBg} transition-colors duration-300`}>
@@ -318,14 +318,14 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
     const resalePrice = row.item?.resalePrice || 0;
 
     return (
-        <div className={`grid grid-cols-[80px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 items-center border-l-4 transition-all ${theme.rowBg} hover:opacity-80 py-1 ${hasItem ? theme.borderColor.replace('border-', 'border-l-') : 'border-l-transparent'}`}>
+        <div className={`grid grid-cols-[90px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 items-center border-l-4 transition-all ${theme.rowBg} hover:bg-slate-50 dark:hover:bg-slate-800/10 py-3 relative ${isOpen ? 'z-50' : 'z-10'} ${hasItem ? theme.borderColor.replace('border-', 'border-l-') : 'border-l-transparent'}`}>
             
             {/* 1. Category Dropdown (Allows changing category) */}
             <div className="flex items-center justify-center">
                 <select 
                     value={row.category}
                     onChange={(e) => onUpdate({ category: e.target.value, item: null, query: '' })}
-                    className="w-full appearance-none bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 border-none text-[11px] font-bold text-slate-600 dark:text-slate-300 py-1.5 px-1 rounded cursor-pointer text-center focus:outline-none focus:ring-1 focus:ring-slate-300"
+                    className="w-full appearance-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-none text-[13px] font-black text-slate-700 dark:text-slate-300 py-2 px-1 rounded-lg cursor-pointer text-center focus:outline-none focus:ring-2 focus:ring-slate-300 transition-colors"
                 >
                     {RECYCLE_CATEGORIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
                 </select>
@@ -341,7 +341,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                     onFocus={() => { if (row.query && !hasItem) onOpen(); }}
                     onKeyDown={handleKeyDown}
                     placeholder={`搜索型号...`}
-                    className={`w-full bg-transparent text-[13px] md:text-sm font-bold text-slate-800 dark:text-slate-100 placeholder-slate-300 dark:placeholder-slate-600 py-2 focus:outline-none transition-colors `}
+                    className={`w-full bg-transparent text-base md:text-lg font-black text-slate-800 dark:text-slate-100 placeholder-slate-300 dark:placeholder-slate-500 py-2 focus:outline-none transition-colors `}
                 />
                 
                 {/* Suggestions Dropdown */}
@@ -407,7 +407,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                         disabled={!hasItem}
                         value={row.customQuote === 0 && !hasItem ? '' : row.customQuote} 
                         onChange={e => onUpdate({ customQuote: parseInt(e.target.value) || 0 })}
-                        className="w-full h-8 pl-5 pr-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 font-black font-mono focus:outline-none focus:ring-2 focus:ring-teal-500/30 disabled:opacity-50 text-right appearance-none transition-colors hover:bg-teal-100/50"
+                        className="w-full h-10 pl-5 pr-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 font-black font-mono focus:outline-none focus:ring-2 focus:ring-teal-500/30 disabled:opacity-50 text-right appearance-none transition-colors hover:bg-teal-100/50 text-sm md:text-base"
                     />
                 </div>
             </div>
@@ -430,7 +430,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                         disabled={!hasItem}
                         value={row.profitRate} 
                         onChange={e => onUpdate({ profitRate: parseInt(e.target.value) || 0 })}
-                        className="w-full h-7 pr-5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold font-mono focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-50 text-right appearance-none"
+                        className="w-full h-9 pr-6 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-bold font-mono focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-50 text-right appearance-none"
                     />
                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">%</span>
                 </div>
@@ -439,7 +439,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
             {/* 7. Profit Amount - Read Only */}
             <div className="text-right pr-2">
                 {hasItem ? (
-                    <div className="font-mono text-sm font-black text-amber-600">
+                    <div className="font-mono text-base font-black text-amber-600">
                         {row.profitAmount > 0 ? `¥${row.profitAmount}` : '¥0'}
                     </div>
                 ) : <div className="text-slate-300">-</div>}
