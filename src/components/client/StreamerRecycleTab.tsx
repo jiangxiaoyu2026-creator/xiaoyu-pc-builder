@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useContext } from 'react';
 import { Trash2, X, Plus } from 'lucide-react';
-import { ThemeContext } from './StreamerWorkbench';
+import { ThemeContext } from './StreamerThemeContext';
 
 // Constants
 export const RECYCLE_CATEGORIES = [
