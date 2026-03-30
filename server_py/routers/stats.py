@@ -3,7 +3,7 @@ from sqlmodel import Session, select, func
 from typing import List, Optional
 from ..db import get_session
 from ..models import DailyStat, User, Order, Hardware, UsedItem, Config, RecycleRequest, PriceHistory
-from .auth import get_current_admin
+from .auth import get_current_admin, get_current_streamer_or_admin
 from datetime import datetime
 import time
 
@@ -136,7 +136,7 @@ async def get_price_trends(
     category: Optional[str] = None,
     subcategory: Optional[str] = None,
     session: Session = Depends(get_session),
-    admin: User = Depends(get_current_admin)
+    admin: User = Depends(get_current_streamer_or_admin)
 ):
     """获取价格变化趋势数据"""
     from datetime import timedelta
@@ -426,7 +426,7 @@ async def get_product_price_history(
     subcategory: Optional[str] = None,
     days: int = 30,
     session: Session = Depends(get_session),
-    admin: User = Depends(get_current_admin)
+    admin: User = Depends(get_current_streamer_or_admin)
 ):
     """获取产品级别价格历史趋势（真实品类/细分均价 + 单品走势）"""
     from datetime import timedelta

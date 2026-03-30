@@ -76,6 +76,15 @@ async def get_current_admin(current_user: User = Depends(get_current_user)) -> U
         )
     return current_user
 
+async def get_current_streamer_or_admin(current_user: User = Depends(get_current_user)) -> User:
+    """允许管理员或主播账号访问的接口"""
+    if current_user.role not in ("admin", "sub_admin", "streamer"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="权限不足，需要主播或管理员账号"
+        )
+    return current_user
+
 @router.post("/register")
 async def register(request: Request, user_data: dict, session: Session = Depends(get_session)):
     username = user_data.get("username")
