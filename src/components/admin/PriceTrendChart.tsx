@@ -114,7 +114,7 @@ const sortCategories = (categories: string[]) => {
 
 
 
-export default function PriceTrendChart() {
+export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSummaryPanel?: boolean }) {
     const [data, setData] = useState<PriceTrendData | null>(null);
     const [trendData, setTrendData] = useState<ProductPriceTrendData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -622,8 +622,8 @@ export default function PriceTrendChart() {
                     <>
                         {/* 筛选器 - 粘性顶部 */}
                         <div className="flex items-center gap-4 flex-wrap sticky top-0 z-10 bg-slate-50 py-3 -mt-3 border-b border-slate-100 mb-2">
-                            <div className="flex items-center gap-2">
-                                <Filter size={14} className="text-slate-400" />
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <Filter size={14} className="text-slate-400 shrink-0" />
                                 <select
                                     value={category}
                                     onChange={e => {
@@ -1286,6 +1286,7 @@ export default function PriceTrendChart() {
             </div>
 
             {/* ====== 右侧固定面板（3 个卡片 + 30天榜单，独立滚动） ====== */}
+            {!hideSummaryPanel && (
             <aside className="w-[340px] shrink-0 overflow-y-auto custom-scrollbar space-y-4 pr-2 pl-4 border-l border-slate-200">
                 {/* ---------- 今日概览（竖向排列） ---------- */}
                 <div className="bg-gradient-to-br from-rose-50 to-rose-100 p-4 rounded-xl border border-rose-200 shadow-sm relative overflow-hidden group">
@@ -1435,6 +1436,7 @@ export default function PriceTrendChart() {
                     </div>
                 )}
             </aside>
+            )}
         </div>
     );
 }

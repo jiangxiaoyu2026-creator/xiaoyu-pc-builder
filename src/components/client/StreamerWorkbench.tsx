@@ -960,7 +960,7 @@ function StreamerWorkbench({
                 </>
                 ) : activeTab === 'trends' ? (
                     <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 p-2 md:p-6 overflow-hidden">
-                        <PriceTrendChart />
+                        <PriceTrendChart hideSummaryPanel={true} />
                     </div>
                 ) : (
                     <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 relative overflow-hidden">
