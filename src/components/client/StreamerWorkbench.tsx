@@ -808,7 +808,7 @@ function StreamerWorkbench({
                     </div>
 
                     {/* === Main Content Area === */}
-                    <div className="flex-1 min-w-0 bg-white dark:bg-slate-900/50 flex flex-col">
+                    <div className="flex-1 min-w-0 bg-white dark:bg-slate-900/50 flex flex-col relative">
 
                 {activeTab === 'builder' ? (
                     <>

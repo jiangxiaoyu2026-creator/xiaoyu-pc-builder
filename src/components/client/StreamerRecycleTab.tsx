@@ -135,8 +135,8 @@ export default function StreamerRecycleTab() {
     }, [rows]);
 
     return (
-        <div className="flex flex-col h-full absolute inset-0 pb-16">
-            <div className="flex-1 overflow-y-auto w-full custom-scrollbar pb-10">
+        <React.Fragment>
+            <div className="overflow-x-auto w-full">
                 <div className="min-w-[900px]">
                     {/* Header */}
                     <div className={`grid grid-cols-[80px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 py-1.5 border-b ${theme.borderColor} ${theme.tableHeaderBg} text-[11px] font-bold ${theme.primary} uppercase tracking-wider sticky top-0 z-20`}>
@@ -182,8 +182,8 @@ export default function StreamerRecycleTab() {
                 </div>
             </div>
 
-            {/* Footer */}
-            <div className={`${theme.footerBg} border-t ${theme.borderColor} px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4 fixed bottom-0 max-w-[calc(100vw-40px)] w-full z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]`}>
+            {/* Footer Summary Bar */}
+            <div className={`mt-auto ${theme.footerBg} border-t ${theme.borderColor} px-6 py-4 flex items-center justify-between transition-colors duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-10`}>
                 <div className="flex gap-6">
                     <div className="flex flex-col opacity-60">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">闲鱼总残值</span>
@@ -223,7 +223,7 @@ export default function StreamerRecycleTab() {
                     </button>
                 </div>
             </div>
-        </div>
+        </React.Fragment>
     );
 }
 
@@ -268,7 +268,15 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                 
                 const res = await fetch(`/api/recycling-prices/estimate?category=${searchCat}&keyword=${encodeURIComponent(val)}`);
                 const data = await res.json();
-                setSuggestions(data.items || []);
+                const rawItems = data.items || [];
+                const seenModels = new Set<string>();
+                const dedupedItems = rawItems.filter((i: any) => {
+                    const norm = i.model.trim().toLowerCase();
+                    if (seenModels.has(norm)) return false;
+                    seenModels.add(norm);
+                    return true;
+                });
+                setSuggestions(dedupedItems);
                 setHighlightIndex(0);
             } catch (e) {
                 console.error(e);
@@ -355,12 +363,6 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                                         <div className="flex-1 min-w-0 pr-4">
                                             <div className="font-bold text-sm text-slate-800 truncate mb-0.5 group-hover:text-indigo-700">{item.model}</div>
                                             <div className="text-[10px] text-slate-400 font-bold tracking-wider">{item.categoryLabel}</div>
-                                        </div>
-                                        <div className="text-right shrink-0 flex items-center gap-3">
-                                            <div className="flex flex-col items-end">
-                                                <div className="text-[10px] text-slate-400 font-bold uppercase">闲鱼/回收价</div>
-                                                <div className="font-mono text-base font-black text-rose-600">¥{item.resalePrice || item.recyclePrice}</div>
-                                            </div>
                                         </div>
                                     </div>
                                 ))}
