@@ -59,7 +59,7 @@ async def estimate_price(
     
     items = session.exec(query).all()
     
-    # 只返回客户可见的字段（不包含闲鱼价、利润等）
+    # 返回字段扩展包含闲鱼价，前端供主播/管理员查看
     return {
         "items": [{
             "id": item.id,
@@ -67,6 +67,7 @@ async def estimate_price(
             "categoryLabel": CATEGORY_LABELS.get(item.category, item.category),
             "model": item.model,
             "recyclePrice": item.recyclePrice,
+            "resalePrice": item.resalePrice,
             "validity": item.validity,
         } for item in items],
         "total": len(items)

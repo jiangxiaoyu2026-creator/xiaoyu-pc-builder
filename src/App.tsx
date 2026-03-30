@@ -23,8 +23,10 @@ function App() {
         }>
             <Routes>
                 <Route path="/" element={<ClientApp />} />
+                <Route path="/VIP" element={<ClientApp />} />
                 <Route path="/article/:id" element={<ArticleDetail />} />
                 <Route path="/admin" element={<AdminApp />} />
+                <Route path="*" element={<ClientApp />} />
             </Routes>
         </Suspense>
     );

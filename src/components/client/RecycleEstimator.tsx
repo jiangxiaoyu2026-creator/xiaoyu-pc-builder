@@ -317,60 +317,62 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
                     </div>
 
                     {/* Submission Form */}
-                    <form id="recycleForm" onSubmit={submitRequest} className="space-y-6">
-                        <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
-                            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                补充联系方式与细节
-                            </h3>
-                            
-                            <div className="space-y-5">
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                                        微信号，稍后客服根据微信号联系您<span className="text-red-500 ml-1">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={wechat}
-                                        onChange={e => setWechat(e.target.value)}
-                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-medium text-slate-800 transition-all"
-                                        placeholder="请输入微信号"
-                                        required
-                                    />
-                                </div>
+                    {!inline && (
+                        <form id="recycleForm" onSubmit={submitRequest} className="space-y-6">
+                            <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                    补充联系方式与细节
+                                </h3>
                                 
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                                        补充物品描述 (如成色、购买时间等) <span className="text-slate-400 font-normal">({Object.keys(selectedItems).length > 0 ? '选填' : '必填'})</span>
-                                    </label>
-                                    <textarea
-                                        value={description}
-                                        onChange={e => setDescription(e.target.value)}
-                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 h-28 resize-none text-sm font-medium text-slate-800 transition-all"
-                                        placeholder={Object.keys(selectedItems).length > 0 ? "未选择配件的请在此补充，或描述产品的成色情况、有无包装或暗病等..." : "请描述要回收的物品详情..."}
-                                        required={Object.keys(selectedItems).length === 0}
-                                    />
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">上传整机或配件照片 <span className="text-slate-400 font-normal">(选填)</span></label>
-                                    {image ? (
-                                        <div className="relative w-full h-40 rounded-xl border border-slate-200 overflow-hidden group">
-                                            <img src={image} alt="preview" className="w-full h-full object-cover" />
-                                            <button type="button" onClick={() => setImage(null)} className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg backdrop-blur-sm">
-                                                <X size={14} />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <label className="flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:border-indigo-400 hover:bg-indigo-50 transition-colors cursor-pointer text-slate-400 hover:text-indigo-500">
-                                            <Camera size={28} className="mb-2" />
-                                            <span className="text-sm font-bold">点击上传图片</span>
-                                            <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                                <div className="space-y-5">
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                                            微信号，稍后客服根据微信号联系您<span className="text-red-500 ml-1">*</span>
                                         </label>
-                                    )}
+                                        <input
+                                            type="text"
+                                            value={wechat}
+                                            onChange={e => setWechat(e.target.value)}
+                                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-medium text-slate-800 transition-all"
+                                            placeholder="请输入微信号"
+                                            required
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                                            补充物品描述 (如成色、购买时间等) <span className="text-slate-400 font-normal">({Object.keys(selectedItems).length > 0 ? '选填' : '必填'})</span>
+                                        </label>
+                                        <textarea
+                                            value={description}
+                                            onChange={e => setDescription(e.target.value)}
+                                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 h-28 resize-none text-sm font-medium text-slate-800 transition-all"
+                                            placeholder={Object.keys(selectedItems).length > 0 ? "未选择配件的请在此补充，或描述产品的成色情况、有无包装或暗病等..." : "请描述要回收的物品详情..."}
+                                            required={Object.keys(selectedItems).length === 0}
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-2">上传整机或配件照片 <span className="text-slate-400 font-normal">(选填)</span></label>
+                                        {image ? (
+                                            <div className="relative w-full h-40 rounded-xl border border-slate-200 overflow-hidden group">
+                                                <img src={image} alt="preview" className="w-full h-full object-cover" />
+                                                <button type="button" onClick={() => setImage(null)} className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg backdrop-blur-sm">
+                                                    <X size={14} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <label className="flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:border-indigo-400 hover:bg-indigo-50 transition-colors cursor-pointer text-slate-400 hover:text-indigo-500">
+                                                <Camera size={28} className="mb-2" />
+                                                <span className="text-sm font-bold">点击上传图片</span>
+                                                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                                            </label>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    )}
                 </div>
 
                 {/* Footer fixed */}
@@ -384,14 +386,25 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
                             </div>
                         </div>
                         
-                        <button 
-                            type="submit" 
-                            form="recycleForm"
-                            disabled={loading}
-                            className="flex-1 max-w-[200px] md:max-w-xs py-3.5 md:py-4 bg-slate-900 hover:bg-indigo-600 text-white font-black text-sm md:text-base rounded-2xl shadow-lg shadow-slate-900/20 transition-all disabled:opacity-50 active:scale-[0.98]"
-                        >
-                            {loading ? '正在提交...' : '提交估价申请'}
-                        </button>
+                        {!inline ? (
+                            <button 
+                                type="submit" 
+                                form="recycleForm"
+                                disabled={loading}
+                                className="flex-1 max-w-[200px] md:max-w-xs py-3.5 md:py-4 bg-slate-900 hover:bg-indigo-600 text-white font-black text-sm md:text-base rounded-2xl shadow-lg shadow-slate-900/20 transition-all disabled:opacity-50 active:scale-[0.98]"
+                            >
+                                {loading ? '正在提交...' : '提交估价申请'}
+                            </button>
+                        ) : (
+                            <button 
+                                type="button" 
+                                onClick={() => setSelectedItems({})}
+                                disabled={Object.keys(selectedItems).length === 0}
+                                className="flex-1 max-w-[120px] md:max-w-[140px] py-3 md:py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-all disabled:opacity-50 active:scale-95"
+                            >
+                                清空重置
+                            </button>
+                        )}
                     </div>
                 </div>
 

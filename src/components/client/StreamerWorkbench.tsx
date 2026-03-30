@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Monitor, TrendingUp, Recycle } from 'lucide-react';
+import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Monitor, TrendingUp, Recycle, Crown, MonitorPlay, BarChart3, Clock } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem, UserItem } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
@@ -11,6 +11,7 @@ import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
 import PriceTrendChart from '../admin/PriceTrendChart';
 import RecycleEstimator from './RecycleEstimator';
+import StreamerRecycleTab from './StreamerRecycleTab';
 
 // --- Theme System ---
 export type ThemeColor = 'default' | 'cosmic' | 'jade' | 'rosegold' | 'ocean' | 'midnight';
@@ -103,7 +104,7 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
     }
 };
 
-const ThemeContext = React.createContext<{ theme: ThemeConfig, currentThemeKey: ThemeColor, setTheme: (t: ThemeColor) => void }>({
+export const ThemeContext = React.createContext<{ theme: ThemeConfig, currentThemeKey: ThemeColor, setTheme: (t: ThemeColor) => void }>({
     theme: THEMES.default,
     currentThemeKey: 'default',
     setTheme: () => { }
@@ -707,60 +708,94 @@ function StreamerWorkbench({
 
             {/* Permission Overlay */}
             {!hasPermission && (
-                <div className="absolute inset-0 z-50 bg-white/40 dark:bg-slate-950/60 backdrop-blur-sm flex items-center justify-center">
-                    <div className={`bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-2xl border ${theme.bgLight.replace('bg-', 'border-')} text-center max-w-md mx-4 transform scale-100 relative overflow-hidden`}>
-                        <div className={`absolute top-0 left-0 w-full h-2 bg-gradient-to-r ${theme.gradient}`}></div>
-                        <div className={`mb-6 inline-flex p-4 ${theme.bgLight} rounded-full ${theme.primary} ring-4 ${theme.bgLight.replace('bg-', 'ring-')}/50`}>
-                            <Zap size={40} />
-                        </div>
-                        <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 mb-2">商家专业版权限中心</h3>
-                        <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium px-4 text-sm">
-                            极尽偷懒的商机获取方案，彻底释放您每天查价格、做报价、改清单的人工时间。
-                        </p>
-
-                        <div className="text-left space-y-4 mb-8 bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/80 dark:to-slate-800/40 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 shadow-sm relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl -mt-10 -mr-10 pointer-events-none"></div>
-                            
-                            <div className="flex items-start gap-3 relative z-10">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-orange-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
-                                <div>
-                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">每日海量底层行情直连</div>
-                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">告别手工收集报价表！每天自动无感更新最新底价，彻底省去自己天天苦盯并改价格的烦恼。</div>
-                                </div>
+                <div className="fixed inset-0 z-[100] bg-[#0a0a0c]/50 backdrop-blur-[6px] flex items-center justify-center pb-10 px-4">
+                    <div className="bg-[#0e0f13] p-8 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8),0_0_40px_rgba(212,175,55,0.1)] border border-[#362e1c] w-full max-w-xl transform scale-100 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#211a0c] via-[#d4af37] to-[#211a0c]"></div>
+                        
+                        {/* Header */}
+                        <div className="text-center mb-8 relative pb-6 border-b border-[#2b2518]">
+                            <div className="mx-auto w-16 h-16 mb-4 rounded-2xl bg-gradient-to-b from-[#1f1a10] to-[#0e0c08] flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] border border-[#40351f] relative overflow-hidden">
+                                <Crown className="text-[#d4af37] filter drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]" size={32} strokeWidth={1.5} />
                             </div>
-                            
-                            <div className="flex items-start gap-3 relative z-10">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
-                                <div>
-                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">全自动二手回收利润核算</div>
-                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">自带11000+全网最新二手硬件回收底价库，不用人工去翻小红书比价，精准锁定硬件残值。</div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3 relative z-10">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
-                                <div>
-                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">告别算错账的极速智能报价</div>
-                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">底层网价实时生效防穿透，用它报价永远不会报亏，甚至都不需要您自己再去掏计算器。</div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-start gap-3 relative z-10">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-500/20 mt-0.5"><span className="text-xs font-bold">✓</span></div>
-                                <div>
-                                    <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">全自动私域营销宣传工场</div>
-                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">再也不用请人做海报！根据当日低价自动排版生成高清促单长图，一键称霸朋友圈与自媒体。</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/40 dark:to-purple-900/40 rounded-xl p-5 mb-4 border border-indigo-100/80 dark:border-indigo-500/30 relative mt-2">
-                            <div className="absolute top-0 right-0 py-1 px-3 bg-gradient-to-r from-orange-400 to-red-500 text-white text-[10px] font-bold rounded-bl-lg rounded-tr-xl">限时特权名额</div>
-                            <p className="text-indigo-900 dark:text-indigo-300 text-sm font-black mb-1.5 flex items-center justify-center gap-1.5">
-                                🚀 抢先入驻，让成交翻倍！
+                            <h3 className="text-3xl font-black text-white mb-3 tracking-tight flex items-center justify-center">
+                                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#fce29f] to-[#b38b22]">商家专业版</span> <span className="text-[10px] bg-gradient-to-r from-[#d4af37] to-[#a3801c] text-[#0e0f13] px-2 py-0.5 rounded-sm align-top ml-2 font-black uppercase tracking-widest shadow-sm">PRO</span>
+                            </h3>
+                            <p className="text-[#968973] text-[13px] font-medium mt-3 leading-relaxed max-w-sm mx-auto">
+                                极尽偷懒的商机获取方案，彻底释放您每天查价格、做报价、改清单的人工时间。
                             </p>
-                            <p className="text-slate-500 dark:text-slate-400 text-xs font-medium mt-1 mb-2">联系商务经理为您开通高级账号</p>
-                            <p className="text-indigo-600 dark:text-indigo-400 font-mono text-xl font-black select-all pt-1 border-t border-indigo-200/50 dark:border-indigo-700/50 tracking-wider">137-9319-5989</p>
+                        </div>
+
+                        {/* Four Large Icons - Professional Stacked Layout */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+                            <div className="flex items-center gap-4 bg-gradient-to-b from-[#1c1913] to-[#12100c] p-5 rounded-xl border border-[#302a1d] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-[#d4af37]/50 transition-all group">
+                                <div className="bg-[#2a2416] text-[#cda434] p-3 rounded-xl border border-[#403520] group-hover:bg-[#d4af37] group-hover:text-[#0e0f13] transition-colors duration-300">
+                                    <MonitorPlay size={22} strokeWidth={2} />
+                                </div>
+                                <div className="font-bold text-[#e0d6c8] text-sm tracking-wide">快速直播装机报价</div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4 bg-gradient-to-b from-[#1c1913] to-[#12100c] p-5 rounded-xl border border-[#302a1d] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-[#d4af37]/50 transition-all group">
+                                <div className="bg-[#2a2416] text-[#cda434] p-3 rounded-xl border border-[#403520] group-hover:bg-[#d4af37] group-hover:text-[#0e0f13] transition-colors duration-300">
+                                    <Recycle size={22} strokeWidth={2} />
+                                </div>
+                                <div className="font-bold text-[#e0d6c8] text-sm tracking-wide">二手回收快速报价</div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4 bg-gradient-to-b from-[#1c1913] to-[#12100c] p-5 rounded-xl border border-[#302a1d] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-[#d4af37]/50 transition-all group">
+                                <div className="bg-[#2a2416] text-[#cda434] p-3 rounded-xl border border-[#403520] group-hover:bg-[#d4af37] group-hover:text-[#0e0f13] transition-colors duration-300">
+                                    <BarChart3 size={22} strokeWidth={2} />
+                                </div>
+                                <div className="font-bold text-[#e0d6c8] text-sm tracking-wide">专业行情分析</div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4 bg-gradient-to-b from-[#1c1913] to-[#12100c] p-5 rounded-xl border border-[#302a1d] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] hover:border-[#d4af37]/50 transition-all group">
+                                <div className="bg-[#2a2416] text-[#cda434] p-3 rounded-xl border border-[#403520] group-hover:bg-[#d4af37] group-hover:text-[#0e0f13] transition-colors duration-300">
+                                    <Clock size={22} strokeWidth={2} />
+                                </div>
+                                <div className="font-bold text-[#e0d6c8] text-sm tracking-wide">每日价格及时更新</div>
+                            </div>
+                        </div>
+
+                        {/* Pricing and Action - 3 Tiers */}
+                        <div className="grid grid-cols-3 gap-3 mb-6">
+                            {/* Monthly */}
+                            <div className="bg-[#14151a] rounded-xl py-5 px-2 border border-[#2b2518] text-center flex flex-col justify-center items-center hover:bg-[#1a1c23] transition-colors relative">
+                                <div className="text-[11px] text-[#8a7f6c] font-bold tracking-widest mb-1.5 break-words max-w-[80px]">标准月度</div>
+                                <div className="text-[#d8d0c3] font-black font-mono flex items-baseline justify-center">
+                                    <span className="text-xs text-[#736856] mr-0.5">¥</span><span className="text-xl">99</span>
+                                </div>
+                            </div>
+
+                            {/* Half-Year */}
+                            <div className="bg-[#14151a] rounded-xl py-5 px-2 border border-[#2b2518] text-center flex flex-col justify-center items-center hover:bg-[#1a1c23] transition-colors relative">
+                                <div className="text-[11px] text-[#8a7f6c] font-bold tracking-widest mb-1.5 break-words max-w-[80px]">超值半年</div>
+                                <div className="text-[#d8d0c3] font-black font-mono flex items-baseline justify-center">
+                                    <span className="text-xs text-[#736856] mr-0.5">¥</span><span className="text-xl">299</span>
+                                </div>
+                                <div className="text-[9px] text-[#6b6151] mt-1 font-medium">合 49.8/月</div>
+                            </div>
+                            
+                            {/* Yearly - High End */}
+                            <div className="bg-[#1a150c] rounded-xl py-5 px-2 border border-[#d4af37]/60 text-center flex flex-col justify-center items-center shadow-[0_0_25px_rgba(212,175,55,0.15)] relative overflow-hidden transform hover:-translate-y-1 transition-transform">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-[#d4af37] to-[#7a5c11] blur-2xl opacity-30 relative z-0"></div>
+                                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#8f6d19] via-[#d4af37] to-[#8f6d19]"></div>
+                                <div className="text-[11px] text-[#d4af37] font-black tracking-widest mb-1.5 relative z-10 break-words max-w-[80px]">旗舰首选</div>
+                                <div className="text-white font-black font-mono flex items-baseline justify-center relative z-10">
+                                    <span className="text-xs text-[#8f6d19] mr-0.5">¥</span><span className="text-xl text-transparent bg-clip-text bg-gradient-to-b from-[#ffedba] to-[#d4af37]">499</span>
+                                </div>
+                                <div className="text-[9px] text-[#9c844a] mt-1 font-bold relative z-10">
+                                    合算每日 1.3元
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 text-center border-t border-[#2b2518] pt-6 relative">
+                            <div className="text-[10px] text-[#8a7f6c] font-bold mb-3 uppercase tracking-[0.2em] relative inline-block px-4 bg-[#0e0f13] -mt-10 mb-5">业务直通专线 / 专属客服</div>
+                            <div className="block mt-2">
+                                <div className="inline-flex items-center justify-center bg-gradient-to-b from-[#1c1a17] to-[#12110e] text-[#d4af37] px-8 py-3 rounded-lg font-black font-mono text-xl tracking-widest border border-[#40351f] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_4px_10px_rgba(0,0,0,0.5)] cursor-pointer hover:bg-gradient-to-b hover:from-[#26221d] hover:to-[#1a1713] transition-all">
+                                    137-9319-5989
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -820,61 +855,64 @@ function StreamerWorkbench({
                     </div>
                 </div>
 
-                {/* === Premium Tab Navigation === */}
-                <div className="px-3 md:px-5 py-3 border-b border-slate-200 dark:border-slate-700/80 bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900">
-                    <div className="grid grid-cols-3 gap-2 md:gap-3">
+                {/* === Layout Container === */}
+                <div className="flex flex-col md:flex-row flex-1">
+                    {/* === Sidebar Navigation === */}
+                    <div className="flex flex-row md:flex-col gap-2 p-3 md:p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 md:w-[130px] lg:w-[160px] shrink-0 overflow-x-auto hide-scrollbar">
                         {/* 专业装机 Tab */}
                         <button
                             onClick={() => setActiveTab('builder')}
-                            className={`group relative flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 ${activeTab === 'builder'
-                                ? `bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-[1.02]`
-                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md'}`}
+                            className={`group relative flex md:flex-col items-center gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 shrink-0 ${activeTab === 'builder'
+                                ? `bg-white dark:bg-slate-800 border-indigo-200 dark:border-indigo-600/50 text-indigo-600 dark:text-indigo-400 shadow-md ${theme.bgLight.replace('bg-', 'ring-')}/20 ring-4`
+                                : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
                         >
-                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'builder' ? 'bg-white/20' : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20'}`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'builder' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-500'}`}>
                                 <Zap size={20} />
                             </div>
-                            <div className="text-center">
-                                <div className={`text-xs md:text-sm font-black tracking-tight ${activeTab === 'builder' ? '' : 'text-slate-700 dark:text-slate-200'}`}>专业装机</div>
-                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden sm:block ${activeTab === 'builder' ? 'text-white/70' : 'text-slate-400 dark:text-slate-500'}`}>AI报价 · 海报生成</div>
+                            <div className="text-left md:text-center shrink-0">
+                                <div className={`text-sm md:text-sm font-black tracking-tight ${activeTab === 'builder' ? '' : 'text-slate-600 dark:text-slate-300'}`}>专业装机</div>
+                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden lg:block ${activeTab === 'builder' ? 'text-indigo-500/80 dark:text-indigo-400/80' : 'text-slate-400 dark:text-slate-500'}`}>AI大模型驱动</div>
                             </div>
-                            {activeTab === 'builder' && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-white rounded-full shadow-sm"></div>}
+                            {activeTab === 'builder' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-r-md"></div>}
                         </button>
 
                         {/* 行情分析 Tab */}
                         <button
                             onClick={() => setActiveTab('trends')}
-                            className={`group relative flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 ${activeTab === 'trends'
-                                ? `bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30 scale-[1.02]`
-                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md'}`}
+                            className={`group relative flex md:flex-col items-center gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 shrink-0 ${activeTab === 'trends'
+                                ? `bg-white dark:bg-slate-800 border-purple-200 dark:border-purple-600/50 text-purple-600 dark:text-purple-400 shadow-md ring-4 ring-purple-100 dark:ring-purple-900/20`
+                                : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
                         >
-                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'trends' ? 'bg-white/20' : 'bg-purple-50 dark:bg-purple-500/10 text-purple-500 dark:text-purple-400 group-hover:bg-purple-100 dark:group-hover:bg-purple-500/20'}`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'trends' ? 'bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-purple-50 dark:group-hover:bg-purple-500/10 group-hover:text-purple-500'}`}>
                                 <TrendingUp size={20} />
                             </div>
-                            <div className="text-center">
-                                <div className={`text-xs md:text-sm font-black tracking-tight ${activeTab === 'trends' ? '' : 'text-slate-700 dark:text-slate-200'}`}>行情分析</div>
-                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden sm:block ${activeTab === 'trends' ? 'text-white/70' : 'text-slate-400 dark:text-slate-500'}`}>价格追踪 · 异动监控</div>
+                            <div className="text-left md:text-center shrink-0">
+                                <div className={`text-sm md:text-sm font-black tracking-tight ${activeTab === 'trends' ? '' : 'text-slate-600 dark:text-slate-300'}`}>行情分析</div>
+                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden lg:block ${activeTab === 'trends' ? 'text-purple-500/80 dark:text-purple-400/80' : 'text-slate-400 dark:text-slate-500'}`}>价格追踪监控</div>
                             </div>
-                            {activeTab === 'trends' && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-white rounded-full shadow-sm"></div>}
+                            {activeTab === 'trends' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-purple-500 rounded-r-md"></div>}
                         </button>
 
                         {/* 二手回收 Tab */}
                         <button
                             onClick={() => setActiveTab('recycle')}
-                            className={`group relative flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 ${activeTab === 'recycle'
-                                ? `bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30 scale-[1.02]`
-                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-teal-300 dark:hover:border-teal-600 hover:shadow-md'}`}
+                            className={`group relative flex md:flex-col items-center gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 shrink-0 ${activeTab === 'recycle'
+                                ? `bg-white dark:bg-slate-800 border-teal-200 dark:border-teal-600/50 text-teal-600 dark:text-teal-400 shadow-md ring-4 ring-teal-100 dark:ring-teal-900/20`
+                                : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
                         >
-                            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'recycle' ? 'bg-white/20' : 'bg-teal-50 dark:bg-teal-500/10 text-teal-500 dark:text-teal-400 group-hover:bg-teal-100 dark:group-hover:bg-teal-500/20'}`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'recycle' ? 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-teal-50 dark:group-hover:bg-teal-500/10 group-hover:text-teal-500'}`}>
                                 <Recycle size={20} />
                             </div>
-                            <div className="text-center">
-                                <div className={`text-xs md:text-sm font-black tracking-tight ${activeTab === 'recycle' ? '' : 'text-slate-700 dark:text-slate-200'}`}>二手回收</div>
-                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden sm:block ${activeTab === 'recycle' ? 'text-white/70' : 'text-slate-400 dark:text-slate-500'}`}>残值测算 · 极速变现</div>
+                            <div className="text-left md:text-center shrink-0">
+                                <div className={`text-sm md:text-sm font-black tracking-tight ${activeTab === 'recycle' ? '' : 'text-slate-600 dark:text-slate-300'}`}>二手回收</div>
+                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden lg:block ${activeTab === 'recycle' ? 'text-teal-500/80 dark:text-teal-400/80' : 'text-slate-400 dark:text-slate-500'}`}>底层残值测算</div>
                             </div>
-                            {activeTab === 'recycle' && <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-white rounded-full shadow-sm"></div>}
+                            {activeTab === 'recycle' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-teal-500 rounded-r-md"></div>}
                         </button>
                     </div>
-                </div>
+
+                    {/* === Main Content Area === */}
+                    <div className="flex-1 min-w-0 bg-white dark:bg-slate-900/50 flex flex-col">
 
                 {activeTab === 'builder' ? (
                     <>
@@ -1029,24 +1067,20 @@ function StreamerWorkbench({
                         <PriceTrendChart />
                     </div>
                 ) : (
-                    <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 p-4 md:p-6">
+                    <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 relative overflow-hidden">
                         {currentUser ? (
-                            <RecycleEstimator
-                                onClose={() => setActiveTab('builder')}
-                                onSuccess={() => setActiveTab('builder')}
-                                currentUser={currentUser as any}
-                                showToast={showToast || (() => {})}
-                                inline
-                            />
+                            <StreamerRecycleTab />
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                            <div className="flex flex-col items-center justify-center py-20 text-slate-400 mt-20">
                                 <Recycle size={48} className="mb-4 opacity-30" />
                                 <p className="font-bold">请先登录后使用二手回收功能</p>
                             </div>
                         )}
                     </div>
                 )}
-                {/* Image Preview Modal */}
+                </div>
+            </div>
+            {/* Image Preview Modal */}
                 {previewImage && (
                     <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setPreviewImage(null)}>
                         <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center">

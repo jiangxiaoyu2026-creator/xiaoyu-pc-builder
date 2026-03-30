@@ -93,18 +93,23 @@ const CATEGORY_LABELS: Record<string, string> = {
     accessory: '配件', all: '全部品类'
 };
 
-// Custom sort order for the category dropdown
-const CATEGORY_ORDER = ['cpu', 'ram', 'disk', 'gpu', 'mainboard', 'monitor'];
+// Only show specific core components in the category filter
+const ALLOWED_CATEGORIES = ['cpu', 'ram', 'disk', 'gpu', 'all'];
+const CATEGORY_ORDER = ['cpu', 'ram', 'disk', 'gpu'];
 
 const sortCategories = (categories: string[]) => {
-    return [...categories].sort((a, b) => {
-        const ia = CATEGORY_ORDER.indexOf(a);
-        const ib = CATEGORY_ORDER.indexOf(b);
-        if (ia !== -1 && ib !== -1) return ia - ib;
-        if (ia !== -1) return -1;
-        if (ib !== -1) return 1;
-        return (CATEGORY_LABELS[a] || a).localeCompare(CATEGORY_LABELS[b] || b);
-    });
+    return categories
+        .filter(c => ALLOWED_CATEGORIES.includes(c))
+        .sort((a, b) => {
+            if (a === 'all') return -1;
+            if (b === 'all') return 1;
+            const ia = CATEGORY_ORDER.indexOf(a);
+            const ib = CATEGORY_ORDER.indexOf(b);
+            if (ia !== -1 && ib !== -1) return ia - ib;
+            if (ia !== -1) return -1;
+            if (ib !== -1) return 1;
+            return (CATEGORY_LABELS[a] || a).localeCompare(CATEGORY_LABELS[b] || b);
+        });
 };
 
 

@@ -109,31 +109,14 @@ export default function AdminApp() {
         setCurrentUser(null);
     };
 
-    if (!currentUser || !['admin', 'sub_admin'].includes(currentUser.role)) {
-        return (
-            <div className="flex h-screen bg-slate-50 font-sans text-slate-800 items-center justify-center">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">正在验证权限...</h1>
-                    <LoginModal
-                        onClose={() => { }}
-                        onLoginSuccess={handleLoginSuccess}
-                    />
-                </div>
-            </div>
-        );
-    }
-
-    const isAdmin = currentUser.role === 'admin';
-    const isSubAdmin = currentUser.role === 'sub_admin';
-
-    // Live clock for professional recording feel
+    // Live clock for professional recording feel - must be before early return (Rules of Hooks)
     const [currentTime, setCurrentTime] = useState(new Date());
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
-    // Title mapping for header
+    // Title mapping for header - must be before early return (Rules of Hooks)
     const titleMap: Record<string, string> = useMemo(() => ({
         dashboard: '运营概览',
         price_trends: '价格趋势分析',
@@ -152,6 +135,23 @@ export default function AdminApp() {
         articles: '头条管理',
         marketing: '今日自动化大盘与营销中心',
     }), []);
+
+    if (!currentUser || !['admin', 'sub_admin'].includes(currentUser.role)) {
+        return (
+            <div className="flex h-screen bg-slate-50 font-sans text-slate-800 items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold mb-4">正在验证权限...</h1>
+                    <LoginModal
+                        onClose={() => { }}
+                        onLoginSuccess={handleLoginSuccess}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    const isAdmin = currentUser.role === 'admin';
+    const isSubAdmin = currentUser.role === 'sub_admin';
 
     return (
         <ToastProvider>
