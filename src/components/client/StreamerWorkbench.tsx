@@ -714,7 +714,7 @@ function StreamerWorkbench({
                     <div className="flex items-center gap-3">
                         <h2 className={`text-base font-bold ${theme.textTitle} flex items-center gap-1.5`}>
                             <Zap className={theme.primary} size={18} />
-                            智能装机平台
+                            {activeTab === 'builder' ? '专业装机控制台' : activeTab === 'recycle' ? '二手回收估价系统' : '全网行情雷达'}
                         </h2>
                         <div className="hidden md:flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
                             {(Object.keys(THEMES) as ThemeColor[]).map((tKey) => (
@@ -727,12 +727,7 @@ function StreamerWorkbench({
                             ))}
                         </div>
                     </div>
-                    
-                    <div className="hidden lg:flex items-center bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl shadow-inner border border-slate-300/30 dark:border-slate-700/50">
-                        <button onClick={() => setActiveTab('builder')} className={`px-5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'builder' ? 'bg-white dark:bg-slate-700 shadow text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>专业装机</button>
-                        <button onClick={() => setActiveTab('recycle')} className={`px-5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'recycle' ? 'bg-white dark:bg-slate-700 shadow text-teal-600 dark:text-teal-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>二手回收</button>
-                        <button onClick={() => setActiveTab('trends')} className={`px-5 py-1.5 text-xs font-bold rounded-lg transition-all ${activeTab === 'trends' ? 'bg-white dark:bg-slate-700 shadow text-purple-600 dark:text-purple-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>行情分析</button>
-                    </div>
+
 
                     <div className="flex gap-2">
                         {activeTab === 'builder' && (

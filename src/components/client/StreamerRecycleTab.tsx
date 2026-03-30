@@ -5,15 +5,18 @@ import { ThemeContext } from './StreamerThemeContext';
 // Constants
 export const RECYCLE_CATEGORIES = [
     { code: 'cpu', label: 'CPU' },
-    { code: 'gpu', label: '显卡' },
     { code: 'mainboard', label: '主板' },
     { code: 'ram', label: '内存' },
-    { code: 'disk', label: '硬盘' },
+    { code: 'disk', label: '硬盘1' },
+    { code: 'disk2', label: '硬盘2' },
+    { code: 'gpu', label: '显卡' },
+    { code: 'case', label: '机箱' },
     { code: 'power', label: '电源' },
     { code: 'cooling', label: '散热' },
-    { code: 'case', label: '机箱' },
     { code: 'monitor', label: '显示器' },
-    { code: 'peripheral', label: '外设' }
+    { code: 'fan', label: '风扇' },
+    { code: 'peripheral', label: '外设1' },
+    { code: 'peripheral2', label: '外设2' }
 ];
 
 export default function StreamerRecycleTab() {
@@ -136,7 +139,7 @@ export default function StreamerRecycleTab() {
             <div className="flex-1 overflow-y-auto w-full custom-scrollbar pb-10">
                 <div className="min-w-[900px]">
                     {/* Header */}
-                    <div className={`grid grid-cols-[80px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 py-2 border-b ${theme.borderColor} ${theme.headerBg} text-[11px] font-bold ${theme.primary} uppercase tracking-wider sticky top-0 z-20`}>
+                    <div className={`grid grid-cols-[80px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 py-1.5 border-b ${theme.borderColor} ${theme.tableHeaderBg} text-[11px] font-bold ${theme.primary} uppercase tracking-wider sticky top-0 z-20`}>
                         <div>类别</div>
                         <div>搜索配件 (智能搜索)</div>
                         <div className="text-center">数量</div>
@@ -148,7 +151,7 @@ export default function StreamerRecycleTab() {
                     </div>
 
                     {/* Rows */}
-                    <div className={`divide-y ${theme.divider}`}>
+                    <div className={`divide-y ${theme.divider} ${theme.rowBg} transition-colors duration-300`}>
                         {rows.map((row, index) => (
                             <RecycleInlineRow 
                                 key={row.id}
@@ -307,7 +310,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
     const resalePrice = row.item?.resalePrice || 0;
 
     return (
-        <div className={`grid grid-cols-[80px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 items-center border-l-4 transition-all hover:bg-slate-50/50 dark:hover:bg-slate-800/20 py-1 ${hasItem ? theme.borderColor.replace('border-', 'border-l-') : 'border-l-transparent'}`}>
+        <div className={`grid grid-cols-[80px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 items-center border-l-4 transition-all ${theme.rowBg} hover:opacity-80 py-1 ${hasItem ? theme.borderColor.replace('border-', 'border-l-') : 'border-l-transparent'}`}>
             
             {/* 1. Category Dropdown (Allows changing category) */}
             <div className="flex items-center justify-center">
