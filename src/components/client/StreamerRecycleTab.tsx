@@ -49,30 +49,28 @@ export default function StreamerRecycleTab() {
                 if (data.item === null) {
                     newRow.customQuote = 0;
                     newRow.profitAmount = 0;
-                    // profitRate stays same
                 } else {
                     // Item selected!
                     const resale = data.item.resalePrice || 0;
-                    // Calculate profit Amount from Rate
-                    const pAmt = Math.max(0, Math.floor(resale * (newRow.profitRate / 100)));
+                    // Default profit 15% when selecting a new item
+                    const pAmt = Math.max(0, Math.floor(resale * 0.15));
                     newRow.profitAmount = pAmt;
                     newRow.customQuote = Math.max(0, resale - pAmt);
                 }
             } 
-            // When user edits Profit Rate explicitly
-            else if (data.profitRate !== undefined && oldRow.item) {
+            // When user edits Profit amount explicitly
+            else if (data.profitAmount !== undefined && oldRow.item) {
                 const resale = oldRow.item.resalePrice || 0;
-                newRow.profitRate = Math.max(0, data.profitRate);
-                const pAmt = Math.max(0, Math.floor(resale * (newRow.profitRate / 100)));
+                const pAmt = Math.max(0, data.profitAmount);
                 newRow.profitAmount = pAmt;
                 newRow.customQuote = Math.max(0, resale - pAmt);
             }
             // When user edits custom Quote directly
             else if (data.customQuote !== undefined && oldRow.item) {
                 const resale = oldRow.item.resalePrice || 0;
-                newRow.customQuote = Math.max(0, data.customQuote);
-                newRow.profitAmount = Math.max(0, resale - newRow.customQuote);
-                newRow.profitRate = resale > 0 ? Math.round((newRow.profitAmount / resale) * 100) : 0;
+                const cq = Math.max(0, data.customQuote);
+                newRow.customQuote = cq;
+                newRow.profitAmount = Math.max(0, resale - cq);
             }
 
             next[index] = newRow;
@@ -137,16 +135,15 @@ export default function StreamerRecycleTab() {
     return (
         <React.Fragment>
             <div className="overflow-x-auto w-full">
-                <div className="min-w-[900px]">
+                <div className="min-w-[800px]">
                     {/* Header */}
-                <div className={`grid grid-cols-[90px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 py-4 text-[11px] font-black uppercase tracking-wider text-slate-500 border-b border-dashed ${theme.borderColor}`}>
+                <div className={`grid grid-cols-[90px_1fr_60px_120px_100px_120px_40px] gap-2 md:gap-4 px-6 py-2.5 text-[11px] font-black uppercase tracking-wider text-slate-500 border-b border-dashed ${theme.borderColor}`}>
                     <div className="text-center">类别</div>
                     <div className="text-slate-400">搜索配件 (智能搜索)</div>
                     <div className="text-center text-slate-400">数量</div>
-                    <div className="text-right text-slate-400">客户报价</div>
-                    <div className="text-right text-slate-400">闲鱼参考价</div>
-                    <div className="text-center text-slate-400">利润空间(%)</div>
-                    <div className="text-right text-slate-400">单件利润</div>
+                    <div className="text-right text-slate-400">回收价</div>
+                    <div className="text-right text-slate-400">市场价</div>
+                    <div className="text-right text-slate-400 pr-2">利润</div>
                     <div></div>
                 </div>
 
@@ -236,6 +233,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
     const [searching, setSearching] = useState(false);
     const [highlightIndex, setHighlightIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
+    const suggestionsRef = useRef<HTMLDivElement>(null);
     const searchTimeout = useRef<any>(null);
 
     // Auto focus when opened via NextFocus
@@ -244,6 +242,17 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
             inputRef.current.focus();
         }
     }, [isOpen]);
+
+    // Scroll active item into view during keyboard navigation
+    useEffect(() => {
+        if (isOpen && suggestionsRef.current) {
+            const children = suggestionsRef.current.children;
+            if (children && children[highlightIndex]) {
+                const el = children[highlightIndex] as HTMLElement;
+                el.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }, [highlightIndex, isOpen]);
 
     const handleSearch = (val: string) => {
         onUpdate({ query: val, item: null });
@@ -318,7 +327,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
     const resalePrice = row.item?.resalePrice || 0;
 
     return (
-        <div className={`grid grid-cols-[90px_1fr_60px_100px_90px_100px_90px_40px] gap-2 md:gap-4 px-6 items-center border-l-4 transition-all ${theme.rowBg} hover:bg-slate-50 dark:hover:bg-slate-800/10 py-3 relative ${isOpen ? 'z-50' : 'z-10'} ${hasItem ? theme.borderColor.replace('border-', 'border-l-') : 'border-l-transparent'}`}>
+        <div className={`grid grid-cols-[90px_1fr_60px_120px_100px_120px_40px] gap-2 md:gap-4 px-6 items-center border-l-4 transition-all ${theme.rowBg} hover:bg-slate-50 dark:hover:bg-slate-800/10 py-1.5 relative ${isOpen ? 'z-50' : 'z-10'} ${hasItem ? theme.borderColor.replace('border-', 'border-l-') : 'border-l-transparent'}`}>
             
             {/* 1. Category Dropdown (Allows changing category) */}
             <div className="flex items-center justify-center">
@@ -352,7 +361,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                                 <span className="text-xs font-bold text-slate-500">正在检索二手底价库...</span>
                             </div>
                         ) : suggestions.length > 0 ? (
-                            <div className="max-h-[300px] overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 py-2">
+                            <div ref={suggestionsRef} className="max-h-[300px] overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 py-2">
                                 {suggestions.map((item, i) => (
                                     <div 
                                         key={item.id} 
@@ -398,7 +407,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                 >+</button>
             </div>
 
-            {/* 4. Customer Quote (Editable) */}
+            {/* 4. Customer Quote (Recycle Price) - Editable */}
             <div className="flex items-center justify-end">
                 <div className="relative w-full text-right">
                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-teal-600/50 font-bold text-xs pointer-events-none">¥</span>
@@ -407,12 +416,12 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                         disabled={!hasItem}
                         value={row.customQuote === 0 && !hasItem ? '' : row.customQuote} 
                         onChange={e => onUpdate({ customQuote: parseInt(e.target.value) || 0 })}
-                        className="w-full h-10 pl-5 pr-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 font-black font-mono focus:outline-none focus:ring-2 focus:ring-teal-500/30 disabled:opacity-50 text-right appearance-none transition-colors hover:bg-teal-100/50 text-sm md:text-base"
+                        className="w-full h-8 pl-5 pr-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 font-black font-mono focus:outline-none focus:ring-2 focus:ring-teal-500/30 disabled:opacity-50 text-right appearance-none transition-colors hover:bg-teal-100/50 text-sm md:text-base"
                     />
                 </div>
             </div>
 
-            {/* 5. Resale Price (Xianyu) - Read Only */}
+            {/* 5. Resale Price (Market) - Read Only */}
             <div className="text-right">
                 {hasItem ? (
                     <div className="font-mono text-sm font-black text-slate-800 dark:text-slate-200 relative group">
@@ -422,27 +431,18 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                 ) : <div className="text-slate-300">-</div>}
             </div>
 
-            {/* 6. Profit Rate % */}
-            <div className="flex items-center justify-center">
-                <div className="relative w-16">
+            {/* 6. Profit Amount - Editable */}
+            <div className="flex items-center justify-end pr-2">
+                <div className="relative w-full max-w-[90px] text-right">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-amber-600/50 font-bold text-xs pointer-events-none">¥</span>
                     <input 
                         type="number" 
                         disabled={!hasItem}
-                        value={row.profitRate} 
-                        onChange={e => onUpdate({ profitRate: parseInt(e.target.value) || 0 })}
-                        className="w-full h-9 pr-6 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-bold font-mono focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 disabled:opacity-50 text-right appearance-none"
+                        value={row.profitAmount === 0 && !hasItem ? '' : row.profitAmount} 
+                        onChange={e => onUpdate({ profitAmount: parseInt(e.target.value) || 0 })}
+                        className="w-full h-8 pl-5 pr-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 font-black font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:opacity-50 text-right appearance-none transition-colors hover:bg-amber-100/50 text-sm md:text-base"
                     />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold pointer-events-none">%</span>
                 </div>
-            </div>
-
-            {/* 7. Profit Amount - Read Only */}
-            <div className="text-right pr-2">
-                {hasItem ? (
-                    <div className="font-mono text-base font-black text-amber-600">
-                        {row.profitAmount > 0 ? `¥${row.profitAmount}` : '¥0'}
-                    </div>
-                ) : <div className="text-slate-300">-</div>}
             </div>
 
             {/* 8. Clear/Remove */}
