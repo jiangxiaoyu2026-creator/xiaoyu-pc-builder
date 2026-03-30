@@ -781,14 +781,15 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl animate-scale-up max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-center mb-6">
+            <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl animate-scale-up max-h-[90vh] flex flex-col overflow-hidden">
+                <div className="flex justify-between items-center p-6 border-b border-slate-100 shrink-0">
                     <h3 className="text-lg font-bold text-slate-800">{product ? '编辑硬件' : '录入新硬件'}</h3>
                     <button onClick={onClose}><X size={20} className="text-slate-400 hover:text-slate-600" /></button>
                 </div>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-4 border-b border-slate-100 pb-4">
-                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><Package size={14} /> 基础信息</h4>
+                <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                        <div className="space-y-4 border-b border-slate-100 pb-4">
+                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><Package size={14} /> 基础信息</h4>
 
                         {/* Image Upload */}
                         <div className="flex gap-4 items-start">
@@ -1035,8 +1036,9 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                             />
                         </details>
                     </div>
+                </div>
 
-                    <div className="pt-4 flex gap-3">
+                    <div className="p-6 border-t border-slate-100 flex gap-3 shrink-0 bg-slate-50/50">
                         <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors">取消</button>
                         <button type="button" onClick={handleSaveAndContinue} className="flex-1 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-bold hover:bg-indigo-100 transition-colors border border-indigo-200">保存并继续录入</button>
                         <button type="submit" className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-200">保存</button>

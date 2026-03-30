@@ -256,6 +256,9 @@ async def import_from_excel(
         total_new = 0
         total_updated = 0
         
+        # Track items already processed in this import batch
+        seen_in_import = {}
+        
         for sheet_name, category in SHEET_MAP.items():
             if sheet_name not in wb.sheetnames:
                 continue
@@ -292,11 +295,18 @@ async def import_from_excel(
                 else:
                     updated_at = str(updated_at) if updated_at else datetime.utcnow().isoformat()
                 
-                existing = session.exec(
-                    select(RecyclingPrice)
-                    .where(RecyclingPrice.category == category)
-                    .where(RecyclingPrice.model == model_name)
-                ).first()
+                key = (category, model_name)
+                
+                if key in seen_in_import:
+                    existing = seen_in_import[key]
+                else:
+                    existing = session.exec(
+                        select(RecyclingPrice)
+                        .where(RecyclingPrice.category == category)
+                        .where(RecyclingPrice.model == model_name)
+                    ).first()
+                    if existing:
+                        seen_in_import[key] = existing
                 
                 if existing:
                     existing.recyclePrice = recycle_price
@@ -307,9 +317,10 @@ async def import_from_excel(
                     existing.updatedAt = updated_at
                     existing.updatedBy = admin.username
                     session.add(existing)
-                    total_updated += 1
+                    if key not in seen_in_import:
+                        total_updated += 1
                 else:
-                    session.add(RecyclingPrice(
+                    new_item = RecyclingPrice(
                         category=category, model=model_name,
                         recyclePrice=recycle_price, resalePrice=resale_price,
                         livePrice=live_price, newPrice=new_price,
@@ -317,7 +328,9 @@ async def import_from_excel(
                         updatedBy=admin.username,
                         note=str(cells.get(10, "")) if cells.get(10) else None,
                         imageUrl=str(cells.get(11, "")) if cells.get(11) else None,
-                    ))
+                    )
+                    session.add(new_item)
+                    seen_in_import[key] = new_item
                     total_new += 1
             
             session.commit()

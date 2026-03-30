@@ -97,6 +97,19 @@ def _migrate_extra_columns():
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_userId ON orders(userId)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)")
             
+        # Deduplicate recycling prices keeping the most recently added for each category+model pair
+        cursor.execute("""
+            DELETE FROM recycling_prices
+            WHERE id NOT IN (
+                SELECT MAX(id)
+                FROM recycling_prices
+                GROUP BY category, model
+            )
+        """)
+        
+        # Add index for recycling prices to prevent future lookup collisions and speed it up
+        cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_recycling_prices_cat_model ON recycling_prices(category, model)")
+
         conn.commit()
         conn.close()
     except Exception as e:
