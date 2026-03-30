@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useContext } from 'react';
 import { Trash2, X, Plus } from 'lucide-react';
 import { ThemeContext } from './StreamerThemeContext';
+import { getIconByCategory } from './Shared';
 
 // Constants
 export const RECYCLE_CATEGORIES = [
@@ -180,43 +181,38 @@ export default function StreamerRecycleTab() {
             </div>
 
             {/* Footer Summary Bar */}
-            <div className={`mt-auto ${theme.footerBg} border-t ${theme.borderColor} px-6 py-4 flex items-center justify-between transition-colors duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-10`}>
-                <div className="flex gap-6">
-                    <div className="flex flex-col opacity-60">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">闲鱼总残值</span>
-                        <span className="text-sm font-bold text-slate-500 font-mono tracking-tight">¥{summary.totalXianyu.toLocaleString()}</span>
+            <div className={`sticky bottom-0 z-20 ${theme.cardBg} backdrop-blur-xl border-t ${theme.borderColor} shadow-[0_-10px_30px_rgba(0,0,0,0.05)] p-4 flex items-center justify-between`}>
+                
+                {/* Front: Final Customer Quote (Prominent) */}
+                <div className="flex items-center gap-4">
+                    <div className="text-left flex flex-col items-start pl-2 pr-4">
+                        <p className={`text-[11px] font-black uppercase tracking-widest mb-1 ${theme.primary}`}>最终客户总报价（回收底价）</p>
+                        <div className="flex items-baseline gap-1">
+                            <span className={`text-2xl font-black ${theme.primary}`}>¥</span>
+                            <span className={`text-5xl font-black font-mono tracking-tighter ${theme.primary}`}>{summary.totalQuote.toLocaleString()}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-8">
-                    <div className="text-right flex flex-col items-end">
-                        <p className={`text-[11px] font-black text-amber-500 uppercase tracking-widest mb-1`}>全部预留总利润</p>
-                        <div className="flex items-baseline gap-1 text-slate-800 dark:text-slate-100">
-                            <span className="text-sm font-bold text-amber-600/60 dark:text-amber-500/60">¥</span>
-                            <span className="text-2xl font-black font-mono tracking-tighter text-amber-600 dark:text-amber-500">
-                                {summary.totalProfit.toLocaleString()}
-                            </span>
+                {/* Back (Far Right): Sensitive info for Streamer's eyes only */}
+                <div className="flex items-center gap-6 text-right pr-2 group">
+                    <div className="flex items-center gap-6 opacity-20 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="flex flex-col items-end">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">预估闲鱼总残值</p>
+                            <div className="font-mono text-lg font-black text-slate-400">¥{summary.totalXianyu.toLocaleString()}</div>
+                        </div>
+                        <div className="flex flex-col items-end">
+                            <p className="text-[10px] font-bold text-amber-500/80 uppercase tracking-widest mb-0.5">全部预留利润</p>
+                            <div className="font-mono text-xl font-black text-amber-500/80">¥{summary.totalProfit.toLocaleString()}</div>
                         </div>
                     </div>
                     
-                    <div className="h-10 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-
-                    <div className="text-right">
-                        <p className={`text-[11px] font-black ${theme.primary} uppercase tracking-widest mb-1`}>最终客户总报价 (回收底价)</p>
-                        <div className="flex items-baseline gap-1 text-slate-800 dark:text-slate-100">
-                            <span className="text-xl font-bold">¥</span>
-                            <span className="text-4xl font-black font-mono tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-600">
-                                {summary.totalQuote.toLocaleString()}
-                            </span>
-                        </div>
-                    </div>
-
                     <button 
                         onClick={clearAll}
-                        className="h-12 w-12 ml-2 flex items-center justify-center bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 rounded-xl transition-all font-bold text-sm shrink-0 border border-transparent hover:border-rose-200 dark:hover:border-rose-500/30"
-                        title="清空重算"
+                        className="ml-2 w-10 h-10 flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl transition-colors shrink-0"
+                        title="清空全部"
                     >
-                        <Trash2 size={20} />
+                        <Trash2 size={18} />
                     </button>
                 </div>
             </div>
@@ -330,11 +326,20 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
         <div className={`grid grid-cols-[90px_1fr_60px_120px_100px_120px_40px] gap-2 md:gap-4 px-6 items-center border-l-4 transition-all ${theme.rowBg} hover:bg-slate-50 dark:hover:bg-slate-800/10 py-1 relative ${isOpen ? 'z-50' : 'z-10'} ${hasItem ? theme.borderColor.replace('border-', 'border-l-') : 'border-l-transparent'}`}>
             
             {/* 1. Category Dropdown (Allows changing category) */}
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-start pl-2 pr-1 relative group w-full h-full">
+                <div className={`flex items-center gap-2 transition-all ${theme.primary}`}>
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${theme.bgLight} ${hasItem ? 'shadow-sm' : ''}`}>
+                        <div className="scale-[0.65]">
+                            {getIconByCategory(row.category)}
+                        </div>
+                    </div>
+                    <span className="text-[12px] font-black tracking-widest">{RECYCLE_CATEGORIES.find(c => c.code === row.category)?.label || row.category}</span>
+                </div>
                 <select 
                     value={row.category}
                     onChange={(e) => onUpdate({ category: e.target.value, item: null, query: '' })}
-                    className="w-full appearance-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border-none text-[13px] font-bold text-slate-700 dark:text-slate-300 py-1 px-1 rounded cursor-pointer text-center focus:outline-none focus:ring-1 focus:ring-slate-300 transition-colors"
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full appearance-none"
+                    title="更改类别"
                 >
                     {RECYCLE_CATEGORIES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
                 </select>
@@ -410,13 +415,13 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
             {/* 4. Customer Quote (Recycle Price) - Editable */}
             <div className="flex items-center justify-end">
                 <div className="relative w-full text-right">
-                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-teal-600/50 font-bold text-[10px] pointer-events-none">¥</span>
+                    <span className={`absolute left-2 top-1/2 -translate-y-1/2 font-bold text-[10px] pointer-events-none opacity-50 ${theme.primary}`}>¥</span>
                     <input 
                         type="number" 
                         disabled={!hasItem}
                         value={row.customQuote === 0 && !hasItem ? '' : row.customQuote} 
                         onChange={e => onUpdate({ customQuote: parseInt(e.target.value) || 0 })}
-                        className="w-full h-7 pl-4 pr-1.5 rounded bg-teal-50 border border-teal-200 text-teal-700 font-bold font-mono focus:outline-none focus:ring-1 focus:ring-teal-500/30 disabled:opacity-50 text-right appearance-none transition-colors hover:bg-teal-100/50 text-[13px]"
+                        className={`w-full h-7 pl-4 pr-1.5 rounded ${theme.bgLight} border ${theme.borderColor} ${theme.primary} font-bold font-mono focus:outline-none focus:ring-1 ${theme.ring} disabled:opacity-50 text-right transition-colors appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-[13px]`}
                     />
                 </div>
             </div>
@@ -440,7 +445,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                         disabled={!hasItem}
                         value={row.profitAmount === 0 && !hasItem ? '' : row.profitAmount} 
                         onChange={e => onUpdate({ profitAmount: parseInt(e.target.value) || 0 })}
-                        className="w-full h-7 pl-5 pr-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 font-black font-mono focus:outline-none focus:ring-1 focus:ring-amber-500/30 disabled:opacity-50 text-right appearance-none transition-colors hover:bg-amber-100/50 text-sm"
+                        className="w-full h-7 pl-5 pr-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 font-black font-mono focus:outline-none focus:ring-1 focus:ring-amber-500/30 disabled:opacity-50 text-right appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors hover:bg-amber-100/50 text-sm"
                     />
                 </div>
             </div>
