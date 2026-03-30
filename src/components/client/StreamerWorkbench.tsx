@@ -10,7 +10,6 @@ import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
 import PriceTrendChart from '../admin/PriceTrendChart';
-import RecycleEstimator from './RecycleEstimator';
 import StreamerRecycleTab from './StreamerRecycleTab';
 
 // --- Theme System ---
@@ -438,7 +437,6 @@ function StreamerWorkbench({
     clearBuild,
     hasPermission,
     currentUser,
-    showToast,
     onAiCheck,
     onOpenLibrary
 }: {
@@ -453,7 +451,6 @@ function StreamerWorkbench({
     clearBuild: () => void,
     hasPermission: boolean,
     currentUser?: UserItem | null,
-    showToast?: (msg: string) => void,
     onAiCheck?: () => boolean,
     onOpenLibrary: () => void
 
