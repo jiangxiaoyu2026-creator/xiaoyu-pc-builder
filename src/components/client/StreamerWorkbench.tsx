@@ -248,7 +248,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
                         {entry.item.isDiscount && <span className="bg-rose-50 dark:bg-rose-500/20 text-rose-500 dark:text-rose-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 dark:border-rose-500/30 whitespace-nowrap">特惠</span>}
                     </div>
                 )}
-                {showSuggestions && (
+                {showSuggestions && query.trim().length > 0 && (
                     <div ref={suggestionsRef} className="absolute top-full left-0 right-0 bg-white dark:bg-slate-800 shadow-xl rounded-xl border border-slate-100 dark:border-slate-700 z-50 mt-2 overflow-hidden max-h-[300px] overflow-y-auto">
                         {isLoading && <div className="px-4 py-3 text-xs text-slate-400 text-center flex items-center justify-center gap-2"><RefreshCw size={12} className="animate-spin" /> 正在加载产品库...</div>}
                         {!isLoading && suggestions.map((item, idx) => (

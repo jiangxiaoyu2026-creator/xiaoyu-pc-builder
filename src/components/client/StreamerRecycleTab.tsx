@@ -33,7 +33,8 @@ export default function StreamerRecycleTab() {
             profitRate: 15, // default 15% profit margin
             profitAmount: 0, // absolute profit value
             customQuote: 0,
-            query: ''
+            query: '',
+            isDefault: true
         }));
     });
 
@@ -90,7 +91,8 @@ export default function StreamerRecycleTab() {
                 profitRate: 15,
                 profitAmount: 0,
                 customQuote: 0,
-                query: ''
+                query: '',
+                isDefault: false
             }
         ]);
     };
@@ -108,7 +110,8 @@ export default function StreamerRecycleTab() {
             profitRate: 15,
             profitAmount: 0,
             customQuote: 0,
-            query: ''
+            query: '',
+            isDefault: true
         })));
     };
 
@@ -371,12 +374,11 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                                     <div 
                                         key={item.id} 
                                         onClick={() => selectItem(item)}
-                                        className={`px-4 py-2.5 mx-2 my-1 rounded-lg cursor-pointer flex justify-between items-center transition-colors group ${i === highlightIndex ? 'bg-indigo-50 border border-indigo-200/50' : 'hover:bg-slate-100 border border-transparent'}`}
+                                        className={`px-4 py-1.5 mx-2 my-0.5 rounded-lg cursor-pointer flex justify-between items-center transition-colors group ${i === highlightIndex ? 'bg-indigo-50 border border-indigo-200/50' : 'hover:bg-slate-100 border border-transparent'}`}
                                         onMouseEnter={() => setHighlightIndex(i)}
                                     >
                                         <div className="flex-1 min-w-0 pr-4">
-                                            <div className="font-bold text-sm text-slate-800 truncate mb-0.5 group-hover:text-indigo-700">{item.model}</div>
-                                            <div className="text-[10px] text-slate-400 font-bold tracking-wider">{item.categoryLabel}</div>
+                                            <div className="font-bold text-sm text-slate-800 truncate group-hover:text-indigo-700">{item.model}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -451,20 +453,22 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
             </div>
 
             {/* 8. Clear/Remove */}
-            <div className="flex justify-center">
-                <button 
-                    onClick={() => {
-                        if (hasItem || row.query) {
-                            onUpdate({ query: '', item: null, quantity: 1, profitRate: 15 });
-                        } else {
-                            onRemove();
-                        }
-                    }}
-                    className={`p-1.5 rounded-md transition-colors ${hasItem || row.query ? 'text-slate-400 hover:text-rose-500 hover:bg-rose-50' : 'text-slate-300 hover:text-slate-500 hover:bg-slate-100'}`}
-                    title={hasItem || row.query ? '清空此行内容' : '删除此行'}
-                >
-                    {hasItem || row.query ? <X size={14} strokeWidth={3} /> : <Trash2 size={14} />}
-                </button>
+            <div className="flex justify-center flex-1 h-full items-center">
+                {(hasItem || row.query || !row.isDefault) && (
+                    <button 
+                        onClick={() => {
+                            if (hasItem || row.query) {
+                                onUpdate({ query: '', item: null, quantity: 1, profitRate: 15, customQuote: 0, profitAmount: 0 });
+                            } else {
+                                onRemove();
+                            }
+                        }}
+                        className={`p-1.5 rounded-md transition-colors ${hasItem || row.query ? 'text-slate-400 hover:text-rose-500 hover:bg-rose-50' : 'text-slate-300 hover:text-slate-500 hover:bg-slate-100'}`}
+                        title={hasItem || row.query ? '清空此行内容' : '删除此行'}
+                    >
+                        {hasItem || row.query ? <X size={14} strokeWidth={3} /> : <Trash2 size={14} />}
+                    </button>
+                )}
             </div>
         </div>
     );
