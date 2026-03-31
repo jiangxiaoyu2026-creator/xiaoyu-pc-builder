@@ -17,6 +17,7 @@ import {
     TrendingUp,
     BarChart3,
     FileSpreadsheet,
+    Home,
 } from 'lucide-react';
 import { NavButton } from '../components/admin/Shared';
 import { PricingStrategy, UserItem } from '../types/adminTypes';
@@ -159,12 +160,22 @@ export default function AdminApp() {
             {/* Sidebar */}
             <aside className="w-64 bg-zinc-900 text-white flex flex-col shadow-xl z-20 shrink-0">
                 <div className="p-6 flex items-center gap-3 border-b border-zinc-800">
-                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg">
+                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shrink-0">
                         XY
                     </div>
                     <div>
-                        <h1 className="text-lg font-extrabold tracking-tight">小鱼后台</h1>
-                        <p className="text-[10px] text-zinc-500 uppercase">{isSubAdmin ? '运营模式' : '管理系统'}</p>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-lg font-extrabold tracking-tight">小鱼后台</h1>
+                            <button
+                                onClick={() => window.open('/', '_blank')}
+                                className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-700 hover:border-zinc-600 rounded text-[10px] font-medium transition-all shadow-sm"
+                                title="在新标签页中打开前台"
+                            >
+                                <Home size={10} />
+                                <span>前台</span>
+                            </button>
+                        </div>
+                        <p className="text-[10px] text-zinc-500 uppercase mt-0.5">{isSubAdmin ? '运营模式' : '管理系统'}</p>
                     </div>
                 </div>
 
