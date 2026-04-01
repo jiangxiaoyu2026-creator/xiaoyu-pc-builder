@@ -24,7 +24,7 @@ export function StreamerPermissionDenied() {
                 <h2 className="text-2xl font-bold text-slate-900 mb-2">访问被拒绝</h2>
                 <p className="text-slate-500 mb-8">
                     当前账号没有访问主播中心的权限。<br />
-                    请联系管理员开通权限：<span className="font-bold text-slate-900 select-all">13793195989</span>
+                    请联系管理员开通权限：<span className="font-bold text-slate-900 select-all">15165066053</span>
                 </p>
 
             </div>
@@ -613,6 +613,15 @@ function StreamerWorkbench({
                     <div className="bg-[#0e0f13] p-8 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8),0_0_40px_rgba(212,175,55,0.1)] border border-[#362e1c] w-full max-w-xl transform scale-100 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#211a0c] via-[#d4af37] to-[#211a0c]"></div>
                         
+                        {/* Close Button */}
+                        <button 
+                            onClick={() => window.location.href = '/'}
+                            className="absolute top-5 right-5 text-[#8a7f6c] hover:text-white bg-[#1a1c23] hover:bg-rose-500/80 p-2 rounded-full transition-colors z-20 shadow-sm"
+                            title="返回首页"
+                        >
+                            <X size={18} strokeWidth={2.5} />
+                        </button>
+
                         {/* Header */}
                         <div className="text-center mb-8 relative pb-6 border-b border-[#2b2518]">
                             <div className="mx-auto w-16 h-16 mb-4 rounded-2xl bg-gradient-to-b from-[#1f1a10] to-[#0e0c08] flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] border border-[#40351f] relative overflow-hidden">
@@ -694,7 +703,7 @@ function StreamerWorkbench({
                             <div className="text-[10px] text-[#8a7f6c] font-bold mb-3 uppercase tracking-[0.2em] relative inline-block px-4 bg-[#0e0f13] -mt-10 mb-5">业务直通专线 / 专属客服</div>
                             <div className="block mt-2">
                                 <div className="inline-flex items-center justify-center bg-gradient-to-b from-[#1c1a17] to-[#12110e] text-[#d4af37] px-8 py-3 rounded-lg font-black font-mono text-xl tracking-widest border border-[#40351f] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_4px_10px_rgba(0,0,0,0.5)] cursor-pointer hover:bg-gradient-to-b hover:from-[#26221d] hover:to-[#1a1713] transition-all">
-                                    137-9319-5989
+                                    151-6506-6053
                                 </div>
                             </div>
                         </div>
