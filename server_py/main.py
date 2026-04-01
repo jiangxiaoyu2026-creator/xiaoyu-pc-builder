@@ -28,6 +28,14 @@ app.add_middleware(
 def on_startup():
     logger.info("Starting up and initializing database...")
     init_db()
+    
+    logger.info("Starting APScheduler for JD price sync...")
+    try:
+        from .scheduler import start_scheduler
+        start_scheduler()
+    except Exception as e:
+        logger.error(f"Failed to start scheduler: {e}")
+        
     logger.info("Registered routes:")
     for route in app.routes:
         if hasattr(route, 'methods'):

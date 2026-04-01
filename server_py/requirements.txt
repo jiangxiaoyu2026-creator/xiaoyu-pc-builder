@@ -11,3 +11,4 @@ openai>=1.14.0
 alibabacloud_dysmsapi20170525>=3.0.0
 alibabacloud_tea_openapi>=0.3.8
 alibabacloud_ecs20140526>=3.0.0
+APScheduler>=3.10.4

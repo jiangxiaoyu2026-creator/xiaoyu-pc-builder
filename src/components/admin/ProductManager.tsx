@@ -938,7 +938,7 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                         onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                         required 
                                     />
-                                    <div className="mt-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                    <div className="mt-2 p-2 bg-slate-50 rounded-lg border border-slate-100 space-y-1.5">
                                         <div className="flex justify-between text-[10px] text-slate-400">
                                             <span>预估毛利:</span>
                                             <span className="font-bold text-emerald-600">¥{Number(( (formData.price || 0) - (formData.costPrice || 0) ).toFixed(2))}</span>
@@ -948,6 +948,15 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                             <span className="font-bold text-emerald-600">{formData.price ? (( (formData.price - (formData.costPrice || 0)) / formData.price ) * 100).toFixed(1) : 0}%</span>
                                         </div>
                                     </div>
+                                    {formData.specs?.jdPrice && (
+                                        <div className="mt-2 p-2.5 bg-red-50/50 rounded-lg border border-red-100/50 flex items-center justify-between">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[11px] font-bold text-red-600">🐶 京东官方现价</span>
+                                                <span className="text-[9px] px-1 py-0.5 bg-red-100 text-red-600 rounded">自动实时</span>
+                                            </div>
+                                            <span className="font-bold font-mono text-red-600 text-sm">¥{formData.specs.jdPrice}</span>
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 mb-1">排序权重</label>

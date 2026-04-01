@@ -377,8 +377,15 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                                         className={`px-4 py-1.5 mx-2 my-0.5 rounded-lg cursor-pointer flex justify-between items-center transition-colors group ${i === highlightIndex ? 'bg-indigo-50 border border-indigo-200/50' : 'hover:bg-slate-100 border border-transparent'}`}
                                         onMouseEnter={() => setHighlightIndex(i)}
                                     >
-                                        <div className="flex-1 min-w-0 pr-4">
-                                            <div className="font-bold text-sm text-slate-800 truncate group-hover:text-indigo-700">{item.model}</div>
+                                        <div className="flex-1 min-w-0 pr-4 flex justify-between items-center gap-4">
+                                            <div className="font-bold text-sm text-slate-800 truncate group-hover:text-indigo-700" title={item.model}>{item.model}</div>
+                                            {item.recyclePrice > 0 ? (
+                                                <div className="text-xs font-mono font-medium text-slate-400 shrink-0">
+                                                    参考: <span className="text-emerald-600 font-bold">¥{item.recyclePrice}</span>
+                                                </div>
+                                            ) : (
+                                                <div className="text-[10px] text-slate-300 shrink-0">暂无报价</div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}

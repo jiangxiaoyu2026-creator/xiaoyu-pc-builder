@@ -318,7 +318,6 @@
   /* Table row hover enhancement */
   .table-row-hover {
     transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-    position: relative;
   }
 
   .table-row-hover:hover {
@@ -326,7 +325,15 @@
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   }
 
-  .table-row-hover::before {
+  .table-row-hover:hover > td:first-child::before {
+    opacity: 1;
+  }
+
+  .table-row-hover > td:first-child {
+    position: relative;
+  }
+
+  .table-row-hover > td:first-child::before {
     content: '';
     position: absolute;
     left: 0;
@@ -337,10 +344,6 @@
     border-radius: 0 2px 2px 0;
     opacity: 0;
     transition: opacity 0.2s ease;
-  }
-
-  .table-row-hover:hover::before {
-    opacity: 1;
   }
 
   /* Nav item active indicator */
