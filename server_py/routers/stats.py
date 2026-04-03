@@ -17,7 +17,7 @@ async def get_stats(
 ):
     """获取系统统计数据（仅限管理员）"""
     try:
-        today = datetime.utcnow().strftime("%Y-%m-%d")
+        today = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d")
         
         # 计算总 AI 生成数
         total_ai = session.exec(select(func.sum(DailyStat.aiGenerations))).first() or 0
@@ -106,7 +106,7 @@ async def log_event(
 ):
     """记录自定义事件（内部/公开）"""
     event_type = event_data.get("type")
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d")
     
     try:
         # 获取或创建当天的统计记录
@@ -141,7 +141,7 @@ async def get_price_trends(
     """获取价格变化趋势数据"""
     from datetime import timedelta
     
-    cutoff = (datetime.utcnow() - timedelta(days=days)).isoformat()
+    cutoff = (datetime.utcnow() + timedelta(hours=8) - timedelta(days=days)).isoformat()
     
     # Get recent price changes
     query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff)
