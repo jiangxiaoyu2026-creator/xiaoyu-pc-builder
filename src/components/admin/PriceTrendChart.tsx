@@ -175,18 +175,14 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                 setData(await resStats.json());
                 const hData = await resHistory.json();
                 
-                // --- 过滤掉30天内价格毫无变化的产品 ---
+                // 移除原先此处过滤掉无变动产品的逻辑，以保证真实均价计算的分母准确。
+                // 否则图表均价只受产生过价格波动的商品影响，会导致曲线虚高或虚低。
                 if (hData.products && hData.productTrends) {
                     const tMap = new Map();
                     for (const pt of hData.productTrends) {
                         tMap.set(String(pt.hardwareId), pt.points);
                     }
-                    hData.products = hData.products.filter((p: any) => {
-                        const pts = tMap.get(String(p.id));
-                        if (!pts || pts.length === 0) return false;
-                        // 只要有任何一天的历史价格与当前最新价格不同，说明有过改价/波动
-                        return pts.some((pt: any) => pt.price !== p.price);
-                    });
+                    // 保留 tMap 用于后续辅助判断，但不剔除无波动的p
                 }
                 
                 setTrendData(hData);

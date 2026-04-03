@@ -382,15 +382,15 @@ def _log_price_change(session: Session, product: Hardware, old_price: float, new
     if recent:
         try:
             recent_time = datetime.fromisoformat(recent.changedAt)
-            now = datetime.utcnow()
-            if now - recent_time < merge_window:
+            now_cst = datetime.utcnow() + timedelta(hours=8)
+            if (now_cst - recent_time).total_seconds() >= 0 and now_cst - recent_time < merge_window:
                 # 2小时内：更新现有记录，保留原始 oldPrice
                 recent.newPrice = new_price
                 recent.changeAmount = round(new_price - recent.oldPrice, 2)
                 recent.changePercent = round(
                     ((new_price - recent.oldPrice) / recent.oldPrice * 100) if recent.oldPrice > 0 else 0, 2
                 )
-                recent.changedAt = now.isoformat()
+                recent.changedAt = now_cst.isoformat()
                 session.add(recent)
                 return
         except (ValueError, TypeError):
@@ -404,7 +404,8 @@ def _log_price_change(session: Session, product: Hardware, old_price: float, new
         oldPrice=old_price,
         newPrice=new_price,
         changeAmount=round(new_price - old_price, 2),
-        changePercent=round(change_pct, 2)
+        changePercent=round(change_pct, 2),
+        changedAt=(datetime.utcnow() + timedelta(hours=8)).isoformat()
     )
     session.add(ph)
 
