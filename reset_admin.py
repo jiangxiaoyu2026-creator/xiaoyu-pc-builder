@@ -5,26 +5,33 @@ from server_py.db import engine
 
 def reset_admin_password():
     with Session(engine) as session:
-        statement = select(User).where(User.username == "admin")
-        user = session.exec(statement).first()
-        
-        if not user:
-            print("Admin user not found! Creating one...")
-            user = User(
+        # 1. Check if 'admin' user still exists and delete it to free up confusion
+        admin_user = session.exec(select(User).where(User.username == "admin")).first()
+        if admin_user:
+            print(f"Removing old generic 'admin' user (ID: {admin_user.id}).")
+            session.delete(admin_user)
+            session.commit()
+
+        # 2. Check for xiaoyu
+        xiaoyu_user = session.exec(select(User).where(User.username == "xiaoyu")).first()
+        if not xiaoyu_user:
+            print("Creating new xiaoyu admin user...")
+            xiaoyu_user = User(
                 id="admin-default-001",
-                username="admin",
-                password=get_password_hash("admin123"),
+                username="xiaoyu",
+                password=get_password_hash("jiangxiaoyu119"),
                 role="admin",
                 status="active"
             )
-            session.add(user)
+            session.add(xiaoyu_user)
         else:
-            print(f"Admin user found (ID: {user.id}). Resetting password...")
-            user.password = get_password_hash("admin123")
-            session.add(user)
+            print(f"xiaoyu user found (ID: {xiaoyu_user.id}). Updating to admin and resetting password...")
+            xiaoyu_user.role = "admin"
+            xiaoyu_user.password = get_password_hash("jiangxiaoyu119")
+            session.add(xiaoyu_user)
             
         session.commit()
-        print("Success! Admin password has been reset to: admin123")
+        print("Success! Admin credentials have been reset to: xiaoyu / jiangxiaoyu119")
 
 if __name__ == "__main__":
     reset_admin_password()

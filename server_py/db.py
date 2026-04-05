@@ -122,21 +122,21 @@ def _create_default_admin():
 
     with Session(engine) as session:
         # 检查是否已存在管理员
-        existing = session.exec(select(User).where(User.username == "admin")).first()
+        existing = session.exec(select(User).where(User.username == "xiaoyu")).first()
         if existing:
             return
 
         # 创建默认管理员
         admin = User(
             id="admin-default-001",
-            username="admin",
-            password=get_password_hash("admin123"),
+            username="xiaoyu",
+            password=get_password_hash("jiangxiaoyu119"),
             role="admin",
             status="active"
         )
         session.add(admin)
         session.commit()
-        print("Default admin created: admin / admin123")
+        print("Default admin created: xiaoyu / jiangxiaoyu119")
 
 def get_session():
     with Session(engine) as session:

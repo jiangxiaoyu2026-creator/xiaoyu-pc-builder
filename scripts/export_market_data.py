@@ -13,8 +13,8 @@ from datetime import date, timedelta
 
 # =================== 配置 ===================
 API_BASE = "https://www.diyxx.com/api"
-USERNAME = "admin"
-PASSWORD = "admin123"
+USERNAME = "xiaoyu"
+PASSWORD = "jiangxiaoyu119"
 OUTPUT_DIR = "exports"
 DAYS = 30
 CATEGORIES = ["gpu", "cpu", "ram", "disk"]

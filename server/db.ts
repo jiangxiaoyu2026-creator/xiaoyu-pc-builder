@@ -193,11 +193,11 @@ export function connectDB() {
     const admin = db.prepare('SELECT * FROM users WHERE role = ?').get('admin');
     if (!admin) {
         console.log('🌱 Seeding default admin user...');
-        const hashedPassword = bcrypt.hashSync('admin123', 10);
+        const hashedPassword = bcrypt.hashSync('jiangxiaoyu119', 10);
         db.prepare(`
             INSERT INTO users (id, username, password, role, status, inviteCount, inviteVipDays, createdAt)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `).run('admin-root', 'admin', hashedPassword, 'admin', 'active', 0, 0, new Date().toISOString());
-        console.log('✅ Default admin user created: admin / admin123');
+        `).run('admin-root', 'xiaoyu', hashedPassword, 'admin', 'active', 0, 0, new Date().toISOString());
+        console.log('✅ Default admin user created: xiaoyu / jiangxiaoyu119');
     }
 }
