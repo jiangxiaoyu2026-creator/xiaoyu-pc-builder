@@ -8,7 +8,7 @@ import {
     ResponsiveContainer,
     LineChart, Line
 } from 'recharts';
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter, Minus, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter, Minus, Download, Calendar, Thermometer, Activity, Clock } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 interface PriceTrendData {
@@ -85,6 +85,38 @@ interface ProductPriceTrendData {
     }>;
 }
 
+interface MarketOverviewData {
+    todaySummary: {
+        totalChanges: number;
+        upCount: number;
+        downCount: number;
+        avgUpAmount: number;
+        avgDownAmount: number;
+    };
+    categoryStats: Array<{
+        category: string;
+        productCount: number;
+        currentAvg: number;
+        todayUp: number;
+        todayDown: number;
+        change7dPct: number | null;
+        change30dPct: number | null;
+    }>;
+    recentEvents: Array<{
+        id: number;
+        name: string;
+        category: string;
+        changeAmount: number;
+        changePercent: number;
+        oldPrice: number;
+        newPrice: number;
+        changedAt: string;
+    }>;
+    temperature: number;
+    totalUp: number;
+    totalDown: number;
+}
+
 const CATEGORY_LABELS: Record<string, string> = {
     cpu: 'CPU', gpu: '显卡', mainboard: '主板', ram: '内存',
     disk: '硬盘/SSD', psu: '电源', power: '电源', case: '机箱',
@@ -127,6 +159,15 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
     const [actualBrandFilter, setActualBrandFilter] = useState<string>(''); // ASUS, Kingston, Samsung, etc.
     const [gpuChipFilter, setGpuChipFilter] = useState<string>(''); // RTX 5060 / RTX 5070 etc.
 
+    // Custom date range
+    const [useCustomRange, setUseCustomRange] = useState(false);
+    const [customStartDate, setCustomStartDate] = useState('');
+    const [customEndDate, setCustomEndDate] = useState('');
+    const [showDatePicker, setShowDatePicker] = useState(false);
+
+    // Market overview for "all" category
+    const [marketOverview, setMarketOverview] = useState<MarketOverviewData | null>(null);
+
     // Refs for downloadable sections
     const chartRef = useRef<HTMLDivElement>(null);
     const tableRef = useRef<HTMLDivElement>(null);
@@ -164,31 +205,46 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
             // Pass the most specific filter: if subcat exists, pass it; else if ramGen exists, pass it
             const backendFilter = (category === 'all' ? '' : subcategory) || (category === 'ram' ? ramGeneration : '');
 
-            const fetchDays = 30; // 强制获取 30 天数据以计算对比表
+            // Build date params: custom range or fixed days (minimum 30 for comparison tables)
+            const fetchDays = Math.max(days, 30);
+            let dateParams = `days=${fetchDays}`;
+            if (useCustomRange && customStartDate && customEndDate) {
+                dateParams = `start_date=${customStartDate}&end_date=${customEndDate}`;
+            }
 
-            const [resStats, resHistory] = await Promise.all([
-                fetch(`/api/stats/price-trends?days=${fetchDays}&category=${category === 'all' ? '' : category}&subcategory=${backendFilter}`, { headers }),
-                fetch(`/api/stats/product-price-history?days=${fetchDays}&category=${category === 'all' ? '' : category}&subcategory=${backendFilter}`, { headers })
-            ]);
-
-            if (resStats.ok && resHistory.ok) {
-                setData(await resStats.json());
-                const hData = await resHistory.json();
-                
-                // 移除原先此处过滤掉无变动产品的逻辑，以保证真实均价计算的分母准确。
-                // 否则图表均价只受产生过价格波动的商品影响，会导致曲线虚高或虚低。
-                if (hData.products && hData.productTrends) {
-                    const tMap = new Map();
-                    for (const pt of hData.productTrends) {
-                        tMap.set(String(pt.hardwareId), pt.points);
-                    }
-                    // 保留 tMap 用于后续辅助判断，但不剔除无波动的p
+            // If category is 'all', fetch market overview instead of per-product data
+            if (category === 'all') {
+                const overviewRes = await fetch(`/api/stats/market-overview?days=${fetchDays}`, { headers });
+                const statsRes = await fetch(`/api/stats/price-trends?${dateParams}`, { headers });
+                if (overviewRes.ok) {
+                    setMarketOverview(await overviewRes.json());
                 }
-                
-                setTrendData(hData);
-                // Reset product selection if category changes, or auto-select first
-                if (!hData.products.find((p: any) => String(p.id) === selectedProductId)) {
-                    setSelectedProductId('');
+                if (statsRes.ok) {
+                    setData(await statsRes.json());
+                }
+                setTrendData(null);
+            } else {
+                setMarketOverview(null);
+                const [resStats, resHistory] = await Promise.all([
+                    fetch(`/api/stats/price-trends?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers }),
+                    fetch(`/api/stats/product-price-history?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers })
+                ]);
+
+                if (resStats.ok && resHistory.ok) {
+                    setData(await resStats.json());
+                    const hData = await resHistory.json();
+                    
+                    if (hData.products && hData.productTrends) {
+                        const tMap = new Map();
+                        for (const pt of hData.productTrends) {
+                            tMap.set(String(pt.hardwareId), pt.points);
+                        }
+                    }
+                    
+                    setTrendData(hData);
+                    if (!hData.products.find((p: any) => String(p.id) === selectedProductId)) {
+                        setSelectedProductId('');
+                    }
                 }
             }
         } catch (e) {
@@ -205,7 +261,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
         setActualBrandFilter('');
         setGpuChipFilter('');
         fetchData(); 
-    }, [category, subcategory, ramGeneration]);
+    }, [category, subcategory, ramGeneration, days, useCustomRange, customStartDate, customEndDate]);
 
 
 
@@ -751,22 +807,249 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                         </select>
                     )}
                 </div>
-                <div className="flex gap-1">
-                    {[7, 14, 30].map(d => (
+                <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                        {[7, 14, 30, 60, 90].map(d => (
+                            <button
+                                key={d}
+                                onClick={() => { setDays(d); setUseCustomRange(false); setShowDatePicker(false); }}
+                                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${days === d && !useCustomRange
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                    }`}
+                            >
+                                {d}天
+                            </button>
+                        ))}
                         <button
-                            key={d}
-                            onClick={() => setDays(d)}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${days === d
-                                ? 'bg-indigo-600 text-white'
-                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                }`}
+                            onClick={() => setShowDatePicker(!showDatePicker)}
+                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
+                                useCustomRange
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
                         >
-                            {d}天
+                            <Calendar size={12} />
+                            {useCustomRange && customStartDate && customEndDate
+                                ? `${customStartDate.slice(5)} → ${customEndDate.slice(5)}`
+                                : '自定义'}
                         </button>
-                    ))}
+                    </div>
+                    {showDatePicker && (
+                        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm animate-page-enter">
+                            <input
+                                type="date"
+                                value={customStartDate}
+                                onChange={e => setCustomStartDate(e.target.value)}
+                                className="text-xs border-0 outline-none bg-transparent text-slate-700 font-medium"
+                            />
+                            <span className="text-slate-300 text-xs">→</span>
+                            <input
+                                type="date"
+                                value={customEndDate}
+                                onChange={e => setCustomEndDate(e.target.value)}
+                                className="text-xs border-0 outline-none bg-transparent text-slate-700 font-medium"
+                            />
+                            <button
+                                onClick={() => {
+                                    if (customStartDate && customEndDate && customStartDate <= customEndDate) {
+                                        setUseCustomRange(true);
+                                        setShowDatePicker(false);
+                                    }
+                                }}
+                                disabled={!customStartDate || !customEndDate || customStartDate > customEndDate}
+                                className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                应用
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
+            {/* 单品类迷你统计条 */}
+            {category !== 'all' && (
+                <div className="flex bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+                    <div className="flex-1 p-3 px-4 flex items-center justify-between border-r border-slate-100 hover:bg-slate-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
+                                <TrendingUp size={16} />
+                            </div>
+                            <div>
+                                <div className="text-[10px] sm:text-xs text-slate-500 font-bold mb-0.5">本月涨价趋势</div>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-xl font-black text-rose-600 leading-none">{todaySummary.monthUpCount ?? todaySummary.upCount}</span>
+                                    <span className="text-[10px] text-rose-400">今日: {todaySummary.todayUpCount ?? todaySummary.upCount}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="flex-1 p-3 px-4 flex items-center justify-between border-r border-slate-100 hover:bg-slate-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                <TrendingDown size={16} />
+                            </div>
+                            <div>
+                                <div className="text-[10px] sm:text-xs text-slate-500 font-bold mb-0.5">本月降价趋势</div>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-xl font-black text-emerald-600 leading-none">{todaySummary.monthDownCount ?? todaySummary.downCount}</span>
+                                    <span className="text-[10px] text-emerald-400">今日: {todaySummary.todayDownCount ?? todaySummary.downCount}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 p-3 px-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                                <Activity size={16} />
+                            </div>
+                            <div>
+                                <div className="text-[10px] sm:text-xs text-slate-500 font-bold mb-0.5">本月总变动数</div>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-xl font-black text-blue-600 leading-none">{todaySummary.monthTotalChanges ?? todaySummary.totalChanges}</span>
+                                    <span className="text-[10px] text-blue-400">今日: {todaySummary.todayTotalChanges ?? todaySummary.totalChanges}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {/* 全部品类全局概览面板 */}
+            {category === 'all' && marketOverview && (
+                <div className="space-y-6 animate-page-enter">
+                    {/* A. 顶部 KPI 指标卡片行 */}
+                    <div className="grid grid-cols-4 gap-4">
+                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <div className="text-xs font-bold text-slate-400 mb-1 flex items-center justify-between">
+                                今日变动 (件)
+                                <Activity size={14} className="text-blue-500" />
+                            </div>
+                            <div className="text-2xl font-black text-slate-800">{marketOverview.todaySummary.totalChanges}</div>
+                            <div className="mt-2 flex gap-2 text-[10px] font-bold">
+                                <span className="text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded">涨 {marketOverview.todaySummary.upCount}</span>
+                                <span className="text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded">降 {marketOverview.todaySummary.downCount}</span>
+                            </div>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl border border-rose-100 shadow-sm relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-rose-50 rounded-full blur-xl -mr-4 -mt-4 transition-transform group-hover:scale-150 duration-500" />
+                            <div className="text-xs font-bold text-rose-400 mb-1 flex items-center justify-between relative z-10">
+                                涨价商品
+                                <TrendingUp size={14} className="text-rose-500" />
+                            </div>
+                            <div className="text-2xl font-black text-rose-600 relative z-10">{marketOverview.todaySummary.upCount}</div>
+                            <div className="text-[10px] text-rose-500/70 mt-2 relative z-10">
+                                平均涨幅: ¥{marketOverview.todaySummary.avgUpAmount.toFixed(2)}
+                            </div>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-50 rounded-full blur-xl -mr-4 -mt-4 transition-transform group-hover:scale-150 duration-500" />
+                            <div className="text-xs font-bold text-emerald-400 mb-1 flex items-center justify-between relative z-10">
+                                降价商品
+                                <TrendingDown size={14} className="text-emerald-500" />
+                            </div>
+                            <div className="text-2xl font-black text-emerald-600 relative z-10">{marketOverview.todaySummary.downCount}</div>
+                            <div className="text-[10px] text-emerald-500/70 mt-2 relative z-10">
+                                平均降幅: ¥{Math.abs(marketOverview.todaySummary.avgDownAmount).toFixed(2)}
+                            </div>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <div className="text-xs font-bold text-slate-400 mb-1 flex items-center justify-between">
+                                市场温度
+                                <Thermometer size={14} className={marketOverview.temperature > 50 ? "text-rose-500" : "text-emerald-500"} />
+                            </div>
+                            <div className="text-2xl font-black text-slate-800">{marketOverview.temperature}° <span className="text-xs text-slate-400 font-medium ml-1">涨跌比</span></div>
+                            <div className="mt-2 w-full h-1.5 bg-slate-100 rounded-full overflow-hidden flex">
+                                <div className="h-full bg-rose-500" style={{ width: `${marketOverview.temperature}%` }} />
+                                <div className="h-full bg-emerald-500" style={{ width: `${100 - marketOverview.temperature}%` }} />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-6">
+                        {/* B. 品类涨跌热力概览 */}
+                        <div className="col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <Activity size={16} className="text-indigo-500" />
+                                核心大件行情热力 (均价)
+                            </h3>
+                            <div className="space-y-4">
+                                {marketOverview.categoryStats.map(stat => (
+                                    <div key={stat.category} className="group cursor-pointer hover:bg-slate-50 p-3 -mx-3 rounded-xl transition-colors" onClick={() => setCategory(stat.category)}>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-extrabold text-slate-700 w-16">{CATEGORY_LABELS[stat.category] || stat.category}</span>
+                                                <span className="text-[10px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full shadow-sm">{stat.productCount} 款活跃</span>
+                                            </div>
+                                            <div className="font-black text-slate-800 text-lg">¥{stat.currentAvg.toFixed(2)}</div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4 bg-white border border-slate-100 p-3 rounded-lg shadow-sm">
+                                            <div>
+                                                <div className="text-[10px] font-bold text-slate-400 mb-1.5">较 7 日前</div>
+                                                {stat.change7dPct !== null ? (
+                                                    <div className={`text-xs font-bold px-2 py-1 rounded inline-flex items-center gap-1 w-full ${
+                                                        stat.change7dPct > 0 ? 'bg-rose-50 text-rose-600' : stat.change7dPct < 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-500'
+                                                    }`}>
+                                                        {stat.change7dPct > 0 ? '↑上涨' : stat.change7dPct < 0 ? '↓下降' : '—持平'} 
+                                                        <span className="ml-auto">{Math.abs(stat.change7dPct)}%</span>
+                                                    </div>
+                                                ) : <span className="text-xs text-slate-300">—</span>}
+                                            </div>
+                                            <div>
+                                                <div className="text-[10px] font-bold text-slate-400 mb-1.5">较 30 日前</div>
+                                                {stat.change30dPct !== null ? (
+                                                    <div className={`text-xs font-bold px-2 py-1 rounded inline-flex items-center gap-1 w-full ${
+                                                        stat.change30dPct > 0 ? 'bg-rose-50 text-rose-600' : stat.change30dPct < 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-500'
+                                                    }`}>
+                                                        {stat.change30dPct > 0 ? '↑上涨' : stat.change30dPct < 0 ? '↓下降' : '—持平'} 
+                                                        <span className="ml-auto">{Math.abs(stat.change30dPct)}%</span>
+                                                    </div>
+                                                ) : <span className="text-xs text-slate-300">—</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* C. 全品类涨跌事件时间轴 */}
+                        <div className="col-span-1 bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col max-h-[500px]">
+                            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 shrink-0">
+                                <Clock size={16} className="text-slate-400" />
+                                最新调价动态
+                            </h3>
+                            <div className="overflow-y-auto custom-scrollbar flex-1 pr-2 space-y-4">
+                                {marketOverview.recentEvents.map((evt, idx) => (
+                                    <div key={`${evt.id}-${idx}`} className="flex items-start gap-3">
+                                        <div className="mt-1 flex flex-col items-center">
+                                            <div className={`w-2.5 h-2.5 rounded-full ${evt.changeAmount > 0 ? 'bg-rose-500 shadow-sm shadow-rose-200' : 'bg-emerald-500 shadow-sm shadow-emerald-200'}`} />
+                                            {idx < marketOverview.recentEvents.length - 1 && <div className="w-0.5 h-full bg-slate-100 my-1 min-h-[30px]" />}
+                                        </div>
+                                        <div className="flex-1 pb-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-[10px] font-bold text-slate-400">{evt.changedAt.slice(5, 16)}</span>
+                                                <span className={`text-xs font-black ${evt.changeAmount > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                    {evt.changeAmount > 0 ? '涨' : '降'} ¥{Math.abs(evt.changeAmount).toFixed(0)}
+                                                </span>
+                                            </div>
+                                            <div className="text-[13px] font-bold text-slate-700 leading-snug">
+                                                <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded shadow-sm mr-1.5 inline-block align-text-bottom font-black">{CATEGORY_LABELS[evt.category] || evt.category}</span>
+                                                {evt.name}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {marketOverview.recentEvents.length === 0 && (
+                                    <div className="text-center py-8 text-sm font-medium text-slate-400">近期无调价记录</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* 品类均价走势 */}
             {trendData && trendData.categoryTotalAvgTrend && trendData.categoryTotalAvgTrend.length > 0 && category !== 'all' && (() => {
@@ -1215,6 +1498,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                                 <tr>
                                     <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase bg-slate-50">硬件名称 (点击查看)</th>
                                     <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400 uppercase bg-slate-50">当前价格</th>
+                                    <th className="text-center px-4 py-2.5 text-xs font-bold text-slate-400 uppercase bg-slate-50">走势(近30天)</th>
                                     {(['1d', '7d', '14d', '30d'] as const).map(k => (
                                         <th 
                                             key={k} 
@@ -1253,6 +1537,33 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                                             {p.name}
                                         </td>
                                         <td className="px-4 py-3 text-right font-extrabold text-slate-800 text-base">¥{p.currentPrice}</td>
+                                        <td className="px-4 py-3 text-center w-24">
+                                            {(() => {
+                                                const pt = trendData?.productTrends?.find((t: any) => t.hardwareId === p.id);
+                                                const pts = pt?.points || [];
+                                                if (pts.length < 2) return <span className="text-slate-300 text-xs">—</span>;
+                                                const prices = pts.map((d: any) => d.price);
+                                                const maxPrices = Math.max(...prices);
+                                                const minPrices = Math.min(...prices);
+                                                const range = maxPrices - minPrices || 1;
+                                                const width = 60;
+                                                const height = 20;
+                                                const isUp = prices[prices.length - 1] > prices[0];
+                                                const isDown = prices[prices.length - 1] < prices[0];
+                                                const color = isUp ? '#f43f5e' : isDown ? '#10b981' : '#cbd5e1';
+                                                const pathD = pts.map((d: any, idx: number) => {
+                                                    const x = (idx / (pts.length - 1)) * width;
+                                                    const y = height - ((d.price - minPrices) / range) * height;
+                                                    return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+                                                }).join(' ');
+                                                
+                                                return (
+                                                    <svg width={width} height={height} className="inline-block overflow-visible" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))'}}>
+                                                        <path d={pathD} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                    </svg>
+                                                );
+                                            })()}
+                                        </td>
                                         {(['1d', '7d', '14d', '30d'] as const).map(k => {
                                             const {amt, pct} = p.changes[k];
                                             return (
@@ -1281,61 +1592,12 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
             )}
             </div>
 
-            {/* ====== 右侧固定面板（3 个卡片 + 30天榜单，独立滚动） ====== */}
+            {/* ====== 右侧固定面板（30天榜单，独立滚动） ====== */}
             {!hideSummaryPanel && (
             <aside className="w-[340px] shrink-0 overflow-y-auto custom-scrollbar space-y-4 pr-2 pl-4 border-l border-slate-200">
-                {/* ---------- 今日概览（竖向排列） ---------- */}
-                <div className="bg-gradient-to-br from-rose-50 to-rose-100 p-4 rounded-xl border border-rose-200 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
-                    <div className="flex items-center justify-between relative z-10">
-                        <div>
-                            <div className="text-[10px] font-black text-rose-400 uppercase tracking-wider mb-1">本月涨价</div>
-                            <div className="text-2xl font-black text-rose-600 tracking-tight leading-none">{todaySummary.monthUpCount ?? todaySummary.upCount}</div>
-                        </div>
-                        <div className="w-10 h-10 rounded-xl bg-rose-200/60 flex items-center justify-center shrink-0">
-                            <ArrowUpRight strokeWidth={3} size={20} className="text-rose-600" />
-                        </div>
-                    </div>
-                    <div className="text-xs font-bold text-rose-500/80 mt-2 bg-rose-100/50 px-2 py-1 rounded inline-block">
-                        今日涨价: {todaySummary.todayUpCount ?? todaySummary.upCount} 件
-                    </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-xl border border-emerald-200 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
-                    <div className="flex items-center justify-between relative z-10">
-                        <div>
-                            <div className="text-[10px] font-black text-emerald-400 uppercase tracking-wider mb-1">本月降价</div>
-                            <div className="text-2xl font-black text-emerald-600 tracking-tight leading-none">{todaySummary.monthDownCount ?? todaySummary.downCount}</div>
-                        </div>
-                        <div className="w-10 h-10 rounded-xl bg-emerald-200/60 flex items-center justify-center shrink-0">
-                            <ArrowDownRight strokeWidth={3} size={20} className="text-emerald-600" />
-                        </div>
-                    </div>
-                    <div className="text-xs font-bold text-emerald-500/80 mt-2 bg-emerald-100/50 px-2 py-1 rounded inline-block">
-                        今日降价: {todaySummary.todayDownCount ?? todaySummary.downCount} 件
-                    </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500" />
-                    <div className="flex items-center justify-between relative z-10">
-                        <div>
-                            <div className="text-[10px] font-black text-blue-400 uppercase tracking-wider mb-1">本月总变动</div>
-                            <div className="text-2xl font-black text-blue-600 tracking-tight leading-none">{todaySummary.monthTotalChanges ?? todaySummary.totalChanges}</div>
-                        </div>
-                        <div className="w-10 h-10 rounded-xl bg-blue-200/60 flex items-center justify-center shrink-0">
-                            <TrendingUp strokeWidth={3} size={20} className="text-blue-600" />
-                        </div>
-                    </div>
-                    <div className="text-xs font-bold text-blue-500/80 mt-2 bg-blue-100/50 px-2 py-1 rounded inline-block">
-                        今日变动: {todaySummary.todayTotalChanges ?? todaySummary.totalChanges} 件
-                    </div>
-                </div>
-
                 {/* ---------- 30天榜单（叠加在右侧） ---------- */}
                 {trendData && trendData.historicalLows && trendData.historicalHighs && (
-                    <div className="space-y-4 pt-2">
+                    <div className="space-y-4">
                         {/* 史低榜单 */}
                         <div ref={lowRef} className="bg-[#f0fdf4] p-5 rounded-2xl border border-emerald-200 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />

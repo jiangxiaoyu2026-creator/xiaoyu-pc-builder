@@ -135,21 +135,32 @@ async def get_price_trends(
     days: int = 30,
     category: Optional[str] = None,
     subcategory: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     session: Session = Depends(get_session),
     admin: User = Depends(get_current_streamer_or_admin)
 ):
-    """获取价格变化趋势数据"""
+    """获取价格变化趋势数据（支持自定义日期范围）"""
     from datetime import timedelta
     
-    cutoff = (datetime.utcnow() + timedelta(hours=8) - timedelta(days=days)).isoformat()
+    days = min(days, 90)  # 上限放宽到 90 天
+    
+    if start_date and end_date:
+        cutoff = f"{start_date}T00:00:00"
+        cutoff_end = f"{end_date}T23:59:59"
+    else:
+        cutoff = (datetime.utcnow() + timedelta(hours=8) - timedelta(days=days)).isoformat()
+        cutoff_end = None
     
     # Get recent price changes
     query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff)
+    if cutoff_end:
+        query = query.where(PriceHistory.changedAt <= cutoff_end)
     if category and category != "all":
         query = query.where(PriceHistory.category == category)
     query = query.order_by(PriceHistory.changedAt.desc())
     
-    changes = session.exec(query.limit(1000)).all()
+    changes = session.exec(query.limit(3000)).all()
     
     # Optional subcategory filtering (DDR4/5 or specific spec)
     if subcategory and category in ['ram', 'disk']:
@@ -425,25 +436,41 @@ async def get_product_price_history(
     category: Optional[str] = None,
     subcategory: Optional[str] = None,
     days: int = 30,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     session: Session = Depends(get_session),
     admin: User = Depends(get_current_streamer_or_admin)
 ):
-    """获取产品级别价格历史趋势（真实品类/细分均价 + 单品走势）"""
+    """获取产品级别价格历史趋势（真实品类/细分均价 + 单品走势，支持自定义日期范围）"""
     from datetime import timedelta
     from collections import defaultdict
 
+    days = min(days, 90)  # 上限放宽到 90 天
+
     # Use CST (UTC+8) to match other endpoints and the changedAt stored with CST
-    cutoff = (datetime.utcnow() + timedelta(hours=8) - timedelta(days=days)).isoformat()
+    if start_date and end_date:
+        cutoff = f"{start_date}T00:00:00"
+        cutoff_end = f"{end_date}T23:59:59"
+        # Calculate actual days span for date range generation
+        from datetime import date as date_type
+        d_start = date_type.fromisoformat(start_date)
+        d_end = date_type.fromisoformat(end_date)
+        days = (d_end - d_start).days
+    else:
+        cutoff = (datetime.utcnow() + timedelta(hours=8) - timedelta(days=days)).isoformat()
+        cutoff_end = None
 
     # Build the query for price history records
     query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff)
+    if cutoff_end:
+        query = query.where(PriceHistory.changedAt <= cutoff_end)
     if category and category != "all":
         query = query.where(PriceHistory.category == category)
     if hardware_id:
         query = query.where(PriceHistory.hardwareId == hardware_id)
     query = query.order_by(PriceHistory.changedAt.asc())
 
-    changes = session.exec(query.limit(2000)).all()
+    changes = session.exec(query.limit(5000)).all()
 
     # --- Build per-product DAILY price timeline ---
     # Reconstruct full daily price for each product using backward reconstruction
@@ -655,4 +682,135 @@ async def get_product_price_history(
         "categories": sorted([c for c in categories if c]),
         "historicalLows": historical_lows,
         "historicalHighs": historical_highs,
+    }
+
+
+@router.get("/market-overview")
+async def get_market_overview(
+    days: int = 30,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_streamer_or_admin)
+):
+    """全局市场概览：跨品类行情汇总（用于「全部品类」视图）"""
+    from datetime import timedelta
+    from collections import defaultdict
+
+    days = min(days, 90)
+    now_cst = datetime.utcnow() + timedelta(hours=8)
+    cutoff = (now_cst - timedelta(days=days)).isoformat()
+    today = now_cst.strftime("%Y-%m-%d")
+    yesterday = (now_cst - timedelta(days=1)).strftime("%Y-%m-%d")
+
+    # 1. Get ALL price changes in the window
+    changes = session.exec(
+        select(PriceHistory)
+        .where(PriceHistory.changedAt >= cutoff)
+        .order_by(PriceHistory.changedAt.desc())
+        .limit(5000)
+    ).all()
+
+    # 2. Today's summary
+    today_changes = [c for c in changes if c.changedAt.startswith(today)]
+    today_up = [c for c in today_changes if c.changeAmount > 0]
+    today_down = [c for c in today_changes if c.changeAmount < 0]
+
+    today_summary = {
+        "totalChanges": len(today_changes),
+        "upCount": len(today_up),
+        "downCount": len(today_down),
+        "avgUpAmount": round(sum(c.changeAmount for c in today_up) / len(today_up), 2) if today_up else 0,
+        "avgDownAmount": round(sum(c.changeAmount for c in today_down) / len(today_down), 2) if today_down else 0,
+    }
+
+    # 3. Per-category aggregation
+    CORE_CATEGORIES = ['cpu', 'gpu', 'ram', 'disk']
+    
+    # Get current avg price per category
+    cat_stats = []
+    for cat in CORE_CATEGORIES:
+        # Current avg price
+        hw_rows = session.exec(
+            select(Hardware.id, Hardware.price)
+            .where(Hardware.category == cat, Hardware.status == "active", Hardware.price > 0)
+        ).all()
+        
+        if not hw_rows:
+            continue
+            
+        current_avg = round(sum(r[1] for r in hw_rows) / len(hw_rows), 2)
+        hw_ids = {r[0] for r in hw_rows}
+        hw_current = {r[0]: r[1] for r in hw_rows}
+        
+        # Get category changes
+        cat_changes = [c for c in changes if c.category == cat]
+        cat_today = [c for c in cat_changes if c.changedAt.startswith(today)]
+        
+        # Reconstruct 7d-ago and 30d-ago avg prices via backward walk
+        temp_prices = dict(hw_current)
+        cat_changes_sorted = sorted([c for c in cat_changes if c.hardwareId in hw_ids], 
+                                     key=lambda x: x.changedAt, reverse=True)
+        
+        changes_by_date = defaultdict(list)
+        for c in cat_changes_sorted:
+            changes_by_date[c.changedAt[:10]].append(c)
+        
+        dates = sorted([(now_cst - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days + 1)])
+        
+        price_snapshots = {}
+        temp = dict(hw_current)
+        for d in reversed(dates):
+            valid = [p for p in temp.values() if p and p > 0]
+            if valid:
+                price_snapshots[d] = round(sum(valid) / len(valid), 2)
+            for c in changes_by_date.get(d, []):
+                if c.hardwareId in temp:
+                    temp[c.hardwareId] = c.oldPrice
+        
+        # Calculate period changes
+        today_avg = price_snapshots.get(today, current_avg)
+        d7_ago = (now_cst - timedelta(days=7)).strftime("%Y-%m-%d")
+        d30_ago = (now_cst - timedelta(days=30)).strftime("%Y-%m-%d")
+        avg_7d_ago = price_snapshots.get(d7_ago)
+        avg_30d_ago = price_snapshots.get(d30_ago)
+        
+        change_7d_pct = round(((today_avg - avg_7d_ago) / avg_7d_ago) * 100, 2) if avg_7d_ago and avg_7d_ago > 0 else None
+        change_30d_pct = round(((today_avg - avg_30d_ago) / avg_30d_ago) * 100, 2) if avg_30d_ago and avg_30d_ago > 0 else None
+        
+        cat_stats.append({
+            "category": cat,
+            "productCount": len(hw_rows),
+            "currentAvg": current_avg,
+            "todayUp": len([c for c in cat_today if c.changeAmount > 0]),
+            "todayDown": len([c for c in cat_today if c.changeAmount < 0]),
+            "change7dPct": change_7d_pct,
+            "change30dPct": change_30d_pct,
+        })
+
+    # 4. Recent events timeline (latest 20 changes across all categories)
+    recent_events = []
+    for c in changes[:20]:
+        recent_events.append({
+            "id": c.id,
+            "name": c.hardwareName,
+            "category": c.category,
+            "changeAmount": c.changeAmount,
+            "changePercent": c.changePercent,
+            "oldPrice": c.oldPrice,
+            "newPrice": c.newPrice,
+            "changedAt": c.changedAt,
+        })
+
+    # 5. Market temperature: ratio of ups vs downs in recent window
+    total_up = len([c for c in changes if c.changeAmount > 0])
+    total_down = len([c for c in changes if c.changeAmount < 0])
+    total_all = total_up + total_down
+    temperature = round((total_up / total_all) * 100, 1) if total_all > 0 else 50.0
+
+    return {
+        "todaySummary": today_summary,
+        "categoryStats": cat_stats,
+        "recentEvents": recent_events,
+        "temperature": temperature,  # 0-100, >50 = bullish, <50 = bearish
+        "totalUp": total_up,
+        "totalDown": total_down,
     }
