@@ -52,12 +52,13 @@ export default function StreamerRecycleTab() {
                     newRow.customQuote = 0;
                     newRow.profitAmount = 0;
                 } else {
-                    // Item selected!
+                    // Item selected! Use database recyclePrice directly as customer quote
                     const resale = data.item.resalePrice || 0;
-                    // Default profit 15% when selecting a new item
-                    const pAmt = Math.max(0, Math.floor(resale * 0.15));
+                    const recycle = data.item.recyclePrice || 0;
+                    // Profit = market price - recycle price (from database)
+                    const pAmt = Math.max(0, resale - recycle);
                     newRow.profitAmount = pAmt;
-                    newRow.customQuote = Math.max(0, resale - pAmt);
+                    newRow.customQuote = recycle;
                 }
             } 
             // When user edits Profit amount explicitly
