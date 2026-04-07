@@ -1128,6 +1128,52 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
 
                 const chartAvgTrend = avgTrend.slice(-days); // Slice to match user selected days
 
+                // ============ 降价产品均价线 ============
+                // 筛选出在选定时段内「实际降价」的产品，单独计算它们的均价走势
+                const trendMapForDown = new Map<string, Array<{date: string, price: number}>>();
+                if (trendData.productTrends) {
+                    for (const pt of trendData.productTrends) {
+                        trendMapForDown.set(String(pt.hardwareId), pt.points);
+                    }
+                }
+
+                // 判定「降价产品」: 时段内最后一天价格 < 第一天价格
+                const allProductsForDown = trendData.products?.filter(p => p.price > 0 && matchesBrand(p.name) && matchesActualBrand(p.name) && matchesChip(p.name)) || [];
+                const downProducts = allProductsForDown.filter(p => {
+                    const pts = trendMapForDown.get(String(p.id));
+                    if (!pts || pts.length < 2) return false;
+                    const sliced = pts.slice(-days);
+                    if (sliced.length < 2) return false;
+                    return sliced[sliced.length - 1].price < sliced[0].price;
+                });
+
+                let downOnlyAvgTrend: Array<{date: string; downAvgPrice: number}> = [];
+                const downCount = downProducts.length;
+                if (downCount > 0) {
+                    const allDatesForDown = chartAvgTrend.map(t => t.date);
+                    downOnlyAvgTrend = allDatesForDown.map(date => {
+                        let sum = 0;
+                        let cnt = 0;
+                        for (const p of downProducts) {
+                            const pts = trendMapForDown.get(String(p.id));
+                            if (pts) {
+                                const point = pts.find(pt => pt.date === date);
+                                if (point) { sum += point.price; cnt++; }
+                                else { sum += p.price; cnt++; }
+                            } else {
+                                sum += p.price; cnt++;
+                            }
+                        }
+                        return { date, downAvgPrice: cnt > 0 ? Math.round((sum / cnt) * 100) / 100 : 0 };
+                    });
+                }
+
+                // 合并两条线的数据
+                const chartData = chartAvgTrend.map((item, idx) => ({
+                    ...item,
+                    downAvgPrice: downOnlyAvgTrend[idx]?.downAvgPrice ?? null,
+                }));
+
                 const firstPrice = chartAvgTrend[0]?.avgPrice;
                 const lastPrice = chartAvgTrend[chartAvgTrend.length - 1]?.avgPrice;
                 const periodChange = lastPrice && firstPrice ? lastPrice - firstPrice : 0;
@@ -1149,8 +1195,15 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                             })()}
                         </h3>
                         <div className="flex gap-4 items-center">
-                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                <span className="w-3 h-0.5 bg-indigo-500"></span> 真实平均价格 ({gpuChipFilter ? `所有${gpuChipFilter}商品` : subcategory ? '该规格所有商品' : ramGeneration ? `所有${ramGeneration}商品` : brandFilter ? `${brandFilter === 'NVIDIA' ? 'N卡' : brandFilter}商品` : '大类所有商品'})
+                            <div className="flex items-center gap-4 text-xs text-slate-500">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-0.5 bg-indigo-500"></span> 
+                                    整体均价 ({gpuChipFilter ? `所有${gpuChipFilter}` : subcategory ? '此规格' : ramGeneration ? `所有${ramGeneration}` : '此分类'})
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="w-3 h-0.5 bg-emerald-500 border-t border-dashed border-emerald-500" style={{ borderTopWidth: '2px' }}></span> 
+                                    降价商品均价 (仅统计降价品)
+                                </div>
                             </div>
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleDownloadImage(chartRef, `均价走势_${CATEGORY_LABELS[category] || category}_${new Date().toISOString().slice(0,10)}.png`); }}
@@ -1202,7 +1255,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                     </div>
                     <ResponsiveContainer width="100%" height={380}>
                         <LineChart 
-                            data={chartAvgTrend} 
+                            data={chartData} 
                             margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -1222,27 +1275,56 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                                 content={({ active, payload, label }: any) => {
                                     if (active && payload && payload.length) {
                                         const d = payload[0].payload;
-                                        const idx = avgTrend.findIndex(p => p.date === d.date);
-                                        const prevAvg = idx > 0 ? avgTrend[idx - 1].avgPrice : d.avgPrice;
-                                        const dailyDiff = d.avgPrice - prevAvg;
-                                        const dailyPct = prevAvg > 0 ? ((dailyDiff / prevAvg) * 100).toFixed(2) : '0.00';
+                                        const idx = chartData.findIndex(p => p.date === d.date);
+                                        const prevData = idx > 0 ? chartData[idx - 1] : d;
+                                        
+                                        const avgDailyDiff = d.avgPrice - prevData.avgPrice;
+                                        const avgDailyPct = prevData.avgPrice > 0 ? ((avgDailyDiff / prevData.avgPrice) * 100).toFixed(2) : '0.00';
+                                        
+                                        const downDailyDiff = d.downAvgPrice ? d.downAvgPrice - (prevData.downAvgPrice || d.downAvgPrice) : 0;
+                                        const downDailyPct = prevData.downAvgPrice && prevData.downAvgPrice > 0 ? ((downDailyDiff / prevData.downAvgPrice) * 100).toFixed(2) : '0.00';
+
                                         return (
-                                            <div className="bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 min-w-[180px]">
+                                            <div className="bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-xl shadow-slate-200/50 min-w-[220px]">
                                                 <p className="font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2">{label}</p>
-                                                <div className="space-y-2.5">
-                                                    <div className="flex items-center justify-between gap-4">
-                                                        <span className="flex items-center gap-2 text-sm text-indigo-600">
-                                                            <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                                                            真实均价
-                                                        </span>
-                                                        <span className="font-bold text-indigo-600">¥{d.avgPrice}</span>
-                                                    </div>
-                                                    {dailyDiff !== 0 && (
-                                                        <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-100">
-                                                            <span className="text-xs text-slate-500">较前日</span>
-                                                            <span className={`text-xs font-bold ${dailyDiff > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                                                {dailyDiff > 0 ? '↑' : '↓'} {Math.abs(Number(dailyPct))}% (¥{Math.abs(Math.round(dailyDiff * 100) / 100)})
+                                                <div className="space-y-4">
+                                                    {/* 大盘均价 */}
+                                                    <div>
+                                                        <div className="flex items-center justify-between gap-4 mb-1">
+                                                            <span className="flex items-center gap-2 text-sm text-indigo-600 font-bold">
+                                                                <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                                                                整体均价
                                                             </span>
+                                                            <span className="font-bold text-indigo-600">¥{d.avgPrice}</span>
+                                                        </div>
+                                                        {avgDailyDiff !== 0 && (
+                                                            <div className="flex items-center justify-between pl-4">
+                                                                <span className="text-[10px] text-slate-400">较前日</span>
+                                                                <span className={`text-[10px] font-bold ${avgDailyDiff > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                                    {avgDailyDiff > 0 ? '↑' : '↓'} {Math.abs(Number(avgDailyPct))}% (¥{Math.abs(Math.round(avgDailyDiff * 100) / 100)})
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* 降价均价 */}
+                                                    {d.downAvgPrice > 0 && (
+                                                        <div className="pt-2 border-t border-slate-100">
+                                                            <div className="flex items-center justify-between gap-4 mb-1">
+                                                                <span className="flex items-center gap-2 text-sm text-emerald-600 font-bold">
+                                                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                                                    降幅均价 (仅降价品)
+                                                                </span>
+                                                                <span className="font-bold text-emerald-600">¥{d.downAvgPrice}</span>
+                                                            </div>
+                                                            {downDailyDiff !== 0 && (
+                                                                <div className="flex items-center justify-between pl-4">
+                                                                    <span className="text-[10px] text-slate-400">较前日</span>
+                                                                    <span className={`text-[10px] font-bold ${downDailyDiff > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                                        {downDailyDiff > 0 ? '↑' : '↓'} {Math.abs(Number(downDailyPct))}% (¥{Math.abs(Math.round(downDailyDiff * 100) / 100)})
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
@@ -1255,11 +1337,23 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                             <Line 
                                 type="monotone" 
                                 dataKey="avgPrice" 
+                                name="整体均价"
                                 stroke="#6366f1" 
                                 strokeWidth={4}
                                 connectNulls={true}
-                                dot={{ fill: '#6366f1', strokeWidth: 2, r: 5 }}
-                                activeDot={{ r: 8, strokeWidth: 0 }}
+                                dot={{ fill: '#6366f1', strokeWidth: 2, r: 4 }}
+                                activeDot={{ r: 6, strokeWidth: 0 }}
+                            />
+                            <Line 
+                                type="monotone" 
+                                dataKey="downAvgPrice" 
+                                name="降幅均价"
+                                stroke="#10b981" 
+                                strokeWidth={3}
+                                strokeDasharray="5 5"
+                                connectNulls={true}
+                                dot={{ fill: '#10b981', strokeWidth: 2, r: 3 }}
+                                activeDot={{ r: 5, strokeWidth: 0 }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
