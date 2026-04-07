@@ -1202,7 +1202,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-3 h-0.5 bg-emerald-500 border-t border-dashed border-emerald-500" style={{ borderTopWidth: '2px' }}></span> 
-                                    降价商品均价 (仅统计降价品)
+                                    降价商品均价{downCount > 0 ? ` (${downCount}件降价中)` : ' (暂无降价品)'}
                                 </div>
                             </div>
                             <button
