@@ -652,9 +652,9 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
     };
 
     return (
-        <div className="flex gap-6" style={{ height: 'calc(100vh - 8rem)' }}>
+        <div className="flex flex-col lg:flex-row gap-6 mb-20 lg:mb-0 lg:h-[calc(100vh-8rem)]">
             {/* ====== 中间主内容区（可滚动） ====== */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-5 pr-2">
+            <div className="flex-1 lg:overflow-y-auto custom-scrollbar space-y-5 lg:pr-2">
                 {!data ? (
                     // 无数据时的空状态（替代原先占据全版的空白）
                     <div className="flex flex-col items-center justify-center py-32 text-slate-400 animate-page-enter h-full">
@@ -928,7 +928,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
             {category === 'all' && marketOverview && (
                 <div className="space-y-6 animate-page-enter">
                     {/* A. 顶部 KPI 指标卡片行 */}
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                             <div className="text-xs font-bold text-slate-400 mb-1 flex items-center justify-between">
                                 今日变动 (件)
@@ -975,9 +975,9 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6">
                         {/* B. 品类涨跌热力概览 */}
-                        <div className="col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
                             <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
                                 <Activity size={16} className="text-indigo-500" />
                                 核心大件行情热力 (均价)
@@ -1022,7 +1022,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                         </div>
 
                         {/* C. 全品类涨跌事件时间轴 */}
-                        <div className="col-span-1 bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col max-h-[500px]">
+                        <div className="lg:col-span-1 bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col max-h-[500px]">
                             <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 shrink-0">
                                 <Clock size={16} className="text-slate-400" />
                                 最新调价动态
@@ -1259,6 +1259,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                             <span>止: ¥{lastPrice?.toFixed(2)}</span>
                         </div>
                     </div>
+                    <div className="-mx-4 sm:mx-0">
                     <ResponsiveContainer width="100%" height={380}>
                         <LineChart 
                             data={chartData} 
@@ -1363,6 +1364,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                             />
                         </LineChart>
                     </ResponsiveContainer>
+                    </div>
                     {/* 品牌水印 - 导出图片时显示 */}
                     <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-sm font-bold text-slate-400">
@@ -1525,6 +1527,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                         </div>
                                     );
                                 })()}
+                                <div className="-mx-4 sm:mx-0">
                                 <ResponsiveContainer width="100%" height={300}>
                                     <LineChart data={productData.points.slice(-days)} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -1580,6 +1583,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                         />
                                     </LineChart>
                                 </ResponsiveContainer>
+                                </div>
                             </>
                         );
                     })()}
@@ -1710,7 +1714,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
 
             {/* ====== 右侧固定面板（30天榜单，独立滚动） ====== */}
             {!hideSummaryPanel && (
-            <aside className="w-[340px] shrink-0 overflow-y-auto custom-scrollbar space-y-4 pr-2 pl-4 border-l border-slate-200">
+            <aside className="w-full lg:w-[340px] shrink-0 lg:overflow-y-auto custom-scrollbar space-y-4 lg:pr-2 lg:pl-4 lg:border-l border-slate-200">
                 {/* ---------- 30天榜单（叠加在右侧） ---------- */}
                 {trendData && trendData.historicalLows && trendData.historicalHighs && (
                     <div className="space-y-4">

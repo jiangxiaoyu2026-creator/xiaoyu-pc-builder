@@ -41,7 +41,7 @@ const AboutUsSettings = lazy(() => import('../components/admin/AboutUsSettings')
 const InvitationManager = lazy(() => import('../components/admin/InvitationManager'));
 const ArticleManager = lazy(() => import('../components/admin/ArticleManager'));
 const MarketingManager = lazy(() => import('../components/admin/MarketingManager'));
-const PriceTrendChart = lazy(() => import('../components/admin/PriceTrendChart'));
+const JDTrendsMonitor = lazy(() => import('../components/admin/JDTrendsMonitor'));
 const RecyclingPriceManager = lazy(() => import('../components/admin/RecyclingPriceManager'));
 
 export default function AdminApp() {
@@ -288,7 +288,7 @@ export default function AdminApp() {
                             ) : (
                                 <div className="w-full h-full">
                                     {currentTab === 'dashboard' && <DashboardView />}
-                                    {currentTab === 'price_trends' && <PriceTrendChart />}
+                                    {currentTab === 'price_trends' && <JDTrendsMonitor />}
                                     {currentTab === 'products' && <ProductManager />}
                                     {currentTab === 'configs' && <ConfigManager />}
                                     {currentTab === 'used_items' && <UsedManager />}

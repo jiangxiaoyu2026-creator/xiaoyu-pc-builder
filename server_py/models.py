@@ -239,3 +239,25 @@ class RecyclingPrice(SQLModel, table=True):
     updatedBy: Optional[str] = None         # 最后修改人
     note: Optional[str] = None              # 备注
     imageUrl: Optional[str] = None          # 图片链接
+
+class JDTrendProduct(SQLModel, table=True):
+    """京东价格趋势监控 - 商品表"""
+    __tablename__ = "jd_trend_products"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    sku_id: str = Field(unique=True, index=True)     # 京东SKU ID
+    name: str                                         # 商品简称
+    brand: str = Field(default="")                    # 品牌
+    category: str = Field(index=True)                 # 分类 (如 DDR5 6000 C28 32G 16G*2)
+    url: str = Field(default="")                      # 京东原链接
+    isActive: bool = Field(default=True)              # 是否继续监控
+    createdAt: str = Field(default_factory=lambda: (datetime.utcnow() + timedelta(hours=8)).isoformat())
+
+class JDTrendPrice(SQLModel, table=True):
+    """京东价格趋势监控 - 价格快照表"""
+    __tablename__ = "jd_trend_prices"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    product_id: int = Field(index=True)               # 关联 JDTrendProduct.id
+    sku_id: str = Field(index=True)                   # 冗余存储SKU方便查询
+    price: float                                       # 抓取到的价格
+    record_date: str = Field(index=True)              # 记录日期 YYYY-MM-DD
+    recorded_at: str = Field(default_factory=lambda: (datetime.utcnow() + timedelta(hours=8)).isoformat())
