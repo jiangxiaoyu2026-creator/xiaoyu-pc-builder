@@ -1,0 +1,155 @@
+/* ============================================
+   小鱼装机小程序 — 全局样式
+   极简·高质感·微发光科技风 (极简亮色为主，配合科技蓝)
+   ============================================ */
+
+page {
+  --color-bg-primary: #f4f7f9;
+  --color-bg-secondary: #ffffff;
+  --color-bg-card: #ffffff;
+  
+  /* 品牌色 */
+  --color-primary: #2563EB;
+  --color-primary-light: #eff6ff;
+  --color-accent: #06b6d4;
+  --color-accent-gradient: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+  
+  /* 文本颜色 */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+  
+  /* 辅助状态色 */
+  --color-border: #e2e8f0;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-price: #ef4444; /* 价格通常用醒目的红色或品牌蓝 */
+
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 32px;
+  --radius-full: 999px;
+
+  --shadow-card: 0 8px 30px rgba(15, 23, 42, 0.04);
+  --shadow-glow: 0 10px 40px rgba(37, 99, 235, 0.15);
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 28px;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+}
+
+/* Base Classes */
+view, text, image {
+  box-sizing: border-box;
+}
+
+/* Flex */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-row { flex-direction: row; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.flex-1 { flex: 1; }
+
+/* Buttons */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent-gradient);
+  color: #ffffff;
+  border-radius: var(--radius-full);
+  padding: 24px 48px;
+  font-size: 32px;
+  font-weight: 600;
+  border: none;
+  line-height: 1;
+  box-shadow: var(--shadow-glow);
+  transition: opacity 0.2s;
+}
+
+.btn-primary:active {
+  opacity: 0.8;
+}
+
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: var(--radius-full);
+  padding: 24px 48px;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Typography */
+.text-bold { font-weight: 700; }
+.text-price { color: var(--color-price); font-weight: 800; font-family: DIN, sans-serif; }
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 20px;
+  font-weight: 600;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.badge-success { background: #d1fae5; color: #047857; }
+.badge-warning { background: #fef3c7; color: #b45309; }
+
+/* Section & Layout */
+.section {
+  padding: 32px 24px;
+}
+
+.section-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  letter-spacing: 0.5px;
+}
+
+.section-more {
+  font-size: 26px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.page-container {
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Empty State */
+.loading-container, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+}
+.loading-text, .empty-text {
+  color: var(--color-text-muted);
+  font-size: 26px;
+  margin-top: 24px;
+}
+.empty-icon {
+  font-size: 80px;
+  opacity: 0.8;
+}

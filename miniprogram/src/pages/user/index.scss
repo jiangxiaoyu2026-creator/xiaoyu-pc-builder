@@ -1,0 +1,192 @@
+/* ============================================
+   用户中心页面样式 (Glassmorphism)
+   ============================================ */
+
+page {
+  background: linear-gradient(140deg, #f0f4f8 0%, #e2eaf4 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', sans-serif;
+}
+
+.page-container {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.bg-blobs {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+.blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; }
+.blob-1 { top: -100px; right: -50px; width: 350px; height: 350px; background: #aadbff; }
+.blob-2 { top: 300px; left: -100px; width: 300px; height: 300px; background: #e2d1ff; }
+
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+  padding: env(safe-area-inset-top) 24px 40px;
+}
+
+/* 顶部玻璃态用户信息卡片 */
+.user-glass-header {
+  display: flex;
+  align-items: center;
+  padding: 40px 32px;
+  margin-top: 32px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 40px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.04);
+}
+
+.user-avatar-wrap {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  border: 2px solid #ffffff;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-right: 24px;
+}
+
+.user-avatar {
+  width: 100%;
+  height: 100%;
+  background: #f1f5f9;
+}
+.avatar-placeholder {
+  font-size: 50px;
+  color: #94a3b8;
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.user-name {
+  font-size: 36px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.user-badge {
+  display: inline-block;
+  padding: 4px 16px;
+  background: rgba(148, 163, 184, 0.15);
+  color: #64748b;
+  font-size: 22px;
+  border-radius: 100px;
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+/* 数据统计卡片 */
+.stats-glass-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.stat-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 28px;
+}
+
+.stat-value {
+  font-size: 40px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 24px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* 玻璃菜单组 */
+.menu-glass-group {
+  margin-top: 32px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.02);
+}
+
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px 32px;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  transition: background 0.2s;
+  
+  &:active { background: rgba(0,0,0,0.02); }
+  &:last-child { border-bottom: none; }
+}
+/* override button defaults */
+button.menu-item {
+  margin: 0; line-height: inherit; border-radius: 0;
+  &::after { display: none; }
+}
+
+.menu-item-left {
+  display: flex;
+  align-items: center;
+}
+
+.menu-icon {
+  width: 44px; height: 44px;
+  margin-right: 16px;
+  display: flex; justify-content: center; align-items: center;
+  font-size: 32px;
+  opacity: 0.8;
+}
+
+.menu-text {
+  font-size: 30px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.menu-arrow {
+  color: #cbd5e1;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.footer-text {
+  display: block;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 22px;
+  margin-top: 48px;
+  opacity: 0.8;
+}

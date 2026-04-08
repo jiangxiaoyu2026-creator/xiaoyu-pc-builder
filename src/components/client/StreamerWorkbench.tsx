@@ -11,6 +11,7 @@ import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
 import PriceTrendChart from '../admin/PriceTrendChart';
 import StreamerRecycleTab from './StreamerRecycleTab';
+import HardwareLeaderboard from './HardwareLeaderboard';
 import { ThemeColor, THEMES, ThemeContext } from './StreamerThemeContext';
 // --------------------
 
@@ -359,7 +360,7 @@ function StreamerWorkbench({
     onOpenLibrary: () => void
 
 }) {
-    const [activeTab, setActiveTab] = useState<'builder' | 'trends' | 'recycle'>('builder');
+    const [activeTab, setActiveTab] = useState<'builder' | 'trends' | 'recycle' | 'leaderboard'>('builder');
     const [pricingStrategy, setPricingStrategy] = useState<import('../../types/adminTypes').PricingStrategy | null>(null);
     const [strategies, setStrategies] = useState<{ value: number; label: string }[]>([]);
 
@@ -723,7 +724,7 @@ function StreamerWorkbench({
                     <div className="flex items-center gap-3">
                         <h2 className={`text-base font-bold ${theme.textTitle} flex items-center gap-1.5`}>
                             <Zap className={theme.primary} size={18} />
-                            {activeTab === 'builder' ? '专业装机控制台' : activeTab === 'recycle' ? '二手回收估价系统' : '全网行情雷达'}
+                            {activeTab === 'builder' ? '专业装机控制台' : activeTab === 'recycle' ? '二手回收估价系统' : activeTab === 'trends' ? '全网行情雷达' : '硬件性价比天梯'}
                         </h2>
                         <div className="hidden md:flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
                             {(Object.keys(THEMES) as ThemeColor[]).map((tKey) => (
@@ -813,6 +814,23 @@ function StreamerWorkbench({
                                 <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden lg:block ${activeTab === 'trends' ? 'text-purple-500/80 dark:text-purple-400/80' : 'text-slate-400 dark:text-slate-500'}`}>价格追踪监控</div>
                             </div>
                             {activeTab === 'trends' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-purple-500 rounded-r-md"></div>}
+                        </button>
+
+                        {/* 性价比榜 Tab */}
+                        <button
+                            onClick={() => setActiveTab('leaderboard')}
+                            className={`group relative flex md:flex-col items-center gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 shrink-0 ${activeTab === 'leaderboard'
+                                ? `bg-white dark:bg-slate-800 border-rose-200 dark:border-rose-600/50 text-rose-600 dark:text-rose-400 shadow-md ring-4 ring-rose-100 dark:ring-rose-900/20`
+                                : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
+                        >
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'leaderboard' ? 'bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-rose-50 dark:group-hover:bg-rose-500/10 group-hover:text-rose-500'}`}>
+                                <Crown size={20} />
+                            </div>
+                            <div className="text-left md:text-center shrink-0">
+                                <div className={`text-sm md:text-sm font-black tracking-tight ${activeTab === 'leaderboard' ? '' : 'text-slate-600 dark:text-slate-300'}`}>性价比榜</div>
+                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden lg:block ${activeTab === 'leaderboard' ? 'text-rose-500/80 dark:text-rose-400/80' : 'text-slate-400 dark:text-slate-500'}`}>核心性能战力</div>
+                            </div>
+                            {activeTab === 'leaderboard' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-rose-500 rounded-r-md"></div>}
                         </button>
                     </div>
 
@@ -970,6 +988,10 @@ function StreamerWorkbench({
                 ) : activeTab === 'trends' ? (
                     <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 p-2 md:p-6 overflow-hidden">
                         <PriceTrendChart hideSummaryPanel={true} />
+                    </div>
+                ) : activeTab === 'leaderboard' ? (
+                    <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 relative overflow-hidden">
+                        <HardwareLeaderboard />
                     </div>
                 ) : (
                     <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 relative overflow-hidden">
