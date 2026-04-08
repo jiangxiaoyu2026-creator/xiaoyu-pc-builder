@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Trash2, Edit2, CheckCircle, XCircle, FileSpreadsheet, Loader2, ArrowUpRight, Upload } from 'lucide-react';
+import { Search, Plus, Trash2, Edit2, CheckCircle, XCircle, FileSpreadsheet, Loader2, ArrowUpRight, Upload, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { RecyclingPrice } from '../../types/adminTypes';
 
 const CATEGORY_TABS = [
@@ -24,6 +24,8 @@ export default function RecyclingPriceManager() {
     const [loading, setLoading] = useState(false);
     const [stats, setStats] = useState<any>(null);
     const [uploading, setUploading] = useState(false);
+    const [sortBy, setSortBy] = useState<string | null>(null);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     // Edit state
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -33,7 +35,8 @@ export default function RecyclingPriceManager() {
         setLoading(true);
         try {
             const token = localStorage.getItem('xiaoyu_token');
-            const res = await fetch(`/api/recycling-prices/admin?page=${page}&category=${currentCat}&search=${encodeURIComponent(search)}`, {
+            const sortParams = sortBy ? `&sort_by=${sortBy}&sort_order=${sortOrder}` : '';
+            const res = await fetch(`/api/recycling-prices/admin?page=${page}&category=${currentCat}&search=${encodeURIComponent(search)}${sortParams}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -65,7 +68,38 @@ export default function RecyclingPriceManager() {
 
     useEffect(() => {
         fetchItems();
-    }, [currentCat, search, page]);
+    }, [currentCat, search, page, sortBy, sortOrder]);
+
+    const toggleSort = (field: string) => {
+        if (sortBy === field) {
+            if (sortOrder === 'asc') {
+                setSortOrder('desc');
+            } else {
+                // Third click: reset sort
+                setSortBy(null);
+                setSortOrder('asc');
+            }
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
+        }
+        setPage(1);
+    };
+
+    const formatDateAge = (dateStr: string | undefined) => {
+        if (!dateStr) return { text: '-', color: 'text-slate-400', tag: '' };
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        const dateText = date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        
+        if (diffDays > 60) return { text: dateText, color: 'text-rose-600', tag: `${diffDays}天前` };
+        if (diffDays > 30) return { text: dateText, color: 'text-amber-600', tag: `${diffDays}天前` };
+        if (diffDays > 14) return { text: dateText, color: 'text-amber-500', tag: `${diffDays}天前` };
+        if (diffDays > 1) return { text: dateText, color: 'text-slate-500', tag: `${diffDays}天前` };
+        if (diffDays === 1) return { text: dateText, color: 'text-emerald-600', tag: '昨天' };
+        return { text: dateText, color: 'text-emerald-600', tag: '今天' };
+    };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -222,7 +256,14 @@ export default function RecyclingPriceManager() {
                                 <th className="p-4 text-xs font-bold text-slate-500 uppercase">回收单价</th>
                                 <th className="p-4 text-xs font-bold text-slate-500 uppercase">闲鱼预估</th>
                                 <th className="p-4 text-xs font-bold text-slate-500 uppercase">利润空间</th>
-                                <th className="p-4 text-xs font-bold text-slate-500 uppercase">修改日期</th>
+                                <th className="p-4 text-xs font-bold text-slate-500 uppercase">
+                                    <button onClick={() => toggleSort('updatedAt')} className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+                                        修改日期
+                                        {sortBy === 'updatedAt' ? (
+                                            sortOrder === 'asc' ? <ArrowUp size={14} className="text-blue-600" /> : <ArrowDown size={14} className="text-blue-600" />
+                                        ) : <ArrowUpDown size={14} className="opacity-40" />}
+                                    </button>
+                                </th>
                                 <th className="p-4 text-xs font-bold text-slate-500 uppercase text-right">操作</th>
                             </tr>
                         </thead>
@@ -286,9 +327,15 @@ export default function RecyclingPriceManager() {
                                             )}
                                         </td>
                                         <td className="p-4">
-                                            <span className="text-sm text-slate-500 font-medium whitespace-nowrap">
-                                                {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-'}
-                                            </span>
+                                            {(() => {
+                                                const info = formatDateAge(item.updatedAt);
+                                                return (
+                                                    <div className="flex flex-col">
+                                                        <span className={`text-sm font-medium whitespace-nowrap ${info.color}`}>{info.text}</span>
+                                                        {info.tag && <span className={`text-[11px] ${info.color} opacity-70`}>{info.tag}</span>}
+                                                    </div>
+                                                );
+                                            })()}
                                         </td>
                                         <td className="p-4 text-right">
                                             {editingId === item.id ? (

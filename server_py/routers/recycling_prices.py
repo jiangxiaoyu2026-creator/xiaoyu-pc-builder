@@ -82,10 +82,12 @@ async def get_admin_recycling_prices(
     category: Optional[str] = None,
     validity: Optional[str] = None,
     search: Optional[str] = None,
+    sort_by: Optional[str] = None,
+    sort_order: Optional[str] = "asc",
     session: Session = Depends(get_session),
     admin: User = Depends(get_current_admin)
 ):
-    """后台管理：分页列表 + 品类筛选 + 搜索"""
+    """后台管理：分页列表 + 品类筛选 + 搜索 + 排序"""
     query = select(RecyclingPrice)
     count_query = select(func.count()).select_from(RecyclingPrice)
     
@@ -106,11 +108,26 @@ async def get_admin_recycling_prices(
     
     total = session.scalar(count_query) or 0
     
+    # Sorting
+    sort_column_map = {
+        "updatedAt": RecyclingPrice.updatedAt,
+        "recyclePrice": RecyclingPrice.recyclePrice,
+        "resalePrice": RecyclingPrice.resalePrice,
+        "model": RecyclingPrice.model,
+    }
+    
     offset = (page - 1) * page_size
-    items = session.exec(
-        query.order_by(RecyclingPrice.category, RecyclingPrice.model)
-        .offset(offset).limit(page_size)
-    ).all()
+    if sort_by and sort_by in sort_column_map:
+        col = sort_column_map[sort_by]
+        order = col.asc() if sort_order == "asc" else col.desc()
+        items = session.exec(
+            query.order_by(order).offset(offset).limit(page_size)
+        ).all()
+    else:
+        items = session.exec(
+            query.order_by(RecyclingPrice.category, RecyclingPrice.model)
+            .offset(offset).limit(page_size)
+        ).all()
     
     return {
         "items": items,
