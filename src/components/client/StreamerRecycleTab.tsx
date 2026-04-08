@@ -158,6 +158,7 @@ export default function StreamerRecycleTab() {
                             <RecycleInlineRow 
                                 key={row.id}
                                 index={index}
+                                totalRows={rows.length}
                                 row={row}
                                 isOpen={activeDropdownIndex === index}
                                 onOpen={() => setActiveDropdownIndex(index)}
@@ -227,7 +228,7 @@ export default function StreamerRecycleTab() {
 // ----------------------------------------
 // Internal Component for Row
 // ----------------------------------------
-function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, onNextFocus }: any) {
+function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUpdate, onRemove, onNextFocus }: any) {
     const { theme } = useContext(ThemeContext);
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [searching, setSearching] = useState(false);
@@ -364,7 +365,7 @@ function RecycleInlineRow({ row, isOpen, onOpen, onClose, onUpdate, onRemove, on
                 
                 {/* Suggestions Dropdown */}
                 {isOpen && (row.query.trim().length > 0) && (
-                    <div className="absolute top-full left-0 w-[400px] mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-[100] animate-in slide-in-from-top-2 duration-200">
+                    <div className={`absolute ${index >= totalRows - 4 ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'} left-0 w-[400px] bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-700 overflow-hidden z-[100] transition-all`}>
                         {searching ? (
                             <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700/50">
                                 <span className="text-xs font-bold text-slate-500">正在检索二手底价库...</span>
