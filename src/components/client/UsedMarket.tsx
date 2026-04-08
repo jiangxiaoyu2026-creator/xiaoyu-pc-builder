@@ -25,8 +25,7 @@ const TYPE_FILTERS: { id: 'all' | 'official' | 'personal', label: string }[] = [
     { id: 'personal', label: '个人闲置' }
 ];
 
-// 3天的毫秒数
-const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+// Component used market
 
 export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell, onRecycle }: UsedMarketProps) {
     const [selectedCategory, setSelectedCategory] = useState<UsedCategory | 'all'>('all');
@@ -71,15 +70,9 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
     }, []);
 
     const filteredItems = useMemo(() => {
-        const now = Date.now();
         return items.filter(item => {
             // 只显示已发布或已售出的商品
             if (item.status !== 'published' && item.status !== 'sold') return false;
-
-            // 已售出超过3天的商品不显示
-            if (item.status === 'sold' && item.soldAt && (now - item.soldAt > THREE_DAYS_MS)) {
-                return false;
-            }
 
             // Client-side search for now
             if (searchQuery) {
@@ -196,9 +189,12 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                         <div
                             key={item.id}
                             onClick={() => onViewDetail(item)}
-                            className={`rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer overflow-hidden group ${item.type === 'official'
-                                ? 'bg-gradient-to-br from-emerald-50 to-white border-2 border-emerald-200 ring-1 ring-emerald-100'
-                                : 'bg-white border border-slate-100'
+                            className={`rounded-2xl shadow-sm transition-all cursor-pointer overflow-hidden group 
+                                ${item.status === 'sold' 
+                                    ? 'bg-slate-50 border border-slate-200 grayscale opacity-60' 
+                                    : item.type === 'official'
+                                        ? 'bg-gradient-to-br from-emerald-50 to-white border-2 border-emerald-200 ring-1 ring-emerald-100 hover:shadow-xl hover:-translate-y-1'
+                                        : 'bg-white border border-slate-100 hover:shadow-xl hover:-translate-y-1'
                                 }`}
                         >
                             <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
@@ -237,19 +233,19 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                                 )}
                                 {/* 已售出遮罩 */}
                                 {item.status === 'sold' && (
-                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                        <div className="w-20 h-20 rounded-full border-4 border-white text-white flex items-center justify-center font-bold text-xl -rotate-12">
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]">
+                                        <div className="w-24 h-24 rounded-full border-4 border-slate-200 text-slate-200 bg-black/40 flex items-center justify-center font-black text-2xl -rotate-12 shadow-xl">
                                             已售出
                                         </div>
                                     </div>
                                 )}
                             </div>
-                            <div className={`p-4 ${item.type === 'official' ? 'bg-gradient-to-b from-emerald-50/50 to-transparent' : ''}`}>
+                            <div className={`p-4 ${item.type === 'official' && item.status !== 'sold' ? 'bg-gradient-to-b from-emerald-50/50 to-transparent' : ''}`}>
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-bold text-slate-900 line-clamp-2">{item.brand} {item.model}</h3>
+                                    <h3 className={`font-bold line-clamp-2 ${item.status === 'sold' ? 'text-slate-500' : 'text-slate-900'}`}>{item.brand} {item.model}</h3>
                                 </div>
                                 <div className="flex items-center gap-2 text-xs text-slate-500 mb-4">
-                                    <span className={`px-1.5 py-0.5 rounded ${item.type === 'official' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100'}`}>
+                                    <span className={`px-1.5 py-0.5 rounded ${item.type === 'official' && item.status !== 'sold' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
                                         {CATEGORIES.find(c => c.id === item.category)?.label}
                                     </span>
                                     <span>•</span>
