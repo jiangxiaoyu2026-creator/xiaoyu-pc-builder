@@ -10,6 +10,70 @@ import ConfirmModal from '../common/ConfirmModal';
 import Pagination from '../common/Pagination';
 import { useToast } from '../common/Toast';
 
+// 参数字段中文映射（用于列表展示）
+const SPEC_LABELS: Record<string, string> = {
+    // 通用
+    socket: '插槽', cores: '核心数', threads: '线程数', frequency: '频率(GHz)',
+    wattage: '功耗(W)', memoryType: '内存类型', integratedGpu: '核显',
+    architecture: '架构', lithography: '制程', l2Cache: 'L2缓存', l3Cache: 'L3缓存',
+    tdpMax: '最大TDP', pcie: 'PCIe版本',
+    // 跑分
+    cinebenchR23_single: 'CB R23单核', cinebenchR23_multi: 'CB R23多核',
+    cinebench2024_single: 'CB 2024单核', cinebench2024_multi: 'CB 2024多核',
+    passmark_single: 'PM单核', passmark_multi: 'PM多核',
+    geekbench6_single: 'GB6单核', geekbench6_multi: 'GB6多核', blender: 'Blender',
+    // 显卡
+    vram: '显存', vramType: '显存类型', boostClock: '加速频率', tdp: '功耗',
+    // 内存
+    capacity: '容量', speed: '频率', type: '类型', latency: '时序',
+    // 硬盘
+    interface: '接口', readSpeed: '读速', writeSpeed: '写速', formFactor: '规格',
+    // 主板
+    chipset: '芯片组', formFactorSize: '板型', memorySlots: '内存槽', maxMemory: '最大内存',
+    // 其他
+    wattageRated: '额定功率', efficiency: '效率', modular: '模组',
+    cpu: '处理器', gpu: '显卡',
+};
+
+// 各品类优先显示的字段顺序
+const CATEGORY_PRIORITY: Record<string, string[]> = {
+    cpu: ['cores', 'threads', 'frequency', 'socket', 'memoryType', 'wattage'],
+    gpu: ['vram', 'vramType', 'boostClock', 'tdp'],
+    motherboard: ['socket', 'chipset', 'memorySlots', 'maxMemory'],
+    ram: ['capacity', 'speed', 'type', 'latency'],
+    disk: ['capacity', 'interface', 'readSpeed', 'writeSpeed'],
+    psu: ['wattageRated', 'efficiency', 'modular'],
+    default: [],
+};
+
+function getDisplaySpecs(specs: Record<string, any>, category: string): { label: string; value: string }[] {
+    const priority = CATEGORY_PRIORITY[category] || CATEGORY_PRIORITY.default;
+    const result: { label: string; value: string }[] = [];
+    
+    // First add priority fields in order
+    for (const key of priority) {
+        if (key in specs && specs[key] !== null && specs[key] !== undefined && specs[key] !== '') {
+            result.push({ label: SPEC_LABELS[key] || key, value: String(specs[key]) });
+        }
+        if (result.length >= 4) break;
+    }
+    
+    // Fill remaining slots with other fields (skip benchmark fields for list view)
+    const benchmarkKeys = ['cinebenchR23_single','cinebenchR23_multi','cinebench2024_single','cinebench2024_multi','passmark_single','passmark_multi','geekbench6_single','geekbench6_multi','blender'];
+    if (result.length < 4) {
+        for (const [key, val] of Object.entries(specs)) {
+            if (result.length >= 4) break;
+            if (priority.includes(key) || benchmarkKeys.includes(key) || key === 'cpu' || key === 'gpu') continue;
+            if (val !== null && val !== undefined && val !== '') {
+                result.push({ label: SPEC_LABELS[key] || key, value: String(val) });
+            }
+        }
+    }
+    
+    return result;
+}
+
+
 export default function ProductManager() {
     const { showToast } = useToast();
     const [products, setProducts] = useState<HardwareItem[]>([]);
@@ -605,14 +669,14 @@ export default function ProductManager() {
                                                         </div>
                                                     ) : (
                                                         <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
-                                                            {Object.entries(parsedSpecs || {}).slice(0, 4).map(([key, value]) => (
-                                                                <div key={key} className="truncate flex items-center gap-1">
-                                                                    <span className="opacity-60">{key}:</span>
-                                                                    <span className="font-medium">{String(value)}</span>
+                                                            {getDisplaySpecs(parsedSpecs || {}, p.category).map(({ label, value }) => (
+                                                                <div key={label} className="truncate flex items-center gap-1">
+                                                                    <span className="opacity-60">{label}:</span>
+                                                                    <span className="font-medium">{value}</span>
                                                                 </div>
                                                             ))}
                                                             {Object.keys(parsedSpecs || {}).length > 4 && (
-                                                                <div className="text-[10px] opacity-40 italic">+ 更多参数</div>
+                                                                <div className="text-[10px] opacity-40 italic col-span-2">+ 更多参数</div>
                                                             )}
                                                             {Object.keys(parsedSpecs || {}).length === 0 && (
                                                                 <div className="text-[10px] opacity-40 italic">点击添加参数</div>
