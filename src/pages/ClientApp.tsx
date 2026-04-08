@@ -22,7 +22,8 @@ import UsedItemDetail from '../components/client/UsedItemDetail';
 import { UsedItem } from '../types/adminTypes';
 import DailyPopup from '../components/client/DailyPopup';
 // Removed ArticleList
-import StreamerPriceTrend from '../components/client/StreamerPriceTrend';
+// Removed StreamerPriceTrend
+import PriceTrendChart from '../components/admin/PriceTrendChart';
 
 // ...
 import { useTheme } from '../hooks/useTheme';
@@ -877,7 +878,7 @@ export default function ClientApp() {
                         />
                     )}
 
-                    {viewMode === 'headlines' && <StreamerPriceTrend publicMode={true} />}
+                    {viewMode === 'headlines' && <PriceTrendChart publicMode={true} hideSummaryPanel={false} />}
                     {viewMode === 'about' && <AboutUs />}
                 </div>
             </main>

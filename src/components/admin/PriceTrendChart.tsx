@@ -146,11 +146,11 @@ const sortCategories = (categories: string[]) => {
 
 
 
-export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSummaryPanel?: boolean }) {
+export default function PriceTrendChart({ hideSummaryPanel = false, publicMode = false }: { hideSummaryPanel?: boolean, publicMode?: boolean }) {
     const [data, setData] = useState<PriceTrendData | null>(null);
     const [trendData, setTrendData] = useState<ProductPriceTrendData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [category, setCategory] = useState('all');
+    const [category, setCategory] = useState(publicMode ? 'cpu' : 'all');
     const [ramGeneration, setRamGeneration] = useState('');
     const [subcategory, setSubcategory] = useState('');
     const [selectedProductId, setSelectedProductId] = useState<string>('');
@@ -676,24 +676,30 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                         <div className="flex items-center gap-4 flex-wrap sticky top-0 z-10 bg-slate-50 py-3 -mt-3 border-b border-slate-100 mb-2">
                             <div className="flex items-center gap-2 flex-wrap">
                                 <Filter size={14} className="text-slate-400 shrink-0" />
-                                <select
-                                    value={category}
-                                    onChange={e => {
-                                        setCategory(e.target.value);
-                            setSubcategory('');
-                            setBrandFilter('');
-                            setActualBrandFilter('');
-                            setGpuChipFilter('');
-                            setRamGeneration('');
-                            setSelectedProductId('');
-                        }}
-                        className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                    >
-                        <option value="all">全部品类</option>
-                        {sortCategories(data.categories).map(c => (
-                            <option key={c} value={c}>{CATEGORY_LABELS[c] || c}</option>
-                        ))}
-                    </select>
+                                {publicMode ? (
+                                    <div className="px-4 py-1.5 text-[13px] tracking-wider font-black border border-transparent rounded-lg bg-indigo-600 text-white shadow-sm flex items-center justify-center">
+                                        CPU 专区
+                                    </div>
+                                ) : (
+                                    <select
+                                        value={category}
+                                        onChange={e => {
+                                            setCategory(e.target.value);
+                                            setSubcategory('');
+                                            setBrandFilter('');
+                                            setActualBrandFilter('');
+                                            setGpuChipFilter('');
+                                            setRamGeneration('');
+                                            setSelectedProductId('');
+                                        }}
+                                        className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                    >
+                                        <option value="all">全部品类</option>
+                                        {sortCategories(data.categories).map(c => (
+                                            <option key={c} value={c}>{CATEGORY_LABELS[c] || c}</option>
+                                        ))}
+                                    </select>
+                                )}
 
                     {category === 'ram' && (
                         <select
@@ -1682,6 +1688,22 @@ export default function PriceTrendChart({ hideSummaryPanel = false }: { hideSumm
                     </div>
                 </div>
             )}
+            
+            {publicMode && (
+                <div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border border-indigo-100 dark:border-indigo-800/50 rounded-2xl text-center flex flex-col items-center justify-center mb-8 mx-2">
+                    <span className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full mb-3 shadow-inner">
+                        <TrendingUp strokeWidth={3} />
+                    </span>
+                    <h4 className="text-lg font-black text-indigo-900 dark:text-indigo-100 mb-2">解锁完整行情分析中心</h4>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 max-w-xl mb-1 leading-relaxed">
+                        当前仅为您提供 <strong className="text-indigo-600 dark:text-indigo-400">CPU 专区</strong> 的趋势测算与史低排榜。
+                    </p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">
+                        若需全览显卡、主板、内存、硬盘等全部 <strong className="text-indigo-600 dark:text-indigo-400">15 大类</strong> 硬件的完整价格波动、单品调价及破价明细，请您尊享 VIP 特权，并前往 <strong className="text-indigo-600 dark:text-indigo-400">主播中心</strong> 解锁。
+                    </p>
+                </div>
+            )}
+
             </>
             )}
             </div>
