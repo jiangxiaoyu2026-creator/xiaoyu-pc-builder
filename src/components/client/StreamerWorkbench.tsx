@@ -61,7 +61,7 @@ export interface StreamerRowHandle {
     closeSuggestions: () => void;
 }
 
-const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPreview: (img: string) => void }>(({ entry, onUpdate, onEnter, onPreview }, ref) => {
+const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPreview: (img: string) => void }>(({ entry, index, onUpdate, onEnter, onPreview }, ref) => {
     const { theme } = React.useContext(ThemeContext);
     const [query, setQuery] = useState(entry.customName || entry.item?.model || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -250,7 +250,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
                     </div>
                 )}
                 {showSuggestions && query.trim().length > 0 && (
-                    <div ref={suggestionsRef} className="absolute top-full left-0 right-0 bg-white dark:bg-slate-800 shadow-2xl rounded-xl border border-slate-100 dark:border-slate-700 z-[999] mt-2 overflow-hidden max-h-[300px] overflow-y-auto">
+                    <div ref={suggestionsRef} className={`absolute ${index >= 6 ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 right-0 bg-white dark:bg-slate-800 shadow-2xl rounded-xl border border-slate-100 dark:border-slate-700 z-[999] overflow-hidden max-h-[300px] overflow-y-auto`}>
                         {isLoading && <div className="px-4 py-3 text-xs text-slate-400 text-center flex items-center justify-center gap-2"><RefreshCw size={12} className="animate-spin" /> 正在加载产品库...</div>}
                         {!isLoading && suggestions.map((item, idx) => (
                             <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? `${theme.bgLight} ${theme.primary} transition-colors` : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`} onMouseDown={() => selectItem(item)}>
