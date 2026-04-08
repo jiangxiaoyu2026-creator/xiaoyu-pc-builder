@@ -82,7 +82,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 # SPA fallback - 处理前端路由
 # 注意：不使用 catch-all 路由，而是使用具体的前端路由模式
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def serve_index():
     """Serve index.html for root path"""
     if os.path.exists(DIST_DIR):
@@ -92,7 +92,7 @@ async def serve_index():
     raise HTTPException(status_code=404, detail="未找到页面")
 
 # 静态文件请求（非 /api 和 /assets 路径）
-@app.get("/{full_path:path}")
+@app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
 async def serve_frontend(full_path: str):
     # API 路径不应该到达这里，但以防万一
     if full_path.startswith("api"):
