@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon } from 'lucide-react';
+import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon, TrendingUp } from 'lucide-react';
 import { BuildEntry, ConfigTemplate, Category, UserItem } from '../types/clientTypes';
 import { DEFAULT_BUILD_TEMPLATE, HARDWARE_DB } from '../data/clientData';
 import { storage } from '../services/storage';
@@ -21,7 +21,8 @@ import RecycleEstimator from '../components/client/RecycleEstimator';
 import UsedItemDetail from '../components/client/UsedItemDetail';
 import { UsedItem } from '../types/adminTypes';
 import DailyPopup from '../components/client/DailyPopup';
-import ArticleList from '../components/client/ArticleList';
+// Removed ArticleList
+import StreamerPriceTrend from '../components/client/StreamerPriceTrend';
 
 // ...
 import { useTheme } from '../hooks/useTheme';
@@ -610,7 +611,7 @@ export default function ClientApp() {
                         />
                         <TabButton active={viewMode === 'visual'} onClick={() => setViewMode('visual')} icon={<LayoutGrid size={16} />} label="AI装机台" />
                         <TabButton active={viewMode === 'square'} onClick={() => setViewMode('square')} icon={<Share2 size={16} />} label="配置广场" />
-                        <TabButton active={viewMode === 'headlines'} onClick={() => setViewMode('headlines')} icon={<BookOpen size={16} />} label="装机头条" />
+                        <TabButton active={viewMode === 'headlines'} onClick={() => setViewMode('headlines')} icon={<TrendingUp size={16} />} label="行情查看" />
                         <TabButton active={viewMode === 'used'} onClick={() => setViewMode('used')} icon={<ShoppingBag size={16} />} label="二手闲置" />
                     </div>
 
@@ -778,7 +779,7 @@ export default function ClientApp() {
                         { id: 'visual', icon: LayoutGrid, label: '装机' },
                         { id: 'square', icon: Share2, label: '广场' },
                         { id: 'used', icon: ShoppingBag, label: '二手' },
-                        { id: 'headlines', icon: BookOpen, label: '头条' },
+                        { id: 'headlines', icon: TrendingUp, label: '行情' },
                         { id: 'more', icon: Menu, label: '更多' },
                     ].map((tab) => {
                         const Icon = tab.icon;
@@ -876,9 +877,7 @@ export default function ClientApp() {
                         />
                     )}
 
-
-
-                    {viewMode === 'headlines' && <ArticleList />}
+                    {viewMode === 'headlines' && <StreamerPriceTrend publicMode={true} />}
                     {viewMode === 'about' && <AboutUs />}
                 </div>
             </main>

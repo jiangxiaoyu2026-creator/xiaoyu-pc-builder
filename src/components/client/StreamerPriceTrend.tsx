@@ -60,12 +60,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
-interface Props {}
+interface Props {
+    publicMode?: boolean;
+}
 
-export default function StreamerPriceTrend({}: Props) {
+export default function StreamerPriceTrend({ publicMode }: Props) {
     const [data, setData] = useState<PublicPriceTrendData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    const [selectedCategory, setSelectedCategory] = useState<string>(publicMode ? 'cpu' : 'all');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -154,7 +156,7 @@ export default function StreamerPriceTrend({}: Props) {
             </div>
 
             {/* Chart Container */}
-            {data.chartData.length > 0 && (
+            {data.chartData.length > 0 && !publicMode && (
                 <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200/60 dark:border-slate-700 p-6 md:p-8 shadow-sm">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-6">30日价格异动水位图</h3>
                     <ResponsiveContainer width="100%" height={280}>
@@ -200,18 +202,26 @@ export default function StreamerPriceTrend({}: Props) {
 
                         {/* Filters */}
                         <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1 md:pb-0">
-                            {['all', ...Array.from(new Set(data.recentChanges.map(c => c.category)))].map(cat => (
+                            {publicMode ? (
                                 <button
-                                    key={cat}
-                                    onClick={() => setSelectedCategory(cat)}
-                                    className={`px-4 py-1.5 text-[13px] font-bold rounded-full whitespace-nowrap transition-all ${selectedCategory === cat
-                                        ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md'
-                                        : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
-                                        }`}
+                                    className="px-4 py-1.5 text-[13px] font-bold rounded-full whitespace-nowrap transition-all bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md"
                                 >
-                                    {cat === 'all' ? '全部品类' : CATEGORY_LABELS[cat] || cat}
+                                    CPU
                                 </button>
-                            ))}
+                            ) : (
+                                ['all', ...Array.from(new Set(data.recentChanges.map(c => c.category)))].map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setSelectedCategory(cat)}
+                                        className={`px-4 py-1.5 text-[13px] font-bold rounded-full whitespace-nowrap transition-all ${selectedCategory === cat
+                                            ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md'
+                                            : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                            }`}
+                                    >
+                                        {cat === 'all' ? '全部品类' : CATEGORY_LABELS[cat] || cat}
+                                    </button>
+                                ))
+                            )}
                         </div>
                     </div>
                     
@@ -244,6 +254,17 @@ export default function StreamerPriceTrend({}: Props) {
                             </div>
                         ))}
                     </div>
+                    {publicMode && (
+                        <div className="p-6 bg-slate-50 border-t border-slate-100 dark:bg-slate-800/80 dark:border-slate-700 text-center flex flex-col items-center justify-center">
+                            <span className="inline-flex items-center justify-center w-12 h-12 bg-amber-100 text-amber-500 rounded-full mb-3">
+                                <TrendingUp strokeWidth={3} />
+                            </span>
+                            <h4 className="font-black text-slate-800 dark:text-slate-200 mb-1">解锁完整行情雷达</h4>
+                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-md">
+                                仅展示 CPU 版块异动数据。若需查看显卡、主板、内存等全部 <strong className="text-indigo-500">15</strong> 大类别及其趋势水位图，请您尊享 VIP 会员特权，并前往 <strong className="text-indigo-500">主播中心</strong>。
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
