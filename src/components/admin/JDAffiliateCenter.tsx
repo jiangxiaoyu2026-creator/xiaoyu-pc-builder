@@ -48,19 +48,23 @@ export default function JDAffiliateCenter() {
         }
     };
 
-    const handleCopyAndSearch = (brand: string, model: string) => {
+    const handleCopyAndSearch = (brand: string, model: string, target: 'union' | 'jd' = 'union') => {
         let keyword = `${brand} ${model}`.trim();
         // Remove dashes for better search
         keyword = keyword.replace(/-/g, ' ');
 
         try {
             navigator.clipboard.writeText(keyword);
-            showToast(`已复制: ${keyword}，正在跳转京东联盟...`);
+            showToast(`已复制: ${keyword}，正在跳转...`);
         } catch (e) {
             // fallback
         }
         setTimeout(() => {
-            window.open('https://union.jd.com/proManager/index', '_blank');
+            if (target === 'union') {
+                window.open(`https://union.jd.com/proManager/index?keywords=${encodeURIComponent(keyword)}`, '_blank');
+            } else {
+                window.open(`https://search.jd.com/Search?enc=utf-8&keyword=${encodeURIComponent(keyword)}`, '_blank');
+            }
         }, 800);
     };
 
@@ -205,13 +209,19 @@ export default function JDAffiliateCenter() {
                                     </div>
 
                                     {/* Search Action Sector */}
-                                    <div className="w-[20%] shrink-0 flex items-center justify-center border-l border-r border-slate-100 px-4">
+                                    <div className="w-[28%] shrink-0 flex flex-col gap-2 justify-center border-l border-r border-slate-100 px-4">
                                         <button 
-                                            onClick={() => handleCopyAndSearch(item.brand, item.model)}
-                                            className="w-full py-2.5 px-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 border border-red-100 transition-colors shadow-sm flex items-center justify-center gap-2 group"
+                                            onClick={() => handleCopyAndSearch(item.brand, item.model, 'union')}
+                                            className="w-full py-2 px-3 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 border border-red-100 transition-colors shadow-sm flex items-center justify-center gap-2 group"
                                         >
                                             <Search size={14} className="group-hover:scale-110 transition-transform" />
                                             <span>一键去联盟搜</span>
+                                        </button>
+                                        <button 
+                                            onClick={() => handleCopyAndSearch(item.brand, item.model, 'jd')}
+                                            className="w-full py-1.5 px-3 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold hover:bg-slate-100 border border-slate-200 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <span>备用：去京东商城搜</span>
                                         </button>
                                     </div>
 
