@@ -24,8 +24,8 @@ DB_PATH = os.getenv("SQLITE_DB_PATH", os.path.join(os.path.dirname(os.path.dirna
 
 # 京东联盟 API 配置
 # 请注意：账号必须在京东联盟/京粉 APP 完成“实名认证”，否则 API 会返回 431 拒绝访问错误
-APP_KEY = "e59fe2912f54f99ba8463f17de681867"
-APP_SECRET = "6371f635a8db4ff29e0471ce70b867d4"
+APP_KEY = "95d6ef40876feb5446e1a76483e77fe0"
+APP_SECRET = "1cbc87e2d83e470e8b8f931971309c95"
 JD_ROUTER_URL = "https://router.jd.com/api"
 
 def generate_sign(params, secret):

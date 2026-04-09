@@ -63,7 +63,7 @@ function getDisplaySpecs(specs: Record<string, any>, category: string): { label:
     if (result.length < 4) {
         for (const [key, val] of Object.entries(specs)) {
             if (result.length >= 4) break;
-            if (priority.includes(key) || benchmarkKeys.includes(key) || key === 'cpu' || key === 'gpu') continue;
+            if (priority.includes(key) || benchmarkKeys.includes(key) || key === 'cpu' || key === 'gpu' || key.startsWith('jd_')) continue;
             if (val !== null && val !== undefined && val !== '') {
                 result.push({ label: SPEC_LABELS[key] || key, value: String(val) });
             }
@@ -1053,6 +1053,15 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                     </div>
 
                     <div className="space-y-4">
+                        {/* 京东关联 */}
+                        <JDLinkBinder 
+                            productId={product?.id || ''} 
+                            productName={`${formData.brand || ''} ${formData.model || ''}`.trim()}
+                            specs={formData.specs || {}} 
+                            onUpdate={(newSpecs: any) => setFormData({ ...formData, specs: newSpecs })}
+                            isEditing={!!product}
+                        />
+
                         <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><ListFilter size={14} /> 关键兼容性参数</h4>
                         {currentCatSpecs ? (
                             <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl">
@@ -1120,4 +1129,152 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
             </div >
         </div >
     )
+}
+
+// ═══════════════════════════════════════════
+// 京东联盟链接绑定组件
+// ═══════════════════════════════════════════
+function JDLinkBinder({ productId, productName, specs, onUpdate, isEditing }: {
+    productId: string;
+    productName: string;
+    specs: Record<string, any>;
+    onUpdate: (newSpecs: Record<string, any>) => void;
+    isEditing: boolean;
+}) {
+    const [jdInput, setJdInput] = useState('');
+    const [isBinding, setIsBinding] = useState(false);
+    const [bindResult, setBindResult] = useState<{ success: boolean; message: string } | null>(null);
+    const { showToast } = useToast();
+
+    const currentJdUrl = specs?.jd_url || '';
+    const currentJdPageUrl = specs?.jd_page_url || '';
+
+    const handleBind = async () => {
+        if (!jdInput.trim()) return;
+        if (!isEditing) {
+            // 新建产品时直接存入 specs（保存后才会真正调用API）
+            showToast('请先保存产品，再绑定京东链接', 'error');
+            return;
+        }
+
+        setIsBinding(true);
+        setBindResult(null);
+        try {
+            const res = await ApiService.post('/products/admin/bind-jd', {
+                product_id: productId,
+                jd_url: jdInput.trim()
+            });
+            if (res.success) {
+                onUpdate({
+                    ...specs,
+                    jd_url: res.click_url,
+                    jd_sku_id: res.product?.specs?.jd_sku_id || '',
+                    jd_page_url: res.product?.specs?.jd_page_url || ''
+                });
+                setBindResult({ success: true, message: '推广链接生成成功！' });
+                setJdInput('');
+                showToast('京东推广链接已生成', 'success');
+            } else {
+                setBindResult({ success: false, message: res.message || '绑定失败' });
+            }
+        } catch (e: any) {
+            setBindResult({ success: false, message: e.message || '请求失败' });
+        } finally {
+            setIsBinding(false);
+        }
+    };
+
+    const handleUnbind = () => {
+        const { jd_url, jd_sku_id, jd_page_url, ...rest } = specs;
+        onUpdate(rest);
+        setBindResult(null);
+        showToast('已解除京东关联', 'success');
+    };
+
+    return (
+        <div className="p-4 bg-red-50/40 rounded-xl border border-red-100/60">
+            <h4 className="text-sm font-bold text-red-700 mb-3 flex items-center gap-2">
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-red-600"><path d="M19.451 4.926c-.398-.354-.93-.561-1.49-.561h-.001c-.563 0-1.092.207-1.49.561L12 8.926l-4.47-4c-.398-.354-.93-.561-1.49-.561-.563 0-1.092.207-1.49.561L2 7.076V18.5a1.5 1.5 0 001.5 1.5h17a1.5 1.5 0 001.5-1.5V7.076l-2.549-2.15z"/></svg>
+                京东联盟推广
+                {currentJdUrl && <span className="text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded font-bold">已绑定</span>}
+            </h4>
+
+            {currentJdUrl ? (
+                <div className="space-y-2">
+                    <div className="flex items-center gap-2 bg-white p-2.5 rounded-lg border border-red-100">
+                        <div className="flex-1 min-w-0">
+                            <div className="text-[10px] text-slate-400 font-bold mb-0.5">推广链接</div>
+                            <div className="text-[11px] text-slate-600 truncate font-mono">{currentJdUrl.slice(0, 60)}...</div>
+                        </div>
+                        <a
+                            href={currentJdPageUrl || currentJdUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="shrink-0 px-3 py-1.5 bg-[#E2231A] text-white text-[11px] font-bold rounded-lg hover:bg-[#C81912] transition-colors"
+                        >
+                            打开京东
+                        </a>
+                        <button
+                            type="button"
+                            onClick={handleUnbind}
+                            className="shrink-0 px-2 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors text-[11px] font-bold"
+                        >
+                            解绑
+                        </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400">客户点击购买 → 跳转京东下单 → 你赚佣金 💰</p>
+                </div>
+            ) : (
+                <div className="space-y-2">
+                    {productName && (
+                        <div className="mb-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(productName);
+                                    showToast('已复制搜索词，正前往京东联盟...');
+                                    setTimeout(() => {
+                                        window.open(`https://union.jd.com/proManager/index`, '_blank');
+                                    }, 800);
+                                }}
+                                className="flex items-center gap-2 w-full px-4 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg text-xs font-bold hover:bg-red-50 hover:border-red-300 transition-colors shadow-sm group"
+                            >
+                                <Search size={14} className="group-hover:scale-110 transition-transform" />
+                                <span>一键直达京东搜索：<span className="text-slate-800 bg-slate-100 px-1 rounded">{productName}</span></span>
+                                <span className="ml-auto text-[10px] bg-red-100 px-1.5 py-0.5 rounded text-red-600 font-normal">点击自动复制并打开网页</span>
+                            </button>
+                        </div>
+                    )}
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={jdInput}
+                            onChange={e => setJdInput(e.target.value)}
+                            placeholder="搜索完毕后，粘贴京东商品链接..."
+                            className="flex-1 border border-red-200 rounded-lg px-3 py-2 text-xs placeholder:text-slate-300 focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none"
+                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleBind())}
+                        />
+                        <button
+                            type="button"
+                            onClick={handleBind}
+                            disabled={isBinding || !jdInput.trim() || !isEditing}
+                            className="shrink-0 px-4 py-2 bg-[#E2231A] text-white text-xs font-bold rounded-lg hover:bg-[#C81912] disabled:bg-slate-200 disabled:text-slate-400 transition-colors flex items-center gap-1.5"
+                        >
+                            {isBinding ? (
+                                <><span className="animate-spin">⏳</span> 生成中...</>
+                            ) : (
+                                '生成推广链接'
+                            )}
+                        </button>
+                    </div>
+                    {bindResult && (
+                        <div className={`text-[11px] font-bold px-3 py-1.5 rounded-lg ${bindResult.success ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                            {bindResult.message}
+                        </div>
+                    )}
+                    <p className="text-[10px] text-slate-400">支持: jingfen.jd.com 链接 / 联盟商品ID（暂不支持纯 SKU ID）</p>
+                </div>
+            )}
+        </div>
+    );
 }

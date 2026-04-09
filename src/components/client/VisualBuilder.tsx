@@ -851,7 +851,7 @@ function VisualBuilder({
                                                                 }
                                                                 if (!specsObj || typeof specsObj !== 'object') specsObj = {};
 
-                                                                const specEntries = Object.entries(specsObj).filter(([_, val]) => val && String(val).trim() !== '');
+                                                                const specEntries = Object.entries(specsObj).filter(([k, val]) => val && String(val).trim() !== '' && !k.startsWith('jd_'));
                                                                 if (specEntries.length === 0) return null;
 
                                                                 return specEntries.slice(0, 2).map(([key, val]) => (
@@ -864,16 +864,37 @@ function VisualBuilder({
                                                         </div>
                                                     </div>
 
-                                                    {/* Price Tag */}
-                                                    <div className="flex flex-col items-end gap-3 shrink-0 ml-2">
+                                                    {/* Price Tag & JD Buy */}
+                                                    <div className="flex flex-col items-end gap-2 shrink-0 ml-2">
                                                         <div className={`font-black font-mono tracking-tighter transition-all ${isOutOfStock ? 'text-slate-300 text-base' : 'text-xl text-slate-900 italic group-hover:scale-105'}`}>
                                                             {isOutOfStock ? '—' : `¥${item.price}`}
                                                         </div>
-                                                        {!isOutOfStock && (
-                                                            <div className="w-8 h-8 rounded-xl bg-slate-50 group-hover:bg-slate-900 text-slate-300 group-hover:text-white flex items-center justify-center transition-all shadow-sm group-hover:shadow-lg group-hover:shadow-slate-200 border border-slate-100 group-hover:border-slate-800">
-                                                                <ArrowRight size={16} />
-                                                            </div>
-                                                        )}
+                                                        <div className="flex items-center gap-1.5">
+                                                            {(() => {
+                                                                let s = item.specs;
+                                                                if (typeof s === 'string') { try { s = JSON.parse(s); } catch { s = {}; } }
+                                                                const jdUrl = (s && typeof s === 'object') ? (s as any).jd_url : null;
+                                                                if (!jdUrl || isOutOfStock) return null;
+                                                                return (
+                                                                    <a
+                                                                        href={jdUrl}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                        className="flex items-center gap-1 px-2.5 py-1.5 bg-[#E2231A] hover:bg-[#C81912] text-white text-[10px] font-black rounded-lg transition-all shadow-sm hover:shadow-md hover:shadow-red-200 active:scale-95 whitespace-nowrap"
+                                                                        title="在京东购买"
+                                                                    >
+                                                                        <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current"><path d="M19.451 4.926c-.398-.354-.93-.561-1.49-.561h-.001c-.563 0-1.092.207-1.49.561L12 8.926l-4.47-4c-.398-.354-.93-.561-1.49-.561-.563 0-1.092.207-1.49.561L2 7.076V18.5a1.5 1.5 0 001.5 1.5h17a1.5 1.5 0 001.5-1.5V7.076l-2.549-2.15z"/></svg>
+                                                                        京东购买
+                                                                    </a>
+                                                                );
+                                                            })()}
+                                                            {!isOutOfStock && (
+                                                                <div className="w-8 h-8 rounded-xl bg-slate-50 group-hover:bg-slate-900 text-slate-300 group-hover:text-white flex items-center justify-center transition-all shadow-sm group-hover:shadow-lg group-hover:shadow-slate-200 border border-slate-100 group-hover:border-slate-800">
+                                                                    <ArrowRight size={16} />
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             );

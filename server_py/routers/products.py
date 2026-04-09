@@ -523,3 +523,145 @@ async def delete_product(
     session.delete(product)
     session.commit()
     return {"message": "产品已删除"}
+
+
+# ═══════════════════════════════════════════════════════════
+# 京东联盟 CPS 推广链接管理
+# ═══════════════════════════════════════════════════════════
+
+class JDBindRequest(BaseModel):
+    product_id: str
+    jd_url: str  # 京东链接、SKU ID 或联盟商品ID
+
+class JDBatchBindRequest(BaseModel):
+    bindings: List[dict]  # [{"product_id": "xxx", "jd_url": "yyy"}, ...]
+
+@router.post("/admin/bind-jd")
+async def bind_jd_link(
+    request: JDBindRequest,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """为单个产品绑定京东推广链接"""
+    from ..services.jd_union_service import bind_product_jd_link
+
+    product = session.get(Hardware, request.product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="产品未找到")
+
+    result = bind_product_jd_link(request.jd_url)
+
+    if result["success"]:
+        # 更新产品的 specs 字段，写入京东链接
+        specs = _serialize_specs(product.specs)
+        specs["jd_url"] = result["click_url"]
+        specs["jd_sku_id"] = result.get("jd_sku_id", "")
+        specs["jd_page_url"] = result.get("jd_page_url", "")
+        product.specs = specs
+        session.add(product)
+        session.commit()
+        session.refresh(product)
+
+        return {
+            "success": True,
+            "message": f"已为 {product.brand} {product.model} 生成京东推广链接",
+            "click_url": result["click_url"],
+            "product": product.model_dump()
+        }
+    else:
+        return {
+            "success": False,
+            "message": result.get("error", "绑定失败"),
+            "original_url": result.get("original_url", "")
+        }
+
+
+@router.post("/admin/batch-bind-jd")
+async def batch_bind_jd_links(
+    request: JDBatchBindRequest,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """批量为产品绑定京东推广链接"""
+    from ..services.jd_union_service import bind_product_jd_link
+
+    results = {"success": 0, "failed": 0, "details": []}
+
+    for binding in request.bindings:
+        pid = binding.get("product_id", "")
+        jd_url = binding.get("jd_url", "")
+
+        if not pid or not jd_url:
+            results["failed"] += 1
+            results["details"].append({"product_id": pid, "success": False, "error": "参数缺失"})
+            continue
+
+        product = session.get(Hardware, pid)
+        if not product:
+            results["failed"] += 1
+            results["details"].append({"product_id": pid, "success": False, "error": "产品不存在"})
+            continue
+
+        result = bind_product_jd_link(jd_url)
+        if result["success"]:
+            specs = _serialize_specs(product.specs)
+            specs["jd_url"] = result["click_url"]
+            specs["jd_sku_id"] = result.get("jd_sku_id", "")
+            specs["jd_page_url"] = result.get("jd_page_url", "")
+            product.specs = specs
+            session.add(product)
+            results["success"] += 1
+            results["details"].append({
+                "product_id": pid,
+                "success": True,
+                "name": f"{product.brand} {product.model}"
+            })
+        else:
+            results["failed"] += 1
+            results["details"].append({
+                "product_id": pid,
+                "success": False,
+                "error": result.get("error", "生成失败")
+            })
+
+    session.commit()
+    return results
+
+
+@router.get("/admin/search-jd")
+async def search_jd_products_api(
+    keyword: str = "",
+    elite_id: int = 22,
+    cid1: Optional[int] = None,
+    page: int = 1,
+    admin: User = Depends(get_current_admin)
+):
+    """搜索京东联盟商品（京粉精选频道）"""
+    from ..services.jd_union_service import search_jd_products
+    return search_jd_products(keyword=keyword, elite_id=elite_id, cid1=cid1, page=page)
+
+
+@router.get("/admin/jd-bindstats")
+async def get_jd_bind_stats(
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """获取京东链接绑定统计"""
+    from sqlalchemy import func
+
+    total = session.scalar(select(func.count()).select_from(Hardware).where(Hardware.status == "active"))
+
+    # 统计已绑定京东链接的产品数（specs JSON 中包含 jd_url）
+    all_active = session.exec(select(Hardware).where(Hardware.status == "active")).all()
+    bound_count = 0
+    for hw in all_active:
+        specs = _serialize_specs(hw.specs)
+        if specs.get("jd_url"):
+            bound_count += 1
+
+    return {
+        "total": total or 0,
+        "bound": bound_count,
+        "unbound": (total or 0) - bound_count
+    }
+
