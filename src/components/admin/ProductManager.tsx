@@ -1117,8 +1117,10 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                             />
                         </details>
                     </div>
+                    </div>
+                </div>
 
-                    <div className="p-6 border-t border-slate-100 flex gap-3 shrink-0 bg-slate-50/50">
+                <div className="p-6 border-t border-slate-100 flex gap-3 shrink-0 bg-slate-50/50">
                         <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors">取消</button>
                         <button type="button" onClick={handleSaveAndContinue} className="flex-1 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-bold hover:bg-indigo-100 transition-colors border border-indigo-200">保存并继续录入</button>
                         <button type="submit" className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-indigo-600 transition-colors shadow-lg shadow-indigo-200">保存</button>
