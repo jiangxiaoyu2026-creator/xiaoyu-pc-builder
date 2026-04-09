@@ -182,6 +182,7 @@ export default function AdminApp() {
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
                     <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-2 uppercase">运营与互动</div>
                     <NavButton active={currentTab === 'dashboard'} onClick={() => setCurrentTab('dashboard')} icon={<LayoutDashboard size={18} />} label="数据概览" />
+                    <NavButton active={currentTab === 'price_trends'} onClick={() => setCurrentTab('price_trends')} icon={<BarChart3 size={18} />} label="价格趋势分析" />
                     <NavButton active={currentTab === 'products'} onClick={() => setCurrentTab('products')} icon={<Package size={18} />} label="硬件价格管理" />
                     <NavButton active={currentTab === 'configs'} onClick={() => setCurrentTab('configs')} icon={<ListFilter size={18} />} label="配置单管理" />
                     <NavButton active={currentTab === 'comments'} onClick={() => setCurrentTab('comments')} icon={<MessageSquare size={18} />} label="评论管理" />
