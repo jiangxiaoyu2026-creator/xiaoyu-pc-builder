@@ -612,7 +612,6 @@ export default function ClientApp() {
                         />
                         <TabButton active={viewMode === 'visual'} onClick={() => setViewMode('visual')} icon={<LayoutGrid size={16} />} label="AI装机台" />
                         <TabButton active={viewMode === 'square'} onClick={() => setViewMode('square')} icon={<Share2 size={16} />} label="配置广场" />
-                        <TabButton active={viewMode === 'headlines'} onClick={() => setViewMode('headlines')} icon={<TrendingUp size={16} />} label="行情查看" />
                         <TabButton active={viewMode === 'used'} onClick={() => setViewMode('used')} icon={<ShoppingBag size={16} />} label="二手闲置" />
                     </div>
 
@@ -780,7 +779,6 @@ export default function ClientApp() {
                         { id: 'visual', icon: LayoutGrid, label: '装机' },
                         { id: 'square', icon: Share2, label: '广场' },
                         { id: 'used', icon: ShoppingBag, label: '二手' },
-                        { id: 'headlines', icon: TrendingUp, label: '行情' },
                         { id: 'more', icon: Menu, label: '更多' },
                     ].map((tab) => {
                         const Icon = tab.icon;
