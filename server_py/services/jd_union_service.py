@@ -198,6 +198,16 @@ def bind_product_jd_link(jd_url: str) -> Dict[str, Any]:
     jd_sku_id = ""
     material_url = ""
 
+    # 如果已经是生成的短链接或带货链接，直接放行
+    if "u.jd.com" in jd_url or "union-click.jd.com" in jd_url:
+        return {
+            "success": True,
+            "click_url": jd_url,
+            "jd_sku_id": "",
+            "original_url": jd_url,
+            "jd_page_url": jd_url
+        }
+
     # 解析输入格式
     if "item.jd.com" in jd_url:
         # 京东商品链接 → 提取 SKU ID
