@@ -1050,9 +1050,8 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                 设为折扣
                             </label>
                         </div>
-                    </div>
-
-                    <div className="space-y-4">
+                        
+                        <div className="space-y-4">
                         {/* 京东关联 */}
                         <JDLinkBinder 
                             productId={product?.id || ''} 
@@ -1118,7 +1117,6 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                             />
                         </details>
                     </div>
-                </div>
 
                     <div className="p-6 border-t border-slate-100 flex gap-3 shrink-0 bg-slate-50/50">
                         <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors">取消</button>
