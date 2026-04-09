@@ -76,7 +76,7 @@ export default function JDAffiliateCenter() {
         try {
             const res = await ApiService.post('/products/admin/bind-jd', {
                 product_id: productId,
-                jd_input: urlToBind,
+                jd_url: urlToBind,
             });
 
             if (res.success) {
