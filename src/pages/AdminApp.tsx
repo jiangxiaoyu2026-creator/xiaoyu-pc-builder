@@ -13,7 +13,6 @@ import {
     CreditCard,
     Info,
     Gift,
-    BookOpen,
     TrendingUp,
     BarChart3,
     FileSpreadsheet,
@@ -40,7 +39,6 @@ const RecycleManager = lazy(() => import('../components/admin/RecycleManager'));
 const PaymentSettings = lazy(() => import('../components/admin/PaymentSettings'));
 const AboutUsSettings = lazy(() => import('../components/admin/AboutUsSettings'));
 const InvitationManager = lazy(() => import('../components/admin/InvitationManager'));
-const ArticleManager = lazy(() => import('../components/admin/ArticleManager'));
 const MarketingManager = lazy(() => import('../components/admin/MarketingManager'));
 const PriceTrendChart = lazy(() => import('../components/admin/PriceTrendChart'));
 const RecyclingPriceManager = lazy(() => import('../components/admin/RecyclingPriceManager'));
@@ -135,7 +133,6 @@ export default function AdminApp() {
         about_us: '品牌页面管理',
         verifications: '邮箱验证码安全审计',
         invitations: '注册邀请码管理',
-        articles: '头条管理',
         marketing: '今日自动化大盘与营销中心',
         jd_affiliate: '京东带货极速绑定',
     }), []);
@@ -190,7 +187,6 @@ export default function AdminApp() {
                     <NavButton active={currentTab === 'configs'} onClick={() => setCurrentTab('configs')} icon={<ListFilter size={18} />} label="配置单管理" />
                     <NavButton active={currentTab === 'comments'} onClick={() => setCurrentTab('comments')} icon={<MessageSquare size={18} />} label="评论管理" />
                     <NavButton active={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} icon={<MessageCircle size={18} />} label="客户咨询" />
-                    <NavButton active={currentTab === 'articles'} onClick={() => setCurrentTab('articles')} icon={<BookOpen size={18} />} label="头条管理" />
                     <NavButton active={currentTab === 'marketing'} onClick={() => setCurrentTab('marketing')} icon={<TrendingUp size={18} />} label="📈 行情与营销中心" />
                     <NavButton active={currentTab === 'jd_affiliate'} onClick={() => setCurrentTab('jd_affiliate')} icon={<Link2 size={18} />} label="京东带货流水线" />
 
@@ -306,7 +302,6 @@ export default function AdminApp() {
                                     {currentTab === 'about_us' && <AboutUsSettings />}
                                     {/* {currentTab === 'verifications' && <VerificationManager />} */}
                                     {currentTab === 'invitations' && <InvitationManager />}
-                                    {currentTab === 'articles' && <ArticleManager />}
                                     {currentTab === 'marketing' && <MarketingManager />}
                                     {currentTab === 'jd_affiliate' && <JDAffiliateCenter />}
                                 </div>
