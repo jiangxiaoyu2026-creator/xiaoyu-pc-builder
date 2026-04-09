@@ -18,6 +18,7 @@ import {
     BarChart3,
     FileSpreadsheet,
     Home,
+    Link2,
 } from 'lucide-react';
 import { NavButton } from '../components/admin/Shared';
 import { PricingStrategy, UserItem } from '../types/adminTypes';
@@ -43,9 +44,10 @@ const ArticleManager = lazy(() => import('../components/admin/ArticleManager'));
 const MarketingManager = lazy(() => import('../components/admin/MarketingManager'));
 const PriceTrendChart = lazy(() => import('../components/admin/PriceTrendChart'));
 const RecyclingPriceManager = lazy(() => import('../components/admin/RecyclingPriceManager'));
+const JDAffiliateCenter = lazy(() => import('../components/admin/JDAffiliateCenter'));
 
 export default function AdminApp() {
-    const [currentTab, setCurrentTab] = useState<'dashboard' | 'price_trends' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'recycling_prices' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles' | 'marketing'>('dashboard');
+    const [currentTab, setCurrentTab] = useState<'dashboard' | 'price_trends' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'recycling_prices' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles' | 'marketing' | 'jd_affiliate'>('dashboard');
 
     const [pricingStrategy, setPricingStrategy] = useState<PricingStrategy>({
         serviceFeeRate: 0.06,
@@ -135,6 +137,7 @@ export default function AdminApp() {
         invitations: '注册邀请码管理',
         articles: '头条管理',
         marketing: '今日自动化大盘与营销中心',
+        jd_affiliate: '京东带货极速绑定',
     }), []);
 
     if (!currentUser || !['admin', 'sub_admin'].includes(currentUser.role)) {
@@ -189,6 +192,7 @@ export default function AdminApp() {
                     <NavButton active={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} icon={<MessageCircle size={18} />} label="客户咨询" />
                     <NavButton active={currentTab === 'articles'} onClick={() => setCurrentTab('articles')} icon={<BookOpen size={18} />} label="头条管理" />
                     <NavButton active={currentTab === 'marketing'} onClick={() => setCurrentTab('marketing')} icon={<TrendingUp size={18} />} label="📈 行情与营销中心" />
+                    <NavButton active={currentTab === 'jd_affiliate'} onClick={() => setCurrentTab('jd_affiliate')} icon={<Link2 size={18} />} label="京东带货流水线" />
 
                     <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-6 uppercase">二手市场</div>
                     <NavButton active={currentTab === 'used_items'} onClick={() => setCurrentTab('used_items')} icon={<Package size={18} />} label="二手商品" />
@@ -304,6 +308,7 @@ export default function AdminApp() {
                                     {currentTab === 'invitations' && <InvitationManager />}
                                     {currentTab === 'articles' && <ArticleManager />}
                                     {currentTab === 'marketing' && <MarketingManager />}
+                                    {currentTab === 'jd_affiliate' && <JDAffiliateCenter />}
                                 </div>
                             )}
                         </div>
