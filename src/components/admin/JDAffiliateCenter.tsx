@@ -22,15 +22,14 @@ export default function JDAffiliateCenter() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const res = await ApiService.get('/products/admin');
+            const res = await ApiService.get('/products/admin?page_size=3000');
             const flatList: (HardwareItem & { catKey: string })[] = [];
             
-            // Flatten the category dictionary into a single list
-            Object.entries(res).forEach(([catKey, items]) => {
-                (items as HardwareItem[]).forEach(item => {
-                    flatList.push({ ...item, catKey });
+            if (res && res.items) {
+                res.items.forEach((item: HardwareItem) => {
+                    flatList.push({ ...item, catKey: item.category || 'unknown' });
                 });
-            });
+            }
 
             // Sort logic: if 'unbound', unbound ones are naturally filtered. 
             // If all, we put unbound ones at top just for better workflow.
