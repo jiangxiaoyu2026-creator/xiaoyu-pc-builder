@@ -282,9 +282,16 @@ export default function ClientApp() {
             const model = item.model.toUpperCase();
 
             if (!specs.memoryType) {
-                if (model.includes('DDR5') || model.includes(' D5') || /X870|B650|X670|A620|Z890|B860|Z790|B760|Z690|B660/.test(model)) {
+                // 最高优先级：型号名称里写明了 DDR4 / DDR5（如 "B660M DDR4"）
+                if (model.includes('DDR4') || model.includes(' D4')) {
+                    specs.memoryType = 'DDR4';
+                } else if (model.includes('DDR5') || model.includes(' D5')) {
                     specs.memoryType = 'DDR5';
-                } else if (model.includes('DDR4') || model.includes(' D4') || /B550|X570|B450|A320|H610M-K|Z590|B560|Z490/.test(model)) {
+                }
+                // 次优先级：根据芯片组推断（仅在名称中没有显式标注时）
+                else if (/X870|B650|X670|A620|Z890|B860|Z790|B760|Z690|B660/.test(model)) {
+                    specs.memoryType = 'DDR5';
+                } else if (/B550|X570|B450|A320|H610M-K|Z590|B560|Z490/.test(model)) {
                     specs.memoryType = 'DDR4';
                 }
             }

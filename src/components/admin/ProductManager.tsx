@@ -13,11 +13,12 @@ import { useToast } from '../common/Toast';
 // 参数字段中文映射（用于列表展示）
 const SPEC_LABELS: Record<string, string> = {
     // 通用
-    socket: '插槽', cores: '核心数', threads: '线程数', frequency: '频率(GHz)',
-    wattage: '功耗(W)', memoryType: '内存类型', integratedGpu: '核显',
+    socket: '插槽', socket_type: '插槽类型', cores: '核心数', threads: '线程数', frequency: '频率(GHz)',
+    wattage: '功耗(W)', memoryType: '内存类型', ram_type: '内存代数', integratedGpu: '核显',
     architecture: '架构', lithography: '制程', l2Cache: 'L2缓存', l3Cache: 'L3缓存',
     tdpMax: '最大TDP', pcie: 'PCIe版本',
     // 跑分
+    master_lu_score: '鲁大师跑分(预测)', power_draw: '标准功耗(W)',
     cinebenchR23_single: 'CB R23单核', cinebenchR23_multi: 'CB R23多核',
     cinebench2024_single: 'CB 2024单核', cinebench2024_multi: 'CB 2024多核',
     passmark_single: 'PM单核', passmark_multi: 'PM多核',
@@ -37,11 +38,11 @@ const SPEC_LABELS: Record<string, string> = {
 
 // 各品类优先显示的字段顺序
 const CATEGORY_PRIORITY: Record<string, string[]> = {
-    cpu: ['cores', 'threads', 'frequency', 'socket', 'memoryType', 'wattage'],
-    gpu: ['vram', 'vramType', 'boostClock', 'tdp'],
-    motherboard: ['socket', 'chipset', 'memorySlots', 'maxMemory'],
-    ram: ['capacity', 'speed', 'type', 'latency'],
-    disk: ['capacity', 'interface', 'readSpeed', 'writeSpeed'],
+    cpu: ['master_lu_score', 'power_draw', 'socket_type', 'cores', 'threads', 'frequency', 'socket', 'memoryType', 'wattage'],
+    gpu: ['master_lu_score', 'power_draw', 'vram', 'vramType', 'boostClock', 'tdp'],
+    motherboard: ['socket_type', 'ram_type', 'form_factor', 'socket', 'chipset', 'memorySlots', 'maxMemory'],
+    ram: ['master_lu_score', 'power_draw', 'capacity', 'speed', 'type', 'latency'],
+    disk: ['master_lu_score', 'capacity', 'interface', 'readSpeed', 'writeSpeed'],
     psu: ['wattageRated', 'efficiency', 'modular'],
     default: [],
 };

@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor, Info, Pin } from 'lucide-react';
+import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor, Info, Pin, Activity, Gamepad2, Flame } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
@@ -71,9 +71,31 @@ function VisualBuilder({
     const [sysAnnouncement, setSysAnnouncement] = useState<SystemAnnouncementSettings | null>(null);
     const [pricingStrategy, setPricingStrategy] = useState<import('../../types/adminTypes').PricingStrategy | null>(null);
 
+    // Simulator Widgets States
+    const [simResult, setSimResult] = useState<{
+        totalLuScore: number;
+        totalPowerDraw: number;
+        recommendedPower: number;
+        isValid: boolean;
+        errors: string[];
+        warnings: string[];
+    } | null>(null);
+    const [fpsData, setFpsData] = useState<any[]>([]);
+    const [resolution, setResolution] = useState<number>(1080);
+    const [loadingFps, setLoadingFps] = useState(false);
+    const [gpuBenchmarks, setGpuBenchmarks] = useState<any>(null);
+
     useEffect(() => {
         storage.getSystemAnnouncement().then(setSysAnnouncement);
         storage.getPricingStrategy().then(setPricingStrategy);
+
+        import('../../services/api').then(({ ApiService }) => {
+            ApiService.get('/settings/gpu_benchmarks').then((res: any) => {
+                if (res && res.value) {
+                    setGpuBenchmarks(res.value);
+                }
+            }).catch(console.error);
+        });
 
         const handleUpdate = () => {
             storage.getSystemAnnouncement().then(setSysAnnouncement);
@@ -81,6 +103,86 @@ function VisualBuilder({
         window.addEventListener('xiaoyu-announcement-update', handleUpdate);
         return () => window.removeEventListener('xiaoyu-announcement-update', handleUpdate);
     }, []);
+
+    // Simulator API Hooks
+    useEffect(() => {
+        // Collect product IDs from buildList
+        const itemIds = buildList
+            .filter(b => b.item && !b.customName)
+            .map(b => b.item!.id);
+            
+        if (itemIds.length === 0) {
+            setSimResult(null);
+            return;
+        }
+
+        import('../../services/api').then(({ ApiService }) => {
+            ApiService.post('/simulator/validate', { item_ids: itemIds })
+                .then((data: any) => {
+                    setSimResult({
+                        totalLuScore: data.total_lu_score,
+                        totalPowerDraw: data.total_power_draw,
+                        recommendedPower: data.recommended_power,
+                        isValid: data.is_valid,
+                        errors: data.errors || [],
+                        warnings: data.warnings || [],
+                    });
+                })
+                .catch(console.error);
+         });
+    }, [buildList]);
+
+    useEffect(() => {
+        const gpuItem = buildList.find(b => b.category === 'gpu')?.item;
+
+        if (gpuItem && gpuBenchmarks) {
+            setLoadingFps(true);
+            const modelUpper = `${gpuItem.brand} ${gpuItem.model}`.toUpperCase();
+            
+            let matchedChip = null;
+            let maxLength = 0;
+            
+            for (const chip of Object.keys(gpuBenchmarks)) {
+                const searchKey = chip.toUpperCase();
+                if (modelUpper.includes(searchKey) && searchKey.length > maxLength) {
+                    matchedChip = chip;
+                    maxLength = searchKey.length;
+                }
+            }
+
+            if (matchedChip) {
+                const bench = gpuBenchmarks[matchedChip].benchmarks;
+                const resMap: Record<number, string> = { 1080: '1080p', 1440: '2k', 2160: '4k' };
+                const resKey = resMap[resolution] || '1080p';
+                
+                const gameNames: Record<string, string> = {
+                    "cs2": "反恐精英2", "deltaforce": "三角洲行动", "cyberpunk": "赛博朋克2077",
+                    "rdr2": "荒野大镖客2", "wukong": "黑神话：悟空", "pubg": "绝地求生", 
+                    "naraka": "永劫无间", "arenabreakout": "暗区突围",
+                    "gta5": "GTA5", "genshin": "原神", "forza5": "地平线5"
+                };
+
+                const TopGamesToShow = ["cyberpunk", "wukong", "cs2", "pubg", "deltaforce", "naraka"];
+                
+                const formattedData = TopGamesToShow
+                    .filter(gId => bench[gId] && bench[gId][resKey])
+                    .map(gameId => ({
+                        name: gameNames[gameId] || gameId,
+                        fps: bench[gameId][resKey]
+                    }));
+                    
+                setTimeout(() => {
+                    setFpsData(formattedData);
+                    setLoadingFps(false);
+                }, 300); // simulate short delay for UX
+            } else {
+                setFpsData([]);
+                setLoadingFps(false);
+            }
+        } else {
+            setFpsData([]);
+        }
+    }, [buildList, resolution, gpuBenchmarks]);
 
     const openSelector = async (entry: BuildEntry) => {
         setModalCategory(entry.category);
@@ -702,6 +804,89 @@ function VisualBuilder({
                                 )}
                             </div>
                         </div>
+
+                        {/* 鲁大师跑分与等级 */}
+                        {simResult && (
+                            <div className="flex gap-2 -mt-1 md:-mt-2">
+                                <div className="flex-[1.2] bg-gradient-to-br from-rose-50/80 to-white dark:from-rose-900/20 dark:to-slate-900/50 border border-rose-100/60 dark:border-rose-800/60 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
+                                     <div className="absolute -right-4 -bottom-4 opacity-5 text-rose-500"><Activity size={64}/></div>
+                                     <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Flame size={12} className="text-rose-500"/> 鲁大师跑分</h4>
+                                     <div className="text-xl font-black text-rose-600 dark:text-rose-400 font-mono tracking-tighter">
+                                         {simResult.totalLuScore > 0 ? simResult.totalLuScore.toLocaleString() : '---'}
+                                     </div>
+                                </div>
+                                <div className="flex-1 bg-gradient-to-br from-amber-50/80 to-white dark:bg-slate-800/80 border border-amber-100/80 dark:border-slate-700/80 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
+                                    <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Sparkles size={12} className="text-amber-500"/> 战力等级</h4>
+                                    {(() => {
+                                        const score = simResult.totalLuScore;
+                                        let rank = { label: '未定级', pct: '0%', color: 'text-slate-600' };
+                                        if (score >= 1800000) rank = { label: '性能王者', pct: '99%', color: 'text-red-600' };
+                                        else if (score >= 1200000) rank = { label: '超凡大师', pct: '95%', color: 'text-purple-600' };
+                                        else if (score >= 800000) rank = { label: '璀璨钻石', pct: '85%', color: 'text-cyan-600' };
+                                        else if (score >= 500000) rank = { label: '尊贵铂金', pct: '65%', color: 'text-emerald-600' };
+                                        else if (score >= 300000) rank = { label: '荣耀黄金', pct: '40%', color: 'text-amber-600' };
+                                        else if (score > 0) rank = { label: '坚韧白银', pct: '15%', color: 'text-slate-600' };
+                                        
+                                        return (
+                                            <div>
+                                                <div className={`text-lg font-black ${rank.color} dark:text-slate-300 tracking-tight`}>
+                                                    {rank.label}
+                                                </div>
+                                                {score > 0 && <div className="text-[10px] text-slate-400 font-bold mt-0.5">击败全国 {rank.pct} 电脑</div>}
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 游戏帧率体验测算 */}
+                        {(fpsData.length > 0 || loadingFps) && (
+                            <div className="bg-slate-900 border border-slate-800 rounded-[28px] p-5 shadow-2xl relative overflow-hidden mt-1">
+                                <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
+                                
+                                <div className="flex items-center justify-between mb-4 relative z-10">
+                                    <h3 className="font-extrabold text-white text-[13px] flex items-center gap-1.5 tracking-wide">
+                                        <Gamepad2 size={16} className="text-indigo-400" />
+                                        游戏试玩体验
+                                    </h3>
+                                    <div className="flex gap-1 bg-slate-800/80 p-0.5 rounded-[10px] border border-slate-700/50">
+                                        {[1080, 1440, 2160].map(res => (
+                                            <button
+                                                key={res}
+                                                onClick={() => setResolution(res)}
+                                                className={`text-[9px] font-black px-2.5 py-1 rounded-md transition-all uppercase tracking-wider ${resolution === res ? 'bg-indigo-500 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                                            >
+                                                {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-3 relative z-10 min-h-[120px]">
+                                    {loadingFps ? (
+                                        <div className="py-10 flex flex-col items-center justify-center text-indigo-400 gap-3">
+                                            <RefreshCw size={24} className="animate-spin" />
+                                            <div className="text-xs font-black tracking-widest">正在为您测算帧率数据...</div>
+                                        </div>
+                                    ) : (
+                                        fpsData.map((item, idx) => (
+                                            <div key={idx} className="group">
+                                                <div className="flex justify-between text-[11px] mb-1.5">
+                                                    <span className="font-bold text-slate-300 group-hover:text-white transition-colors">{item.name}</span>
+                                                    <span className="font-mono text-indigo-300 font-bold">{item.fps} FPS</span>
+                                                </div>
+                                                <div className="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden border border-slate-700/30">
+                                                    <div 
+                                                        className="bg-gradient-to-r from-indigo-500 to-cyan-400 h-1.5 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-all duration-1000 ease-out" 
+                                                        style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

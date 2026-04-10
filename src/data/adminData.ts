@@ -4,12 +4,13 @@ import { HardwareItem, ConfigItem, Category } from '../types/adminTypes';
 
 export const COMPATIBILITY_FIELDS: Partial<Record<Category, { key: string; label: string; type: 'text' | 'number' | 'select'; options?: string[] }[]>> = {
     cpu: [
-        { key: 'socket', label: '接口类型 (如 LGA1700)', type: 'text' },
+        { key: 'socket_type', label: '接口类型 (如 LGA1700)', type: 'text' },
+        { key: 'ram_type', label: '内存支持', type: 'select', options: ['DDR4', 'DDR5', 'DDR4/DDR5'] },
+        { key: 'master_lu_score', label: '鲁大师预估跑分', type: 'number' },
+        { key: 'power_draw', label: '单体功耗 (W)', type: 'number' },
         { key: 'cores', label: '核心数', type: 'number' },
         { key: 'threads', label: '线程数', type: 'number' },
         { key: 'frequency', label: '主频 (GHz)', type: 'text' },
-        { key: 'memoryType', label: '内存支持', type: 'select', options: ['DDR4', 'DDR5', 'DDR4/DDR5'] },
-        { key: 'wattage', label: 'TDP功耗 (W)', type: 'number' },
         { key: 'integratedGpu', label: '是否带核显', type: 'select', options: ['是', '否'] },
         // 扩展参数
         { key: 'architecture', label: '内核架构', type: 'text' },
@@ -30,15 +31,16 @@ export const COMPATIBILITY_FIELDS: Partial<Record<Category, { key: string; label
         { key: 'blender', label: 'Blender 跑分', type: 'number' },
     ],
     mainboard: [
-        { key: 'socket', label: 'CPU接口 (如 LGA1700)', type: 'text' },
+        { key: 'socket_type', label: 'CPU接口 (如 LGA1700)', type: 'text' },
+        { key: 'ram_type', label: '内存插槽', type: 'select', options: ['DDR4', 'DDR5'] },
+        { key: 'form_factor', label: '板型', type: 'select', options: ['ATX', 'MATX', 'ITX', 'E-ATX', 'M-ATX'] },
         { key: 'vrm', label: '供电相数 (如 12+1)', type: 'text' },
-        { key: 'memoryType', label: '内存插槽', type: 'select', options: ['DDR4', 'DDR5'] },
-        { key: 'formFactor', label: '板型', type: 'select', options: ['ATX', 'MATX', 'ITX', 'E-ATX'] },
         { key: 'm2Slots', label: 'M.2插槽数', type: 'number' },
     ],
     gpu: [
+        { key: 'master_lu_score', label: '鲁大师预估跑分', type: 'number' },
+        { key: 'power_draw', label: '单体功耗 (W)', type: 'number' },
         { key: 'wattage', label: '推荐电源功耗 (W)', type: 'number' },
-        { key: 'maxWattage', label: '峰值功耗 (W)', type: 'number' },
         { key: 'performance', label: '性能定位 (e.g. 1080P/2K)', type: 'text' },
         { key: 'length', label: '显卡长度 (mm)', type: 'number' },
         { key: 'memorySize', label: '显存容量 (GB)', type: 'number' },

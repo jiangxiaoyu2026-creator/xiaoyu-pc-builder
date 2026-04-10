@@ -1,0 +1,51 @@
+
+  <html><head><script src="https://cdn.tailwindcss.com"></script><meta charset="utf-8"></head>
+  <body class="bg-slate-100 flex items-center justify-center h-screen font-sans">
+    
+    <div class="bg-white rounded-2xl shadow-2xl w-[900px] h-[700px] border border-slate-200 flex flex-col relative z-10 m-12">
+      <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between rounded-t-2xl">
+        <h2 class="text-xl font-bold">编辑产品：华硕 TUF 4060TI</h2>
+      </div>
+      <div class="flex-1 p-6 overflow-y-auto space-y-6 relative border-4 border-indigo-200" style="scrollbar-width: thin;">
+      
+        <div class="p-4 bg-slate-50 rounded-xl text-slate-400">... 其它参数（图片、价格、标签）...</div>
+        <div class="p-4 bg-slate-50 rounded-xl text-slate-400">...</div>
+        <div class="p-4 bg-slate-50 rounded-xl text-slate-400">... 向下滚动 ...</div>
+
+        <div class="bg-indigo-50 border-2 border-indigo-400 text-indigo-700 p-6 rounded-xl relative shadow-lg mt-8">
+          <div class="absolute -top-6 -left-6 bg-red-500 text-white px-4 py-2 rounded-full font-bold shadow-xl animate-bounce text-xl border-4 border-white z-50">
+            看这里！在这里！ 👇
+          </div>
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2">🔗 京东联盟链接绑定</h3>
+          <div class="space-y-4">
+             <button class="w-full text-left p-4 border border-red-200 bg-white rounded-xl text-red-600 font-bold flex items-center shadow-sm hover:bg-red-50">
+                🔍 一键直达京东搜索：<span class="bg-slate-100 px-2 py-1 rounded text-black font-bold mx-2">华硕 TUF 4060TI</span>
+                <span class="ml-auto text-xs font-normal bg-red-100 px-2 py-1 rounded">点击自动复制并打开网页</span>
+             </button>
+             <div class="flex gap-2">
+                 <input type="text" class="flex-1 border border-slate-300 p-3 rounded-lg text-sm text-slate-500 bg-white" readonly value="搜索完毕后，粘贴京东商品链接..."/>
+                 <button class="bg-red-600 text-white px-6 py-3 rounded-lg font-bold">保存关联</button>
+             </div>
+          </div>
+        </div>
+        
+        <div class="p-4 bg-slate-50 rounded-xl text-slate-400 mt-8 font-bold">关键兼容性参数区</div>
+      </div>
+      <div class="p-4 border-t bg-slate-50 flex gap-4 rounded-b-2xl justify-end">
+         <button class="w-32 bg-white border border-slate-200 p-3 rounded-xl font-bold">取消</button>
+         <button class="w-32 bg-slate-900 text-white p-3 rounded-xl font-bold">保存</button>
+      </div>
+    </div>
+    
+    <!-- Sidebar mockup to show navigation -->
+    <div class="absolute left-0 top-0 h-full w-64 bg-[#1e1e2d] text-slate-400 flex flex-col pt-12 space-y-2 z-0">
+        <div class="px-6 py-4 hover:bg-white/5 font-bold">运营概览</div>
+        <div class="px-6 py-4 hover:bg-white/5 font-bold">价格趋势分析</div>
+        <div class="px-6 py-4 bg-indigo-600 font-bold text-white relative shadow-lg">
+            硬件价格管理
+            <div class="absolute left-0 top-0 h-full w-1 bg-white"></div>
+        </div>
+        <div class="px-6 py-4 hover:bg-white/5 font-bold">配置单管理</div>
+    </div>
+    
+  </body></html>
