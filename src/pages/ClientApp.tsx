@@ -321,12 +321,6 @@ export default function ClientApp() {
         if (ramEntry?.item && mbEntry?.item && ramSpecs.memoryType && mbSpecs.memoryType && ramSpecs.memoryType !== mbSpecs.memoryType) {
             issues.push(`内存不兼容: 内存是 ${ramSpecs.memoryType}，主板仅支持 ${mbSpecs.memoryType} `);
         }
-        if (psuSpecs.wattage) {
-            const estimatedLoad = (cpuSpecs.wattage || 0) + (gpuSpecs.wattage || 0) + 150;
-            if (psuSpecs.wattage < estimatedLoad) {
-                issues.push(`电源功率可能不足: 预估功耗 ${estimatedLoad} W，当前电源 ${psuSpecs.wattage} W`);
-            }
-        }
         return { status: issues.length === 0 ? 'perfect' : 'warning', issues };
     }, [buildList]);
 

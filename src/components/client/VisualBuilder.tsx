@@ -773,30 +773,41 @@ function VisualBuilder({
                         </div>
 
                         {/* Health Check */}
-                        <div className={`relative p-5 rounded-[28px] border transition-all duration-500 ${health.status === 'perfect'
+                        {/* Health Check */}
+                        <div className={`relative p-5 rounded-[28px] border transition-all duration-500 ${(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0)))
                             ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-emerald-100/60 dark:border-emerald-800/30'
                             : 'bg-amber-50/30 dark:bg-amber-900/10 border-amber-100/60 dark:border-amber-800/30'
                             }`}>
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
-                                    <Zap size={16} className={health.status === 'perfect' ? 'text-emerald-500' : 'text-amber-500'} />
+                                    <Zap size={16} className={(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? 'text-emerald-500' : 'text-amber-500'} />
                                     兼容性检测
                                 </h3>
-                                {health.status === 'perfect' ? (
+                                {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
                                     <div className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[8px] font-black uppercase">Passed</div>
                                 ) : (
                                     <div className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[8px] font-black uppercase">Review</div>
                                 )}
                             </div>
                             <div className="text-[12px] font-bold">
-                                {health.status === 'perfect' ? (
+                                {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
                                     <div className="text-emerald-700 flex items-center gap-2">
                                         <CheckCircle2 size={14} /> 核心组件完美兼容
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
                                         {health.issues.map((issue: string, idx: number) => (
-                                            <div key={idx} className="flex gap-2 text-amber-800">
+                                            <div key={`health-${idx}`} className="flex gap-2 text-amber-800">
+                                                <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span>{issue}</span>
+                                            </div>
+                                        ))}
+                                        {simResult?.errors?.map((issue: string, idx: number) => (
+                                            <div key={`err-${idx}`} className="flex gap-2 text-rose-600">
+                                                <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span>{issue}</span>
+                                            </div>
+                                        ))}
+                                        {simResult?.warnings?.map((issue: string, idx: number) => (
+                                            <div key={`warn-${idx}`} className="flex gap-2 text-amber-600">
                                                 <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span>{issue}</span>
                                             </div>
                                         ))}
