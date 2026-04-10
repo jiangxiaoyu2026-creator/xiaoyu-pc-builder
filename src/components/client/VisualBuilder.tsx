@@ -655,12 +655,12 @@ function VisualBuilder({
                 )}
             </div>
             {/* Merged Sidebar */}
-            <div className="w-full lg:w-[380px] shrink-0">
+            <div className="w-full lg:w-[320px] xl:w-[340px] shrink-0">
                 <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[32px] border border-white/60 dark:border-slate-800 shadow-2xl shadow-indigo-100/50 dark:shadow-none flex flex-col relative overflow-hidden mt-2 lg:mt-0 mb-28 lg:mb-0">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
-                    <div className="p-4 md:p-8 flex flex-col gap-4 lg:gap-6 relative z-10">
+                    <div className="p-4 md:p-6 flex flex-col gap-4 lg:gap-5 relative z-10">
                         {/* Box 0: Announcements (Newly Moved to Top) */}
                         {sysAnnouncement?.enabled && (
                             <div className="relative p-6 rounded-[28px] bg-sky-50/30 border border-sky-100 shadow-sm overflow-hidden mb-2">
