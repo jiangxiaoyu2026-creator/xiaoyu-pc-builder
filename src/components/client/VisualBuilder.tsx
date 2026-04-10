@@ -715,8 +715,8 @@ function VisualBuilder({
 
                         {/* Box 2: Price Details (Hidden on Mobile) */}
                         <div className="hidden lg:block">
-                            <h3 className="font-extrabold text-slate-800 dark:text-white mb-4 flex items-center gap-2 text-sm"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
-                            <div className="space-y-3 mb-5">
+                            <h3 className="font-extrabold text-slate-800 dark:text-white mb-2 flex items-center gap-2 text-sm"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
+                            <div className="space-y-1.5 mb-3">
                                 <div className="flex justify-between items-center text-xs font-medium px-1">
                                     <span className="text-slate-500">基础总价</span>
                                     <span className="font-black text-slate-700">¥{pricing.totalHardware || 0}</span>
@@ -725,18 +725,18 @@ function VisualBuilder({
                                     <span className="text-slate-500">优惠前金额</span>
                                     <span className="font-black text-slate-400 line-through decoration-slate-300">¥{Math.floor(pricing.standardPrice || 0)}</span>
                                 </div>
-                                <div className="flex justify-between items-end bg-slate-50 dark:bg-slate-800/80 rounded-2xl border border-slate-100 dark:border-slate-700/80 p-4 shadow-sm relative overflow-hidden">
+                                <div className="flex justify-between items-end bg-slate-50 dark:bg-slate-800/80 rounded-[18px] border border-slate-100 dark:border-slate-700/80 p-3 shadow-sm relative overflow-hidden mt-1">
                                     {(pricing.savedAmount || 0) > 0 && (
-                                        <div className="absolute top-0 right-0 bg-emerald-100 text-emerald-700 text-[10px] px-2 py-1 rounded-bl-xl font-bold border-b border-l border-emerald-200/50">
+                                        <div className="absolute top-0 right-0 bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-bl-[14px] font-bold border-b border-l border-emerald-200/50">
                                             已省 ¥{pricing.savedAmount}
                                         </div>
                                     )}
-                                    <span className="text-slate-600 dark:text-slate-300 font-extrabold text-[13px] mb-1">实付预估</span>
-                                    <span className="text-3xl font-black text-indigo-600 tracking-tight font-mono">¥{pricing.finalPrice || 0}</span>
+                                    <span className="text-slate-600 dark:text-slate-300 font-extrabold text-[12px] mb-0.5">实付预估</span>
+                                    <span className="text-[28px] font-black text-indigo-600 tracking-tight font-mono leading-none">¥{pricing.finalPrice || 0}</span>
                                 </div>
                             </div>
 
-                            <div className="mb-5">
+                            <div className="mb-3">
                                 <div className="relative">
                                     <select
                                         value={pricing.discountRate}
