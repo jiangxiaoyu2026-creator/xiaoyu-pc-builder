@@ -805,37 +805,22 @@ function VisualBuilder({
                             </div>
                         </div>
 
-                        {/* 鲁大师跑分与等级 */}
+                        {/* 鲁大师跑分与功耗 */}
                         {simResult && (
                             <div className="flex gap-2 -mt-1 md:-mt-2">
-                                <div className="flex-[1.2] bg-gradient-to-br from-rose-50/80 to-white dark:from-rose-900/20 dark:to-slate-900/50 border border-rose-100/60 dark:border-rose-800/60 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
-                                     <div className="absolute -right-4 -bottom-4 opacity-5 text-rose-500"><Activity size={64}/></div>
-                                     <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Flame size={12} className="text-rose-500"/> 鲁大师跑分</h4>
-                                     <div className="text-xl font-black text-rose-600 dark:text-rose-400 font-mono tracking-tighter">
+                                <div className="flex-[1.2] bg-gradient-to-br from-indigo-50/80 to-white dark:from-indigo-900/20 dark:to-slate-900/50 border border-indigo-100/60 dark:border-indigo-800/60 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
+                                     <div className="absolute -right-4 -bottom-4 opacity-5 text-indigo-500"><Activity size={64}/></div>
+                                     <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Activity size={12} className="text-indigo-500"/> 鲁大师跑分</h4>
+                                     <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 font-mono tracking-tighter">
                                          {simResult.totalLuScore > 0 ? simResult.totalLuScore.toLocaleString() : '---'}
                                      </div>
                                 </div>
-                                <div className="flex-1 bg-gradient-to-br from-amber-50/80 to-white dark:bg-slate-800/80 border border-amber-100/80 dark:border-slate-700/80 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
-                                    <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Sparkles size={12} className="text-amber-500"/> 战力等级</h4>
-                                    {(() => {
-                                        const score = simResult.totalLuScore;
-                                        let rank = { label: '未定级', pct: '0%', color: 'text-slate-600' };
-                                        if (score >= 1800000) rank = { label: '性能王者', pct: '99%', color: 'text-red-600' };
-                                        else if (score >= 1200000) rank = { label: '超凡大师', pct: '95%', color: 'text-purple-600' };
-                                        else if (score >= 800000) rank = { label: '璀璨钻石', pct: '85%', color: 'text-cyan-600' };
-                                        else if (score >= 500000) rank = { label: '尊贵铂金', pct: '65%', color: 'text-emerald-600' };
-                                        else if (score >= 300000) rank = { label: '荣耀黄金', pct: '40%', color: 'text-amber-600' };
-                                        else if (score > 0) rank = { label: '坚韧白银', pct: '15%', color: 'text-slate-600' };
-                                        
-                                        return (
-                                            <div>
-                                                <div className={`text-lg font-black ${rank.color} dark:text-slate-300 tracking-tight`}>
-                                                    {rank.label}
-                                                </div>
-                                                {score > 0 && <div className="text-[10px] text-slate-400 font-bold mt-0.5">击败全国 {rank.pct} 电脑</div>}
-                                            </div>
-                                        );
-                                    })()}
+                                <div className="flex-1 bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
+                                    <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Zap size={12} className="text-amber-500"/> 峰值功耗</h4>
+                                    <div className="text-xl font-black text-slate-700 dark:text-slate-300 font-mono tracking-tighter">
+                                        {simResult.totalPowerDraw > 0 ? `${simResult.totalPowerDraw}W` : '---'}
+                                    </div>
+                                    {simResult.totalPowerDraw > 0 && <div className="text-[9px] text-slate-400 font-bold mt-0.5 whitespace-nowrap">推荐满载电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+</div>}
                                 </div>
                             </div>
                         )}
