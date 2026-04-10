@@ -265,8 +265,6 @@ export default function ClientApp() {
         const cpuEntry = buildList.find(e => e.category === 'cpu');
         const mbEntry = buildList.find(e => e.category === 'mainboard');
         const ramEntry = buildList.find(e => e.category === 'ram');
-        const psuEntry = buildList.find(e => e.category === 'power');
-        const gpuEntry = buildList.find(e => e.category === 'gpu');
 
         const inferSpecs = (item: any) => {
             if (!item) return {};
@@ -312,8 +310,6 @@ export default function ClientApp() {
         const cpuSpecs = inferSpecs(cpuEntry?.item);
         const mbSpecs = inferSpecs(mbEntry?.item);
         const ramSpecs = inferSpecs(ramEntry?.item);
-        const psuSpecs = inferSpecs(psuEntry?.item);
-        const gpuSpecs = inferSpecs(gpuEntry?.item);
 
         if (cpuEntry?.item && mbEntry?.item && cpuSpecs.socket && mbSpecs.socket && cpuSpecs.socket !== mbSpecs.socket) {
             issues.push(`接口不兼容: CPU是 ${cpuSpecs.socket}，主板是 ${mbSpecs.socket} `);
