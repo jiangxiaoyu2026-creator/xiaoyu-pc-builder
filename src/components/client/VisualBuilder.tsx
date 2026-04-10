@@ -741,7 +741,7 @@ function VisualBuilder({
                                     <select
                                         value={pricing.discountRate}
                                         onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
-                                        className="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+                                        className="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
                                     >
                                         {pricing.discountTiers?.map((tier: any) => (
                                             <option key={tier.id} value={tier.multiplier}>
@@ -749,16 +749,16 @@ function VisualBuilder({
                                             </option>
                                         ))}
                                     </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
                                 </div>
-                                <div className="text-[10px] text-slate-400 font-bold mt-2 text-center uppercase tracking-wide">
+                                <div className="text-[9px] text-slate-400 font-bold mt-1.5 text-center uppercase tracking-wide">
                                     标准价格包含 {((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}% 装机售后服务费
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2 h-12 shrink-0">
+                            <div className="flex items-center gap-2 h-10 shrink-0">
                                 <button onClick={onReset} className="h-full aspect-square flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all active:scale-95 border border-rose-100" title="清空配置">
-                                    <Trash2 size={20} />
+                                    <Trash2 size={18} />
                                 </button>
                                 <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-all active:scale-95 border border-indigo-100" title="生成海报">
                                     {isGeneratingPoster ? <RefreshCw size={20} className="animate-spin" /> : <Download size={20} />}
