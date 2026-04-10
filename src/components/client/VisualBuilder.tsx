@@ -663,13 +663,13 @@ function VisualBuilder({
                     <div className="p-4 md:p-6 flex flex-col gap-4 lg:gap-5 relative z-10">
                         {/* Box 0: Announcements (Newly Moved to Top) */}
                         {sysAnnouncement?.enabled && (
-                            <div className="relative p-6 rounded-[28px] bg-sky-50/30 border border-sky-100 shadow-sm overflow-hidden mb-2">
+                            <div className="relative p-4 rounded-[24px] bg-sky-50/30 border border-sky-100 shadow-sm overflow-hidden mb-2">
                             <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full blur-3xl -mr-12 -mt-12"></div>
-                            <h3 className="font-extrabold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-sm">
+                            <h3 className="font-extrabold text-slate-900 dark:text-white mb-2 flex items-center gap-2 text-sm">
                                 <FileText size={16} className="text-sky-500" />
                                 系统公告
                             </h3>
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 {sysAnnouncement?.items && sysAnnouncement.items.length > 0 ? (
                                     sysAnnouncement.items.map((item: any) => {
                                         const typeConfig = {
@@ -680,8 +680,8 @@ function VisualBuilder({
                                         const config = typeConfig[item.type as keyof typeof typeConfig] || typeConfig.info;
 
                                         const content = (
-                                            <div className={`group relative text-[12px] leading-relaxed text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl shadow-sm transition-all ${item.linkUrl ? 'hover:border-sky-300 hover:shadow-md cursor-pointer pr-8' : ''}`}>
-                                                <div className="flex items-center gap-2 mb-1.5">
+                                            <div className={`group relative text-[11px] leading-relaxed text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 py-2 px-3 rounded-xl shadow-sm transition-all ${item.linkUrl ? 'hover:border-sky-300 hover:shadow-md cursor-pointer pr-8' : ''}`}>
+                                                <div className="flex items-center gap-2 mb-1">
                                                     <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${config.bg}`}>
                                                         {config.icon}
                                                         {config.label}
