@@ -302,59 +302,72 @@ function VisualBuilder({
                 const searchableText = `${i.brand} ${i.model} ${CATEGORY_MAP[i.category] || i.category}`.toLowerCase();
                 if (!searchTerms.every(term => searchableText.includes(term))) return false;
             }
+            // 解析 specs 为对象，便于精准匹配参数
+            const specsObj: Record<string, any> = typeof i.specs === 'object' && i.specs !== null 
+                ? i.specs 
+                : (typeof i.specs === 'string' ? (() => { try { return JSON.parse(i.specs) } catch { return {} } })() : {});
+            const modelLower = (i.model || '').toLowerCase();
+            const specsStr = typeof i.specs === 'string' ? i.specs.toLowerCase() : JSON.stringify(i.specs || {}).toLowerCase();
+            const combined = `${modelLower} ${specsStr}`;
+
             // DDR4/DDR5 filter for RAM
             if (modalCategory === 'ram' && ramTypeFilter !== 'all') {
-                const modelLower = (i.model || '').toLowerCase();
-                const specsStr = typeof i.specs === 'string' ? i.specs.toLowerCase() : JSON.stringify(i.specs || {}).toLowerCase();
-                const combined = `${modelLower} ${specsStr}`;
-                if (ramTypeFilter === 'DDR4') {
-                    if (!combined.includes('ddr4')) return false;
+                const memType = specsObj.memoryType || specsObj.type;
+                if (memType) {
+                    if (String(memType).toUpperCase() !== ramTypeFilter) return false;
+                } else if (ramTypeFilter === 'DDR4') {
+                    if (!combined.includes('ddr4') && !combined.includes('d4')) return false;
                 } else if (ramTypeFilter === 'DDR5') {
-                    if (!combined.includes('ddr5')) return false;
+                    if (!combined.includes('ddr5') && !combined.includes('d5')) return false;
                 }
             }
+            
             // Disk capacity filter
             if (modalCategory === 'disk' && diskCapFilter !== 'all') {
-                const modelLower = (i.model || '').toLowerCase();
-                const specsStr = typeof i.specs === 'string' ? i.specs.toLowerCase() : JSON.stringify(i.specs || {}).toLowerCase();
-                const combined = `${modelLower} ${specsStr}`;
+                const cap = specsObj.capacity;
+                const targetMatch = cap ? String(cap).toLowerCase() : combined;
                 if (diskCapFilter === '500G') {
-                    if (!(/480g|500g|480gb|500gb|512g|512gb/.test(combined))) return false;
+                    if (!(/480g|500g|480gb|500gb|512g|512gb/.test(targetMatch))) return false;
                 } else if (diskCapFilter === '1T') {
-                    if (!(/(?:^|\D)1t(?:b|\b)|1000g|1024g/.test(combined))) return false;
+                    if (!(/(?:^|\D)1t(?:b|\b)|1000g|1024g/.test(targetMatch))) return false;
                 } else if (diskCapFilter === '2T') {
-                    if (!(/(?:^|\D)2t(?:b|\b)|2000g|2048g/.test(combined))) return false;
+                    if (!(/(?:^|\D)2t(?:b|\b)|2000g|2048g/.test(targetMatch))) return false;
                 } else if (diskCapFilter === '4T') {
-                    if (!(/(?:^|\D)4t(?:b|\b)|4000g|4096g/.test(combined))) return false;
+                    if (!(/(?:^|\D)4t(?:b|\b)|4000g|4096g/.test(targetMatch))) return false;
                 }
             }
+            
             // CPU X3D filter
             if (modalCategory === 'cpu' && cpuTypeFilter === 'X3D') {
-                const modelLower = (i.model || '').toLowerCase();
+                // CPU is usually in the model name (e.g. 7800X3D)
                 if (!modelLower.includes('x3d')) return false;
             }
+            
             // Motherboard platform filter (AMD: AM4/AM5, Intel: LGA)
             if (modalCategory === 'mainboard' && mbPlatformFilter !== 'all') {
-                const modelLower = (i.model || '').toLowerCase();
-                const specsStr = typeof i.specs === 'string' ? i.specs.toLowerCase() : JSON.stringify(i.specs || {}).toLowerCase();
-                const combined = `${modelLower} ${specsStr}`;
-                if (mbPlatformFilter === 'AMD') {
-                    if (!(/am4|am5|a520|b450|b550|x570|a620|b650|x670|x870/.test(combined))) return false;
-                } else if (mbPlatformFilter === 'Intel') {
-                    if (!(/lga|b460|b560|b660|b760|b860|z490|z590|z690|z790|z890|h510|h610|h670|h770/.test(combined))) return false;
+                const socket = specsObj.socket;
+                if (socket) {
+                    const sockUpper = String(socket).toUpperCase();
+                    if (mbPlatformFilter === 'AMD' && !sockUpper.startsWith('AM')) return false;
+                    if (mbPlatformFilter === 'Intel' && !sockUpper.startsWith('LGA')) return false;
+                } else {
+                    if (mbPlatformFilter === 'AMD' && !(/am4|am5|a520|b450|b550|x570|a620|b650|x670|x870/.test(combined))) return false;
+                    if (mbPlatformFilter === 'Intel' && !(/lga|b460|b560|b660|b760|b860|z490|z590|z690|z790|z890|h510|h610|h670|h770/.test(combined))) return false;
                 }
             }
+            
             // Cooling type filter
             if (modalCategory === 'cooling' && coolingTypeFilter !== 'all') {
-                const modelLower = (i.model || '').toLowerCase();
-                const specsStr = typeof i.specs === 'string' ? i.specs.toLowerCase() : JSON.stringify(i.specs || {}).toLowerCase();
-                const combined = `${modelLower} ${specsStr}`;
-                if (coolingTypeFilter === 'air') {
-                    if (!combined.includes('风冷') && !combined.includes('air') && !combined.includes('塔式')) return false;
-                } else if (coolingTypeFilter === '240') {
-                    if (!(/240/.test(combined))) return false;
-                } else if (coolingTypeFilter === '360') {
-                    if (!(/360/.test(combined))) return false;
+                const type = specsObj.type;
+                if (type) {
+                    const typeLower = String(type).toLowerCase();
+                    if (coolingTypeFilter === 'air' && !typeLower.includes('风冷') && !typeLower.includes('塔') && !typeLower.includes('air')) return false;
+                    if (coolingTypeFilter === '240' && !typeLower.includes('240')) return false;
+                    if (coolingTypeFilter === '360' && !typeLower.includes('360')) return false;
+                } else {
+                    if (coolingTypeFilter === 'air' && !combined.includes('风冷') && !combined.includes('air') && !combined.includes('塔式')) return false;
+                    if (coolingTypeFilter === '240' && !(/240/.test(combined))) return false;
+                    if (coolingTypeFilter === '360' && !(/360/.test(combined))) return false;
                 }
             }
             return true;
