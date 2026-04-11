@@ -43,6 +43,9 @@ function VisualBuilder({
     const [modalBrand, setModalBrand] = useState('all');
     const [ramTypeFilter, setRamTypeFilter] = useState<'all' | 'DDR4' | 'DDR5'>('all');
     const [diskCapFilter, setDiskCapFilter] = useState<'all' | '500G' | '1T' | '2T' | '4T'>('all');
+    const [cpuTypeFilter, setCpuTypeFilter] = useState<'all' | 'X3D'>('all');
+    const [mbPlatformFilter, setMbPlatformFilter] = useState<'all' | 'AMD' | 'Intel'>('all');
+    const [coolingTypeFilter, setCoolingTypeFilter] = useState<'all' | 'air' | '240' | '360'>('all');
     const [sortOrder, setSortOrder] = useState<'default' | 'asc' | 'desc'>('default');
     const [isBrandsExpanded, setIsBrandsExpanded] = useState(false);
     const [showAiModal, setShowAiModal] = useState(false);
@@ -325,6 +328,35 @@ function VisualBuilder({
                     if (!(/(?:^|\D)4t(?:b|\b)|4000g|4096g/.test(combined))) return false;
                 }
             }
+            // CPU X3D filter
+            if (modalCategory === 'cpu' && cpuTypeFilter === 'X3D') {
+                const modelLower = (i.model || '').toLowerCase();
+                if (!modelLower.includes('x3d')) return false;
+            }
+            // Motherboard platform filter (AMD: AM4/AM5, Intel: LGA)
+            if (modalCategory === 'mainboard' && mbPlatformFilter !== 'all') {
+                const modelLower = (i.model || '').toLowerCase();
+                const specsStr = typeof i.specs === 'string' ? i.specs.toLowerCase() : JSON.stringify(i.specs || {}).toLowerCase();
+                const combined = `${modelLower} ${specsStr}`;
+                if (mbPlatformFilter === 'AMD') {
+                    if (!(/am4|am5|a520|b450|b550|x570|a620|b650|x670|x870/.test(combined))) return false;
+                } else if (mbPlatformFilter === 'Intel') {
+                    if (!(/lga|b460|b560|b660|b760|b860|z490|z590|z690|z790|z890|h510|h610|h670|h770/.test(combined))) return false;
+                }
+            }
+            // Cooling type filter
+            if (modalCategory === 'cooling' && coolingTypeFilter !== 'all') {
+                const modelLower = (i.model || '').toLowerCase();
+                const specsStr = typeof i.specs === 'string' ? i.specs.toLowerCase() : JSON.stringify(i.specs || {}).toLowerCase();
+                const combined = `${modelLower} ${specsStr}`;
+                if (coolingTypeFilter === 'air') {
+                    if (!combined.includes('风冷') && !combined.includes('air') && !combined.includes('塔式')) return false;
+                } else if (coolingTypeFilter === '240') {
+                    if (!(/240/.test(combined))) return false;
+                } else if (coolingTypeFilter === '360') {
+                    if (!(/360/.test(combined))) return false;
+                }
+            }
             return true;
         });
 
@@ -349,7 +381,7 @@ function VisualBuilder({
         });
 
         return items;
-    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter]);
+    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter]);
 
     const availableBrands = useMemo(() => {
         if (!modalCategory) return [];
@@ -1004,6 +1036,60 @@ function VisualBuilder({
                                                 }`}
                                             >
                                                 {cap === 'all' ? '全部容量' : cap}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* CPU X3D Filter */}
+                                {modalCategory === 'cpu' && (
+                                    <div className="flex gap-2 items-center">
+                                        {(['all', 'X3D'] as const).map(type => (
+                                            <button
+                                                key={type}
+                                                onClick={() => setCpuTypeFilter(type)}
+                                                className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${cpuTypeFilter === type
+                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
+                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                }`}
+                                            >
+                                                {type === 'all' ? '全部型号' : type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Motherboard Platform Filter */}
+                                {modalCategory === 'mainboard' && (
+                                    <div className="flex gap-2 items-center">
+                                        {(['all', 'AMD', 'Intel'] as const).map(plat => (
+                                            <button
+                                                key={plat}
+                                                onClick={() => setMbPlatformFilter(plat)}
+                                                className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${mbPlatformFilter === plat
+                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
+                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                }`}
+                                            >
+                                                {plat === 'all' ? '全部平台' : plat === 'AMD' ? 'AMD平台' : 'Intel平台'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Cooling Type Filter */}
+                                {modalCategory === 'cooling' && (
+                                    <div className="flex gap-2 items-center">
+                                        {(['all', 'air', '240', '360'] as const).map(ct => (
+                                            <button
+                                                key={ct}
+                                                onClick={() => setCoolingTypeFilter(ct)}
+                                                className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${coolingTypeFilter === ct
+                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
+                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                }`}
+                                            >
+                                                {ct === 'all' ? '全部类型' : ct === 'air' ? '风冷' : `${ct}水冷`}
                                             </button>
                                         ))}
                                     </div>
