@@ -525,78 +525,71 @@ function VisualBuilder({
 
             {/* Desktop List View (Hidden on mobile) */}
             <div className="hidden lg:flex flex-1 flex-col pb-20">
-                {/* System Announcements (Desktop Marquee) */}
-                {sysAnnouncement?.enabled && sysAnnouncement.items && sysAnnouncement.items.length > 0 && (
-                    <div className="relative overflow-hidden bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/80 border border-indigo-100/60 rounded-full py-1.5 px-3 mb-4 shadow-sm flex items-center gap-2.5">
-                        <div className="shrink-0 relative z-20 flex items-center gap-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-black text-[10px] px-2.5 py-1 rounded-full tracking-wide shadow-sm">
-                             <FileText size={11} />
-                             <span>公告</span>
-                        </div>
-                        <div className="flex-1 overflow-hidden whitespace-nowrap relative">
-                            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
-                            <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
-                            <style>{`
-                                @keyframes marquee-rtl {
-                                    0% { transform: translateX(100%); }
-                                    100% { transform: translateX(-100%); }
-                                }
-                                .animate-marquee-rtl {
-                                    display: inline-block;
-                                    animation: marquee-rtl 20s linear infinite;
-                                }
-                            `}</style>
-                            <div className="animate-marquee-rtl text-[12px] font-bold text-slate-600 flex gap-12">
-                                {sysAnnouncement.items.map((item: any) => (
-                                    <span key={item.id} className="flex items-center gap-1.5 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => item.linkUrl && window.open(item.linkUrl, '_blank')}>
-                                        {item.type === 'promo' && <Sparkles size={12} className="text-amber-500" />}
-                                        {item.type === 'warning' && <AlertCircle size={12} className="text-red-500" />}
-                                        {item.type === 'info' && <Info size={12} className="text-indigo-400" />}
-                                        {item.content}
-                                    </span>
-                                ))}
+                {/* Top Bar: Announcement + AI Build + Quick Build in one row */}
+                <div className="flex gap-2.5 mb-4 items-stretch">
+                    {/* System Announcement - takes most space */}
+                    {sysAnnouncement?.enabled && sysAnnouncement.items && sysAnnouncement.items.length > 0 && (
+                        <div className="flex-1 relative overflow-hidden bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/80 border border-indigo-100/60 rounded-2xl py-2 px-3 shadow-sm flex items-center gap-2.5">
+                            <div className="shrink-0 relative z-20 flex items-center gap-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-black text-[10px] px-2.5 py-1 rounded-full tracking-wide shadow-sm">
+                                 <FileText size={11} />
+                                 <span>公告</span>
+                            </div>
+                            <div className="flex-1 overflow-hidden relative h-5">
+                                <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+                                <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+                                <style>{`
+                                    @keyframes marquee-rtl {
+                                        0% { transform: translateX(100%); }
+                                        100% { transform: translateX(-100%); }
+                                    }
+                                    .animate-marquee-rtl {
+                                        display: inline-block;
+                                        animation: marquee-rtl 18s linear infinite;
+                                        white-space: nowrap;
+                                    }
+                                `}</style>
+                                <div className="animate-marquee-rtl text-[12px] font-bold text-slate-600 flex gap-16 leading-5">
+                                    {sysAnnouncement.items.map((item: any) => (
+                                        <span key={item.id} className="flex items-center gap-1.5 cursor-pointer hover:text-indigo-600 transition-colors whitespace-nowrap" onClick={() => item.linkUrl && window.open(item.linkUrl, '_blank')}>
+                                            {item.type === 'promo' && <Sparkles size={12} className="text-amber-500" />}
+                                            {item.type === 'warning' && <AlertCircle size={12} className="text-red-500" />}
+                                            {item.type === 'info' && <Info size={12} className="text-indigo-400" />}
+                                            {item.content}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* Brand New Feature Header: AI & Quick Build */}
-                <div className="flex gap-3 mb-4">
+                    {/* AI Smart Build - compact */}
                     <div onClick={() => {
                         if (onAiCheck && !onAiCheck()) return;
                         setShowAiModal(true);
-                    }} className="flex-1 group relative cursor-pointer transition-all duration-500 hover:-translate-y-0.5">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-[20px] blur-md opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                        <div className="relative flex items-center gap-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[16px] p-2.5 md:p-3 border border-white dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden">
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
-                            <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-sm shadow-indigo-500/30">
-                                <Sparkles size={16} className="animate-pulse" />
+                    }} className="group relative cursor-pointer transition-all duration-300 hover:-translate-y-0.5 shrink-0">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-2xl blur-md opacity-15 group-hover:opacity-35 transition duration-500"></div>
+                        <div className="relative flex items-center gap-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl px-3 py-2 border border-white dark:border-slate-700 shadow-sm h-full">
+                            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-sm shadow-indigo-500/30">
+                                <Sparkles size={13} className="animate-pulse" />
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-baseline gap-1.5 mb-1">
-                                    <h3 className="font-extrabold text-[13px] text-slate-900 dark:text-white tracking-tight">AI 智能装机</h3>
-                                    <span className="text-[8px] font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-1 py-0.5 rounded uppercase tracking-wider shadow-sm scale-90 origin-left">Pro</span>
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-1">
+                                    <span className="font-extrabold text-[11px] text-slate-900 dark:text-white whitespace-nowrap">AI 装机</span>
+                                    <span className="text-[7px] font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-1 py-0.5 rounded uppercase tracking-wider shadow-sm">Pro</span>
                                 </div>
-                                <p className="text-slate-500 text-[10px] font-medium leading-none tracking-wide truncate">智能语义分析，一挥而就</p>
                             </div>
-                            <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
-                            </div>
+                            <ArrowRight size={11} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0" />
                         </div>
                     </div>
 
-                    <div onClick={onOpenLibrary} className="flex-1 group relative cursor-pointer transition-all duration-500 hover:-translate-y-0.5">
-                        <div className="absolute -inset-0.5 bg-slate-200 rounded-[20px] blur-md opacity-0 group-hover:opacity-50 transition duration-500"></div>
-                        <div className="relative flex items-center gap-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[16px] p-2.5 md:p-3 border border-white/60 dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] group-hover:border-indigo-100 transition-all overflow-hidden">
-                            <div className="w-9 h-9 bg-slate-100 text-slate-600 rounded-[10px] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-50 group-hover:text-indigo-600">
-                                <FileText size={16} />
+                    {/* Quick Build - compact */}
+                    <div onClick={onOpenLibrary} className="group relative cursor-pointer transition-all duration-300 hover:-translate-y-0.5 shrink-0">
+                        <div className="relative flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl px-3 py-2 border border-white/60 dark:border-slate-700 shadow-sm group-hover:border-indigo-100 transition-all h-full">
+                            <div className="w-7 h-7 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 group-hover:bg-indigo-50 group-hover:text-indigo-600">
+                                <FileText size={13} />
                             </div>
-                            <div className="flex-1">
-                                <h3 className="font-extrabold text-slate-800 dark:text-white text-[13px] mb-1 tracking-tight">快速装机</h3>
-                                <p className="text-slate-500 text-[10px] font-medium leading-none tracking-wide truncate">浏览社区精选配置单</p>
-                            </div>
-                            <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
-                            </div>
+                            <span className="font-extrabold text-slate-800 dark:text-white text-[11px] whitespace-nowrap">快速装机</span>
+                            <ArrowRight size={11} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0" />
                         </div>
                     </div>
                 </div>
