@@ -525,43 +525,77 @@ function VisualBuilder({
 
             {/* Desktop List View (Hidden on mobile) */}
             <div className="hidden lg:flex flex-1 flex-col pb-20">
+                {/* System Announcements (Desktop Marquee) */}
+                {sysAnnouncement?.enabled && sysAnnouncement.items && sysAnnouncement.items.length > 0 && (
+                    <div className="relative overflow-hidden bg-sky-50 border border-sky-100 rounded-[20px] py-3 px-4 mb-6 shadow-sm flex items-center">
+                        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-sky-50 to-transparent z-10 pointer-events-none"></div>
+                        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-sky-50 to-transparent z-10 pointer-events-none"></div>
+                        <div className="shrink-0 mr-4 relative z-20 flex items-center gap-1.5 text-sky-600 font-black text-[13px]">
+                             <FileText size={16} />
+                             <span>系统公告</span>
+                        </div>
+                        <div className="flex-1 overflow-hidden whitespace-nowrap pl-4 border-l border-sky-200/50">
+                            <style>{`
+                                @keyframes marquee-ltr {
+                                    0% { transform: translateX(-100%); }
+                                    100% { transform: translateX(800px); }
+                                }
+                                .animate-marquee-ltr {
+                                    display: inline-block;
+                                    animation: marquee-ltr 25s linear infinite;
+                                }
+                            `}</style>
+                            <div className="animate-marquee-ltr text-[13px] font-bold text-slate-700 flex gap-16">
+                                {sysAnnouncement.items.map((item: any) => (
+                                    <span key={item.id} className="flex items-center gap-2 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => item.linkUrl && window.open(item.linkUrl, '_blank')}>
+                                        {item.type === 'promo' && <Sparkles size={14} className="text-amber-500" />}
+                                        {item.type === 'warning' && <AlertCircle size={14} className="text-red-500" />}
+                                        {item.type === 'info' && <Info size={14} className="text-sky-500" />}
+                                        {item.content}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Brand New Feature Header: AI & Quick Build */}
-                <div className="flex gap-4 mb-6">
+                <div className="flex gap-3 mb-4">
                     <div onClick={() => {
                         if (onAiCheck && !onAiCheck()) return;
                         setShowAiModal(true);
-                    }} className="flex-1 group relative cursor-pointer transition-all duration-500 hover:-translate-y-1">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-[24px] blur-md opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                        <div className="relative flex items-center gap-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[20px] p-4 md:p-5 border border-white dark:border-slate-700 shadow-[0_8px_30px_rgb(0,0,0,0.06)] overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-                            <div className="w-12 h-12 rounded-[16px] bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-lg shadow-indigo-500/30">
-                                <Sparkles size={22} className="animate-pulse" />
+                    }} className="flex-1 group relative cursor-pointer transition-all duration-500 hover:-translate-y-0.5">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-[20px] blur-md opacity-20 group-hover:opacity-40 transition duration-500"></div>
+                        <div className="relative flex items-center gap-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[16px] p-2.5 md:p-3 border border-white dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.05)] overflow-hidden">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
+                            <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-sm shadow-indigo-500/30">
+                                <Sparkles size={16} className="animate-pulse" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-baseline gap-2 mb-1">
-                                    <h3 className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">AI 智能装机</h3>
-                                    <span className="text-[9px] font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-1.5 py-0.5 rounded uppercase tracking-wider shadow-sm">Pro</span>
+                                <div className="flex items-baseline gap-1.5 mb-1">
+                                    <h3 className="font-extrabold text-[13px] text-slate-900 dark:text-white tracking-tight">AI 智能装机</h3>
+                                    <span className="text-[8px] font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-1 py-0.5 rounded uppercase tracking-wider shadow-sm scale-90 origin-left">Pro</span>
                                 </div>
-                                <p className="text-slate-500 text-xs font-medium leading-none tracking-wide">智能语义分析，一挥而就</p>
+                                <p className="text-slate-500 text-[10px] font-medium leading-none tracking-wide truncate">智能语义分析，一挥而就</p>
                             </div>
-                            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                            <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                                <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                             </div>
                         </div>
                     </div>
 
-                    <div onClick={onOpenLibrary} className="flex-1 group relative cursor-pointer transition-all duration-500 hover:-translate-y-1">
-                        <div className="absolute -inset-0.5 bg-slate-200 rounded-[24px] blur-md opacity-0 group-hover:opacity-50 transition duration-500"></div>
-                        <div className="relative flex items-center gap-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[20px] p-4 md:p-5 border border-white/60 dark:border-slate-700 shadow-[0_8px_30px_rgb(0,0,0,0.04)] group-hover:border-indigo-100 transition-all overflow-hidden">
-                            <div className="w-12 h-12 bg-slate-100 text-slate-600 rounded-[16px] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-50 group-hover:text-indigo-600">
-                                <FileText size={22} />
+                    <div onClick={onOpenLibrary} className="flex-1 group relative cursor-pointer transition-all duration-500 hover:-translate-y-0.5">
+                        <div className="absolute -inset-0.5 bg-slate-200 rounded-[20px] blur-md opacity-0 group-hover:opacity-50 transition duration-500"></div>
+                        <div className="relative flex items-center gap-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-[16px] p-2.5 md:p-3 border border-white/60 dark:border-slate-700 shadow-[0_4px_20px_rgb(0,0,0,0.03)] group-hover:border-indigo-100 transition-all overflow-hidden">
+                            <div className="w-9 h-9 bg-slate-100 text-slate-600 rounded-[10px] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-50 group-hover:text-indigo-600">
+                                <FileText size={16} />
                             </div>
                             <div className="flex-1">
-                                <h3 className="font-extrabold text-slate-800 dark:text-white text-base mb-1 tracking-tight">快速装机</h3>
-                                <p className="text-slate-500 text-xs font-medium leading-none tracking-wide">浏览社区精选优质配置单</p>
+                                <h3 className="font-extrabold text-slate-800 dark:text-white text-[13px] mb-1 tracking-tight">快速装机</h3>
+                                <p className="text-slate-500 text-[10px] font-medium leading-none tracking-wide truncate">浏览社区精选配置单</p>
                             </div>
-                            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                            <div className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                                <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                             </div>
                         </div>
                     </div>
@@ -661,58 +695,6 @@ function VisualBuilder({
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
 
                     <div className="p-4 md:p-6 flex flex-col gap-4 lg:gap-5 relative z-10">
-                        {/* Box 0: Announcements (Newly Moved to Top) */}
-                        {sysAnnouncement?.enabled && (
-                            <div className="relative p-4 rounded-[24px] bg-sky-50/30 border border-sky-100 shadow-sm overflow-hidden mb-2">
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full blur-3xl -mr-12 -mt-12"></div>
-                            <h3 className="font-extrabold text-slate-900 dark:text-white mb-2 flex items-center gap-2 text-sm">
-                                <FileText size={16} className="text-sky-500" />
-                                系统公告
-                            </h3>
-                            <div className="space-y-2">
-                                {sysAnnouncement?.items && sysAnnouncement.items.length > 0 ? (
-                                    sysAnnouncement.items.map((item: any) => {
-                                        const typeConfig = {
-                                            promo: { label: '活动', icon: <Sparkles size={10} />, bg: 'bg-amber-50 text-amber-600 border-amber-100' },
-                                            warning: { label: '紧急', icon: <AlertCircle size={10} />, bg: 'bg-red-50 text-red-600 border-red-100' },
-                                            info: { label: '通知', icon: <Info size={10} />, bg: 'bg-sky-50 text-sky-600 border-sky-100' }
-                                        };
-                                        const config = typeConfig[item.type as keyof typeof typeConfig] || typeConfig.info;
-
-                                        const content = (
-                                            <div className={`group relative text-[11px] leading-relaxed text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 py-2 px-3 rounded-xl shadow-sm transition-all ${item.linkUrl ? 'hover:border-sky-300 hover:shadow-md cursor-pointer pr-8' : ''}`}>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${config.bg}`}>
-                                                        {config.icon}
-                                                        {config.label}
-                                                    </span>
-                                                    {item.pinned && <Pin size={10} className="text-sky-400 rotate-45 fill-current" />}
-                                                </div>
-                                                <div className="font-medium text-slate-700">{item.content}</div>
-                                                {item.linkUrl && (
-                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sky-400 opacity-40 group-hover:opacity-100 transition-opacity">
-                                                        <ArrowRight size={14} />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-
-                                        if (item.linkUrl) {
-                                            return (
-                                                <a key={item.id} href={item.linkUrl} target="_blank" rel="noopener noreferrer" className="block outline-none hover:no-underline">
-                                                    {content}
-                                                </a>
-                                            );
-                                        }
-                                        return <div key={item.id}>{content}</div>;
-                                    })
-                                ) : (
-                                    <div className="text-[12px] text-slate-400 italic py-2 text-center">{sysAnnouncement?.content || '暂无发布公告'}</div>
-                                )}
-                            </div>
-                        </div>
-                        )}
-
                         {/* Box 2: Price Details (Hidden on Mobile) */}
                         <div className="hidden lg:block">
                             <h3 className="font-extrabold text-slate-800 dark:text-white mb-2 flex items-center gap-2 text-sm"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
@@ -725,23 +707,28 @@ function VisualBuilder({
                                     <span className="text-slate-500">优惠前金额</span>
                                     <span className="font-black text-slate-400 line-through decoration-slate-300">¥{Math.floor(pricing.standardPrice || 0)}</span>
                                 </div>
-                                <div className="flex justify-between items-end bg-slate-50 dark:bg-slate-800/80 rounded-[18px] border border-slate-100 dark:border-slate-700/80 p-3 shadow-sm relative overflow-hidden mt-1">
-                                    {(pricing.savedAmount || 0) > 0 && (
-                                        <div className="absolute top-0 right-0 bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-bl-[14px] font-bold border-b border-l border-emerald-200/50">
-                                            已省 ¥{pricing.savedAmount}
-                                        </div>
-                                    )}
-                                    <span className="text-slate-600 dark:text-slate-300 font-extrabold text-[12px] mb-0.5">实付预估</span>
+                                <div className="flex flex-col gap-1 bg-slate-50 dark:bg-slate-800/80 rounded-[18px] border border-slate-100 dark:border-slate-700/80 p-3 shadow-sm relative overflow-hidden mt-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-slate-600 dark:text-slate-300 font-extrabold text-[12px]">实付预估</span>
+                                        {(pricing.savedAmount || 0) > 0 && (
+                                            <div className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-md font-bold self-start">
+                                                已省 ¥{pricing.savedAmount}
+                                            </div>
+                                        )}
+                                    </div>
                                     <span className="text-[28px] font-black text-indigo-600 tracking-tight font-mono leading-none">¥{pricing.finalPrice || 0}</span>
                                 </div>
                             </div>
 
                             <div className="mb-3">
                                 <div className="relative">
+                                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
+                                        <div className="bg-orange-100 text-orange-600 text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm">优惠</div>
+                                    </div>
                                     <select
                                         value={pricing.discountRate}
                                         onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
-                                        className="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+                                        className="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl pl-12 pr-8 py-2 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
                                     >
                                         {pricing.discountTiers?.map((tier: any) => (
                                             <option key={tier.id} value={tier.multiplier}>
@@ -817,55 +804,53 @@ function VisualBuilder({
                         </div>
 
                         {/* 鲁大师跑分与功耗 */}
-                        {simResult && (
-                            <div className="flex gap-2 -mt-1 md:-mt-2">
-                                <div className="flex-[1.2] bg-gradient-to-br from-indigo-50/80 to-white dark:from-indigo-900/20 dark:to-slate-900/50 border border-indigo-100/60 dark:border-indigo-800/60 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
+                        <div className="flex gap-2 -mt-1 md:-mt-2">
+                            <div className="flex-[1.2] bg-gradient-to-br from-indigo-50/80 to-white dark:from-indigo-900/20 dark:to-slate-900/50 border border-indigo-100/60 dark:border-indigo-800/60 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
                                      <div className="absolute -right-4 -bottom-4 opacity-5 text-indigo-500"><Activity size={64}/></div>
                                      <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Activity size={12} className="text-indigo-500"/> 鲁大师跑分</h4>
                                      <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 font-mono tracking-tighter">
-                                         {simResult.totalLuScore > 0 ? simResult.totalLuScore.toLocaleString() : '---'}
+                                         {simResult && simResult.totalLuScore > 0 ? simResult.totalLuScore.toLocaleString() : '---'}
                                      </div>
-                                </div>
-                                <div className="flex-1 bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
-                                    <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Zap size={12} className="text-amber-500"/> 峰值功耗</h4>
-                                    <div className="text-xl font-black text-slate-700 dark:text-slate-300 font-mono tracking-tighter">
-                                        {simResult.totalPowerDraw > 0 ? `${simResult.totalPowerDraw}W` : '---'}
-                                    </div>
-                                    {simResult.totalPowerDraw > 0 && <div className="text-[9px] text-slate-400 font-bold mt-0.5 whitespace-nowrap">推荐满载电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+</div>}
-                                </div>
                             </div>
-                        )}
+                            <div className="flex-1 bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
+                                <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Zap size={12} className="text-amber-500"/> 峰值功耗</h4>
+                                <div className="text-xl font-black text-slate-700 dark:text-slate-300 font-mono tracking-tighter">
+                                    {simResult && simResult.totalPowerDraw > 0 ? `${simResult.totalPowerDraw}W` : '---'}
+                                </div>
+                                {simResult && simResult.totalPowerDraw > 0 && <div className="text-[9px] text-slate-400 font-bold mt-0.5 whitespace-nowrap">推荐满载电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+</div>}
+                                {(!simResult || simResult.totalPowerDraw <= 0) && <div className="text-[9px] text-slate-400/80 font-bold mt-0.5 whitespace-nowrap">选择配件后测算</div>}
+                            </div>
+                        </div>
 
                         {/* 游戏帧率体验测算 */}
-                        {(fpsData.length > 0 || loadingFps) && (
-                            <div className="bg-slate-900 border border-slate-800 rounded-[28px] p-5 shadow-2xl relative overflow-hidden mt-1">
-                                <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
-                                
-                                <div className="flex items-center justify-between mb-4 relative z-10">
-                                    <h3 className="font-extrabold text-white text-[13px] flex items-center gap-1.5 tracking-wide">
-                                        <Gamepad2 size={16} className="text-indigo-400" />
-                                        游戏试玩体验
-                                    </h3>
-                                    <div className="flex gap-1 bg-slate-800/80 p-0.5 rounded-[10px] border border-slate-700/50">
-                                        {[1080, 1440, 2160].map(res => (
-                                            <button
-                                                key={res}
-                                                onClick={() => setResolution(res)}
-                                                className={`text-[9px] font-black px-2.5 py-1 rounded-md transition-all uppercase tracking-wider ${resolution === res ? 'bg-indigo-500 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
-                                            >
-                                                {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
-                                            </button>
-                                        ))}
-                                    </div>
+                        <div className="bg-slate-900 border border-slate-800 rounded-[28px] p-5 shadow-2xl relative overflow-hidden mt-1">
+                            <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
+                            
+                            <div className="flex items-center justify-between mb-4 relative z-10">
+                                <h3 className="font-extrabold text-white text-[13px] flex items-center gap-1.5 tracking-wide">
+                                    <Gamepad2 size={16} className="text-indigo-400" />
+                                    游戏试玩体验
+                                </h3>
+                                <div className="flex gap-1 bg-slate-800/80 p-0.5 rounded-[10px] border border-slate-700/50">
+                                    {[1080, 1440, 2160].map(res => (
+                                        <button
+                                            key={res}
+                                            onClick={() => setResolution(res)}
+                                            className={`text-[9px] font-black px-2.5 py-1 rounded-md transition-all uppercase tracking-wider ${resolution === res ? 'bg-indigo-500 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                                        >
+                                            {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
+                                        </button>
+                                    ))}
                                 </div>
-                                <div className="space-y-3 relative z-10 min-h-[120px]">
-                                    {loadingFps ? (
-                                        <div className="py-10 flex flex-col items-center justify-center text-indigo-400 gap-3">
-                                            <RefreshCw size={24} className="animate-spin" />
-                                            <div className="text-xs font-black tracking-widest">正在为您测算帧率数据...</div>
-                                        </div>
-                                    ) : (
-                                        fpsData.map((item, idx) => (
+                            </div>
+                            <div className="space-y-3 relative z-10 min-h-[120px]">
+                                {loadingFps ? (
+                                    <div className="py-10 flex flex-col items-center justify-center text-indigo-400 gap-3">
+                                        <RefreshCw size={24} className="animate-spin" />
+                                        <div className="text-xs font-black tracking-widest">正在为您测算帧率数据...</div>
+                                    </div>
+                                ) : fpsData.length > 0 ? (
+                                    fpsData.map((item, idx) => (
                                             <div key={idx} className="group">
                                                 <div className="flex justify-between text-[11px] mb-1.5">
                                                     <span className="font-bold text-slate-300 group-hover:text-white transition-colors">{item.name}</span>
@@ -879,10 +864,14 @@ function VisualBuilder({
                                                 </div>
                                             </div>
                                         ))
+                                    ) : (
+                                        <div className="py-10 flex flex-col items-center justify-center text-slate-500 gap-3 opacity-60">
+                                            <Gamepad2 size={24} />
+                                            <div className="text-xs font-black">完善配置后测算游戏帧率</div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
-                        )}
                     </div>
                 </div>
             </div>

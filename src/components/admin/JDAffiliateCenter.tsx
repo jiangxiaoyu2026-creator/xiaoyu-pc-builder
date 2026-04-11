@@ -203,9 +203,14 @@ export default function JDAffiliateCenter() {
                                     {/* Info Sector */}
                                     <div className="w-[30%] shrink-0">
                                         <div className="text-xs text-slate-400 font-bold uppercase mb-1">{item.catKey}</div>
-                                        <div className="text-sm font-extrabold text-slate-800 line-clamp-2" title={`${item.brand} ${item.model}`}>
+                                        <div className="text-sm font-extrabold text-slate-800 line-clamp-2 leading-snug" title={`${item.brand} ${item.model}`}>
                                             {item.brand} {item.model}
                                         </div>
+                                        {(item.price || 0) > 0 && (
+                                            <div className="mt-1.5 text-xs font-black text-indigo-600 bg-indigo-50 flex items-center w-fit px-2 py-0.5 rounded-md border border-indigo-100/50">
+                                                本地定价: ¥{item.price}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Search Action Sector */}

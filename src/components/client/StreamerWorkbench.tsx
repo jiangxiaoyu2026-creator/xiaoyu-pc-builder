@@ -67,6 +67,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [highlightIndex, setHighlightIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
+    const priceRef = useRef<HTMLInputElement>(null);
 
     const [hardwareList, setHardwareList] = useState<HardwareItem[]>([]);
     const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -145,7 +146,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
         onUpdate(entry.id, { item, customPrice: undefined, customName: undefined });
         setQuery(`${item.brand} ${item.model}`);
         setShowSuggestions(false);
-        onEnter();
+        // Stay on current row — don't call onEnter()
     };
 
     const handleCustomInput = (val: string) => {
@@ -156,7 +157,29 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'ArrowDown') { e.preventDefault(); setHighlightIndex(prev => Math.min(prev + 1, suggestions.length - 1)); }
         else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlightIndex(prev => Math.max(prev - 1, 0)); }
-        else if (e.key === 'Enter') { e.preventDefault(); if (showSuggestions && suggestions.length > 0) selectItem(suggestions[highlightIndex]); else onEnter(); }
+        else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (showSuggestions && suggestions.length > 0) {
+                // First Enter: select item, stay on current row
+                selectItem(suggestions[highlightIndex]);
+            } else {
+                // Second Enter (no dropdown): jump to next row
+                onEnter();
+            }
+        } else if (e.key === 'Tab') {
+            e.preventDefault();
+            // Tab: move focus to the price input
+            priceRef.current?.focus();
+            priceRef.current?.select();
+        }
+    };
+
+    const handlePriceKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+            // From price field, move to next row
+            onEnter();
+        }
     };
 
     // Imperative Handle for AI Simulation
@@ -281,7 +304,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
 
             <div className="flex items-center gap-1 justify-end">
                 <span className="text-slate-300 dark:text-slate-600 text-sm">¥</span>
-                <input type="text" className={`w-16 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300'}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} />
+                <input ref={priceRef} type="text" className={`w-16 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300'}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
             </div>
 
             <div className="flex justify-end">

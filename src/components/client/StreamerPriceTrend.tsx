@@ -69,19 +69,26 @@ export default function StreamerPriceTrend({ publicMode }: Props) {
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string>(publicMode ? 'cpu' : 'all');
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await fetch('/api/stats/public-price-trends?days=30');
-                if (res.ok) {
-                    setData(await res.json());
-                }
-            } catch (e) {
-                console.error('Failed to load public price trends:', e);
-            } finally {
-                setLoading(false);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const fetchData = async () => {
+        setRefreshing(true);
+        try {
+            const res = await fetch(`/api/stats/public-price-trends?days=30&t=${Date.now()}`, {
+                headers: { 'Cache-Control': 'no-cache' }
+            });
+            if (res.ok) {
+                setData(await res.json());
             }
-        };
+        } catch (e) {
+            console.error('Failed to load public price trends:', e);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
     }, []);
 
@@ -108,14 +115,24 @@ export default function StreamerPriceTrend({ publicMode }: Props) {
     return (
         <div className="p-6 md:p-8 animate-fade-in space-y-8 max-w-5xl mx-auto">
             {/* Headers Area */}
-            <div>
-                <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <TrendingUp className="text-purple-600 dark:text-purple-400" /> 
-                    硬件行情雷达
-                </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
-                    全网价格波动监控，助你踩准装机节点
-                </p>
+            <div className="flex justify-between items-start gap-4">
+                <div>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <TrendingUp className="text-purple-600 dark:text-purple-400" /> 
+                        硬件行情雷达
+                    </h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+                        全网价格波动监控，助你踩准装机节点
+                    </p>
+                </div>
+                <button
+                    onClick={fetchData}
+                    disabled={refreshing}
+                    className="p-2.5 rounded-full bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-900/30 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors active:scale-95 shrink-0"
+                    title="刷新行情数据"
+                >
+                    <RefreshCw size={20} className={refreshing ? 'animate-spin' : ''} />
+                </button>
             </div>
 
             {/* Today Summary */}
