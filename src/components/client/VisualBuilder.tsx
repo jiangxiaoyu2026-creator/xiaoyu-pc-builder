@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor, Info, Pin, Activity, Gamepad2 } from 'lucide-react';
+import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor, Info, Activity, Gamepad2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
