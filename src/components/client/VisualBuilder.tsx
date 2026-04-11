@@ -527,30 +527,30 @@ function VisualBuilder({
             <div className="hidden lg:flex flex-1 flex-col pb-20">
                 {/* System Announcements (Desktop Marquee) */}
                 {sysAnnouncement?.enabled && sysAnnouncement.items && sysAnnouncement.items.length > 0 && (
-                    <div className="relative overflow-hidden bg-sky-50 border border-sky-100 rounded-[20px] py-3 px-4 mb-6 shadow-sm flex items-center">
-                        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-sky-50 to-transparent z-10 pointer-events-none"></div>
-                        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-sky-50 to-transparent z-10 pointer-events-none"></div>
-                        <div className="shrink-0 mr-4 relative z-20 flex items-center gap-1.5 text-sky-600 font-black text-[13px]">
-                             <FileText size={16} />
-                             <span>系统公告</span>
+                    <div className="relative overflow-hidden bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/80 border border-indigo-100/60 rounded-full py-1.5 px-3 mb-4 shadow-sm flex items-center gap-2.5">
+                        <div className="shrink-0 relative z-20 flex items-center gap-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-black text-[10px] px-2.5 py-1 rounded-full tracking-wide shadow-sm">
+                             <FileText size={11} />
+                             <span>公告</span>
                         </div>
-                        <div className="flex-1 overflow-hidden whitespace-nowrap pl-4 border-l border-sky-200/50">
+                        <div className="flex-1 overflow-hidden whitespace-nowrap relative">
+                            <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+                            <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
                             <style>{`
-                                @keyframes marquee-ltr {
-                                    0% { transform: translateX(-100%); }
-                                    100% { transform: translateX(800px); }
+                                @keyframes marquee-rtl {
+                                    0% { transform: translateX(100%); }
+                                    100% { transform: translateX(-100%); }
                                 }
-                                .animate-marquee-ltr {
+                                .animate-marquee-rtl {
                                     display: inline-block;
-                                    animation: marquee-ltr 25s linear infinite;
+                                    animation: marquee-rtl 20s linear infinite;
                                 }
                             `}</style>
-                            <div className="animate-marquee-ltr text-[13px] font-bold text-slate-700 flex gap-16">
+                            <div className="animate-marquee-rtl text-[12px] font-bold text-slate-600 flex gap-12">
                                 {sysAnnouncement.items.map((item: any) => (
-                                    <span key={item.id} className="flex items-center gap-2 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => item.linkUrl && window.open(item.linkUrl, '_blank')}>
-                                        {item.type === 'promo' && <Sparkles size={14} className="text-amber-500" />}
-                                        {item.type === 'warning' && <AlertCircle size={14} className="text-red-500" />}
-                                        {item.type === 'info' && <Info size={14} className="text-sky-500" />}
+                                    <span key={item.id} className="flex items-center gap-1.5 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => item.linkUrl && window.open(item.linkUrl, '_blank')}>
+                                        {item.type === 'promo' && <Sparkles size={12} className="text-amber-500" />}
+                                        {item.type === 'warning' && <AlertCircle size={12} className="text-red-500" />}
+                                        {item.type === 'info' && <Info size={12} className="text-indigo-400" />}
                                         {item.content}
                                     </span>
                                 ))}
