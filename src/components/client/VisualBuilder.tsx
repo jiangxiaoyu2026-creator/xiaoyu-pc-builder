@@ -41,6 +41,7 @@ function VisualBuilder({
     const [modalSearch, setModalSearch] = useState('');
 
     const [modalBrand, setModalBrand] = useState('all');
+    const [ramTypeFilter, setRamTypeFilter] = useState<'all' | 'DDR4' | 'DDR5'>('all');
     const [sortOrder, setSortOrder] = useState<'default' | 'asc' | 'desc'>('default');
     const [isBrandsExpanded, setIsBrandsExpanded] = useState(false);
     const [showAiModal, setShowAiModal] = useState(false);
@@ -290,15 +291,26 @@ function VisualBuilder({
         const searchStr = modalSearch.toLowerCase().trim();
         const searchTerms = searchStr ? searchStr.split(/\s+/) : [];
 
-        let items = modalItems.filter(i =>
-            i.category === modalCategory &&
-            (modalBrand === 'all' || i.brand === modalBrand) &&
-            (() => {
-                if (!searchStr) return true;
+        let items = modalItems.filter(i => {
+            if (i.category !== modalCategory) return false;
+            if (modalBrand !== 'all' && i.brand !== modalBrand) return false;
+            if (searchStr) {
                 const searchableText = `${i.brand} ${i.model} ${CATEGORY_MAP[i.category] || i.category}`.toLowerCase();
-                return searchTerms.every(term => searchableText.includes(term));
-            })()
-        );
+                if (!searchTerms.every(term => searchableText.includes(term))) return false;
+            }
+            // DDR4/DDR5 filter for RAM
+            if (modalCategory === 'ram' && ramTypeFilter !== 'all') {
+                const modelLower = (i.model || '').toLowerCase();
+                const specsStr = typeof i.specs === 'string' ? i.specs.toLowerCase() : JSON.stringify(i.specs || {}).toLowerCase();
+                const combined = `${modelLower} ${specsStr}`;
+                if (ramTypeFilter === 'DDR4') {
+                    if (!combined.includes('ddr4')) return false;
+                } else if (ramTypeFilter === 'DDR5') {
+                    if (!combined.includes('ddr5')) return false;
+                }
+            }
+            return true;
+        });
 
         // 核心排序逻辑
         items.sort((a, b) => {
@@ -321,7 +333,7 @@ function VisualBuilder({
         });
 
         return items;
-    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder]);
+    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder, ramTypeFilter]);
 
     const availableBrands = useMemo(() => {
         if (!modalCategory) return [];
@@ -944,6 +956,24 @@ function VisualBuilder({
                                         </button>
                                     )}
                                 </div>
+
+                                {/* DDR4/DDR5 Type Filter - only for RAM */}
+                                {modalCategory === 'ram' && (
+                                    <div className="flex gap-2 items-center">
+                                        {(['all', 'DDR4', 'DDR5'] as const).map(type => (
+                                            <button
+                                                key={type}
+                                                onClick={() => setRamTypeFilter(type)}
+                                                className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${ramTypeFilter === type
+                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
+                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                }`}
+                                            >
+                                                {type === 'all' ? '全部类型' : type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
