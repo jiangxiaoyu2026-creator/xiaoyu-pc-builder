@@ -302,12 +302,13 @@ function VisualBuilder({
                 const searchableText = `${i.brand} ${i.model} ${CATEGORY_MAP[i.category] || i.category}`.toLowerCase();
                 if (!searchTerms.every(term => searchableText.includes(term))) return false;
             }
-            // 解析 specs 为对象，便于精准匹配参数
-            const specsObj: Record<string, any> = typeof i.specs === 'object' && i.specs !== null 
-                ? i.specs 
-                : (typeof i.specs === 'string' ? (() => { try { return JSON.parse(i.specs) } catch { return {} } })() : {});
+            // 解析 specs 为对象，修复 TypeScript 严格模式下的类型检查 (防止 never type 报错)
+            const rawSpecs: any = i.specs;
+            const specsObj: Record<string, any> = typeof rawSpecs === 'object' && rawSpecs !== null 
+                ? rawSpecs 
+                : (typeof rawSpecs === 'string' ? (() => { try { return JSON.parse(rawSpecs) } catch { return {} } })() : {});
             const modelLower = (i.model || '').toLowerCase();
-            const specsStr = typeof i.specs === 'string' ? i.specs.toLowerCase() : JSON.stringify(i.specs || {}).toLowerCase();
+            const specsStr = typeof rawSpecs === 'string' ? rawSpecs.toLowerCase() : JSON.stringify(rawSpecs || {}).toLowerCase();
             const combined = `${modelLower} ${specsStr}`;
 
             // DDR4/DDR5 filter for RAM
