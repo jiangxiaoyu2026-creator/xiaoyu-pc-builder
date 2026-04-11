@@ -42,6 +42,7 @@ function VisualBuilder({
 
     const [modalBrand, setModalBrand] = useState('all');
     const [ramTypeFilter, setRamTypeFilter] = useState<'all' | 'DDR4' | 'DDR5'>('all');
+    const [diskCapFilter, setDiskCapFilter] = useState<'all' | '500G' | '1T' | '2T' | '4T'>('all');
     const [sortOrder, setSortOrder] = useState<'default' | 'asc' | 'desc'>('default');
     const [isBrandsExpanded, setIsBrandsExpanded] = useState(false);
     const [showAiModal, setShowAiModal] = useState(false);
@@ -309,6 +310,21 @@ function VisualBuilder({
                     if (!combined.includes('ddr5')) return false;
                 }
             }
+            // Disk capacity filter
+            if (modalCategory === 'disk' && diskCapFilter !== 'all') {
+                const modelLower = (i.model || '').toLowerCase();
+                const specsStr = typeof i.specs === 'string' ? i.specs.toLowerCase() : JSON.stringify(i.specs || {}).toLowerCase();
+                const combined = `${modelLower} ${specsStr}`;
+                if (diskCapFilter === '500G') {
+                    if (!(/480g|500g|480gb|500gb|512g|512gb/.test(combined))) return false;
+                } else if (diskCapFilter === '1T') {
+                    if (!(/(?:^|\D)1t(?:b|\b)|1000g|1024g/.test(combined))) return false;
+                } else if (diskCapFilter === '2T') {
+                    if (!(/(?:^|\D)2t(?:b|\b)|2000g|2048g/.test(combined))) return false;
+                } else if (diskCapFilter === '4T') {
+                    if (!(/(?:^|\D)4t(?:b|\b)|4000g|4096g/.test(combined))) return false;
+                }
+            }
             return true;
         });
 
@@ -333,7 +349,7 @@ function VisualBuilder({
         });
 
         return items;
-    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder, ramTypeFilter]);
+    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter]);
 
     const availableBrands = useMemo(() => {
         if (!modalCategory) return [];
@@ -970,6 +986,24 @@ function VisualBuilder({
                                                 }`}
                                             >
                                                 {type === 'all' ? '全部类型' : type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Disk Capacity Filter - only for disk */}
+                                {modalCategory === 'disk' && (
+                                    <div className="flex gap-2 items-center">
+                                        {(['all', '500G', '1T', '2T', '4T'] as const).map(cap => (
+                                            <button
+                                                key={cap}
+                                                onClick={() => setDiskCapFilter(cap)}
+                                                className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${diskCapFilter === cap
+                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
+                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                }`}
+                                            >
+                                                {cap === 'all' ? '全部容量' : cap}
                                             </button>
                                         ))}
                                     </div>
