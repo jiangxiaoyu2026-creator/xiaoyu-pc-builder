@@ -1081,7 +1081,7 @@ export default function ClientApp() {
             )}
 
             {/* Sheet */}
-            <div className={`fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-out transform ${showDiscountSheet ? 'translate-y-0' : 'translate-y-full'} md:hidden`}>
+            <div className={`fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-out transform ${showDiscountSheet ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'} md:hidden`}>
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold text-slate-900">选择优惠方案</h3>
                     <button onClick={() => setShowDiscountSheet(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:text-slate-800">

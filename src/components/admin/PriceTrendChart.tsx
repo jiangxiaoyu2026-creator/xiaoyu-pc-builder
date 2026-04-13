@@ -652,9 +652,9 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
     };
 
     return (
-        <div className="flex flex-col lg:flex-row gap-6 mb-20 lg:mb-0 lg:h-[calc(100vh-8rem)]">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 mb-20 lg:mb-0 lg:h-[calc(100vh-8rem)] px-3 sm:px-4 lg:px-0">
             {/* ====== 中间主内容区（可滚动） ====== */}
-            <div className="flex-1 lg:overflow-y-auto custom-scrollbar space-y-5 lg:pr-2">
+            <div className="flex-1 lg:overflow-y-auto custom-scrollbar space-y-4 lg:space-y-5 lg:pr-2 min-w-0">
                 {!data ? (
                     // 无数据时的空状态（替代原先占据全版的空白）
                     <div className="flex flex-col items-center justify-center py-32 text-slate-400 animate-page-enter h-full">
@@ -673,7 +673,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                 ) : (
                     <>
                         {/* 筛选器 - 粘性顶部 */}
-                        <div className="flex items-center gap-4 flex-wrap sticky top-0 z-10 bg-slate-50 py-3 -mt-3 border-b border-slate-100 mb-2">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 flex-wrap sticky top-0 z-10 bg-slate-50 dark:bg-slate-950 py-3 -mt-3 border-b border-slate-100 dark:border-slate-800 mb-2">
                             <div className="flex items-center gap-2 flex-wrap">
                                 <Filter size={14} className="text-slate-400 shrink-0" />
                                 {publicMode ? (
@@ -813,8 +813,8 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                         </select>
                     )}
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                    <div className="flex gap-1 shrink-0">
                         {[7, 14, 30, 60, 90].map(d => (
                             <button
                                 key={d}
@@ -875,7 +875,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
 
             {/* 单品类迷你统计条 */}
             {category !== 'all' && (
-                <div className="flex bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+                <div className="flex flex-col sm:flex-row bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-4 sm:mb-6">
                     <div className="flex-1 p-3 px-4 flex items-center justify-between border-r border-slate-100 hover:bg-slate-50 transition-colors">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
@@ -1187,9 +1187,9 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                 const isUp = periodChange > 0;
 
                 return (
-                <div ref={chartRef} className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm" style={{ minHeight: 520 }}>
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-extrabold text-slate-800 flex items-center gap-2">
+                <div ref={chartRef} className="bg-white dark:bg-slate-900 p-4 sm:p-6 lg:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm" style={{ minHeight: 400 }}>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                        <h3 className="text-sm sm:text-lg font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                             {(() => {
                                 // Build dynamic title based on active filters
                                 const brandCampLabel = brandFilter === 'NVIDIA' ? 'N卡' : brandFilter === 'AMD' ? 'AMD' : brandFilter === 'Intel' ? 'Intel' : '';
@@ -1200,8 +1200,8 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                 return `${prefix}${CATEGORY_LABELS[category] || category}品类历史基准均价走势`;
                             })()}
                         </h3>
-                        <div className="flex gap-4 items-center">
-                            <div className="flex items-center gap-4 text-xs text-slate-500">
+                        <div className="flex flex-wrap gap-2 sm:gap-4 items-center">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-3 h-0.5 bg-indigo-500"></span> 
                                     整体均价 ({gpuChipFilter ? `所有${gpuChipFilter}` : subcategory ? '此规格' : ramGeneration ? `所有${ramGeneration}` : '此分类'})
@@ -1214,7 +1214,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleDownloadImage(chartRef, `均价走势_${CATEGORY_LABELS[category] || category}_${new Date().toISOString().slice(0,10)}.png`); }}
                                 disabled={downloading === '均价走势'}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-all"
+                                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-all"
                                 title="下载为高清图片 (适合视频插图)"
                             >
                                 <Download size={13} />
@@ -1223,7 +1223,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                         </div>
                     </div>
                     {/* 平均X天涨幅/降幅标注 */}
-                    <div className="mb-4 flex items-center gap-3">
+                    <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                         <div className={`flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-full border ${
                             isUp ? 'bg-rose-50/50 border-rose-100' : periodChange < 0 ? 'bg-emerald-50/50 border-emerald-100' : 'bg-slate-50 border-slate-100'
                         }`}>
@@ -1235,8 +1235,8 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                             </div>
                             
                             {/* Text content */}
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-sm font-semibold text-slate-500">较 {days} 天前</span>
+                            <div className="flex flex-wrap items-baseline gap-1 sm:gap-2">
+                                <span className="text-xs sm:text-sm font-semibold text-slate-500">较 {days} 天前</span>
                                 
                                 {periodChange !== 0 ? (
                                     <>
@@ -1253,14 +1253,14 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                             </div>
                         </div>
                         
-                        <div className="flex items-center gap-2 text-sm font-semibold text-slate-400 bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
+                        <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-slate-100 dark:border-slate-700">
                             <span>起: ¥{firstPrice?.toFixed(2)}</span>
                             <span className="text-slate-300">→</span>
                             <span>止: ¥{lastPrice?.toFixed(2)}</span>
                         </div>
                     </div>
                     <div className="-mx-4 sm:mx-0">
-                    <ResponsiveContainer width="100%" height={380}>
+                    <ResponsiveContainer width="100%" height={280}>
                         <LineChart 
                             data={chartData} 
                             margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
