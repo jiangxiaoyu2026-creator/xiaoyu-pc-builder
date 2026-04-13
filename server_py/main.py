@@ -90,7 +90,10 @@ async def serve_index():
     if os.path.exists(DIST_DIR):
         index_path = os.path.join(DIST_DIR, "index.html")
         if os.path.exists(index_path):
-            return FileResponse(index_path)
+            return FileResponse(
+                index_path,
+                headers={"Cache-Control": "no-cache, must-revalidate"}
+            )
     raise HTTPException(status_code=404, detail="未找到页面")
 
 # 静态文件请求（非 /api 和 /assets 路径）
@@ -115,7 +118,10 @@ async def serve_frontend(full_path: str):
         # SPA fallback - 返回 index.html
         index_path = os.path.join(DIST_DIR, "index.html")
         if os.path.exists(index_path):
-            return FileResponse(index_path)
+            return FileResponse(
+                index_path,
+                headers={"Cache-Control": "no-cache, must-revalidate"}
+            )
 
     raise HTTPException(status_code=404, detail="未找到页面")
 
