@@ -200,7 +200,11 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
         setLoading(true);
         try {
             const token = localStorage.getItem('xiaoyu_token');
-            const headers = { 'Authorization': `Bearer ${token}` };
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            const isAuthenticated = !!token;
             
             // Pass the most specific filter: if subcat exists, pass it; else if ramGen exists, pass it
             const backendFilter = (category === 'all' ? '' : subcategory) || (category === 'ram' ? ramGeneration : '');
@@ -214,37 +218,57 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
 
             // If category is 'all', fetch market overview instead of per-product data
             if (category === 'all') {
-                const overviewRes = await fetch(`/api/stats/market-overview?days=${fetchDays}`, { headers });
-                const statsRes = await fetch(`/api/stats/price-trends?${dateParams}`, { headers });
-                if (overviewRes.ok) {
-                    setMarketOverview(await overviewRes.json());
-                }
-                if (statsRes.ok) {
-                    setData(await statsRes.json());
+                if (isAuthenticated) {
+                    const overviewRes = await fetch(`/api/stats/market-overview?days=${fetchDays}`, { headers });
+                    const statsRes = await fetch(`/api/stats/price-trends?${dateParams}`, { headers });
+                    if (overviewRes.ok) {
+                        setMarketOverview(await overviewRes.json());
+                    }
+                    if (statsRes.ok) {
+                        setData(await statsRes.json());
+                    }
+                } else {
+                    // Public fallback - use public endpoint
+                    const statsRes = await fetch(`/api/stats/public-price-trends?${dateParams}`);
+                    if (statsRes.ok) {
+                        setData(await statsRes.json());
+                    }
                 }
                 setTrendData(null);
             } else {
                 setMarketOverview(null);
-                const [resStats, resHistory] = await Promise.all([
-                    fetch(`/api/stats/price-trends?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers }),
-                    fetch(`/api/stats/product-price-history?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers })
-                ]);
+                if (isAuthenticated) {
+                    const [resStats, resHistory] = await Promise.all([
+                        fetch(`/api/stats/price-trends?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers }),
+                        fetch(`/api/stats/product-price-history?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers })
+                    ]);
 
-                if (resStats.ok && resHistory.ok) {
-                    setData(await resStats.json());
-                    const hData = await resHistory.json();
-                    
-                    if (hData.products && hData.productTrends) {
-                        const tMap = new Map();
-                        for (const pt of hData.productTrends) {
-                            tMap.set(String(pt.hardwareId), pt.points);
+                    if (resStats.ok && resHistory.ok) {
+                        setData(await resStats.json());
+                        const hData = await resHistory.json();
+                        
+                        if (hData.products && hData.productTrends) {
+                            const tMap = new Map();
+                            for (const pt of hData.productTrends) {
+                                tMap.set(String(pt.hardwareId), pt.points);
+                            }
+                        }
+                        
+                        setTrendData(hData);
+                        if (!hData.products.find((p: any) => String(p.id) === selectedProductId)) {
+                            setSelectedProductId('');
                         }
                     }
-                    
-                    setTrendData(hData);
-                    if (!hData.products.find((p: any) => String(p.id) === selectedProductId)) {
-                        setSelectedProductId('');
+                } else {
+                    // Public fallback - use public endpoint for basic summary data
+                    const statsRes = await fetch(`/api/stats/public-price-trends?${dateParams}`);
+                    if (statsRes.ok) {
+                        const publicData = await statsRes.json();
+                        // Provide minimal categories list for public mode
+                        publicData.categories = publicData.categories || ['cpu'];
+                        setData(publicData);
                     }
+                    setTrendData(null);
                 }
             }
         } catch (e) {
