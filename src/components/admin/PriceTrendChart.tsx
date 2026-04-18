@@ -199,12 +199,17 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
     const fetchData = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('xiaoyu_token');
+            let token: string | null = null;
+            try {
+                token = localStorage.getItem('xiaoyu_token');
+            } catch {
+                // localStorage may throw in Safari private mode or restricted browsers
+                console.warn('localStorage not available, using public mode');
+            }
             const headers: Record<string, string> = {};
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
-            const isAuthenticated = !!token;
             
             // Pass the most specific filter: if subcat exists, pass it; else if ramGen exists, pass it
             const backendFilter = (category === 'all' ? '' : subcategory) || (category === 'ram' ? ramGeneration : '');
@@ -218,57 +223,37 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
 
             // If category is 'all', fetch market overview instead of per-product data
             if (category === 'all') {
-                if (isAuthenticated) {
-                    const overviewRes = await fetch(`/api/stats/market-overview?days=${fetchDays}`, { headers });
-                    const statsRes = await fetch(`/api/stats/price-trends?${dateParams}`, { headers });
-                    if (overviewRes.ok) {
-                        setMarketOverview(await overviewRes.json());
-                    }
-                    if (statsRes.ok) {
-                        setData(await statsRes.json());
-                    }
-                } else {
-                    // Public fallback - use public endpoint
-                    const statsRes = await fetch(`/api/stats/public-price-trends?${dateParams}`);
-                    if (statsRes.ok) {
-                        setData(await statsRes.json());
-                    }
+                const overviewRes = await fetch(`/api/stats/market-overview?days=${fetchDays}`, { headers });
+                const statsRes = await fetch(`/api/stats/price-trends?${dateParams}`, { headers });
+                if (overviewRes.ok) {
+                    setMarketOverview(await overviewRes.json());
+                }
+                if (statsRes.ok) {
+                    setData(await statsRes.json());
                 }
                 setTrendData(null);
             } else {
                 setMarketOverview(null);
-                if (isAuthenticated) {
-                    const [resStats, resHistory] = await Promise.all([
-                        fetch(`/api/stats/price-trends?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers }),
-                        fetch(`/api/stats/product-price-history?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers })
-                    ]);
+                const [resStats, resHistory] = await Promise.all([
+                    fetch(`/api/stats/price-trends?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers }),
+                    fetch(`/api/stats/product-price-history?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers })
+                ]);
 
-                    if (resStats.ok && resHistory.ok) {
-                        setData(await resStats.json());
-                        const hData = await resHistory.json();
-                        
-                        if (hData.products && hData.productTrends) {
-                            const tMap = new Map();
-                            for (const pt of hData.productTrends) {
-                                tMap.set(String(pt.hardwareId), pt.points);
-                            }
-                        }
-                        
-                        setTrendData(hData);
-                        if (!hData.products.find((p: any) => String(p.id) === selectedProductId)) {
-                            setSelectedProductId('');
+                if (resStats.ok && resHistory.ok) {
+                    setData(await resStats.json());
+                    const hData = await resHistory.json();
+                    
+                    if (hData.products && hData.productTrends) {
+                        const tMap = new Map();
+                        for (const pt of hData.productTrends) {
+                            tMap.set(String(pt.hardwareId), pt.points);
                         }
                     }
-                } else {
-                    // Public fallback - use public endpoint for basic summary data
-                    const statsRes = await fetch(`/api/stats/public-price-trends?${dateParams}`);
-                    if (statsRes.ok) {
-                        const publicData = await statsRes.json();
-                        // Provide minimal categories list for public mode
-                        publicData.categories = publicData.categories || ['cpu'];
-                        setData(publicData);
+                    
+                    setTrendData(hData);
+                    if (!hData.products.find((p: any) => String(p.id) === selectedProductId)) {
+                        setSelectedProductId('');
                     }
-                    setTrendData(null);
                 }
             }
         } catch (e) {
@@ -497,7 +482,21 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
             count: number;
             currentAvg: number;
             changes: { period: string; pct: number | null }[];
+            todayUp: number;
+            todayDown: number;
         }> = [];
+
+        // Helper: compute individual product price at a given date
+        const getProductPriceAtDate = (productId: string, fallbackPrice: number, date: string): number => {
+            const pts = trendMap.get(productId);
+            if (pts) {
+                const point = pts.find(pt => pt.date === date);
+                return point ? point.price : fallbackPrice;
+            }
+            return fallbackPrice;
+        };
+
+        const yesterday = findDateAgo(1);
 
         for (const [label, products] of groups) {
             const currentAvg = computeAvgAtDate(products, today);
@@ -516,7 +515,21 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                     changes.push({ period: periodLabel, pct: null });
                 }
             }
-            rows.push({ label, count: products.length, currentAvg, changes });
+
+            // Count individual products that went up/down vs yesterday
+            let todayUp = 0;
+            let todayDown = 0;
+            if (yesterday) {
+                for (const p of products) {
+                    const pId = String(p.id);
+                    const todayPrice = getProductPriceAtDate(pId, p.price, today);
+                    const yesterdayPrice = getProductPriceAtDate(pId, p.price, yesterday);
+                    if (todayPrice > yesterdayPrice) todayUp++;
+                    else if (todayPrice < yesterdayPrice) todayDown++;
+                }
+            }
+
+            rows.push({ label, count: products.length, currentAvg, changes, todayUp, todayDown });
         }
 
         // Sort: by DDR generation then by frequency then capacity for RAM, else alphabetically
@@ -1430,6 +1443,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                     <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-400 uppercase">{category === 'gpu' ? '芯片组' : category === 'cpu' ? '代数 / 阵营' : '规格'}</th>
                                     <th className="text-center px-3 py-2.5 text-xs font-bold text-slate-400">在售数量</th>
                                     <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-400">当前均价</th>
+                                    <th className="text-center px-3 py-2.5 text-xs font-bold text-slate-400">今日涨跌</th>
                                     {specPriceTable[0]?.changes.map(c => (
                                         <th key={c.period} className="text-right px-3 py-2.5 text-xs font-bold text-slate-400">vs {c.period}前</th>
                                     ))}
@@ -1459,6 +1473,24 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                         </td>
                                         <td className="text-center px-3 py-4 text-slate-400 font-medium">{row.count}款</td>
                                         <td className="text-right px-4 py-4 font-extrabold text-slate-800 text-base">¥{row.currentAvg}</td>
+                                        <td className="text-center px-3 py-3">
+                                            {(row.todayUp > 0 || row.todayDown > 0) ? (
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    {row.todayUp > 0 && (
+                                                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-100">
+                                                            ↑{row.todayUp}
+                                                        </span>
+                                                    )}
+                                                    {row.todayDown > 0 && (
+                                                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                                            ↓{row.todayDown}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-slate-300">—持平</span>
+                                            )}
+                                        </td>
                                         {row.changes.map(c => (
                                             <td key={c.period} className="text-right px-3 py-3">
                                                 {c.pct !== null ? (
