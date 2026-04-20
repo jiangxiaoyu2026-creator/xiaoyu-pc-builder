@@ -15,7 +15,7 @@ def wait_for_output(manager, invoke_id, timeout=60):
         time.sleep(2)
     return "Timeout"
 
-token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc3NTIzODA1OX0.JyvZlqrzUX6cFt954Q1PxMZFhsROYM3l09l6h7nYWsY"
+token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc3NzEwOTUxMX0.TUioj8v5Ak75sqKwBYxyNxIAPtYAbqGJoXc7Z07qXws"
 
 print("Uploading Frontend Dist via /api/upload/image...")
 headers = {"Authorization": f"Bearer {token}"}
@@ -23,7 +23,11 @@ headers = {"Authorization": f"Bearer {token}"}
 with open("dist.zip", "rb") as f:
     resp = requests.post(f"{base_url}/api/upload/image", headers=headers, files={"file": ("dist.png", f, "image/png")})
 
-dist_filename = resp.json()["filename"]
+print("Upload response:", resp.status_code, resp.text)
+try:
+    dist_filename = resp.json().get("filename", resp.json().get("url", "").split("/")[-1])
+except Exception:
+    import sys; sys.exit(1)
 
 print("Replacing Dist in Remote Docker...")
 cmd_final = f"""

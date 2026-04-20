@@ -5,8 +5,10 @@ type Theme = 'light' | 'dark' | 'system';
 export function useTheme() {
     const [theme, setTheme] = useState<Theme>(() => {
         if (typeof window !== 'undefined') {
-            const savedTheme = localStorage.getItem('xiaoyu-theme') as Theme;
-            if (savedTheme) return savedTheme;
+            try {
+                const savedTheme = localStorage.getItem('xiaoyu-theme') as Theme;
+                if (savedTheme) return savedTheme;
+            } catch { /* localStorage not available */ }
         }
         return 'system';
     });
@@ -30,7 +32,7 @@ export function useTheme() {
         };
 
         applyTheme(theme);
-        localStorage.setItem('xiaoyu-theme', theme);
+        try { localStorage.setItem('xiaoyu-theme', theme); } catch { /* ignore */ }
 
         // Listen for system changes if set to system
         if (theme === 'system') {

@@ -108,20 +108,29 @@ class StorageService {
 
             localStorage.setItem('xiaoyu_db_migration_done_v1', 'true');
             console.log('UseStorage: Migration complete and local data cleared.');
-        } catch (err) {
+        } catch (err: any) {
+            // If localStorage itself is unavailable, just skip migration
+            if (err?.name === 'SecurityError' || err?.code === 18) {
+                console.warn('localStorage not available, skipping migration');
+                return;
+            }
             console.error('Migration failed:', err);
         }
 
         // Cleanup V2: Ensure all legacy data is removed even if migrated previously
-        const cleanupDone = localStorage.getItem('xiaoyu_cleanup_done_v2');
-        if (!cleanupDone) {
-            console.log('UseStorage: Cleaning up legacy local data (V2)...');
-            localStorage.removeItem(KEYS.PRODUCTS);
-            localStorage.removeItem(KEYS.CONFIGS);
-            localStorage.removeItem(KEYS.SETTINGS);
-            localStorage.removeItem(KEYS.USED_ITEMS);
-            localStorage.removeItem(KEYS.USERS);
-            localStorage.setItem('xiaoyu_cleanup_done_v2', 'true');
+        try {
+            const cleanupDone = localStorage.getItem('xiaoyu_cleanup_done_v2');
+            if (!cleanupDone) {
+                console.log('UseStorage: Cleaning up legacy local data (V2)...');
+                localStorage.removeItem(KEYS.PRODUCTS);
+                localStorage.removeItem(KEYS.CONFIGS);
+                localStorage.removeItem(KEYS.SETTINGS);
+                localStorage.removeItem(KEYS.USED_ITEMS);
+                localStorage.removeItem(KEYS.USERS);
+                localStorage.setItem('xiaoyu_cleanup_done_v2', 'true');
+            }
+        } catch {
+            // localStorage unavailable, skip cleanup
         }
     }
 

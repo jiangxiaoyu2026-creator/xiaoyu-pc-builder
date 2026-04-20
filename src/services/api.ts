@@ -3,11 +3,19 @@ const API_BASE = '/api';
 // 确保 endpoint 以 / 结尾（用于 POST 请求） - 被移除，因为 FastAPI 路由参数不兼容多余斜杠
 
 export class ApiService {
+    private static safeGetToken(): string | null {
+        try {
+            return localStorage.getItem('xiaoyu_token');
+        } catch {
+            return null;
+        }
+    }
+
     private static getHeaders() {
         const headers: Record<string, string> = {
             'Content-Type': 'application/json'
         };
-        const token = localStorage.getItem('xiaoyu_token');
+        const token = this.safeGetToken();
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
@@ -35,7 +43,7 @@ export class ApiService {
 
     static async postFile(endpoint: string, formData: FormData) {
         const url = `${API_BASE}${endpoint}`;
-        const token = localStorage.getItem('xiaoyu_token');
+        const token = this.safeGetToken();
         const headers: Record<string, string> = {};
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
@@ -60,15 +68,19 @@ export class ApiService {
 
         const result = await response.json();
         if (result.access_token) {
-            localStorage.setItem('xiaoyu_token', result.access_token);
-            localStorage.setItem('xiaoyu_user', JSON.stringify(result.user));
+            try {
+                localStorage.setItem('xiaoyu_token', result.access_token);
+                localStorage.setItem('xiaoyu_user', JSON.stringify(result.user));
+            } catch { /* localStorage not available */ }
         }
         return result;
     }
 
     static async logout() {
-        localStorage.removeItem('xiaoyu_token');
-        localStorage.removeItem('xiaoyu_user');
+        try {
+            localStorage.removeItem('xiaoyu_token');
+            localStorage.removeItem('xiaoyu_user');
+        } catch { /* localStorage not available */ }
     }
 
     static async delete(endpoint: string) {
