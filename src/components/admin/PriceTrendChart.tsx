@@ -1672,7 +1672,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                         <h3 className="font-bold text-slate-800">具体型号行情清单</h3>
                         <p className="text-xs text-slate-400">点击表头中的涨跌指标即可排序</p>
                     </div>
-                    <div className="overflow-x-auto" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+                    <div className="overflow-x-auto" >
                         <table className="w-full text-sm relative">
                             <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
                                 <tr>
