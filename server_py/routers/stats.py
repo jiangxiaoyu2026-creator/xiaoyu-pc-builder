@@ -137,8 +137,7 @@ async def get_price_trends(
     subcategory: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    session: Session = Depends(get_session),
-    admin: User = Depends(get_current_streamer_or_admin)
+    session: Session = Depends(get_session)
 ):
     """获取价格变化趋势数据（支持自定义日期范围）"""
     from datetime import timedelta
@@ -438,8 +437,7 @@ async def get_product_price_history(
     days: int = 30,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    session: Session = Depends(get_session),
-    admin: User = Depends(get_current_streamer_or_admin)
+    session: Session = Depends(get_session)
 ):
     """获取产品级别价格历史趋势（真实品类/细分均价 + 单品走势，支持自定义日期范围）"""
     from datetime import timedelta
@@ -688,8 +686,7 @@ async def get_product_price_history(
 @router.get("/market-overview")
 async def get_market_overview(
     days: int = 30,
-    session: Session = Depends(get_session),
-    admin: User = Depends(get_current_streamer_or_admin)
+    session: Session = Depends(get_session)
 ):
     """全局市场概览：跨品类行情汇总（用于「全部品类」视图）"""
     from datetime import timedelta
