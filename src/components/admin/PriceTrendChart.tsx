@@ -710,205 +710,209 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                 ) : (
                     <>
                         {/* 筛选器 - 粘性顶部 */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 flex-wrap sticky top-0 z-10 bg-slate-50 dark:bg-slate-950 py-3 -mt-3 border-b border-slate-100 dark:border-slate-800 mb-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <Filter size={14} className="text-slate-400 shrink-0" />
-                                {publicMode ? (
-                                    <div className="px-4 py-1.5 text-[13px] tracking-wider font-black border border-transparent rounded-lg bg-indigo-600 text-white shadow-sm flex items-center justify-center">
-                                        CPU 专区
-                                    </div>
-                                ) : (
-                                    <select
-                                        value={category}
-                                        onChange={e => {
-                                            setCategory(e.target.value);
-                                            setSubcategory('');
-                                            setBrandFilter('');
-                                            setActualBrandFilter('');
-                                            setGpuChipFilter('');
-                                            setRamGeneration('');
-                                            setSelectedProductId('');
-                                        }}
-                                        className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                        <div className="flex flex-col gap-3 sticky top-0 z-10 bg-slate-50 dark:bg-slate-950 py-3 -mt-3 border-b border-slate-100 dark:border-slate-800 mb-3 xl:flex-row xl:justify-between xl:items-center">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:flex-nowrap w-full xl:w-auto xl:flex-1">
+                                {/* 第一组：品类与规格过滤 */}
+                                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 w-full sm:w-auto shrink-0">
+                                    <Filter size={14} className="text-slate-400 shrink-0" />
+                                    {publicMode ? (
+                                        <div className="px-4 py-1.5 text-[13px] tracking-wider font-black border border-transparent rounded-lg bg-indigo-600 text-white shadow-sm flex items-center justify-center shrink-0">
+                                            CPU 专区
+                                        </div>
+                                    ) : (
+                                        <select
+                                            value={category}
+                                            onChange={e => {
+                                                setCategory(e.target.value);
+                                                setSubcategory('');
+                                                setBrandFilter('');
+                                                setActualBrandFilter('');
+                                                setGpuChipFilter('');
+                                                setRamGeneration('');
+                                                setSelectedProductId('');
+                                            }}
+                                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none shrink-0"
+                                        >
+                                            <option value="all">全部品类</option>
+                                            {sortCategories(data.categories).map(c => (
+                                                <option key={c} value={c}>{CATEGORY_LABELS[c] || c}</option>
+                                            ))}
+                                        </select>
+                                    )}
+
+                                    {category === 'ram' && (
+                                        <select
+                                            value={ramGeneration}
+                                            onChange={e => {
+                                                setRamGeneration(e.target.value);
+                                                setSubcategory(''); // Reset specific spec when generation changes
+                                            }}
+                                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none shrink-0"
+                                        >
+                                            <option value="">全部代数 (DDR4/5)</option>
+                                            <option value="DDR4">DDR4 专区</option>
+                                            <option value="DDR5">DDR5 专区</option>
+                                        </select>
+                                    )}
+
+                                    {/* GPU Dropdown is explicitly Chipset */}
+                                    {category === 'gpu' && gpuChipSeries.length > 0 && (
+                                        <select
+                                            value={gpuChipFilter}
+                                            onChange={e => { setGpuChipFilter(e.target.value); setSelectedProductId(''); }}
+                                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none shrink-0"
+                                        >
+                                            <option value="">全部芯片组</option>
+                                            {gpuChipSeries.map(s => (
+                                                <option key={s} value={s}>{s}</option>
+                                            ))}
+                                        </select>
+                                    )}
+
+                                    {/* Dynamic Brand Dropdown for specific OEM brands */}
+                                    {['ram', 'disk', 'gpu', 'motherboard', 'monitor', 'cooler', 'power', 'case', 'peripheral'].includes(category) && trendData && trendData.products && (
+                                        (() => {
+                                            const brands = Array.from(new Set(
+                                                trendData.products
+                                                    .filter(p => p.price > 0 && p.category === category)
+                                                    .map(p => {
+                                                        const m = p.name.match(/^([^\s\(（]+)/);
+                                                        return m ? m[1] : '';
+                                                    })
+                                                    .filter(b => b.length > 0 && b.length < 15)
+                                            )).sort();
+                                            if (brands.length === 0) return null;
+                                            return (
+                                                <select
+                                                    value={actualBrandFilter}
+                                                    onChange={e => { setActualBrandFilter(e.target.value); setSelectedProductId(''); }}
+                                                    className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none max-w-[150px] shrink-0"
+                                                >
+                                                    <option value="">全部品牌</option>
+                                                    {brands.map(b => <option key={b} value={b}>{b}</option>)}
+                                                </select>
+                                            );
+                                        })()
+                                    )}
+
+                                    {/* General Subcategory Dropdown for CPU, Disk, RAM derived from specPriceTable */}
+                                    {category !== 'gpu' && category !== 'all' && specPriceTable && specPriceTable.length > 0 && (
+                                        <select
+                                            value={subcategory}
+                                            onChange={e => setSubcategory(e.target.value)}
+                                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none shrink-0"
+                                        >
+                                            <option value="">全部{category === 'cpu' ? '代数' : '具体规格'}</option>
+                                            {specPriceTable.map(row => (
+                                                <option key={row.label} value={row.label}>{row.label}</option>
+                                            ))}
+                                        </select>
+                                    )}
+                                </div>
+
+                                {/* 第二组：品牌组和单品列表 */}
+                                <div className="flex items-center gap-2 w-full sm:w-auto xl:ml-2">
+                                    {['cpu', 'gpu', 'mainboard'].includes(category) && (
+                                        <div className="flex gap-1 border border-slate-200 rounded-lg p-0.5 bg-slate-50 shrink-0">
+                                            {[
+                                                { value: '', label: '全部' },
+                                                ...(category === 'gpu'
+                                                    ? [{ value: 'NVIDIA', label: 'N卡' }, { value: 'AMD', label: 'A卡' }]
+                                                    : [{ value: 'AMD', label: 'AMD' }, { value: 'Intel', label: 'Intel' }]
+                                                )
+                                            ].map(b => (
+                                                <button
+                                                    key={b.value}
+                                                    onClick={() => { setBrandFilter(b.value); setSelectedProductId(''); }}
+                                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                                                        brandFilter === b.value
+                                                            ? 'bg-indigo-600 text-white shadow-sm'
+                                                            : 'text-slate-500 hover:text-slate-700 hover:bg-white'
+                                                    }`}
+                                                >
+                                                    {b.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {category !== 'all' && trendData && trendData.products && (
+                                        <select
+                                            value={selectedProductId}
+                                            onChange={e => setSelectedProductId(e.target.value)}
+                                            className="flex-1 sm:flex-none sm:w-[240px] px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none truncate"
+                                        >
+                                            <option value="">查看单品走势...</option>
+                                            {trendData.products
+                                                .filter(p => matchesBrand(p.name) && matchesChip(p.name))
+                                                .map(p => (
+                                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                                ))}
+                                        </select>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* 第三组：时间区间选择 */}
+                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 xl:pb-0 w-full xl:w-auto shrink-0 border-t xl:border-t-0 border-slate-100 dark:border-slate-800 xl:border-none pt-2 xl:pt-0">
+                                <div className="flex gap-1 shrink-0">
+                                    {[7, 14, 30, 60, 90].map(d => (
+                                        <button
+                                            key={d}
+                                            onClick={() => { setDays(d); setUseCustomRange(false); setShowDatePicker(false); }}
+                                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${days === d && !useCustomRange
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                }`}
+                                        >
+                                            {d}天
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={() => setShowDatePicker(!showDatePicker)}
+                                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
+                                            useCustomRange
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                        }`}
                                     >
-                                        <option value="all">全部品类</option>
-                                        {sortCategories(data.categories).map(c => (
-                                            <option key={c} value={c}>{CATEGORY_LABELS[c] || c}</option>
-                                        ))}
-                                    </select>
+                                        <Calendar size={12} />
+                                        {useCustomRange && customStartDate && customEndDate
+                                            ? `${customStartDate.slice(5)} → ${customEndDate.slice(5)}`
+                                            : '自定义'}
+                                    </button>
+                                </div>
+                                {showDatePicker && (
+                                    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2 py-1 shadow-sm animate-page-enter">
+                                        <input
+                                            type="date"
+                                            value={customStartDate}
+                                            onChange={e => setCustomStartDate(e.target.value)}
+                                            className="text-xs border-0 outline-none bg-transparent text-slate-700 font-medium w-[100px] sm:w-auto"
+                                        />
+                                        <span className="text-slate-300 text-xs">→</span>
+                                        <input
+                                            type="date"
+                                            value={customEndDate}
+                                            onChange={e => setCustomEndDate(e.target.value)}
+                                            className="text-xs border-0 outline-none bg-transparent text-slate-700 font-medium w-[100px] sm:w-auto"
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                if (customStartDate && customEndDate && customStartDate <= customEndDate) {
+                                                    setUseCustomRange(true);
+                                                    setShowDatePicker(false);
+                                                }
+                                            }}
+                                            disabled={!customStartDate || !customEndDate || customStartDate > customEndDate}
+                                            className="px-2 py-1 bg-indigo-600 text-white text-xs font-bold rounded flex-shrink-0 hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed leading-none"
+                                        >
+                                            确定
+                                        </button>
+                                    </div>
                                 )}
-
-                    {category === 'ram' && (
-                        <select
-                            value={ramGeneration}
-                            onChange={e => {
-                                setRamGeneration(e.target.value);
-                                setSubcategory(''); // Reset specific spec when generation changes
-                            }}
-                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                        >
-                            <option value="">全部代数 (DDR4/5)</option>
-                            <option value="DDR4">DDR4 专区</option>
-                            <option value="DDR5">DDR5 专区</option>
-                        </select>
-                    )}
-
-                    
-
-                    {/* GPU Dropdown is explicitly Chipset */}
-                    {category === 'gpu' && gpuChipSeries.length > 0 && (
-                        <select
-                            value={gpuChipFilter}
-                            onChange={e => { setGpuChipFilter(e.target.value); setSelectedProductId(''); }}
-                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                        >
-                            <option value="">全部芯片组</option>
-                            {gpuChipSeries.map(s => (
-                                <option key={s} value={s}>{s}</option>
-                            ))}
-                        </select>
-                    )}
-
-                    {/* Dynamic Brand Dropdown for specific OEM brands */}
-                    {['ram', 'disk', 'gpu', 'motherboard', 'monitor', 'cooler', 'power', 'case', 'peripheral'].includes(category) && trendData && trendData.products && (
-                        (() => {
-                            const brands = Array.from(new Set(
-                                trendData.products
-                                    .filter(p => p.price > 0 && p.category === category)
-                                    .map(p => {
-                                        const m = p.name.match(/^([^\s\(（]+)/);
-                                        return m ? m[1] : '';
-                                    })
-                                    .filter(b => b.length > 0 && b.length < 15)
-                            )).sort();
-                            if (brands.length === 0) return null;
-                            return (
-                                <select
-                                    value={actualBrandFilter}
-                                    onChange={e => { setActualBrandFilter(e.target.value); setSelectedProductId(''); }}
-                                    className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none max-w-[150px]"
-                                >
-                                    <option value="">全部品牌</option>
-                                    {brands.map(b => <option key={b} value={b}>{b}</option>)}
-                                </select>
-                            );
-                        })()
-                    )}
-
-                    {/* General Subcategory Dropdown for CPU, Disk, RAM derived from specPriceTable */}
-                    {category !== 'gpu' && category !== 'all' && specPriceTable && specPriceTable.length > 0 && (
-                        <select
-                            value={subcategory}
-                            onChange={e => setSubcategory(e.target.value)}
-                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
-                        >
-                            <option value="">全部{category === 'cpu' ? '代数' : '具体规格'}</option>
-                            {specPriceTable.map(row => (
-                                <option key={row.label} value={row.label}>{row.label}</option>
-                            ))}
-                        </select>
-                    )}
-
-                    {['cpu', 'gpu', 'mainboard'].includes(category) && (
-                        <div className="flex gap-1 border border-slate-200 rounded-lg p-0.5 bg-slate-50">
-                            {[
-                                { value: '', label: '全部' },
-                                ...(category === 'gpu'
-                                    ? [{ value: 'NVIDIA', label: 'N卡' }, { value: 'AMD', label: 'A卡' }]
-                                    : [{ value: 'AMD', label: 'AMD' }, { value: 'Intel', label: 'Intel' }]
-                                )
-                            ].map(b => (
-                                <button
-                                    key={b.value}
-                                    onClick={() => { setBrandFilter(b.value); setSelectedProductId(''); }}
-                                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-                                        brandFilter === b.value
-                                            ? 'bg-indigo-600 text-white shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700 hover:bg-white'
-                                    }`}
-                                >
-                                    {b.label}
-                                </button>
-                            ))}
+                            </div>
                         </div>
-                    )}
-
-
-
-                    {category !== 'all' && trendData && trendData.products && (
-                        <select
-                            value={selectedProductId}
-                            onChange={e => setSelectedProductId(e.target.value)}
-                            className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none max-w-[200px]"
-                        >
-                            <option value="">查看单品走势...</option>
-                            {trendData.products
-                                .filter(p => matchesBrand(p.name) && matchesChip(p.name))
-                                .map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                        </select>
-                    )}
-                </div>
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-                    <div className="flex gap-1 shrink-0">
-                        {[7, 14, 30, 60, 90].map(d => (
-                            <button
-                                key={d}
-                                onClick={() => { setDays(d); setUseCustomRange(false); setShowDatePicker(false); }}
-                                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${days === d && !useCustomRange
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                    }`}
-                            >
-                                {d}天
-                            </button>
-                        ))}
-                        <button
-                            onClick={() => setShowDatePicker(!showDatePicker)}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
-                                useCustomRange
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                            }`}
-                        >
-                            <Calendar size={12} />
-                            {useCustomRange && customStartDate && customEndDate
-                                ? `${customStartDate.slice(5)} → ${customEndDate.slice(5)}`
-                                : '自定义'}
-                        </button>
-                    </div>
-                    {showDatePicker && (
-                        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm animate-page-enter">
-                            <input
-                                type="date"
-                                value={customStartDate}
-                                onChange={e => setCustomStartDate(e.target.value)}
-                                className="text-xs border-0 outline-none bg-transparent text-slate-700 font-medium"
-                            />
-                            <span className="text-slate-300 text-xs">→</span>
-                            <input
-                                type="date"
-                                value={customEndDate}
-                                onChange={e => setCustomEndDate(e.target.value)}
-                                className="text-xs border-0 outline-none bg-transparent text-slate-700 font-medium"
-                            />
-                            <button
-                                onClick={() => {
-                                    if (customStartDate && customEndDate && customStartDate <= customEndDate) {
-                                        setUseCustomRange(true);
-                                        setShowDatePicker(false);
-                                    }
-                                }}
-                                disabled={!customStartDate || !customEndDate || customStartDate > customEndDate}
-                                className="px-2.5 py-1 bg-indigo-600 text-white text-xs font-bold rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                            >
-                                应用
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
 
             {/* 单品类迷你统计条 */}
             {category !== 'all' && (
