@@ -8,8 +8,25 @@ import { storage } from '../../services/storage';
 import { aiBuilder } from '../../services/aiBuilder';
 import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 
+// Component for bouncy number counting
+const BouncyNumber = ({ value, className }: { value: number; className?: string }) => {
+    const count = useMotionValue(0);
+    const rounded = useTransform(count, (latest) => Math.round(latest));
 
+    useEffect(() => {
+        const controls = animate(count, value, {
+            type: 'spring',
+            stiffness: 100,
+            damping: 15,
+            restDelta: 0.5
+        });
+        return controls.stop;
+    }, [value, count]);
+
+    return <motion.span className={className}>{rounded}</motion.span>;
+};
 
 function VisualBuilder({
     buildList,
@@ -462,7 +479,7 @@ function VisualBuilder({
                             <p className="text-white/50 text-xs font-bold mb-1">整机预算预估</p>
                             <div className="flex items-baseline gap-1 text-white">
                                 <span className="text-2xl font-bold">¥</span>
-                                <span className="text-5xl font-black font-mono tracking-tighter">{Math.floor(pricing.finalPrice).toLocaleString()}</span>
+                                <span className="text-5xl font-black font-mono tracking-tighter"><BouncyNumber value={Math.floor(pricing.finalPrice)} /></span>
                             </div>
                         </div>
                     </div>
@@ -637,10 +654,10 @@ function VisualBuilder({
                     )}
 
                     {/* AI Smart Build - compact */}
-                    <div onClick={() => {
+                    <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.95 }} onClick={() => {
                         if (onAiCheck && !onAiCheck()) return;
                         setShowAiModal(true);
-                    }} className="group relative cursor-pointer transition-all duration-300 hover:-translate-y-0.5 shrink-0">
+                    }} className="group relative cursor-pointer shrink-0">
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-2xl blur-md opacity-15 group-hover:opacity-35 transition duration-500"></div>
                         <div className="relative flex items-center gap-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl px-3 py-2 border border-white dark:border-slate-700 shadow-sm h-full">
                             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-sm shadow-indigo-500/30">
@@ -654,10 +671,10 @@ function VisualBuilder({
                             </div>
                             <ArrowRight size={11} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0" />
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Quick Build - compact */}
-                    <div onClick={onOpenLibrary} className="group relative cursor-pointer transition-all duration-300 hover:-translate-y-0.5 shrink-0">
+                    <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.95 }} onClick={onOpenLibrary} className="group relative cursor-pointer shrink-0">
                         <div className="relative flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl px-3 py-2 border border-white/60 dark:border-slate-700 shadow-sm group-hover:border-indigo-100 transition-all h-full">
                             <div className="w-7 h-7 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 group-hover:bg-indigo-50 group-hover:text-indigo-600">
                                 <FileText size={13} />
@@ -665,17 +682,24 @@ function VisualBuilder({
                             <span className="font-extrabold text-slate-800 dark:text-white text-[11px] whitespace-nowrap">快速装机</span>
                             <ArrowRight size={11} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0" />
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
 
-                <div className="flex flex-col space-y-2.5">
+                <motion.div 
+                    initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
+                    className="flex flex-col space-y-2.5"
+                >
                     {buildList.map((entry) => (
-                        <div
+                        <motion.div
+                            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } } }}
+                            whileHover={{ y: -2 }}
+                            whileTap={{ scale: 0.98 }}
+                            layout
                             key={entry.id}
-                            ref={(el) => { if (el) rowRefs[entry.id] = el; }}
+                            ref={(el: any) => { if (el) rowRefs[entry.id] = el; }}
                             onClick={() => openSelector(entry)}
-                            className={`relative rounded-[20px] p-3 border transition-all duration-300 cursor-pointer group flex items-center gap-4 ${entry.item || entry.customName
-                                ? 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/60 dark:border-slate-600 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.12)] hover:border-indigo-200/50 hover:-translate-y-0.5'
+                            className={`relative rounded-[20px] p-3 border transition-colors duration-300 cursor-pointer group flex items-center gap-4 ${entry.item || entry.customName
+                                ? 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/60 dark:border-slate-600 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.12)] hover:border-indigo-200/50'
                                 : 'bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm border-dashed border-slate-300/60 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:border-indigo-300 hover:shadow-sm'
                                 }`}
                         >
@@ -738,9 +762,9 @@ function VisualBuilder({
                                     <X size={10} strokeWidth={3} />
                                 </button>
                             )}
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
 
                 {/* AI Analysis Report Card - Moved to Bottom & Enlarged */}
                 {aiResult && (
@@ -756,190 +780,186 @@ function VisualBuilder({
                 )}
             </div>
             {/* Merged Sidebar */}
-            <div className="w-full lg:w-[320px] xl:w-[340px] shrink-0">
-                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[32px] border border-white/60 dark:border-slate-800 shadow-2xl shadow-indigo-100/50 dark:shadow-none flex flex-col relative overflow-hidden mt-2 lg:mt-0 mb-28 lg:mb-0">
+            <div className="w-full lg:w-[320px] xl:w-[340px] shrink-0 flex flex-col gap-4 mt-2 lg:mt-0 mb-28 lg:mb-0 relative z-10">
+                {/* Box 1: Price Details (Hidden on Mobile) */}
+                <div className="hidden lg:block bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[32px] border border-white/60 dark:border-slate-800 shadow-xl shadow-indigo-100/50 dark:shadow-none p-5 md:p-6 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
-
-                    <div className="p-4 md:p-6 flex flex-col gap-4 lg:gap-5 relative z-10">
-                        {/* Box 2: Price Details (Hidden on Mobile) */}
-                        <div className="hidden lg:block">
-                            <h3 className="font-extrabold text-slate-800 dark:text-white mb-2 flex items-center gap-2 text-sm"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
-                            <div className="space-y-1.5 mb-3">
-                                <div className="flex justify-between items-center text-xs font-medium px-1">
-                                    <span className="text-slate-500">基础总价</span>
-                                    <span className="font-black text-slate-700">¥{pricing.totalHardware || 0}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs font-medium px-1">
-                                    <span className="text-slate-500">优惠前金额</span>
-                                    <span className="font-black text-slate-400 line-through decoration-slate-300">¥{Math.floor(pricing.standardPrice || 0)}</span>
-                                </div>
-                                <div className="flex flex-col gap-1 bg-slate-50 dark:bg-slate-800/80 rounded-[18px] border border-slate-100 dark:border-slate-700/80 p-3 shadow-sm relative overflow-hidden mt-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-slate-600 dark:text-slate-300 font-extrabold text-[12px]">实付预估</span>
-                                        {(pricing.savedAmount || 0) > 0 && (
-                                            <div className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-md font-bold self-start">
-                                                已省 ¥{pricing.savedAmount}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <span className="text-[28px] font-black text-indigo-600 tracking-tight font-mono leading-none">¥{pricing.finalPrice || 0}</span>
-                                </div>
-                            </div>
-
-                            <div className="mb-3">
-                                <div className="relative">
-                                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
-                                        <div className="bg-orange-100 text-orange-600 text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm">优惠</div>
-                                    </div>
-                                    <select
-                                        value={pricing.discountRate}
-                                        onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
-                                        className="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl pl-12 pr-8 py-2 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
-                                    >
-                                        {pricing.discountTiers?.map((tier: any) => (
-                                            <option key={tier.id} value={tier.multiplier}>
-                                                {tier.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
-                                </div>
-                                <div className="text-[9px] text-slate-400 font-bold mt-1.5 text-center uppercase tracking-wide">
-                                    标准价格包含 {((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}% 装机售后服务费
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 h-10 shrink-0">
-                                <button onClick={onReset} className="h-full aspect-square flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all active:scale-95 border border-rose-100" title="清空配置">
-                                    <Trash2 size={18} />
-                                </button>
-                                <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-all active:scale-95 border border-indigo-100" title="生成海报">
-                                    {isGeneratingPoster ? <RefreshCw size={20} className="animate-spin" /> : <Download size={20} />}
-                                </button>
-                                <button onClick={onSave} className="h-full px-5 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all active:scale-95 text-sm border border-slate-200">
-                                    保存
-                                </button>
-                                <button onClick={handleShareClick} className="h-full flex-1 flex items-center justify-center bg-slate-900 hover:bg-black text-white font-bold rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] transition-all active:scale-95 text-sm">
-                                    <Share2 size={16} className="mr-2 opacity-80" /> 发长文晒单
-                                </button>
-                            </div>
+                    
+                    <h3 className="font-extrabold text-slate-800 dark:text-white mb-2 flex items-center gap-2 text-sm relative z-10"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
+                    <div className="space-y-1.5 mb-3 relative z-10">
+                        <div className="flex justify-between items-center text-xs font-medium px-1">
+                            <span className="text-slate-500">基础总价</span>
+                            <span className="font-black text-slate-700">¥{pricing.totalHardware || 0}</span>
                         </div>
-
-                        {/* Health Check */}
-                        {/* Health Check */}
-                        <div className={`relative p-5 rounded-[28px] border transition-all duration-500 ${(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0)))
-                            ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-emerald-100/60 dark:border-emerald-800/30'
-                            : 'bg-amber-50/30 dark:bg-amber-900/10 border-amber-100/60 dark:border-amber-800/30'
-                            }`}>
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
-                                    <Zap size={16} className={(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? 'text-emerald-500' : 'text-amber-500'} />
-                                    兼容性检测
-                                </h3>
-                                {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
-                                    <div className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[8px] font-black uppercase">Passed</div>
-                                ) : (
-                                    <div className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[8px] font-black uppercase">Review</div>
-                                )}
-                            </div>
-                            <div className="text-[12px] font-bold">
-                                {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
-                                    <div className="text-emerald-700 flex items-center gap-2">
-                                        <CheckCircle2 size={14} /> 核心组件完美兼容
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        {health.issues.map((issue: string, idx: number) => (
-                                            <div key={`health-${idx}`} className="flex gap-2 text-amber-800">
-                                                <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span>{issue}</span>
-                                            </div>
-                                        ))}
-                                        {simResult?.errors?.map((issue: string, idx: number) => (
-                                            <div key={`err-${idx}`} className="flex gap-2 text-rose-600">
-                                                <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span>{issue}</span>
-                                            </div>
-                                        ))}
-                                        {simResult?.warnings?.map((issue: string, idx: number) => (
-                                            <div key={`warn-${idx}`} className="flex gap-2 text-amber-600">
-                                                <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span>{issue}</span>
-                                            </div>
-                                        ))}
+                        <div className="flex justify-between items-center text-xs font-medium px-1">
+                            <span className="text-slate-500">优惠前金额</span>
+                            <span className="font-black text-slate-400 line-through decoration-slate-300">¥{Math.floor(pricing.standardPrice || 0)}</span>
+                        </div>
+                        <div className="flex flex-col gap-1 bg-slate-50 dark:bg-slate-800/80 rounded-[18px] border border-slate-100 dark:border-slate-700/80 p-3 shadow-sm relative overflow-hidden mt-1">
+                            <div className="flex items-center gap-2">
+                                <span className="text-slate-600 dark:text-slate-300 font-extrabold text-[12px]">实付预估</span>
+                                {(pricing.savedAmount || 0) > 0 && (
+                                    <div className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-md font-bold self-start">
+                                        已省 ¥{pricing.savedAmount}
                                     </div>
                                 )}
                             </div>
+                            <span className="text-[28px] font-black text-indigo-600 tracking-tight font-mono leading-none">¥<BouncyNumber value={pricing.finalPrice || 0} /></span>
                         </div>
-
-                        {/* 鲁大师跑分与功耗 */}
-                        <div className="flex gap-2 -mt-1 md:-mt-2">
-                            <div className="flex-[1.2] bg-gradient-to-br from-indigo-50/80 to-white dark:from-indigo-900/20 dark:to-slate-900/50 border border-indigo-100/60 dark:border-indigo-800/60 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
-                                     <div className="absolute -right-4 -bottom-4 opacity-5 text-indigo-500"><Activity size={64}/></div>
-                                     <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Activity size={12} className="text-indigo-500"/> 鲁大师跑分</h4>
-                                     <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 font-mono tracking-tighter">
-                                         {simResult && simResult.totalLuScore > 0 ? simResult.totalLuScore.toLocaleString() : '---'}
-                                     </div>
-                            </div>
-                            <div className="flex-1 bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/80 rounded-[24px] p-4 relative overflow-hidden shadow-sm">
-                                <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1"><Zap size={12} className="text-amber-500"/> 峰值功耗</h4>
-                                <div className="text-xl font-black text-slate-700 dark:text-slate-300 font-mono tracking-tighter">
-                                    {simResult && simResult.totalPowerDraw > 0 ? `${simResult.totalPowerDraw}W` : '---'}
-                                </div>
-                                {simResult && simResult.totalPowerDraw > 0 && <div className="text-[9px] text-slate-400 font-bold mt-0.5 whitespace-nowrap">推荐满载电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+</div>}
-                                {(!simResult || simResult.totalPowerDraw <= 0) && <div className="text-[9px] text-slate-400/80 font-bold mt-0.5 whitespace-nowrap">选择配件后测算</div>}
-                            </div>
-                        </div>
-
-                        {/* 游戏帧率体验测算 */}
-                        <div className="bg-slate-900 border border-slate-800 rounded-[28px] p-5 shadow-2xl relative overflow-hidden mt-1">
-                            <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
-                            
-                            <div className="flex items-center justify-between mb-4 relative z-10">
-                                <h3 className="font-extrabold text-white text-[13px] flex items-center gap-1.5 tracking-wide">
-                                    <Gamepad2 size={16} className="text-indigo-400" />
-                                    游戏试玩体验
-                                </h3>
-                                <div className="flex gap-1 bg-slate-800/80 p-0.5 rounded-[10px] border border-slate-700/50">
-                                    {[1080, 1440, 2160].map(res => (
-                                        <button
-                                            key={res}
-                                            onClick={() => setResolution(res)}
-                                            className={`text-[9px] font-black px-2.5 py-1 rounded-md transition-all uppercase tracking-wider ${resolution === res ? 'bg-indigo-500 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
-                                        >
-                                            {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="space-y-3 relative z-10 min-h-[120px]">
-                                {loadingFps ? (
-                                    <div className="py-10 flex flex-col items-center justify-center text-indigo-400 gap-3">
-                                        <RefreshCw size={24} className="animate-spin" />
-                                        <div className="text-xs font-black tracking-widest">正在为您测算帧率数据...</div>
-                                    </div>
-                                ) : fpsData.length > 0 ? (
-                                    fpsData.map((item, idx) => (
-                                            <div key={idx} className="group">
-                                                <div className="flex justify-between text-[11px] mb-1.5">
-                                                    <span className="font-bold text-slate-300 group-hover:text-white transition-colors">{item.name}</span>
-                                                    <span className="font-mono text-indigo-300 font-bold">{item.fps} FPS</span>
-                                                </div>
-                                                <div className="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden border border-slate-700/30">
-                                                    <div 
-                                                        className="bg-gradient-to-r from-indigo-500 to-cyan-400 h-1.5 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-all duration-1000 ease-out" 
-                                                        style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="py-10 flex flex-col items-center justify-center text-slate-500 gap-3 opacity-60">
-                                            <Gamepad2 size={24} />
-                                            <div className="text-xs font-black">完善配置后测算游戏帧率</div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
                     </div>
+
+                    <div className="mb-4 relative z-10">
+                        <div className="relative">
+                            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
+                                <div className="bg-orange-100 text-orange-600 text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm">优惠</div>
+                            </div>
+                            <select
+                                value={pricing.discountRate}
+                                onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
+                                className="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl pl-12 pr-8 py-2 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+                            >
+                                {pricing.discountTiers?.map((tier: any) => (
+                                    <option key={tier.id} value={tier.multiplier}>
+                                        {tier.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
+                        </div>
+                        <div className="text-[9px] text-slate-400 font-bold mt-1.5 text-center uppercase tracking-wide">
+                            标准价格包含 {((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}% 装机售后服务费
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 h-10 shrink-0 relative z-10">
+                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onReset} className="h-full aspect-square flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all border border-rose-100" title="清空配置">
+                            <Trash2 size={18} />
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-all border border-indigo-100" title="生成海报">
+                            {isGeneratingPoster ? <RefreshCw size={20} className="animate-spin" /> : <Download size={20} />}
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={onSave} className="h-full px-5 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all text-sm border border-slate-200">
+                            保存
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={handleShareClick} className="h-full flex-1 flex items-center justify-center bg-slate-900 hover:bg-black text-white font-bold rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] transition-all text-sm">
+                            <Share2 size={16} className="mr-2 opacity-80" /> 发长文晒单
+                        </motion.button>
+                    </div>
+                </div>
+
+                {/* Box 2: Health Check */}
+                <div className={`relative p-5 rounded-[32px] border transition-all duration-500 overflow-hidden shadow-lg ${(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0)))
+                    ? 'bg-emerald-50/80 backdrop-blur-2xl dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30 shadow-emerald-100/30'
+                    : 'bg-amber-50/80 backdrop-blur-2xl dark:bg-amber-900/10 border-amber-100 dark:border-amber-800/30 shadow-amber-100/30'
+                    }`}>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                            <Zap size={16} className={(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? 'text-emerald-500' : 'text-amber-500'} />
+                            兼容性检测
+                        </h3>
+                        {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
+                            <div className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[8px] font-black uppercase shadow-sm">Passed</div>
+                        ) : (
+                            <div className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[8px] font-black uppercase shadow-sm">Review</div>
+                        )}
+                    </div>
+                    <div className="text-[12px] font-bold">
+                        {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
+                            <div className="text-emerald-700 flex items-center gap-2 bg-emerald-100/50 p-3 rounded-[16px]">
+                                <CheckCircle2 size={16} /> <span>核心组件完美兼容，方案健康</span>
+                            </div>
+                        ) : (
+                            <div className="space-y-2.5">
+                                {health.issues.map((issue: string, idx: number) => (
+                                    <div key={`health-${idx}`} className="flex gap-2.5 text-amber-800 bg-amber-100/30 p-2.5 rounded-[12px]">
+                                        <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span className="leading-tight">{issue}</span>
+                                    </div>
+                                ))}
+                                {simResult?.errors?.map((issue: string, idx: number) => (
+                                    <div key={`err-${idx}`} className="flex gap-2.5 text-rose-700 bg-rose-100/30 p-2.5 rounded-[12px]">
+                                        <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span className="leading-tight">{issue}</span>
+                                    </div>
+                                ))}
+                                {simResult?.warnings?.map((issue: string, idx: number) => (
+                                    <div key={`warn-${idx}`} className="flex gap-2.5 text-amber-700 bg-amber-100/30 p-2.5 rounded-[12px]">
+                                        <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span className="leading-tight">{issue}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Box 3: 鲁大师跑分与功耗 Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/60 shadow-xl shadow-indigo-100/40 rounded-[32px] p-5 relative overflow-hidden group">
+                                <div className="absolute -right-4 -bottom-4 opacity-5 text-indigo-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Activity size={72}/></div>
+                                <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Activity size={14} className="text-indigo-500"/> 鲁大师跑分</h4>
+                                <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono tracking-tighter mt-2">
+                                    {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
+                                </div>
+                    </div>
+                    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/60 shadow-xl shadow-slate-200/40 rounded-[32px] p-5 relative overflow-hidden group">
+                        <div className="absolute -right-2 -bottom-2 opacity-5 text-amber-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Zap size={72}/></div>
+                        <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Zap size={14} className="text-amber-500"/> 系统峰值功耗</h4>
+                        <div className="text-2xl font-black text-slate-800 dark:text-slate-300 font-mono tracking-tighter flex items-center mt-2">
+                            {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} />W</> : '---'}
+                        </div>
+                        {simResult && simResult.totalPowerDraw > 0 && <div className="text-[9px] text-slate-400 font-bold mt-1 bg-slate-50 dark:bg-slate-800 py-1 px-2 rounded-lg inline-block">推荐电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+</div>}
+                        {(!simResult || simResult.totalPowerDraw <= 0) && <div className="text-[9px] text-slate-400/80 font-bold mt-1 whitespace-nowrap">完善配置后可见</div>}
+                    </div>
+                </div>
+
+                {/* Box 4: 游戏帧率体验测算 */}
+                <div className="bg-slate-900 border border-slate-800 rounded-[32px] p-5 shadow-2xl shadow-indigo-900/20 relative overflow-hidden">
+                    <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
+                    
+                    <div className="flex items-center justify-between mb-5 relative z-10">
+                        <h3 className="font-extrabold text-white text-[13px] flex items-center gap-2 tracking-wide">
+                            <Gamepad2 size={16} className="text-indigo-400" />
+                            游戏试玩体验
+                        </h3>
+                        <div className="flex gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/50 shadow-inner">
+                            {[1080, 1440, 2160].map(res => (
+                                <button
+                                    key={res}
+                                    onClick={() => setResolution(res)}
+                                    className={`text-[9px] font-black px-3 py-1 rounded-[8px] transition-all uppercase tracking-wider ${resolution === res ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}
+                                >
+                                    {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="space-y-3.5 relative z-10 min-h-[140px]">
+                        {loadingFps ? (
+                            <div className="py-12 flex flex-col items-center justify-center text-indigo-400 gap-3">
+                                <RefreshCw size={24} className="animate-spin" />
+                                <div className="text-xs font-black tracking-widest text-indigo-300">测算帧率数据中...</div>
+                            </div>
+                        ) : fpsData.length > 0 ? (
+                            fpsData.map((item, idx) => (
+                                    <div key={idx} className="group">
+                                        <div className="flex justify-between text-[11px] mb-2">
+                                            <span className="font-bold text-slate-300 group-hover:text-white transition-colors">{item.name}</span>
+                                            <span className="font-mono text-indigo-300 font-bold group-hover:text-indigo-200">{item.fps} FPS</span>
+                                        </div>
+                                        <div className="w-full bg-slate-800/70 rounded-full h-2 overflow-hidden border border-slate-700/40 shadow-inner">
+                                            <div 
+                                                className="bg-gradient-to-r from-indigo-500 to-cyan-400 h-full rounded-full shadow-[0_0_12px_rgba(99,102,241,0.6)] transition-all duration-1000 ease-out" 
+                                                style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="py-12 flex flex-col items-center justify-center text-slate-500 gap-3 opacity-60">
+                                    <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center border border-slate-700"><Gamepad2 size={24} /></div>
+                                    <div className="text-xs font-black text-slate-400 mt-2">完善配置后展示帧率</div>
+                                </div>
+                            )}
+                        </div>
                 </div>
             </div>
 

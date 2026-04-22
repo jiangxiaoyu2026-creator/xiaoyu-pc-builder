@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Search, Sparkles, Cpu, Zap, Crown, Heart } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { ConfigTemplate, HardwareItem } from '../../types/clientTypes';
 import { TAGS_APPEARANCE, TAGS_USAGE, HARDWARE_DB } from '../../data/clientData';
 import { ConfigDetailModal } from './ConfigDetailModal';
@@ -312,8 +313,19 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
             </div>
 
             {/* Config Grid - Clean Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 max-w-8xl mx-auto">
-                {sortedConfigs.map((cfg) => {
+            <motion.div 
+                initial="hidden"
+                animate="visible"
+                variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.1 }
+                    }
+                } as any}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 max-w-8xl mx-auto"
+            >
+                {sortedConfigs.map((cfg, index) => {
                     const specs = getCoreSpecs(cfg);
                     const theme = getTypeTheme(cfg.type);
 
@@ -338,16 +350,18 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
 
                     const hasShowcaseCover = cfg.showcaseStatus === 'approved' && cfg.showcaseImages && cfg.showcaseImages.length > 0;
                     const coverImageUrl = hasShowcaseCover ? cfg.showcaseImages![0] : null;
+                    const isHero = index === 0 && cfg.type === 'official';
 
                     return (
-                        <div
+                        <motion.div
+                            variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100, damping: 15 } } } as any}
                             key={cfg.id}
                             onClick={() => setSelectedConfigId(cfg.id)}
-                            className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_24px_rgba(0,0,0,0.4)] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 cursor-pointer overflow-hidden flex flex-col ripple h-[340px]"
+                            className={`group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_24px_rgba(0,0,0,0.4)] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 cursor-pointer overflow-hidden flex flex-col ripple ${isHero ? 'md:col-span-2 h-[380px]' : 'h-[340px]'}`}
                         >
                             {/* Showcase Cover Background */}
                             {coverImageUrl ? (
-                                <div className="absolute top-0 left-0 w-full h-[140px] z-0 overflow-hidden">
+                                <div className={`absolute top-0 left-0 w-full z-0 overflow-hidden ${isHero ? 'h-[200px]' : 'h-[140px]'}`}>
                                     <img src={coverImageUrl} alt={cfg.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                                 </div>
@@ -378,7 +392,7 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                             </div>
 
                             {/* Card Header: Title Only */}
-                            <div className={`p-5 pb-0 flex justify-between items-start gap-3 relative z-10 ${coverImageUrl ? 'pt-24' : 'pt-14'}`}>
+                            <div className={`p-5 pb-0 flex justify-between items-start gap-3 relative z-10 ${coverImageUrl ? (isHero ? 'pt-[120px]' : 'pt-24') : 'pt-14'}`}>
                                 <div className="flex-1 min-w-0">
                                     <h3 className={`text-base font-bold line-clamp-2 leading-snug group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors drop-shadow-sm ${coverImageUrl ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
                                         {cfg.title}
@@ -444,10 +458,10 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                                     ¥{finalPrice.toLocaleString()}
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     );
                 })}
-            </div>
+            </motion.div>
 
             {loading && (
                 <div className="flex justify-center items-center py-20">

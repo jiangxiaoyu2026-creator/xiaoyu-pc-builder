@@ -1,0 +1,83 @@
+{
+  "topDrops": [
+    {
+      "name": "技嘉 RTX5090 GAMING OC24G魔鹰",
+      "category": "gpu",
+      "oldPrice": 18600,
+      "newPrice": 17100,
+      "changeAmount": -1500,
+      "changePercent": -8.06,
+      "time": "2026-04-11T14:58:31.109588"
+    },
+    {
+      "name": "技嘉 RTX5090 AORUS 24G超级雕白",
+      "category": "gpu",
+      "oldPrice": 20600,
+      "newPrice": 19600,
+      "changeAmount": -1000,
+      "changePercent": -4.85,
+      "time": "2026-04-11T14:58:41.416387"
+    },
+    {
+      "name": "技嘉 RTX5090 AORUS 24G超级雕",
+      "category": "gpu",
+      "oldPrice": 20100,
+      "newPrice": 19200,
+      "changeAmount": -900,
+      "changePercent": -4.48,
+      "time": "2026-04-11T14:58:38.096029"
+    }
+  ],
+  "topRises": [
+    {
+      "name": "七彩虹 5070TI 白火神 X OC 16G",
+      "category": "gpu",
+      "oldPrice": 8300,
+      "newPrice": 8550,
+      "changeAmount": 250,
+      "changePercent": 3.01,
+      "time": "2026-04-15T14:35:11.715202"
+    },
+    {
+      "name": "七彩虹 5070  VULCAN W OC火神",
+      "category": "gpu",
+      "oldPrice": 5750,
+      "newPrice": 5950,
+      "changeAmount": 200,
+      "changePercent": 3.48,
+      "time": "2026-04-13T16:59:08.798630"
+    },
+    {
+      "name": "华硕 GR801幻世神",
+      "category": "case",
+      "oldPrice": 2199,
+      "newPrice": 2399,
+      "changeAmount": 200,
+      "changePercent": 9.1,
+      "time": "2026-04-15T15:06:29.273754"
+    }
+  ],
+  "subtitles": [
+    {
+      "start": null,
+      "end": null,
+      "text": "1 完了完了，兄弟们，现在的行情太魔幻了。"
+    },
+    {
+      "start": null,
+      "end": null,
+      "text": "2 AMD 疯狂跳水，Intel 却在疯狂涨价，这谁懂啊？"
+    },
+    {
+      "start": null,
+      "end": null,
+      "text": "3 现在的配电脑，简直就像在买理财。"
+    },
+    {
+      "start": null,
+      "end": null,
+      "text": "4 我的建议是，游戏党直接冲超高性价比的X3D，早买早享受！"
+    }
+  ],
+  "audioDurationInSeconds": 15
+}

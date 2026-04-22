@@ -2,7 +2,7 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Monitor, TrendingUp, Recycle, Crown, MonitorPlay, BarChart3, Clock } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import { BuildEntry, HardwareItem, UserItem } from '../../types/clientTypes';
+import { BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
 import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
@@ -364,7 +364,6 @@ function StreamerWorkbench({
     handleSave,
     clearBuild,
     hasPermission,
-    currentUser,
     onAiCheck,
     onOpenLibrary
 }: {
@@ -378,7 +377,6 @@ function StreamerWorkbench({
     handleSave: () => void,
     clearBuild: () => void,
     hasPermission: boolean,
-    currentUser?: UserItem | null,
     onAiCheck?: () => boolean,
     onOpenLibrary: () => void
 
