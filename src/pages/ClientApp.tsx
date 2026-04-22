@@ -828,7 +828,7 @@ export default function ClientApp() {
                             clearBuild={() => {
                                 setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
                             }}
-                            hasPermission={hasStreamerPermission}
+                            hasPermission={true}
                             currentUser={currentUser}
                             showToast={showToast}
                             onAiCheck={handleAiPermission}
