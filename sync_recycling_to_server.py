@@ -8,7 +8,7 @@ import requests
 import sys
 from datetime import datetime
 
-EXCEL_PATH = "/Users/mac/Documents/dayrichang/台式电脑回收核价表4.7(1).xlsm"
+EXCEL_PATH = "/Users/mac/new/台式机核价专用免费版4.21xlsm.xlsm"
 API_BASE = "https://www.diyxx.com/api/recycling-prices"
 
 SHEET_MAP = {

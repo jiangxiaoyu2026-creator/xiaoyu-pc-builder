@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'server_py'))
 from server_py.db import engine
 from server_py.models import RecyclingPrice
 
-file_path = "台式电脑回收核价表3.28.xlsm"
+file_path = "台式机核价专用免费版4.21xlsm.xlsm"
 
 SHEET_MAP = {
     "处理器": "cpu", "主板": "motherboard", "内存": "ram",
