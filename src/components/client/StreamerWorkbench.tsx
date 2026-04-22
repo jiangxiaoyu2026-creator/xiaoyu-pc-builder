@@ -1018,14 +1018,7 @@ function StreamerWorkbench({
                     </div>
                 ) : (
                     <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 relative overflow-hidden">
-                        {currentUser ? (
-                            <StreamerRecycleTab />
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-20 text-slate-400 mt-20">
-                                <Recycle size={48} className="mb-4 opacity-30" />
-                                <p className="font-bold">请先登录后使用二手回收功能</p>
-                            </div>
-                        )}
+                        <StreamerRecycleTab />
                     </div>
                 )}
                 </div>
