@@ -151,7 +151,7 @@ function VisualBuilder({
         const gpuItem = buildList.find(b => b.category === 'gpu')?.item;
         
         if (!cpuItem && !gpuItem) { 
-            setFpsData(gamesList.slice(0, 8).map(gameName => ({ name: gameName, fps: 0 })));
+            setFpsData(gamesList.slice(0, 8).map((gameName: string) => ({ name: gameName, fps: 0 })));
             setLoadingFps(false);
             return; 
         }
