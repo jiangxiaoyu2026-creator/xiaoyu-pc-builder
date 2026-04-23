@@ -163,48 +163,102 @@ function VisualBuilder({
         // Match CPU/GPU model names to keys in gamesFpsData
         const findKey = (item: HardwareItem | null | undefined, type: 'cpu' | 'gpu') => {
             if (!item) return null;
-            const modelStr = `${item.brand} ${item.model}`.toUpperCase();
+            const modelStr = `${item.brand} ${item.model}`.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            const modelOnly = item.model.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            
             for (const game of Object.keys(gamesFpsData)) {
                 const entries = Object.keys(gamesFpsData[game][type] || {});
                 for (const key of entries) {
-                    if (modelStr.includes(key.toUpperCase()) || key.toUpperCase().includes(modelStr)) {
+                    const cleanKey = key.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    if (modelStr.includes(cleanKey) || cleanKey.includes(modelStr) || modelOnly.includes(cleanKey) || cleanKey.includes(modelOnly)) {
                         return key;
                     }
                 }
             }
-            // Fuzzy: try partial match on model only
-            const modelOnly = item.model.toUpperCase();
-            for (const game of Object.keys(gamesFpsData)) {
-                const entries = Object.keys(gamesFpsData[game][type] || {});
-                for (const key of entries) {
-                    if (key.toUpperCase().includes(modelOnly) || modelOnly.includes(key.toUpperCase())) {
-                        return key;
+            
+            if (type === 'cpu') {
+                const match = item.model.toUpperCase().match(/\d{4,5}[A-Z]{0,3}/);
+                if (match) {
+                    const identifier = match[0];
+                    for (const game of Object.keys(gamesFpsData)) {
+                        const entries = Object.keys(gamesFpsData[game][type] || {});
+                        for (const key of entries) {
+                            if (key.toUpperCase().includes(identifier)) return key;
+                        }
+                    }
+                    const numMatch = identifier.match(/\d+/);
+                    if (numMatch) {
+                        for (const game of Object.keys(gamesFpsData)) {
+                            const entries = Object.keys(gamesFpsData[game][type] || {});
+                            for (const key of entries) {
+                                if (key.toUpperCase().includes(numMatch[0])) return key;
+                            }
+                        }
                     }
                 }
             }
+            
+            if (type === 'gpu') {
+                const numMatch = item.model.match(/\d{4}/);
+                if (numMatch) {
+                    const num = numMatch[0];
+                    const isTi = /TI/i.test(item.model);
+                    const isSuper = /SUPER/i.test(item.model);
+                    const isXTX = /XTX/i.test(item.model);
+                    const isXT = /XT\b/i.test(item.model) && !isXTX;
+                    const isGRE = /GRE/i.test(item.model);
+                    
+                    for (const game of Object.keys(gamesFpsData)) {
+                        const entries = Object.keys(gamesFpsData[game][type] || {});
+                        for (const key of entries) {
+                            const upperKey = key.toUpperCase();
+                            if (upperKey.includes(num)) {
+                                const keyTi = /TI/i.test(upperKey);
+                                const keySuper = /SUPER/i.test(upperKey);
+                                const keyXTX = /XTX/i.test(upperKey);
+                                const keyXT = /XT\b/i.test(upperKey) && !keyXTX;
+                                const keyGRE = /GRE/i.test(upperKey);
+                                
+                                if (isTi === keyTi && isSuper === keySuper && isXTX === keyXTX && isXT === keyXT && isGRE === keyGRE) {
+                                    return key;
+                                }
+                            }
+                        }
+                    }
+                    for (const game of Object.keys(gamesFpsData)) {
+                        const entries = Object.keys(gamesFpsData[game][type] || {});
+                        for (const key of entries) {
+                            if (key.toUpperCase().includes(num)) return key;
+                        }
+                    }
+                }
+            }
+            
             return null;
         };
 
         const cpuKey = findKey(cpuItem, 'cpu');
         const gpuKey = findKey(gpuItem, 'gpu');
 
-        const results: { name: string; fps: number }[] = [];
-        for (const gameName of gamesList) {
+        const results: { name: string; fps: number; lowFps?: number }[] = [];
+        const preferredGames = ["黑神话：悟空", "赛博朋克 2077", "荒野大镖客：救赎 2", "三角洲行动", "反恐精英 2", "无畏契约", "绝地求生", "Apex 英雄", "刀塔 2", "守望先锋 2"];
+        
+        for (const gameName of preferredGames) {
             const gd = gamesFpsData[gameName];
             if (!gd) continue;
             const cData = cpuKey ? gd.cpu[cpuKey]?.[resKey] : null;
             const gData = gpuKey ? gd.gpu[gpuKey]?.[resKey] : null;
             if (cData && gData) {
-                results.push({ name: gameName, fps: Math.min(cData.avg, gData.avg) });
+                results.push({ name: gameName, fps: Math.min(cData.avg, gData.avg), lowFps: Math.min(cData.low, gData.low) });
             } else if (gData) {
-                results.push({ name: gameName, fps: gData.avg });
+                results.push({ name: gameName, fps: gData.avg, lowFps: gData.low });
             } else if (cData) {
-                results.push({ name: gameName, fps: cData.avg });
+                results.push({ name: gameName, fps: cData.avg, lowFps: cData.low });
             }
         }
 
         setTimeout(() => {
-            setFpsData(results.slice(0, 8));
+            setFpsData(results);
             setLoadingFps(false);
         }, 300);
     }, [buildList, resolution]);
@@ -950,15 +1004,23 @@ function VisualBuilder({
                                     <div key={idx} className="group/item">
                                         <div className="flex justify-between items-end text-[11px] mb-2">
                                             <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">{item.name}</span>
-                                            <div className="flex items-baseline gap-0.5">
-                                                <span className={`font-display font-black text-sm ${
-                                                    item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
-                                                    item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
-                                                    item.fps >= 100 ? 'text-blue-500 dark:text-blue-400' :
-                                                    item.fps >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
-                                                    'text-red-500 dark:text-red-400'
-                                                }`}>{item.fps}</span>
-                                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">FPS</span>
+                                            <div className="flex items-baseline gap-1.5">
+                                                {item.lowFps && (
+                                                    <span className="flex items-baseline gap-0.5 text-slate-400">
+                                                        <span className="text-[10px] uppercase font-bold tracking-wider">Low</span>
+                                                        <span className="font-mono text-xs font-bold">{item.lowFps}</span>
+                                                    </span>
+                                                )}
+                                                <div className="flex items-baseline gap-0.5 ml-1">
+                                                    <span className={`font-display font-black text-sm ${
+                                                        item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
+                                                        item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
+                                                        item.fps >= 100 ? 'text-blue-500 dark:text-blue-400' :
+                                                        item.fps >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                                                        'text-red-500 dark:text-red-400'
+                                                    }`}>{item.fps}</span>
+                                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">FPS</span>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="w-full bg-slate-100 dark:bg-[#1A1A24] rounded-full h-2 overflow-hidden border border-slate-200 dark:border-[#2D3748] relative">
