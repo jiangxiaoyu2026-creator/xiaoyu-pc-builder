@@ -288,14 +288,24 @@ export const GameFPSViewer: React.FC = () => {
                         {/* 所选游戏展示横幅 */}
                         <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} className="relative overflow-hidden rounded-[24px] bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] min-h-[160px] flex items-center shadow-sm transition-colors duration-300">
                             <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.15] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-600 via-transparent to-transparent"></div>
+                            
+                            {/* 游戏图片占位 - 读取 public/images/games 目录下的同名jpg图片 */}
+                            <div 
+                                className="absolute right-0 top-0 bottom-0 w-2/3 md:w-1/2 opacity-30 dark:opacity-40 bg-cover bg-center bg-no-repeat pointer-events-none" 
+                                style={{ 
+                                    backgroundImage: `url('/images/games/${selectedGame}.jpg')`,
+                                    maskImage: 'linear-gradient(to right, transparent, black)',
+                                    WebkitMaskImage: 'linear-gradient(to right, transparent, black)'
+                                }}
+                            ></div>
 
                             <div className="relative z-10 p-8 sm:p-10 flex flex-col justify-center">
                                 <div className="flex items-center gap-3 mb-3">
-                                    <h2 className="text-3xl sm:text-4xl font-display font-bold text-slate-900 dark:text-white tracking-tight">
+                                    <h2 className="text-3xl sm:text-4xl font-display font-bold text-slate-900 dark:text-white tracking-tight drop-shadow-sm">
                                         {selectedGame}
                                     </h2>
                                 </div>
-                                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-[13px] font-bold tracking-widest uppercase">
+                                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-[13px] font-bold tracking-widest uppercase bg-white/50 dark:bg-black/20 w-fit px-3 py-1.5 rounded-lg backdrop-blur-sm">
                                     <Activity size={16} className="animate-pulse" /> 实时计算分析引擎激活
                                 </div>
                             </div>
@@ -338,6 +348,13 @@ export const GameFPSViewer: React.FC = () => {
                                                 {res}
                                             </button>
                                         ))}
+                                    </div>
+                                    <div className="mt-4 text-[11px] text-slate-500 dark:text-slate-400 bg-amber-50/50 dark:bg-amber-900/10 p-3 rounded-xl border border-amber-100/50 dark:border-amber-800/20 flex items-start gap-2 leading-relaxed">
+                                        <div className="text-amber-500 mt-0.5"><Activity size={14} /></div>
+                                        <div>
+                                            <span className="font-bold text-amber-700 dark:text-amber-500">测算基准：最高/超级画质。</span>
+                                            实际游玩时若使用默认或中低画质，游戏帧率会比当前测算值<span className="text-amber-600 dark:text-amber-400 font-bold mx-0.5">大幅提升</span>。
+                                        </div>
                                     </div>
                                 </div>
                             </div>

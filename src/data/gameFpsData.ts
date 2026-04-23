@@ -2710,11 +2710,7 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 10
         }
       },
-      "GeForce RTX 5050": {
-        "1080p": {
-          "avg": 10,
-          "low": 10
-        },
+      "GeForce RTX 5050": { "1080p": { avg: 68, low: 45 }, "1440p": { avg: 45, low: 30 }, "4K": { avg: 22, low: 15 } },
         "1440p": {
           "avg": 10,
           "low": 10
