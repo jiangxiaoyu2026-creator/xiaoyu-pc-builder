@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Monitor, TrendingUp, Recycle, Crown, MonitorPlay, BarChart3, Clock } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValue, useTransform, animate as fmAnimate } from 'framer-motion';
+import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Monitor, TrendingUp, Recycle, Crown, MonitorPlay, BarChart3, Clock, Activity, Gamepad2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
@@ -13,12 +14,31 @@ import PriceTrendChart from '../admin/PriceTrendChart';
 import StreamerRecycleTab from './StreamerRecycleTab';
 import HardwareLeaderboard from './HardwareLeaderboard';
 import { ThemeColor, THEMES, ThemeContext } from './StreamerThemeContext';
+import { gamesFpsData, gamesList, Resolution } from '../../data/gameFpsData';
 // --------------------
+
+// Bouncy number animation component
+const BouncyNumber = ({ value, className }: { value: number; className?: string }) => {
+    const count = useMotionValue(0);
+    const rounded = useTransform(count, (latest) => Math.round(latest));
+
+    useEffect(() => {
+        const controls = fmAnimate(count, value, {
+            type: 'spring',
+            stiffness: 100,
+            damping: 15,
+            restDelta: 0.5
+        });
+        return controls.stop;
+    }, [value, count]);
+
+    return <motion.span className={className}>{rounded}</motion.span>;
+};
 
 export function StreamerPermissionDenied() {
     return (
         <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="max-w-md w-full p-8 bg-white/80 backdrop-blur-xl rounded-[24px] shadow-2xl border border-white/50 text-center">
+            <div className="max-w-md w-full p-8 bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 text-center">
                 <div className="mb-6 inline-flex p-4 bg-rose-50 rounded-full text-rose-500">
                     <Zap size={32} />
                 </div>
@@ -33,21 +53,24 @@ export function StreamerPermissionDenied() {
     );
 }
 
-// Mock "Ghost Cursor" component
 function GhostCursor({ x, y, active, status }: { x: number, y: number, active: boolean, status: string }) {
     return (
-        <div
-            className={`fixed pointer-events-none z-[100] transition-all duration-500 ease-out flex items-center justify-center -translate-x-1/2 -translate-y-1/2 ${active && status ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}
-            style={{
-                left: x,
-                top: y,
+        <motion.div
+            className={`fixed pointer-events-none z-[100] flex items-center justify-center -translate-x-1/2 -translate-y-1/2`}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ 
+                left: x, 
+                top: y, 
+                opacity: active && status ? 1 : 0,
+                scale: active && status ? 1 : 0.9
             }}
+            transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.5 }}
         >
             <div className="bg-indigo-600/95 backdrop-blur-md text-white text-[11px] px-3 py-1.5 rounded-full shadow-xl shadow-indigo-600/20 whitespace-nowrap font-bold tracking-wide border border-indigo-400/30 flex items-center gap-1.5">
                 <Sparkles size={12} className="animate-pulse" />
                 {status || '...'}
             </div>
-        </div>
+        </motion.div>
     );
 }
 
@@ -61,7 +84,7 @@ export interface StreamerRowHandle {
     closeSuggestions: () => void;
 }
 
-const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPreview: (img: string) => void }>(({ entry, index, onUpdate, onEnter, onPreview }, ref) => {
+const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPrev: () => void, onPreview: (img: string) => void }>(({ entry, index, onUpdate, onEnter, onPrev, onPreview }, ref) => {
     const { theme } = React.useContext(ThemeContext);
     const [query, setQuery] = useState(entry.customName || entry.item?.model || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -155,20 +178,26 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'ArrowDown') { e.preventDefault(); setHighlightIndex(prev => Math.min(prev + 1, suggestions.length - 1)); }
-        else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlightIndex(prev => Math.max(prev - 1, 0)); }
+        const dropdownOpen = showSuggestions && query.trim().length > 0 && suggestions.length > 0;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (dropdownOpen) { setHighlightIndex(prev => Math.min(prev + 1, suggestions.length - 1)); }
+            else { onEnter(); } // Move to next row
+        }
+        else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (dropdownOpen) { setHighlightIndex(prev => Math.max(prev - 1, 0)); }
+            else { onPrev(); } // Move to prev row
+        }
         else if (e.key === 'Enter') {
             e.preventDefault();
-            if (showSuggestions && suggestions.length > 0) {
-                // First Enter: select item, stay on current row
+            if (dropdownOpen) {
                 selectItem(suggestions[highlightIndex]);
             } else {
-                // Second Enter (no dropdown): jump to next row
                 onEnter();
             }
         } else if (e.key === 'Tab') {
             e.preventDefault();
-            // Tab: move focus to the price input
             priceRef.current?.focus();
             priceRef.current?.select();
         }
@@ -252,7 +281,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
 
     return (
-        <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
+        <div className={`grid grid-cols-[85px_1fr_50px_56px_24px] gap-3 px-5 py-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
 
             <div className={`flex items-center gap-3 font-bold text-sm transition-all ${theme.primary}`}>
                 <div
@@ -405,6 +434,106 @@ function StreamerWorkbench({
         load();
     }, []);
 
+    // === Performance Sidebar State ===
+    const [simResult, setSimResult] = useState<{
+        totalLuScore: number;
+        totalPowerDraw: number;
+        recommendedPower: number;
+        isValid: boolean;
+        errors: string[];
+        warnings: string[];
+    } | null>(null);
+    const [fpsData, setFpsData] = useState<any[]>([]);
+    const [sidebarResolution, setSidebarResolution] = useState<number>(1080);
+    const [loadingFps, setLoadingFps] = useState(false);
+
+    // Simulator: validate build for Lu Master score & power
+    useEffect(() => {
+        const itemIds = buildList
+            .filter(b => b.item && !b.customName)
+            .map(b => b.item!.id);
+        if (itemIds.length === 0) { setSimResult(null); return; }
+
+        import('../../services/api').then(({ ApiService }) => {
+            ApiService.post('/simulator/validate', { item_ids: itemIds })
+                .then((data: any) => {
+                    setSimResult({
+                        totalLuScore: data.total_lu_score,
+                        totalPowerDraw: data.total_power_draw,
+                        recommendedPower: data.recommended_power,
+                        isValid: data.is_valid,
+                        errors: data.errors || [],
+                        warnings: data.warnings || [],
+                    });
+                })
+                .catch(console.error);
+        });
+    }, [buildList]);
+
+    // Simulator: FPS estimation using gamesFpsData (same source as Game FPS page)
+    useEffect(() => {
+        const cpuItem = buildList.find(b => b.category === 'cpu')?.item;
+        const gpuItem = buildList.find(b => b.category === 'gpu')?.item;
+        
+        if (!cpuItem && !gpuItem) { 
+            setFpsData(gamesList.slice(0, 8).map(gameName => ({ name: gameName, fps: 0 })));
+            setLoadingFps(false);
+            return; 
+        }
+
+        setLoadingFps(true);
+        const resMap: Record<number, Resolution> = { 1080: '1080p', 1440: '1440p', 2160: '4K' };
+        const resKey = resMap[sidebarResolution] || '1080p';
+
+        // Match CPU/GPU model names to keys in gamesFpsData
+        const findKey = (item: HardwareItem | null | undefined, type: 'cpu' | 'gpu') => {
+            if (!item) return null;
+            const modelStr = `${item.brand} ${item.model}`.toUpperCase();
+            for (const game of Object.keys(gamesFpsData)) {
+                const entries = Object.keys(gamesFpsData[game][type] || {});
+                for (const key of entries) {
+                    if (modelStr.includes(key.toUpperCase()) || key.toUpperCase().includes(modelStr)) {
+                        return key;
+                    }
+                }
+            }
+            // Fuzzy: try partial match on model only
+            const modelOnly = item.model.toUpperCase();
+            for (const game of Object.keys(gamesFpsData)) {
+                const entries = Object.keys(gamesFpsData[game][type] || {});
+                for (const key of entries) {
+                    if (key.toUpperCase().includes(modelOnly) || modelOnly.includes(key.toUpperCase())) {
+                        return key;
+                    }
+                }
+            }
+            return null;
+        };
+
+        const cpuKey = findKey(cpuItem, 'cpu');
+        const gpuKey = findKey(gpuItem, 'gpu');
+
+        const results: { name: string; fps: number }[] = [];
+        for (const gameName of gamesList) {
+            const gd = gamesFpsData[gameName];
+            if (!gd) continue;
+            const cData = cpuKey ? gd.cpu[cpuKey]?.[resKey] : null;
+            const gData = gpuKey ? gd.gpu[gpuKey]?.[resKey] : null;
+            if (cData && gData) {
+                results.push({ name: gameName, fps: Math.min(cData.avg, gData.avg) });
+            } else if (gData) {
+                results.push({ name: gameName, fps: gData.avg });
+            } else if (cData) {
+                results.push({ name: gameName, fps: cData.avg });
+            }
+        }
+
+        setTimeout(() => {
+            setFpsData(results.slice(0, 8));
+            setLoadingFps(false);
+        }, 300);
+    }, [buildList, sidebarResolution]);
+
     const [showAiModal, setShowAiModal] = useState(false);
     const [showChatSettings, setShowChatSettings] = useState(false);
 
@@ -464,6 +593,13 @@ function StreamerWorkbench({
         const nextInput = rowInputRefs.current[currentIndex + 1];
         if (nextInput) {
             nextInput.focus();
+        }
+    };
+
+    const handlePrevFocus = (currentIndex: number) => {
+        const prevInput = rowInputRefs.current[currentIndex - 1];
+        if (prevInput) {
+            prevInput.focus();
         }
     };
 
@@ -566,11 +702,11 @@ function StreamerWorkbench({
     const validPosterItems = buildList.filter(b => b.item || b.customName);
 
     return (
-        <div className={`${theme.cardBg} rounded-[32px] shadow-xl ${theme.borderColor} border overflow-hidden relative transition-colors duration-300`}>
+        <div className={`${theme.cardBg} rounded-xl shadow-xl ${theme.borderColor} border overflow-hidden relative transition-colors duration-300`}>
             
             {/* Hidden Poster Template */}
             <div style={{ position: 'fixed', top: -9999, left: -9999, zIndex: -9999 }}>
-                <div ref={posterRef} className="bg-white text-slate-900 w-[600px] rounded-[24px] overflow-hidden font-sans border border-slate-200 shadow-xl relative">
+                <div ref={posterRef} className="bg-white text-slate-900 w-[600px] rounded-xl overflow-hidden font-sans border border-slate-200 shadow-xl relative">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/60 rounded-full blur-3xl pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-50/60 rounded-full blur-3xl pointer-events-none"></div>
                     <div className="flex items-center gap-4 px-8 py-8 border-b border-indigo-50/50 relative z-10 bg-gradient-to-r from-white to-slate-50">
@@ -632,7 +768,7 @@ function StreamerWorkbench({
             {/* Permission Overlay */}
             {!hasPermission && (
                 <div className="fixed inset-0 z-[100] bg-[#0a0a0c]/50 backdrop-blur-[6px] flex items-center justify-center pb-10 px-4">
-                    <div className="bg-[#0e0f13] p-8 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8),0_0_40px_rgba(212,175,55,0.1)] border border-[#362e1c] w-full max-w-xl transform scale-100 relative overflow-hidden">
+                    <div className="bg-[#0e0f13] p-8 rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8),0_0_40px_rgba(212,175,55,0.1)] border border-[#362e1c] w-full max-w-xl transform scale-100 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#211a0c] via-[#d4af37] to-[#211a0c]"></div>
                         
                         {/* Close Button */}
@@ -860,9 +996,12 @@ function StreamerWorkbench({
 
                 {activeTab === 'builder' ? (
                     <>
+                    <div className="flex flex-col xl:flex-row">
+                    {/* === Left: Config Table === */}
+                    <div className="flex-1 min-w-0 max-w-[1550px]">
                         <div className="overflow-x-auto">
                             <div className="min-w-[600px]">
-                                <div className={`grid grid-cols-[80px_1fr_60px_70px_30px] gap-4 px-6 py-1.5 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-[11px] font-bold ${theme.primary} uppercase tracking-wider transition-colors duration-300`}>
+                                <div className={`grid grid-cols-[85px_1fr_50px_56px_24px] gap-3 px-5 py-1.5 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-[10px] font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
@@ -871,9 +1010,20 @@ function StreamerWorkbench({
                         </div>
 
                         <div className={`divide-y ${theme.divider} transition-colors duration-300`}>
-                            {buildList.map((entry, index) => (
-                                <StreamerRow key={entry.id} index={index} entry={entry} onUpdate={onUpdate} ref={(el) => (rowInputRefs.current[index] = el)} onEnter={() => handleNextFocus(index)} onPreview={setPreviewImage} />
-                            ))}
+                            <AnimatePresence mode="popLayout">
+                                {buildList.map((entry, index) => (
+                                    <motion.div
+                                        key={entry.id}
+                                        layout
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{ duration: 0.3, delay: index * 0.03, type: "spring", stiffness: 300, damping: 25 }}
+                                    >
+                                        <StreamerRow index={index} entry={entry} onUpdate={onUpdate} ref={(el) => (rowInputRefs.current[index] = el)} onEnter={() => handleNextFocus(index)} onPrev={() => handlePrevFocus(index)} onPreview={setPreviewImage} />
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
                         </div>
                     </div>
                 </div>
@@ -930,7 +1080,7 @@ function StreamerWorkbench({
                 {/* AI Result Section */}
                 {
                     aiResult && (
-                        <div className={`mt-8 bg-white dark:bg-slate-900 rounded-[24px] shadow-lg border ${theme.bgLight.replace('bg-', 'border-')} overflow-hidden animate-fade-in relative z-10 w-full mb-12`}>
+                        <div className={`mt-8 bg-white dark:bg-slate-900 rounded-2xl shadow-lg border ${theme.bgLight.replace('bg-', 'border-')} overflow-hidden animate-fade-in relative z-10 w-full mb-12`}>
                             <div className={`bg-gradient-to-r ${theme.gradient} px-6 py-4 flex items-center justify-between`}>
                                 <div className="flex items-center gap-3 text-white">
                                     <Sparkles size={18} className="animate-pulse" />
@@ -1005,6 +1155,115 @@ function StreamerWorkbench({
                         </div>
                     )
                 }
+                    </div>
+
+                    {/* === Right: Performance Sidebar === */}
+                    <div className="hidden xl:flex flex-col gap-4 w-[280px] shrink-0 border-l border-slate-200 dark:border-slate-700/80 p-4 bg-slate-50/50 dark:bg-slate-800/20">
+
+                        {/* Module 1: 鲁大师跑分 */}
+                        <div className={`bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-5 relative overflow-hidden group hover:border-slate-300 dark:hover:border-slate-600 transition-colors`}>
+                            <div className={`absolute right-0 top-0 w-32 h-32 ${theme.bgPrimary} opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 dark:group-hover:opacity-20 transition-all duration-500`}></div>
+                            <div className={`absolute -right-4 -bottom-4 opacity-5 ${theme.primary} group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75`}><Activity size={72} strokeWidth={1.5}/></div>
+                            <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Activity size={14} className={theme.primary}/> 综合性能跑分</h4>
+                            <div className={`text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r ${theme.gradient} font-display tracking-tighter mt-2 h-10 flex items-center`}>
+                                {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
+                            </div>
+                            <div className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-wider flex items-center gap-1">
+                                <span className={`w-1.5 h-1.5 rounded-full ${theme.bgPrimary} inline-block animate-pulse`}></span>
+                                基于鲁大师评测体系
+                            </div>
+                        </div>
+
+                        {/* Module 2: 整机功耗 */}
+                        <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-5 relative overflow-hidden group hover:border-amber-300 dark:hover:border-amber-500/50 transition-colors">
+                            <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2 group-hover:bg-amber-500/20 transition-all duration-500"></div>
+                            <div className="absolute -right-2 -bottom-2 opacity-5 text-amber-500 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75"><Zap size={72} strokeWidth={1.5}/></div>
+                            <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Zap size={14} className="text-amber-500"/> 系统峰值功耗</h4>
+                            <div className="text-3xl font-black text-slate-800 dark:text-slate-200 font-display tracking-tighter flex items-baseline mt-2 h-10">
+                                {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} /><span className="text-sm ml-1 text-slate-500 font-bold">W</span></> : '---'}
+                            </div>
+                            {simResult && simResult.totalPowerDraw > 0 ? (
+                                <div className="text-[10px] text-amber-700 dark:text-amber-400 font-bold mt-1 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 py-1 px-2.5 rounded-lg inline-flex items-center gap-1.5">
+                                    <Zap size={10} />
+                                    推荐电源额定 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+
+                                </div>
+                            ) : (
+                                <div className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-wider flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 inline-block"></span>
+                                    完善配置后可见
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Module 3: 游戏帧率 */}
+                        <div className={`bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-5 relative overflow-hidden flex-1 flex flex-col group hover:border-slate-300 dark:hover:border-slate-600 transition-colors`}>
+                            <div className={`absolute right-0 top-0 w-48 h-48 ${theme.bgPrimary} opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 dark:group-hover:opacity-20 transition-all duration-500`}></div>
+                            <div className="flex items-center justify-between mb-4 relative z-10">
+                                <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] flex items-center gap-1.5 tracking-wide">
+                                    <Gamepad2 size={16} className={theme.primary} />
+                                    游戏FPS
+                                </h3>
+                                <div className="flex gap-0.5 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                                    {[1080, 1440, 2160].map(res => (
+                                        <button
+                                            key={res}
+                                            onClick={() => setSidebarResolution(res)}
+                                            className={`text-[9px] font-black px-2.5 py-1 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${theme.bgPrimary} text-white shadow-sm scale-105` : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'}`}
+                                        >
+                                            {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="space-y-3.5 relative z-10 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                                {loadingFps ? (
+                                    <div className={`py-8 flex flex-col items-center justify-center ${theme.primary} gap-3 h-full`}>
+                                        <RefreshCw size={24} className="animate-spin opacity-80" />
+                                        <div className="text-[10px] font-black tracking-widest uppercase opacity-80">AI 性能分析中...</div>
+                                    </div>
+                                ) : fpsData.length > 0 ? (
+                                    fpsData.map((item, idx) => (
+                                        <div key={idx} className="group/item">
+                                            <div className="flex justify-between items-end text-[11px] mb-1.5">
+                                                <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">{item.name}</span>
+                                                <div className="flex items-baseline gap-0.5">
+                                                    <span className={`font-display font-black text-sm ${
+                                                        item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
+                                                        item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
+                                                        item.fps >= 100 ? 'text-blue-500 dark:text-blue-400' :
+                                                        item.fps >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                                                        'text-red-500 dark:text-red-400'
+                                                    }`}>{item.fps}</span>
+                                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">FPS</span>
+                                                </div>
+                                            </div>
+                                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50 relative">
+                                                <div
+                                                    className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
+                                                        item.fps === 0 ? 'bg-slate-300 dark:bg-slate-600' :
+                                                        item.fps >= 200 ? 'bg-emerald-500' : 
+                                                        item.fps >= 100 ? 'bg-blue-500' :
+                                                        item.fps >= 60 ? 'bg-yellow-500' :
+                                                        'bg-red-500'
+                                                    }`}
+                                                    style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}
+                                                >
+                                                    {item.fps > 0 && <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 animate-[shimmer_2s_infinite]"></div>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="py-8 flex flex-col items-center justify-center text-slate-500 gap-3 opacity-60 h-full">
+                                        <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700"><Gamepad2 size={24} className="text-slate-400" /></div>
+                                        <div className="text-[10px] font-black text-slate-400 mt-1 tracking-wide">添加 CPU/显卡 后展示帧率</div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                    </div>
+                    </div>
                 </>
                 ) : activeTab === 'trends' ? (
                     <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 p-2 md:p-6 overflow-hidden">

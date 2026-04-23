@@ -1,6 +1,6 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor, Info, Activity, Gamepad2 } from 'lucide-react';
+import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor, Info, Activity, Gamepad2, Bell } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
@@ -9,6 +9,7 @@ import { aiBuilder } from '../../services/aiBuilder';
 import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { gamesFpsData, gamesList, Resolution } from '../../data/gameFpsData';
 
 // Component for bouncy number counting
 const BouncyNumber = ({ value, className }: { value: number; className?: string }) => {
@@ -105,19 +106,10 @@ function VisualBuilder({
     const [fpsData, setFpsData] = useState<any[]>([]);
     const [resolution, setResolution] = useState<number>(1080);
     const [loadingFps, setLoadingFps] = useState(false);
-    const [gpuBenchmarks, setGpuBenchmarks] = useState<any>(null);
 
     useEffect(() => {
         storage.getSystemAnnouncement().then(setSysAnnouncement);
         storage.getPricingStrategy().then(setPricingStrategy);
-
-        import('../../services/api').then(({ ApiService }) => {
-            ApiService.get('/settings/gpu_benchmarks').then((res: any) => {
-                if (res && res.value) {
-                    setGpuBenchmarks(res.value);
-                }
-            }).catch(console.error);
-        });
 
         const handleUpdate = () => {
             storage.getSystemAnnouncement().then(setSysAnnouncement);
@@ -155,56 +147,67 @@ function VisualBuilder({
     }, [buildList]);
 
     useEffect(() => {
+        const cpuItem = buildList.find(b => b.category === 'cpu')?.item;
         const gpuItem = buildList.find(b => b.category === 'gpu')?.item;
+        
+        if (!cpuItem && !gpuItem) { 
+            setFpsData(gamesList.slice(0, 8).map(gameName => ({ name: gameName, fps: 0 })));
+            setLoadingFps(false);
+            return; 
+        }
 
-        if (gpuItem && gpuBenchmarks) {
-            setLoadingFps(true);
-            const modelUpper = `${gpuItem.brand} ${gpuItem.model}`.toUpperCase();
-            
-            let matchedChip = null;
-            let maxLength = 0;
-            
-            for (const chip of Object.keys(gpuBenchmarks)) {
-                const searchKey = chip.toUpperCase();
-                if (modelUpper.includes(searchKey) && searchKey.length > maxLength) {
-                    matchedChip = chip;
-                    maxLength = searchKey.length;
+        setLoadingFps(true);
+        const resMap: Record<number, Resolution> = { 1080: '1080p', 1440: '1440p', 2160: '4K' };
+        const resKey = resMap[resolution] || '1080p';
+
+        // Match CPU/GPU model names to keys in gamesFpsData
+        const findKey = (item: HardwareItem | null | undefined, type: 'cpu' | 'gpu') => {
+            if (!item) return null;
+            const modelStr = `${item.brand} ${item.model}`.toUpperCase();
+            for (const game of Object.keys(gamesFpsData)) {
+                const entries = Object.keys(gamesFpsData[game][type] || {});
+                for (const key of entries) {
+                    if (modelStr.includes(key.toUpperCase()) || key.toUpperCase().includes(modelStr)) {
+                        return key;
+                    }
                 }
             }
-
-            if (matchedChip) {
-                const bench = gpuBenchmarks[matchedChip].benchmarks;
-                const resMap: Record<number, string> = { 1080: '1080p', 1440: '2k', 2160: '4k' };
-                const resKey = resMap[resolution] || '1080p';
-                
-                const gameNames: Record<string, string> = {
-                    "cs2": "反恐精英2", "deltaforce": "三角洲行动", "cyberpunk": "赛博朋克2077",
-                    "rdr2": "荒野大镖客2", "wukong": "黑神话：悟空", "pubg": "绝地求生", 
-                    "naraka": "永劫无间", "arenabreakout": "暗区突围",
-                    "gta5": "GTA5", "genshin": "原神", "forza5": "地平线5"
-                };
-
-                const TopGamesToShow = ["cyberpunk", "wukong", "cs2", "pubg", "deltaforce", "naraka"];
-                
-                const formattedData = TopGamesToShow
-                    .filter(gId => bench[gId] && bench[gId][resKey])
-                    .map(gameId => ({
-                        name: gameNames[gameId] || gameId,
-                        fps: bench[gameId][resKey]
-                    }));
-                    
-                setTimeout(() => {
-                    setFpsData(formattedData);
-                    setLoadingFps(false);
-                }, 300); // simulate short delay for UX
-            } else {
-                setFpsData([]);
-                setLoadingFps(false);
+            // Fuzzy: try partial match on model only
+            const modelOnly = item.model.toUpperCase();
+            for (const game of Object.keys(gamesFpsData)) {
+                const entries = Object.keys(gamesFpsData[game][type] || {});
+                for (const key of entries) {
+                    if (key.toUpperCase().includes(modelOnly) || modelOnly.includes(key.toUpperCase())) {
+                        return key;
+                    }
+                }
             }
-        } else {
-            setFpsData([]);
+            return null;
+        };
+
+        const cpuKey = findKey(cpuItem, 'cpu');
+        const gpuKey = findKey(gpuItem, 'gpu');
+
+        const results: { name: string; fps: number }[] = [];
+        for (const gameName of gamesList) {
+            const gd = gamesFpsData[gameName];
+            if (!gd) continue;
+            const cData = cpuKey ? gd.cpu[cpuKey]?.[resKey] : null;
+            const gData = gpuKey ? gd.gpu[gpuKey]?.[resKey] : null;
+            if (cData && gData) {
+                results.push({ name: gameName, fps: Math.min(cData.avg, gData.avg) });
+            } else if (gData) {
+                results.push({ name: gameName, fps: gData.avg });
+            } else if (cData) {
+                results.push({ name: gameName, fps: cData.avg });
+            }
         }
-    }, [buildList, resolution, gpuBenchmarks]);
+
+        setTimeout(() => {
+            setFpsData(results.slice(0, 8));
+            setLoadingFps(false);
+        }, 300);
+    }, [buildList, resolution]);
 
     const openSelector = async (entry: BuildEntry) => {
         setModalCategory(entry.category);
@@ -423,7 +426,7 @@ function VisualBuilder({
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 relative">
+        <div className="flex flex-col lg:flex-row gap-5 relative">
 
             {/* Hidden Poster Template */}
             <div style={{ position: 'fixed', top: -9999, left: -9999, zIndex: -9999 }}>
@@ -501,9 +504,9 @@ function VisualBuilder({
 
 
             {/* Mobile Column View (Compact & Premium) */}
-            <div className="lg:hidden flex flex-col bg-slate-50/50 relative">
+            <div className="lg:hidden flex flex-col bg-[#FAFAFA] dark:bg-[#0B0B10] relative">
                 {/* Premium Mobile Header: Functional Buttons */}
-                <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-3xl border-b border-slate-100 p-2.5 pb-3 shadow-[0_4px_30px_rgba(0,0,0,0.03)]">
+                <div className="sticky top-0 z-20 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-3xl border-b border-slate-200 dark:border-[#1E293B] p-2.5 pb-3 shadow-[0_4px_30px_rgba(0,0,0,0.03)] dark:shadow-none">
                     <div className="flex gap-2.5 relative w-full items-center justify-between">
                         {/* 智能装机 PRO AI Button */}
                         <button
@@ -534,9 +537,9 @@ function VisualBuilder({
                             key={entry.id}
                             ref={(el) => { if (el) rowRefs[entry.id] = el; }}
                             onClick={() => openSelector(entry)}
-                            className={`relative group bg-white rounded-xl border transition-all duration-300 active:scale-[0.98] flex items-center p-2 gap-2 ${entry.item || entry.customName
-                                ? 'border-indigo-100 shadow-sm'
-                                : 'border-slate-100 border-dashed bg-slate-50/50'
+                            className={`relative group bg-white dark:bg-[#121218] rounded-xl border transition-all duration-300 active:scale-[0.98] flex items-center p-2 gap-2 ${entry.item || entry.customName
+                                ? 'border-indigo-100 dark:border-indigo-500/20 shadow-sm dark:shadow-none'
+                                : 'border-slate-200 dark:border-[#2D3748] border-dashed bg-slate-50/50 dark:bg-[#1A1A24]/50'
                                 }`}
                         >
                             {/* Category Icon & Text Column */}
@@ -615,23 +618,27 @@ function VisualBuilder({
             </div>
 
             {/* Desktop List View (Hidden on mobile) */}
-            <div className="hidden lg:flex flex-1 flex-col pb-20">
+            <div className="hidden lg:flex flex-1 max-w-[800px] mx-auto flex-col pb-20 relative">
                 {/* Top Bar: Announcement + AI Build + Quick Build in one row */}
-                <div className="flex gap-2.5 mb-4 items-stretch">
+                <div className="flex gap-2.5 mb-3 items-stretch">
                     {/* System Announcement - takes most space */}
                     {sysAnnouncement?.enabled && sysAnnouncement.items && sysAnnouncement.items.length > 0 && (
-                        <div className="flex-1 relative overflow-hidden bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/80 border border-indigo-100/60 rounded-2xl py-2 px-3 shadow-sm flex items-center gap-2.5">
-                            <div className="shrink-0 relative z-20 flex items-center gap-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-black text-[10px] px-2.5 py-1 rounded-full tracking-wide shadow-sm">
-                                 <FileText size={11} />
-                                 <span>公告</span>
+                        <div className="flex-1 relative overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-indigo-200/50 dark:border-indigo-500/20 rounded-2xl py-2 px-3 shadow-[0_0_15px_-3px_rgba(99,102,241,0.1)] dark:shadow-[0_0_15px_-3px_rgba(99,102,241,0.05)] flex items-center gap-2.5 group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                            <div className="shrink-0 relative z-20 flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                                 <Bell size={14} className="animate-[wiggle_3s_ease-in-out_infinite]" />
                             </div>
                             <div className="flex-1 overflow-hidden relative h-5">
-                                <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
-                                <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+                                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10 pointer-events-none"></div>
+                                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent z-10 pointer-events-none"></div>
                                 <style>{`
                                     @keyframes marquee-rtl {
                                         0% { transform: translateX(100%); }
                                         100% { transform: translateX(-100%); }
+                                    }
+                                    @keyframes wiggle {
+                                        0%, 100% { transform: rotate(-10deg); }
+                                        50% { transform: rotate(10deg); }
                                     }
                                     .animate-marquee-rtl {
                                         display: inline-block;
@@ -639,12 +646,12 @@ function VisualBuilder({
                                         white-space: nowrap;
                                     }
                                 `}</style>
-                                <div className="animate-marquee-rtl text-[12px] font-bold text-slate-600 flex gap-16 leading-5">
+                                <div className="animate-marquee-rtl text-[12px] font-bold text-slate-700 dark:text-slate-300 flex gap-16 leading-5">
                                     {sysAnnouncement.items.map((item: any) => (
-                                        <span key={item.id} className="flex items-center gap-1.5 cursor-pointer hover:text-indigo-600 transition-colors whitespace-nowrap" onClick={() => item.linkUrl && window.open(item.linkUrl, '_blank')}>
-                                            {item.type === 'promo' && <Sparkles size={12} className="text-amber-500" />}
-                                            {item.type === 'warning' && <AlertCircle size={12} className="text-red-500" />}
-                                            {item.type === 'info' && <Info size={12} className="text-indigo-400" />}
+                                        <span key={item.id} className="flex items-center gap-1.5 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap" onClick={() => item.linkUrl && window.open(item.linkUrl, '_blank')}>
+                                            {item.type === 'promo' && <Sparkles size={13} className="text-amber-500" />}
+                                            {item.type === 'warning' && <AlertCircle size={13} className="text-red-500" />}
+                                            {item.type === 'info' && <Info size={13} className="text-indigo-500 dark:text-indigo-400" />}
                                             {item.content}
                                         </span>
                                     ))}
@@ -659,7 +666,7 @@ function VisualBuilder({
                         setShowAiModal(true);
                     }} className="group relative cursor-pointer shrink-0">
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-2xl blur-md opacity-15 group-hover:opacity-35 transition duration-500"></div>
-                        <div className="relative flex items-center gap-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl px-3 py-2 border border-white dark:border-slate-700 shadow-sm h-full">
+                        <div className="relative flex items-center gap-2 bg-white/90 dark:bg-[#121218]/90 backdrop-blur-xl rounded-2xl px-3 py-2 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none h-full">
                             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-sm shadow-indigo-500/30">
                                 <Sparkles size={13} className="animate-pulse" />
                             </div>
@@ -675,7 +682,7 @@ function VisualBuilder({
 
                     {/* Quick Build - compact */}
                     <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.95 }} onClick={onOpenLibrary} className="group relative cursor-pointer shrink-0">
-                        <div className="relative flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl px-3 py-2 border border-white/60 dark:border-slate-700 shadow-sm group-hover:border-indigo-100 transition-all h-full">
+                        <div className="relative flex items-center gap-2 bg-white/80 dark:bg-[#121218]/80 backdrop-blur-xl rounded-2xl px-3 py-2 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none group-hover:border-indigo-200 dark:group-hover:border-indigo-500/30 transition-all h-full">
                             <div className="w-7 h-7 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 group-hover:bg-indigo-50 group-hover:text-indigo-600">
                                 <FileText size={13} />
                             </div>
@@ -687,7 +694,7 @@ function VisualBuilder({
 
                 <motion.div 
                     initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
-                    className="flex flex-col space-y-2.5"
+                    className="flex flex-col space-y-1.5"
                 >
                     {buildList.map((entry) => (
                         <motion.div
@@ -698,13 +705,13 @@ function VisualBuilder({
                             key={entry.id}
                             ref={(el: any) => { if (el) rowRefs[entry.id] = el; }}
                             onClick={() => openSelector(entry)}
-                            className={`relative rounded-[20px] p-3 border transition-colors duration-300 cursor-pointer group flex items-center gap-4 ${entry.item || entry.customName
-                                ? 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/60 dark:border-slate-600 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(99,102,241,0.12)] hover:border-indigo-200/50'
-                                : 'bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm border-dashed border-slate-300/60 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:border-indigo-300 hover:shadow-sm'
+                            className={`relative rounded-xl px-3 py-2.5 border transition-colors duration-300 cursor-pointer group flex items-center gap-4 ${entry.item || entry.customName
+                                ? 'bg-white dark:bg-[#121218] border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-md dark:hover:shadow-none'
+                                : 'bg-white/60 dark:bg-[#121218]/60 border-dashed border-slate-300/60 dark:border-[#2D3748] hover:bg-white dark:hover:bg-[#121218] hover:border-indigo-300 dark:hover:border-indigo-500/30 hover:shadow-sm dark:hover:shadow-none'
                                 }`}
                         >
                             <div 
-                                className={`w-11 h-11 rounded-[16px] flex items-center justify-center text-xl shrink-0 transition-all duration-500 shadow-sm relative overflow-hidden ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white group-hover:scale-105 group-hover:shadow-indigo-500/25 group-hover:shadow-lg' : 'bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-400'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
+                                className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 transition-all duration-500 shadow-sm dark:shadow-none relative overflow-hidden ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white group-hover:scale-105 group-hover:shadow-indigo-500/25 group-hover:shadow-lg dark:group-hover:shadow-none' : 'bg-slate-100 dark:bg-[#1A1A24] text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-400'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
                                 onClick={(e) => {
                                     if (entry.item?.image) {
                                         e.stopPropagation();
@@ -782,7 +789,7 @@ function VisualBuilder({
             {/* Merged Sidebar */}
             <div className="w-full lg:w-[320px] xl:w-[340px] shrink-0 flex flex-col gap-4 mt-2 lg:mt-0 mb-28 lg:mb-0 relative z-10">
                 {/* Box 1: Price Details (Hidden on Mobile) */}
-                <div className="hidden lg:block bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[32px] border border-white/60 dark:border-slate-800 shadow-xl shadow-indigo-100/50 dark:shadow-none p-5 md:p-6 overflow-hidden relative">
+                <div className="hidden lg:block bg-white dark:bg-[#121218] rounded-2xl border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none p-5 md:p-6 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
                     
@@ -796,7 +803,7 @@ function VisualBuilder({
                             <span className="text-slate-500">优惠前金额</span>
                             <span className="font-black text-slate-400 line-through decoration-slate-300">¥{Math.floor(pricing.standardPrice || 0)}</span>
                         </div>
-                        <div className="flex flex-col gap-1 bg-slate-50 dark:bg-slate-800/80 rounded-[18px] border border-slate-100 dark:border-slate-700/80 p-3 shadow-sm relative overflow-hidden mt-1">
+                        <div className="flex flex-col gap-1 bg-slate-50 dark:bg-[#1A1A24] rounded-2xl border border-slate-200 dark:border-[#2D3748] p-4 shadow-sm dark:shadow-none relative overflow-hidden mt-1">
                             <div className="flex items-center gap-2">
                                 <span className="text-slate-600 dark:text-slate-300 font-extrabold text-[12px]">实付预估</span>
                                 {(pricing.savedAmount || 0) > 0 && (
@@ -805,7 +812,7 @@ function VisualBuilder({
                                     </div>
                                 )}
                             </div>
-                            <span className="text-[28px] font-black text-indigo-600 tracking-tight font-mono leading-none">¥<BouncyNumber value={pricing.finalPrice || 0} /></span>
+                            <span className="text-[28px] font-black text-indigo-600 dark:text-indigo-400 font-display tracking-tight leading-none">¥<BouncyNumber value={pricing.finalPrice || 0} /></span>
                         </div>
                     </div>
 
@@ -817,7 +824,7 @@ function VisualBuilder({
                             <select
                                 value={pricing.discountRate}
                                 onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
-                                className="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl pl-12 pr-8 py-2 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+                                className="w-full appearance-none bg-slate-50 dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl pl-12 pr-8 py-2 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
                             >
                                 {pricing.discountTiers?.map((tier: any) => (
                                     <option key={tier.id} value={tier.multiplier}>
@@ -842,16 +849,16 @@ function VisualBuilder({
                         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={onSave} className="h-full px-5 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all text-sm border border-slate-200">
                             保存
                         </motion.button>
-                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={handleShareClick} className="h-full flex-1 flex items-center justify-center bg-slate-900 hover:bg-black text-white font-bold rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] transition-all text-sm">
-                            <Share2 size={16} className="mr-2 opacity-80" /> 发长文晒单
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={handleShareClick} className="h-full flex-1 flex items-center justify-center bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] dark:shadow-none transition-all text-sm">
+                            <Share2 size={16} className="mr-2 opacity-80" /> 分享
                         </motion.button>
                     </div>
                 </div>
 
                 {/* Box 2: Health Check */}
-                <div className={`relative p-5 rounded-[32px] border transition-all duration-500 overflow-hidden shadow-lg ${(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0)))
-                    ? 'bg-emerald-50/80 backdrop-blur-2xl dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30 shadow-emerald-100/30'
-                    : 'bg-amber-50/80 backdrop-blur-2xl dark:bg-amber-900/10 border-amber-100 dark:border-amber-800/30 shadow-amber-100/30'
+                <div className={`relative p-5 rounded-2xl border transition-all duration-500 overflow-hidden shadow-sm dark:shadow-none ${(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0)))
+                    ? 'bg-emerald-50 dark:bg-[#121218] border-emerald-200 dark:border-emerald-500/20'
+                    : 'bg-amber-50 dark:bg-[#121218] border-amber-200 dark:border-amber-500/20'
                     }`}>
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
@@ -859,14 +866,14 @@ function VisualBuilder({
                             兼容性检测
                         </h3>
                         {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
-                            <div className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[8px] font-black uppercase shadow-sm">Passed</div>
+                            <div className="px-2 py-0.5 rounded-lg bg-emerald-500 text-white text-[8px] font-black uppercase shadow-sm">通过</div>
                         ) : (
-                            <div className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[8px] font-black uppercase shadow-sm">Review</div>
+                            <div className="px-2 py-0.5 rounded-lg bg-amber-500 text-white text-[8px] font-black uppercase shadow-sm">待检查</div>
                         )}
                     </div>
                     <div className="text-[12px] font-bold">
                         {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
-                            <div className="text-emerald-700 flex items-center gap-2 bg-emerald-100/50 p-3 rounded-[16px]">
+                            <div className="text-emerald-700 dark:text-emerald-400 flex items-center gap-2 bg-emerald-100/50 dark:bg-emerald-500/10 p-3 rounded-xl border border-transparent dark:border-emerald-500/20">
                                 <CheckCircle2 size={16} /> <span>核心组件完美兼容，方案健康</span>
                             </div>
                         ) : (
@@ -893,17 +900,17 @@ function VisualBuilder({
 
                 {/* Box 3: 鲁大师跑分与功耗 Grid */}
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/60 shadow-xl shadow-indigo-100/40 rounded-[32px] p-5 relative overflow-hidden group">
+                    <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none rounded-2xl p-5 relative overflow-hidden group">
                                 <div className="absolute -right-4 -bottom-4 opacity-5 text-indigo-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Activity size={72}/></div>
                                 <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Activity size={14} className="text-indigo-500"/> 鲁大师跑分</h4>
-                                <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-mono tracking-tighter mt-2">
+                                <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-display tracking-tighter mt-2">
                                     {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
                                 </div>
                     </div>
-                    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/60 shadow-xl shadow-slate-200/40 rounded-[32px] p-5 relative overflow-hidden group">
+                    <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none rounded-2xl p-5 relative overflow-hidden group">
                         <div className="absolute -right-2 -bottom-2 opacity-5 text-amber-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Zap size={72}/></div>
                         <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Zap size={14} className="text-amber-500"/> 系统峰值功耗</h4>
-                        <div className="text-2xl font-black text-slate-800 dark:text-slate-300 font-mono tracking-tighter flex items-center mt-2">
+                        <div className="text-2xl font-black text-slate-800 dark:text-slate-300 font-display tracking-tighter flex items-center mt-2">
                             {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} />W</> : '---'}
                         </div>
                         {simResult && simResult.totalPowerDraw > 0 && <div className="text-[9px] text-slate-400 font-bold mt-1 bg-slate-50 dark:bg-slate-800 py-1 px-2 rounded-lg inline-block">推荐电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+</div>}
@@ -912,20 +919,20 @@ function VisualBuilder({
                 </div>
 
                 {/* Box 4: 游戏帧率体验测算 */}
-                <div className="bg-slate-900 border border-slate-800 rounded-[32px] p-5 shadow-2xl shadow-indigo-900/20 relative overflow-hidden">
+                <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-2xl p-5 shadow-sm dark:shadow-none relative overflow-hidden">
                     <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
                     
                     <div className="flex items-center justify-between mb-5 relative z-10">
-                        <h3 className="font-extrabold text-white text-[13px] flex items-center gap-2 tracking-wide">
+                        <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] flex items-center gap-2 tracking-wide">
                             <Gamepad2 size={16} className="text-indigo-400" />
                             游戏试玩体验
                         </h3>
-                        <div className="flex gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/50 shadow-inner">
+                        <div className="flex gap-1 bg-slate-50 dark:bg-[#1A1A24] p-1 rounded-xl border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none">
                             {[1080, 1440, 2160].map(res => (
                                 <button
                                     key={res}
                                     onClick={() => setResolution(res)}
-                                    className={`text-[9px] font-black px-3 py-1 rounded-[8px] transition-all uppercase tracking-wider ${resolution === res ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}`}
+                                    className={`text-[9px] font-black px-3 py-1 rounded-[8px] transition-all uppercase tracking-wider ${resolution === res ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'}`}
                                 >
                                     {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
                                 </button>
@@ -935,28 +942,45 @@ function VisualBuilder({
                     <div className="space-y-3.5 relative z-10 min-h-[140px]">
                         {loadingFps ? (
                             <div className="py-12 flex flex-col items-center justify-center text-indigo-400 gap-3">
-                                <RefreshCw size={24} className="animate-spin" />
-                                <div className="text-xs font-black tracking-widest text-indigo-300">测算帧率数据中...</div>
+                                <RefreshCw size={24} className="animate-spin opacity-80" />
+                                <div className="text-xs font-black tracking-widest uppercase opacity-80">测算帧率数据中...</div>
                             </div>
                         ) : fpsData.length > 0 ? (
                             fpsData.map((item, idx) => (
-                                    <div key={idx} className="group">
-                                        <div className="flex justify-between text-[11px] mb-2">
-                                            <span className="font-bold text-slate-300 group-hover:text-white transition-colors">{item.name}</span>
-                                            <span className="font-mono text-indigo-300 font-bold group-hover:text-indigo-200">{item.fps} FPS</span>
+                                    <div key={idx} className="group/item">
+                                        <div className="flex justify-between items-end text-[11px] mb-2">
+                                            <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">{item.name}</span>
+                                            <div className="flex items-baseline gap-0.5">
+                                                <span className={`font-display font-black text-sm ${
+                                                    item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
+                                                    item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
+                                                    item.fps >= 100 ? 'text-blue-500 dark:text-blue-400' :
+                                                    item.fps >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                                                    'text-red-500 dark:text-red-400'
+                                                }`}>{item.fps}</span>
+                                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">FPS</span>
+                                            </div>
                                         </div>
-                                        <div className="w-full bg-slate-800/70 rounded-full h-2 overflow-hidden border border-slate-700/40 shadow-inner">
+                                        <div className="w-full bg-slate-100 dark:bg-[#1A1A24] rounded-full h-2 overflow-hidden border border-slate-200 dark:border-[#2D3748] relative">
                                             <div 
-                                                className="bg-gradient-to-r from-indigo-500 to-cyan-400 h-full rounded-full shadow-[0_0_12px_rgba(99,102,241,0.6)] transition-all duration-1000 ease-out" 
+                                                className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
+                                                    item.fps === 0 ? 'bg-slate-300 dark:bg-slate-600' :
+                                                    item.fps >= 200 ? 'bg-emerald-500' : 
+                                                    item.fps >= 100 ? 'bg-blue-500' :
+                                                    item.fps >= 60 ? 'bg-yellow-500' :
+                                                    'bg-red-500'
+                                                }`}
                                                 style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}
-                                            ></div>
+                                            >
+                                                {item.fps > 0 && <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 animate-[shimmer_2s_infinite]"></div>}
+                                            </div>
                                         </div>
                                     </div>
                                 ))
                             ) : (
                                 <div className="py-12 flex flex-col items-center justify-center text-slate-500 gap-3 opacity-60">
-                                    <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center border border-slate-700"><Gamepad2 size={24} /></div>
-                                    <div className="text-xs font-black text-slate-400 mt-2">完善配置后展示帧率</div>
+                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-[#1A1A24] flex items-center justify-center border border-slate-200 dark:border-[#2D3748]"><Gamepad2 size={24} className="text-slate-400" /></div>
+                                    <div className="text-xs font-black text-slate-400 mt-2">添加 CPU/显卡 后展示帧率</div>
                                 </div>
                             )}
                         </div>
@@ -966,10 +990,10 @@ function VisualBuilder({
             {/* Premium Modal Category Selector */}
             {modalCategory && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-                    <div className="bg-slate-50 dark:bg-slate-900 rounded-[36px] w-full max-w-3xl h-[88vh] flex flex-col shadow-[0_32px_120px_rgba(0,0,0,0.5)] dark:shadow-[0_32px_120px_rgba(0,0,0,0.8)] overflow-hidden animate-scale-up border border-white/20 dark:border-slate-700/50">
+                    <div className="bg-[#FAFAFA] dark:bg-[#121218] rounded-2xl w-full max-w-3xl h-[88vh] flex flex-col shadow-2xl dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] overflow-hidden animate-scale-up border border-slate-200 dark:border-[#1E293B]">
                         {/* Modal Header */}
-                        <div className="p-6 border-b border-slate-200/60 flex flex-col gap-5 bg-white/80 backdrop-blur-xl sticky top-0 z-10">
-                            <div className="flex justify-between items-center text-slate-900">
+                        <div className="p-6 border-b border-slate-200 dark:border-[#1E293B] flex flex-col gap-5 bg-white/80 dark:bg-[#1A1A24]/80 backdrop-blur-xl sticky top-0 z-10">
+                            <div className="flex justify-between items-center text-slate-900 dark:text-white">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg shadow-slate-200">
                                         {getIconByCategory(modalCategory)}
@@ -981,7 +1005,7 @@ function VisualBuilder({
                                 </div>
                                 <button
                                     onClick={() => setModalCategory(null)}
-                                    className="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all text-slate-400 hover:text-slate-900 active:scale-90"
+                                    className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-[#121218] hover:bg-slate-200 dark:hover:bg-[#2D3748] border border-slate-200 dark:border-[#2D3748] rounded-xl transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-90"
                                 >
                                     <X size={20} strokeWidth={2.5} />
                                 </button>
@@ -997,14 +1021,14 @@ function VisualBuilder({
                                             value={modalSearch}
                                             onChange={(e) => setModalSearch(e.target.value)}
                                             placeholder={`在 ${CATEGORY_MAP[modalCategory]} 中搜寻方案...`}
-                                            className="w-full bg-white border border-slate-200/60 rounded-[22px] py-3.5 pl-12 pr-4 text-sm font-bold placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all shadow-sm"
+                                            className="w-full bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#2D3748] rounded-xl py-3.5 pl-12 pr-4 text-sm font-bold placeholder:text-slate-400 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all shadow-sm dark:shadow-none"
                                         />
                                     </div>
                                     <button
                                         onClick={() => setSortOrder(prev => prev === 'default' ? 'asc' : prev === 'asc' ? 'desc' : 'default')}
                                         className={`h-[52px] px-5 rounded-[22px] font-black text-xs flex items-center gap-2 transition-all shrink-0 active:scale-95 ${sortOrder !== 'default'
-                                            ? 'bg-slate-900 text-white shadow-xl shadow-slate-200 border border-slate-800'
-                                            : 'bg-white text-slate-500 border border-slate-200/60 shadow-sm hover:bg-slate-50'
+                                            ? 'bg-slate-900 dark:bg-[#2D3748] text-white shadow-md border border-slate-800 dark:border-[#1E293B]'
+                                            : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none hover:bg-slate-50 dark:hover:bg-[#2D3748]'
                                             }`}
                                     >
                                         <ArrowRight size={16} className={`transition-transform duration-500 ${sortOrder === 'asc' ? '-rotate-90' : sortOrder === 'desc' ? 'rotate-90' : 'rotate-0'}`} />
@@ -1021,8 +1045,8 @@ function VisualBuilder({
                                                 key={brand}
                                                 onClick={() => setModalBrand(brand)}
                                                 className={`px-4 py-2 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 tap-active uppercase ${modalBrand === brand
-                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
-                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                    ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
+                                                    : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                     }`}
                                             >
                                                 {brand === 'all' ? '全部品牌' : brand}
@@ -1032,7 +1056,7 @@ function VisualBuilder({
                                     {availableBrands.length > 5 && (
                                         <button
                                             onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
-                                            className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all shrink-0 mt-0.5 shadow-sm border ${isBrandsExpanded ? 'bg-slate-100 text-slate-900 border-slate-200' : 'bg-white text-slate-400 border-slate-100'}`}
+                                            className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all shrink-0 mt-0.5 shadow-sm dark:shadow-none border ${isBrandsExpanded ? 'bg-slate-100 dark:bg-[#2D3748] text-slate-900 dark:text-white border-slate-200 dark:border-transparent' : 'bg-white dark:bg-[#121218] text-slate-400 border-slate-200 dark:border-[#2D3748]'}`}
                                         >
                                             {isBrandsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                         </button>
@@ -1047,8 +1071,8 @@ function VisualBuilder({
                                                 key={type}
                                                 onClick={() => setRamTypeFilter(type)}
                                                 className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${ramTypeFilter === type
-                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
-                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                    ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
+                                                    : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
                                             >
                                                 {type === 'all' ? '全部类型' : type}
@@ -1065,8 +1089,8 @@ function VisualBuilder({
                                                 key={cap}
                                                 onClick={() => setDiskCapFilter(cap)}
                                                 className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${diskCapFilter === cap
-                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
-                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                    ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
+                                                    : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
                                             >
                                                 {cap === 'all' ? '全部容量' : cap}
@@ -1083,8 +1107,8 @@ function VisualBuilder({
                                                 key={type}
                                                 onClick={() => setCpuTypeFilter(type)}
                                                 className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${cpuTypeFilter === type
-                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
-                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                    ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
+                                                    : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
                                             >
                                                 {type === 'all' ? '全部型号' : type}
@@ -1101,8 +1125,8 @@ function VisualBuilder({
                                                 key={plat}
                                                 onClick={() => setMbPlatformFilter(plat)}
                                                 className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${mbPlatformFilter === plat
-                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
-                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                    ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
+                                                    : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
                                             >
                                                 {plat === 'all' ? '全部平台' : plat === 'AMD' ? 'AMD平台' : 'Intel平台'}
@@ -1119,8 +1143,8 @@ function VisualBuilder({
                                                 key={ct}
                                                 onClick={() => setCoolingTypeFilter(ct)}
                                                 className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${coolingTypeFilter === ct
-                                                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-100'
-                                                    : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                                                    ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
+                                                    : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
                                             >
                                                 {ct === 'all' ? '全部类型' : ct === 'air' ? '风冷' : `${ct}水冷`}
@@ -1150,13 +1174,13 @@ function VisualBuilder({
                                                     key={item.id}
                                                     ref={(el) => { if (el) modalItemRefs[item.id] = el; }}
                                                     onClick={() => !isOutOfStock && handleSelect(item)}
-                                                    className={`group relative flex items-center gap-5 p-4 rounded-[28px] bg-white/60 backdrop-blur-md border border-white/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 active:scale-[0.98] ${isOutOfStock
+                                                    className={`group relative flex items-center gap-5 p-4 rounded-xl bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none transition-all duration-300 active:scale-[0.98] ${isOutOfStock
                                                         ? 'opacity-50 grayscale cursor-not-allowed'
-                                                        : 'hover:bg-white hover:border-indigo-100/80 hover:shadow-[0_12px_40px_rgba(79,70,229,0.08)] cursor-pointer hover:-translate-y-0.5'
+                                                        : 'hover:border-indigo-200 dark:hover:border-[#2D3748] hover:shadow-md dark:hover:shadow-none cursor-pointer hover:-translate-y-0.5'
                                                         }`}
                                                 >
                                                     {/* Product Image Wrapper */}
-                                                    <div className="w-20 h-20 bg-slate-50 rounded-[22px] flex items-center justify-center text-slate-200 group-hover:bg-indigo-50/50 group-hover:text-indigo-300 transition-all overflow-hidden border border-slate-100/60 shadow-inner shrink-0 relative">
+                                                    <div className="w-20 h-20 bg-slate-50 dark:bg-[#1A1A24] rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition-all overflow-hidden border border-slate-200 dark:border-[#2D3748] shrink-0 relative">
                                                         {item.image ? (
                                                             <img
                                                                 src={item.image}
@@ -1178,7 +1202,7 @@ function VisualBuilder({
                                                     {/* Product Info */}
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2 mb-1.5">
-                                                            <span className="text-[9px] font-black uppercase text-indigo-500 tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">
+                                                            <span className="text-[9px] font-black uppercase text-indigo-500 dark:text-indigo-300 tracking-widest bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded-md">
                                                                 {item.brand}
                                                             </span>
                                                             {isOutOfStock && <span className="text-[9px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded-md font-black uppercase">暂无现货</span>}
@@ -1187,7 +1211,7 @@ function VisualBuilder({
                                                                 <span className="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-md font-black uppercase shadow-sm shadow-emerald-200">新品</span>
                                                             )}
                                                         </div>
-                                                        <h4 className="font-extrabold text-slate-900 text-[15px] group-hover:text-indigo-600 transition-colors leading-snug tracking-tight mb-2">
+                                                        <h4 className="font-bold text-slate-900 dark:text-slate-100 text-[15px] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug tracking-tight mb-2">
                                                             {item.model}
                                                         </h4>
                                                         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-400 font-bold">
@@ -1213,7 +1237,7 @@ function VisualBuilder({
 
                                                     {/* Price Tag & JD Buy */}
                                                     <div className="flex flex-col items-end gap-2 shrink-0 ml-2">
-                                                        <div className={`font-black font-mono tracking-tighter transition-all ${isOutOfStock ? 'text-slate-300 text-base' : 'text-xl text-slate-900 italic group-hover:scale-105'}`}>
+                                                        <div className={`font-bold font-display tracking-tight transition-all ${isOutOfStock ? 'text-slate-400 dark:text-slate-600 text-base' : 'text-xl text-slate-900 dark:text-white group-hover:scale-105'}`}>
                                                             {isOutOfStock ? '—' : `¥${item.price}`}
                                                         </div>
                                                         <div className="flex items-center gap-1.5">
@@ -1237,7 +1261,7 @@ function VisualBuilder({
                                                                 );
                                                             })()}
                                                             {!isOutOfStock && (
-                                                                <div className="w-8 h-8 rounded-xl bg-slate-50 group-hover:bg-slate-900 text-slate-300 group-hover:text-white flex items-center justify-center transition-all shadow-sm group-hover:shadow-lg group-hover:shadow-slate-200 border border-slate-100 group-hover:border-slate-800">
+                                                                <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-[#1A1A24] group-hover:bg-slate-900 dark:group-hover:bg-[#2D3748] text-slate-400 group-hover:text-white flex items-center justify-center transition-all border border-slate-200 dark:border-[#2D3748] shadow-sm">
                                                                     <ArrowRight size={16} />
                                                                 </div>
                                                             )}

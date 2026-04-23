@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply antialiased text-slate-800 bg-slate-50 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300;
+    @apply antialiased text-slate-800 bg-[#FAFAFA] dark:bg-[#0B0B10] dark:text-slate-200 transition-colors duration-300;
   }
 }
 
@@ -25,6 +25,32 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1E293B;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Pro Max custom scrollbar for inner panels */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 2px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1E293B;
 }
 
 .no-scrollbar::-webkit-scrollbar {

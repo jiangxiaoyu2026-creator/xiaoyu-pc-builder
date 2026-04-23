@@ -77,7 +77,7 @@ export default function UsedItemDetail({ item, onClose, currentUser, onLogin, on
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl animate-scale-up flex flex-col md:flex-row">
+            <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-xl border border-slate-200 animate-scale-up flex flex-col md:flex-row">
 
                 {/* Close Button Mobile */}
                 <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-black/20 text-white rounded-full md:hidden z-10 backdrop-blur-md">
@@ -145,8 +145,8 @@ export default function UsedItemDetail({ item, onClose, currentUser, onLogin, on
                         </div>
 
                         {/* Price Card */}
-                        <div className="bg-slate-50 rounded-xl p-4 mb-6 flex items-baseline gap-2">
-                            <span className="text-3xl font-bold text-red-500">¥{item.price}</span>
+                        <div className="bg-slate-50 rounded-xl p-4 mb-6 flex items-baseline gap-2 border border-slate-100">
+                            <span className="text-3xl font-bold font-mono tracking-tight text-slate-900">¥{item.price}</span>
                             {item.originalPrice && <span className="text-sm text-slate-400 line-through">原价 ¥{item.originalPrice}</span>}
                             <div className="ml-auto text-xs text-slate-400 flex flex-col items-end">
                                 <span>卖家: {item.sellerName}</span>

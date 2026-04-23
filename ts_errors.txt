@@ -1,0 +1,6 @@
+src/components/client/GameFPSViewer.tsx(26,26): error TS6133: 'setSelectedGame' is declared but its value is never read.
+src/components/client/StreamerWorkbench.tsx(367,5): error TS6133: 'currentUser' is declared but its value is never read.
+src/components/client/VisualBuilder.tsx(11,57): error TS6133: 'AnimatePresence' is declared but its value is never read.
+src/data/gameFpsData.ts(700,5): error TS2353: Object literal may only specify known properties, and '"(see \u5176\u4ed6 section - RTX 3050 6GB)"' does not exist in type 'Record<Resolution, FpsMetrics>'.
+src/pages/ClientApp.tsx(2,180): error TS6133: 'TrendingUp' is declared but its value is never read.
+src/pages/ClientApp.tsx(26,1): error TS6133: 'PriceTrendChart' is declared but its value is never read.

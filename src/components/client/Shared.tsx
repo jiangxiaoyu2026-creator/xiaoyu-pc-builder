@@ -28,14 +28,14 @@ export function TabButton({ active, onClick, icon, label }: { active: boolean, o
             onClick={onClick}
             title={label}
             className={cn(
-                "flex items-center gap-1.5 px-3 lg:px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all duration-300",
+                "flex items-center gap-1.5 px-3 lg:px-4 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all duration-300 uppercase tracking-wider",
                 active
-                    ? "bg-white dark:bg-slate-800 text-black dark:text-white shadow-sm dark:shadow-none"
-                    : "text-[#86868B] dark:text-slate-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
+                    ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-600 shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
             )}
         >
             <div className="shrink-0">
-                {icon}
+                {React.cloneElement(icon as React.ReactElement, { size: 14 })}
             </div>
             <span className={cn(
                 "whitespace-nowrap transition-all duration-300",

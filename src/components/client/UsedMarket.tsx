@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Search, Plus, Recycle, ShoppingBag, Eye, Shield, User, ExternalLink } from 'lucide-react';
 import { UsedItem, UserItem, UsedCategory } from '../../types/adminTypes';
 import { storage } from '../../services/storage';
@@ -88,25 +89,22 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
     return (
         <div className="space-y-8 pb-20">
             {/* Header Section */}
-            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/20 rounded-full blur-3xl -mr-20 -mt-20"></div>
-                <div className="absolute bottom-0 left-0 w-56 h-56 bg-amber-500/15 rounded-full blur-3xl -ml-14 -mb-14"></div>
-                <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
-
+            <div className="bg-white dark:bg-[#121218] rounded-2xl p-6 md:p-8 relative overflow-hidden border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                 <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
-                        <div className="flex items-center gap-4 mb-3">
-                            <h2 className="text-3xl font-bold">二手闲置</h2>
-                            <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-xs font-bold shadow-lg shadow-amber-500/30">
+                        <div className="flex items-center gap-3 mb-3">
+                            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">二手闲置</h2>
+                            <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                                 让价值流动
                             </span>
                         </div>
-                        <p className="text-slate-300 max-w-lg text-sm leading-relaxed">
-                            <span className="inline-flex items-center gap-1 text-emerald-400 font-bold">
+                        <p className="text-slate-600 dark:text-slate-400 max-w-lg text-sm leading-relaxed">
+                            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
                                 <Shield size={14} /> 官方二手
                             </span>
                             <span className="mx-1.5">经平台严格质检，品质保障售后无忧；</span>
-                            <span className="inline-flex items-center gap-1 text-amber-400 font-bold">
+                            <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-bold">
                                 <User size={14} /> 个人闲置
                             </span>
                             <span className="mx-1.5">由用户自行发布，交易通过闲鱼完成。</span>
@@ -115,14 +113,14 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                     <div className="flex gap-3">
                         <button
                             onClick={currentUser ? onRecycle : onLogin}
-                            className="px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 rounded-xl font-bold transition-all flex items-center gap-2"
+                            className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
                         >
-                            <Recycle size={18} />
+                            <Recycle size={16} />
                             我要回收
                         </button>
                         <button
                             onClick={currentUser ? onSell : onLogin}
-                            className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/30 rounded-xl font-bold transition-all flex items-center gap-2"
+                            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
                         >
                             <Plus size={18} />
                             发布闲置
@@ -137,13 +135,9 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                     <button
                         key={type.id}
                         onClick={() => setSelectedType(type.id)}
-                        className={`px-5 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 ${selectedType === type.id
-                            ? type.id === 'official'
-                                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30'
-                                : type.id === 'personal'
-                                    ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
-                                    : 'bg-slate-900 text-white shadow-md'
-                            : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                        className={`px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-1.5 ${selectedType === type.id
+                            ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border border-indigo-600 dark:border-indigo-500/30 shadow-sm'
+                            : 'bg-white dark:bg-[#121218] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748]'
                             }`}
                     >
                         {type.id === 'official' && <Shield size={14} />}
@@ -154,15 +148,15 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
             </div>
 
             {/* Filters & Search */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between sticky top-[72px] z-30 bg-white/80 backdrop-blur-md py-4 -my-4 px-4 rounded-xl border border-slate-100 shadow-sm">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between sticky top-[72px] z-30 bg-white/80 dark:bg-[#0B0B10]/80 backdrop-blur-md py-4 -my-4 px-4 rounded-xl border border-slate-200/50 dark:border-[#1E293B]/50 shadow-sm dark:shadow-none">
                 <div className="flex gap-2 overflow-x-auto no-scrollbar w-full md:w-auto pb-2 md:pb-0">
                     {CATEGORIES.map(cat => (
                         <button
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
                             className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all ${selectedCategory === cat.id
-                                ? 'bg-slate-900 text-white shadow-md'
-                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md dark:shadow-none'
+                                : 'bg-slate-100 dark:bg-[#121218] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-[#1A1A24] border border-transparent dark:border-[#2D3748]'
                                 }`}
                         >
                             {cat.label}
@@ -177,27 +171,37 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                         placeholder="搜索品牌、型号..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-medium"
+                        className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-[#121218] border border-slate-200 dark:border-[#2D3748] text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-500 transition-all text-sm font-medium"
                     />
                 </div>
             </div>
 
             {/* Items Grid */}
             {filteredItems.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <motion.div 
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                        hidden: { opacity: 0 },
+                        visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+                    }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                >
                     {filteredItems.map(item => (
-                        <div
+                        <motion.div
+                            variants={{
+                                hidden: { opacity: 0, y: 20 },
+                                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+                            }}
                             key={item.id}
                             onClick={() => onViewDetail(item)}
-                            className={`rounded-2xl shadow-sm transition-all cursor-pointer overflow-hidden group 
+                            className={`rounded-2xl shadow-sm dark:shadow-none transition-all cursor-pointer overflow-hidden group border 
                                 ${item.status === 'sold' 
-                                    ? 'bg-slate-50 border border-slate-200 grayscale opacity-60' 
-                                    : item.type === 'official'
-                                        ? 'bg-gradient-to-br from-emerald-50 to-white border-2 border-emerald-200 ring-1 ring-emerald-100 hover:shadow-xl hover:-translate-y-1'
-                                        : 'bg-white border border-slate-100 hover:shadow-xl hover:-translate-y-1'
+                                    ? 'bg-slate-50 dark:bg-[#121218]/50 border-slate-200 dark:border-[#1E293B]/50 grayscale opacity-60' 
+                                    : 'bg-white dark:bg-[#121218] border-slate-200 dark:border-[#1E293B] hover:border-indigo-400/50 dark:hover:border-indigo-500/50 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-none'
                                 }`}
                         >
-                            <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
+                            <div className="aspect-[4/3] bg-slate-100 dark:bg-[#1A1A24] relative overflow-hidden">
                                 {item.images[0] ? (
                                     <img src={item.images[0]} alt={item.model} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 ) : (
@@ -211,11 +215,11 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                                 </div>
                                 {/* 类型标签 */}
                                 {item.type === 'official' ? (
-                                    <div className="absolute top-3 left-3 bg-gradient-to-r from-emerald-600 to-teal-500 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-lg shadow-emerald-500/30">
-                                        <Shield size={12} /> 官方质保
+                                    <div className="absolute top-2 left-2 bg-emerald-600 text-white text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
+                                        <Shield size={10} /> 官方质保
                                     </div>
                                 ) : (
-                                    <div className="absolute top-3 left-3 bg-amber-500/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1">
+                                    <div className="absolute top-2 left-2 bg-amber-500 text-white text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm">
                                         <User size={10} /> 个人闲置
                                     </div>
                                 )}
@@ -240,39 +244,39 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                                     </div>
                                 )}
                             </div>
-                            <div className={`p-4 ${item.type === 'official' && item.status !== 'sold' ? 'bg-gradient-to-b from-emerald-50/50 to-transparent' : ''}`}>
+                            <div className="p-4">
                                 <div className="flex justify-between items-start mb-2">
-                                    <h3 className={`font-bold line-clamp-2 ${item.status === 'sold' ? 'text-slate-500' : 'text-slate-900'}`}>{item.brand} {item.model}</h3>
+                                    <h3 className={`font-bold text-sm line-clamp-2 ${item.status === 'sold' ? 'text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>{item.brand} {item.model}</h3>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-slate-500 mb-4">
-                                    <span className={`px-1.5 py-0.5 rounded ${item.type === 'official' && item.status !== 'sold' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
+                                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-4">
+                                    <span className={`px-1.5 py-0.5 rounded ${item.type === 'official' && item.status !== 'sold' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20' : 'bg-slate-50 dark:bg-[#1A1A24] text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-[#2D3748]'}`}>
                                         {CATEGORIES.find(c => c.id === item.category)?.label}
                                     </span>
                                     <span>•</span>
                                     <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                    <div className="text-lg font-bold text-red-500">
+                                <div className="flex items-center justify-between border-t border-slate-100 dark:border-[#2D3748] pt-2.5">
+                                    <div className="text-lg font-bold font-mono tracking-tight text-slate-900 dark:text-white">
                                         ¥{item.price}
-                                        {item.originalPrice && <span className="text-xs text-slate-400 font-normal line-through ml-2">¥{item.originalPrice}</span>}
+                                        {item.originalPrice && <span className="text-[10px] text-slate-400 font-normal line-through ml-2">¥{item.originalPrice}</span>}
                                     </div>
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${item.type === 'official'
-                                        ? 'bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200'
-                                        : 'bg-slate-50 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600'
+                                    <div className={`w-7 h-7 rounded flex items-center justify-center transition-colors border ${item.type === 'official'
+                                        ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-500/20'
+                                        : 'bg-slate-50 dark:bg-[#1A1A24] border-slate-100 dark:border-[#2D3748] text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'
                                         }`}>
-                                        <Eye size={16} />
+                                        <Eye size={14} />
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
             ) : (
                 <div className="py-20 text-center">
-                    <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+                    <div className="w-24 h-24 bg-slate-50 dark:bg-[#1A1A24] rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300 dark:text-slate-600 border border-slate-200 dark:border-[#2D3748]">
                         <ShoppingBag size={40} />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-700 mb-2">暂无相关商品</h3>
+                    <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-2">暂无相关商品</h3>
                     <p className="text-slate-400 max-w-xs mx-auto mb-6">没有找到符合条件的二手硬件，您可以尝试切换分类或发布您的闲置。</p>
                     <button
                         onClick={currentUser ? onSell : onLogin}

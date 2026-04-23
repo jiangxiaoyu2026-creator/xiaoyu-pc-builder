@@ -206,7 +206,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
             )}
 
             <div
-                className="bg-white dark:bg-slate-900 w-full md:max-w-6xl h-[95vh] md:h-[90vh] rounded-t-[24px] md:rounded-[24px] shadow-2xl overflow-hidden flex flex-col md:flex-row relative cursor-default animate-slide-up md:animate-scale-up"
+                className="bg-white dark:bg-slate-900 w-full md:max-w-6xl h-[95vh] md:h-[90vh] rounded-t-2xl md:rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col md:flex-row relative cursor-default animate-slide-up md:animate-scale-up"
                 onClick={e => e.stopPropagation()}
             >
 
@@ -444,7 +444,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                                             <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">{c.userName}</span>
                                             <span className="text-[10px] text-slate-400 dark:text-slate-500">{new Date(c.createdAt).toLocaleString()}</span>
                                         </div>
-                                        <div className="bg-white dark:bg-slate-800 p-2.5 rounded-2xl rounded-tl-none border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm relative group">
+                                        <div className="bg-white dark:bg-slate-800 p-2.5 rounded-xl rounded-tl-none border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm relative group">
                                             {c.content}
                                             {/* Deletion for Admin or Author */}
                                             {(currentUser?.role === 'admin' || currentUser?.id === c.userId) && (

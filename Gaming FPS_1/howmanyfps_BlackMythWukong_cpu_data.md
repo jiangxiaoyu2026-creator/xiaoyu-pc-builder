@@ -1,0 +1,103 @@
+# Black Myth Wukong CPU 帧率数据 — HowManyFPS
+## 游戏: Black Myth Wukong | GPU: GeForce RTX 5090
+## 采集时间: 2026-04-23
+
+| CPU | 分辨率 | Real-Time Average | 1% Lows |
+|-----|--------|-------------------|---------|
+
+| Ryzen 9 9950X3D | 1920x1080 (1K) | 115 FPS | 86 FPS |
+| Ryzen 9 9950X3D | 2560x1440 (2K) | 104 FPS | 78 FPS |
+| Ryzen 9 9950X3D | 3840x2160 (4K) | 83 FPS | 62 FPS |
+| Ryzen 9 9950X | 1920x1080 (1K) | 115 FPS | 86 FPS |
+| Ryzen 9 9950X | 2560x1440 (2K) | 104 FPS | 78 FPS |
+| Ryzen 9 9950X | 3840x2160 (4K) | 83 FPS | 62 FPS |
+| Ryzen 9 9900X | 1920x1080 (1K) | 107 FPS | 80 FPS |
+| Ryzen 9 9900X | 2560x1440 (2K) | 96 FPS | 72 FPS |
+| Ryzen 9 9900X | 3840x2160 (4K) | 75 FPS | 56 FPS |
+| Ryzen 7 7800X3D | 1920x1080 (1K) | 109 FPS | 81 FPS |
+| Ryzen 7 7800X3D | 2560x1440 (2K) | 98 FPS | 73 FPS |
+| Ryzen 7 7800X3D | 3840x2160 (4K) | 77 FPS | 58 FPS |
+| Ryzen 7 7700X | 1920x1080 (1K) | 102 FPS | 76 FPS |
+| Ryzen 7 7700X | 2560x1440 (2K) | 91 FPS | 68 FPS |
+| Ryzen 7 7700X | 3840x2160 (4K) | 70 FPS | 52 FPS |
+| Ryzen 5 7600X | 1920x1080 (1K) | 100 FPS | 75 FPS |
+| Ryzen 5 7600X | 2560x1440 (2K) | 89 FPS | 67 FPS |
+| Ryzen 5 7600X | 3840x2160 (4K) | 68 FPS | 51 FPS |
+| Ryzen 9 7950X3D | 1920x1080 (1K) | 110 FPS | 83 FPS |
+| Ryzen 9 7950X3D | 2560x1440 (2K) | 100 FPS | 75 FPS |
+| Ryzen 9 7950X3D | 3840x2160 (4K) | 79 FPS | 59 FPS |
+| Ryzen 9 7900X3D | 1920x1080 (1K) | 111 FPS | 83 FPS |
+| Ryzen 9 7900X3D | 2560x1440 (2K) | 100 FPS | 75 FPS |
+| Ryzen 9 7900X3D | 3840x2160 (4K) | 79 FPS | 59 FPS |
+| Ryzen 9 7950X | 1920x1080 (1K) | 110 FPS | 83 FPS |
+| Ryzen 9 7950X | 2560x1440 (2K) | 100 FPS | 75 FPS |
+| Ryzen 9 7950X | 3840x2160 (4K) | 79 FPS | 59 FPS |
+| Ryzen 9 7900X | 1920x1080 (1K) | 102 FPS | 76 FPS |
+| Ryzen 9 7900X | 2560x1440 (2K) | 91 FPS | 68 FPS |
+| Ryzen 9 7900X | 3840x2160 (4K) | 70 FPS | 52 FPS |
+| Core i9-14900K | 1920x1080 (1K) | 104 FPS | 78 FPS |
+| Core i9-14900K | 2560x1440 (2K) | 93 FPS | 70 FPS |
+| Core i9-14900K | 3840x2160 (4K) | 72 FPS | 54 FPS |
+| Core i9-14900KS | 1920x1080 (1K) | 105 FPS | 79 FPS |
+| Core i9-14900KS | 2560x1440 (2K) | 95 FPS | 71 FPS |
+| Core i9-14900KS | 3840x2160 (4K) | 73 FPS | 55 FPS |
+| Core i9-14900 | 1920x1080 (1K) | 104 FPS | 78 FPS |
+| Core i9-14900 | 2560x1440 (2K) | 93 FPS | 70 FPS |
+| Core i9-14900 | 3840x2160 (4K) | 72 FPS | 54 FPS |
+| Core i9-14900F | 1920x1080 (1K) | 102 FPS | 76 FPS |
+| Core i9-14900F | 2560x1440 (2K) | 91 FPS | 68 FPS |
+| Core i9-14900F | 3840x2160 (4K) | 70 FPS | 52 FPS |
+| Core i9-14900KF | 1920x1080 (1K) | 104 FPS | 78 FPS |
+| Core i9-14900KF | 2560x1440 (2K) | 93 FPS | 70 FPS |
+| Core i9-14900KF | 3840x2160 (4K) | 72 FPS | 54 FPS |
+| Core i7-14700K | 1920x1080 (1K) | 103 FPS | 77 FPS |
+| Core i7-14700K | 2560x1440 (2K) | 92 FPS | 69 FPS |
+| Core i7-14700K | 3840x2160 (4K) | 71 FPS | 53 FPS |
+| Core i7-14700KF | 1920x1080 (1K) | 103 FPS | 77 FPS |
+| Core i7-14700KF | 2560x1440 (2K) | 92 FPS | 69 FPS |
+| Core i7-14700KF | 3840x2160 (4K) | 71 FPS | 53 FPS |
+| Core i7-14700F | 1920x1080 (1K) | 100 FPS | 75 FPS |
+| Core i7-14700F | 2560x1440 (2K) | 89 FPS | 67 FPS |
+| Core i7-14700F | 3840x2160 (4K) | 68 FPS | 51 FPS |
+| Core i5-14600K | 1920x1080 (1K) | 100 FPS | 75 FPS |
+| Core i5-14600K | 2560x1440 (2K) | 90 FPS | 67 FPS |
+| Core i5-14600K | 3840x2160 (4K) | 69 FPS | 51 FPS |
+| Core i5-14600KF | 1920x1080 (1K) | 100 FPS | 75 FPS |
+| Core i5-14600KF | 2560x1440 (2K) | 89 FPS | 67 FPS |
+| Core i5-14600KF | 3840x2160 (4K) | 68 FPS | 51 FPS |
+| Core i5-14500 | 1920x1080 (1K) | 95 FPS | 71 FPS |
+| Core i5-14500 | 2560x1440 (2K) | 85 FPS | 63 FPS |
+| Core i5-14500 | 3840x2160 (4K) | 63 FPS | 47 FPS |
+| Core i5-14400 | 1920x1080 (1K) | 92 FPS | 69 FPS |
+| Core i5-14400 | 2560x1440 (2K) | 81 FPS | 61 FPS |
+| Core i5-14400 | 3840x2160 (4K) | 60 FPS | 45 FPS |
+| Core i5-14400F | 1920x1080 (1K) | 92 FPS | 69 FPS |
+| Core i5-14400F | 2560x1440 (2K) | 81 FPS | 61 FPS |
+| Core i5-14400F | 3840x2160 (4K) | 60 FPS | 45 FPS |
+| Core i9-13900KS | 1920x1080 (1K) | 104 FPS | 78 FPS |
+| Core i9-13900KS | 2560x1440 (2K) | 93 FPS | 70 FPS |
+| Core i9-13900KS | 3840x2160 (4K) | 72 FPS | 54 FPS |
+| Core i9-13900K | 1920x1080 (1K) | 103 FPS | 77 FPS |
+| Core i9-13900K | 2560x1440 (2K) | 92 FPS | 69 FPS |
+| Core i9-13900K | 3840x2160 (4K) | 71 FPS | 53 FPS |
+| Core i9-13900 | 1920x1080 (1K) | 103 FPS | 77 FPS |
+| Core i9-13900 | 2560x1440 (2K) | 92 FPS | 69 FPS |
+| Core i9-13900 | 3840x2160 (4K) | 71 FPS | 53 FPS |
+| Core i9-12900KS | 1920x1080 (1K) | 99 FPS | 74 FPS |
+| Core i9-12900KS | 2560x1440 (2K) | 89 FPS | 66 FPS |
+| Core i9-12900KS | 3840x2160 (4K) | 68 FPS | 51 FPS |
+| Core i9-12900K | 1920x1080 (1K) | 97 FPS | 73 FPS |
+| Core i9-12900K | 2560x1440 (2K) | 87 FPS | 65 FPS |
+| Core i9-12900K | 3840x2160 (4K) | 65 FPS | 49 FPS |
+| Core i7-13700K | 1920x1080 (1K) | 101 FPS | 76 FPS |
+| Core i7-13700K | 2560x1440 (2K) | 90 FPS | 68 FPS |
+| Core i7-13700K | 3840x2160 (4K) | 69 FPS | 52 FPS |
+| Core i7-13700KF | 1920x1080 (1K) | 101 FPS | 76 FPS |
+| Core i7-13700KF | 2560x1440 (2K) | 91 FPS | 68 FPS |
+| Core i7-13700KF | 3840x2160 (4K) | 70 FPS | 52 FPS |
+| Core i5-13600K | 1920x1080 (1K) |  FPS |  FPS |
+| Core i5-13600K | 2560x1440 (2K) | 88 FPS | 66 FPS |
+| Core i5-13600K | 3840x2160 (4K) | 67 FPS | 50 FPS |
+| Core i5-12600K | 1920x1080 (1K) | 94 FPS | 70 FPS |
+| Core i5-12600K | 2560x1440 (2K) | 83 FPS | 62 FPS |
+| Core i5-12600K | 3840x2160 (4K) | 62 FPS | 46 FPS |

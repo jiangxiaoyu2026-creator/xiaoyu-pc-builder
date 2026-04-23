@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Sparkles, Cpu, Zap, Crown, Heart } from 'lucide-react';
+import { Search, Sparkles, Cpu, Heart, MonitorPlay } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ConfigTemplate, HardwareItem } from '../../types/clientTypes';
 import { TAGS_APPEARANCE, TAGS_USAGE, HARDWARE_DB } from '../../data/clientData';
@@ -222,46 +222,35 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
 
     return (
         <div className="space-y-12 pb-20">
-            {/* Hero Header & Search */}
-            <div className="relative pt-20 pb-12 mb-8 bg-gradient-to-b from-white via-white to-slate-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900/50 border-b border-slate-100 dark:border-slate-800">
-                <div className="max-w-4xl mx-auto px-4 text-center space-y-8 relative z-10">
-                    <div className="space-y-4">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold tracking-wide uppercase border border-indigo-100 dark:border-indigo-500/20">
-                            <Sparkles size={12} />
-                            <span>装机灵感</span>
+            {/* Dashboard Header Section */}
+            <div className="relative pt-16 pb-10 mb-6 bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800">
+                <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="space-y-3">
+                        <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold tracking-widest uppercase border border-indigo-100 dark:border-indigo-500/20">
+                            <Sparkles size={10} />
+                            <span>Inspiration Hub</span>
                         </div>
-                        <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                            配置广场
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+                            配置广场 <span className="text-slate-400 font-medium ml-2 text-xl tracking-normal">CONFIG SQUARE</span>
                         </h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl mx-auto font-medium">
-                            "装机不仅是堆砌硬件，更是对品质生活的追求。"
+                        <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl font-medium">
+                            汇聚海量真实装机方案，为您提供最专业、最高颜值的装机灵感参考。
                         </p>
                     </div>
 
-                    {/* Integrated Search Bar */}
-                    <div className="max-w-xl mx-auto relative group">
-                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                            <Search className="h-5 w-5 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors" />
+                    {/* Integrated Search Bar - Compact SaaS Style */}
+                    <div className="max-w-md w-full relative group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <Search className="h-4 w-4 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors" />
                         </div>
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="搜索配置、CPU、显卡..."
-                            className="block w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-500 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_4px_25px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_4px_25px_rgba(0,0,0,0.4)] text-base"
+                            placeholder="搜索配置、CPU、显卡型号..."
+                            className="block w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm"
                         />
-                        <div className="absolute inset-y-2 right-2 flex items-center">
-                            <button className="bg-slate-900 dark:bg-indigo-600 hover:bg-black dark:hover:bg-indigo-500 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-all shadow-md active:scale-95">
-                                搜索
-                            </button>
-                        </div>
                     </div>
-                </div>
-
-                {/* Decorative Background Elements */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-full overflow-hidden pointer-events-none opacity-40">
-                    <div className="absolute top-[20%] left-[10%] w-64 h-64 bg-indigo-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob"></div>
-                    <div className="absolute top-[10%] right-[10%] w-64 h-64 bg-purple-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-2000"></div>
                 </div>
             </div>
 
@@ -357,104 +346,95 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                             variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100, damping: 15 } } } as any}
                             key={cfg.id}
                             onClick={() => setSelectedConfigId(cfg.id)}
-                            className={`group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-[0_2px_10px_rgba(0,0,0,0.02)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_24px_rgba(0,0,0,0.4)] hover:-translate-y-1 active:scale-[0.98] transition-all duration-300 cursor-pointer overflow-hidden flex flex-col ripple ${isHero ? 'md:col-span-2 h-[380px]' : 'h-[340px]'}`}
+                            className={`group relative bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400/50 dark:hover:border-indigo-500/50 shadow-sm hover:shadow-md hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 cursor-pointer overflow-hidden flex flex-col ${isHero ? 'md:col-span-2 h-[360px]' : 'h-[340px]'}`}
                         >
                             {/* Showcase Cover Background */}
                             {coverImageUrl ? (
-                                <div className={`absolute top-0 left-0 w-full z-0 overflow-hidden ${isHero ? 'h-[200px]' : 'h-[140px]'}`}>
-                                    <img src={coverImageUrl} alt={cfg.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                <div className={`absolute top-0 left-0 w-full z-0 overflow-hidden ${isHero ? 'h-[180px]' : 'h-[130px]'}`}>
+                                    <img src={coverImageUrl} alt={cfg.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
                                 </div>
                             ) : null}
 
-                            <div className={`absolute top-4 left-4 z-10 px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide uppercase border shadow-sm ${theme.style}`}>
+                            <div className={`absolute top-3.5 left-3.5 z-10 px-2 py-0.5 rounded text-[9px] font-bold tracking-widest uppercase border shadow-sm ${theme.style}`}>
                                 {theme.label}
                             </div>
 
-                            {/* Showcase Badge (Top Left, Below Theme Badge) */}
+                            {/* Showcase Badge */}
                             {hasShowcaseCover && (
-                                <div className="absolute top-12 left-4 z-10 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-50/90 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 shadow-sm flex items-center gap-1 backdrop-blur-md">
-                                    <span>📸</span> 实机晒单
+                                <div className="absolute top-10 left-3.5 z-10 px-1.5 py-0.5 rounded bg-white/90 dark:bg-slate-900/90 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-1 backdrop-blur-md uppercase tracking-wider">
+                                    📸 PHOTO
                                 </div>
                             )}
 
                             {/* Serial Number + VIP Badge (Top Right) */}
-                            <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5">
+                            <div className="absolute top-3.5 right-3.5 z-10 flex items-center gap-1.5">
                                 {isUserVip(cfg) && (
-                                    <span className="flex items-center gap-0.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-                                        <Crown size={10} />
+                                    <span className="flex items-center gap-0.5 bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm tracking-wider">
                                         VIP
                                     </span>
                                 )}
-                                <span className={`font-mono text-[9px] px-1.5 py-1 rounded border shadow-sm backdrop-blur-md ${coverImageUrl ? 'bg-black/40 border-white/20 text-white/90' : 'bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/60 dark:border-slate-700/60 text-slate-400 dark:text-slate-400'}`}>
-                                    {cfg.serialNumber ? `NO.${cfg.serialNumber.split('-')[1]}` : `NO.${cfg.id.slice(-3)}`}
+                                <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded border shadow-sm backdrop-blur-md ${coverImageUrl ? 'bg-black/40 border-white/20 text-white/90' : 'bg-slate-50/80 dark:bg-slate-800/80 border-slate-200/60 dark:border-slate-700/60 text-slate-400'}`}>
+                                    #{cfg.serialNumber ? cfg.serialNumber.split('-')[1] : cfg.id.slice(-4)}
                                 </span>
                             </div>
 
-                            {/* Card Header: Title Only */}
-                            <div className={`p-5 pb-0 flex justify-between items-start gap-3 relative z-10 ${coverImageUrl ? (isHero ? 'pt-[120px]' : 'pt-24') : 'pt-14'}`}>
-                                <div className="flex-1 min-w-0">
-                                    <h3 className={`text-base font-bold line-clamp-2 leading-snug group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors drop-shadow-sm ${coverImageUrl ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
-                                        {cfg.title}
-                                    </h3>
-                                    {cfg.tags && cfg.tags.length > 0 && (
-                                        <div className="flex flex-wrap gap-1.5 mt-2.5">
-                                            {cfg.tags.slice(0, 3).map((tag: any, idx: number) => (
-                                                <span key={idx} className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold border backdrop-blur-md ${coverImageUrl ? 'bg-black/30 text-white/90 border-white/20' : 'bg-slate-100/80 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200/50 dark:border-slate-700/50'}`}>
-                                                    {tag.label || tag}
-                                                </span>
-                                            ))}
-                                            {cfg.tags.length > 3 && (
-                                                <span className={`px-1 py-0.5 rounded-md text-[10px] font-bold border backdrop-blur-md ${coverImageUrl ? 'bg-black/20 text-white/80 border-white/10' : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 border-slate-200/30 dark:border-slate-700'}`}>+{cfg.tags.length - 3}</span>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+                            {/* Card Header */}
+                            <div className={`p-4 pb-0 flex flex-col relative z-10 ${coverImageUrl ? (isHero ? 'pt-[110px]' : 'pt-20') : 'pt-12'}`}>
+                                <h3 className={`text-sm font-bold line-clamp-1 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors ${coverImageUrl ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
+                                    {cfg.title}
+                                </h3>
+                                {cfg.tags && cfg.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                        {cfg.tags.slice(0, 2).map((tag: any, idx: number) => (
+                                            <span key={idx} className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${coverImageUrl ? 'bg-white/10 text-white/90 border-white/20' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'}`}>
+                                                {(tag.label || tag).toUpperCase()}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Card Body: Specs List */}
-                            <div className="p-5 flex-1 flex flex-col justify-center gap-3">
-                                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 group-hover:bg-slate-50/80 dark:group-hover:bg-slate-800 transition-colors border border-slate-100/50 dark:border-slate-700/50">
-                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 shadow-sm border border-slate-100 dark:border-slate-700">
-                                        <Cpu size={16} />
+                            <div className="p-4 flex-1 flex flex-col justify-center gap-2">
+                                <div className="flex items-center gap-2.5 p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/50">
+                                    <div className="w-7 h-7 rounded bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 dark:border-slate-700">
+                                        <Cpu size={14} />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-[10px] uppercase text-slate-400 dark:text-slate-500 font-bold">处理器</div>
-                                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate" title={specs.cpu}>{specs.cpu}</div>
+                                        <div className="text-[8px] uppercase text-slate-400 font-bold tracking-widest">PROCESSOR</div>
+                                        <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate">{specs.cpu}</div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 group-hover:bg-slate-50/80 dark:group-hover:bg-slate-800 transition-colors border border-slate-100/50 dark:border-slate-700/50">
-                                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 shadow-sm border border-slate-100 dark:border-slate-700">
-                                        <Zap size={16} />
+                                <div className="flex items-center gap-2.5 p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/50">
+                                    <div className="w-7 h-7 rounded bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 dark:border-slate-700">
+                                        <MonitorPlay size={14} />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-[10px] uppercase text-slate-400 dark:text-slate-500 font-bold">显卡</div>
-                                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate" title={specs.gpu}>{specs.gpu}</div>
+                                        <div className="text-[8px] uppercase text-slate-400 font-bold tracking-widest">GRAPHICS</div>
+                                        <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate">{specs.gpu}</div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Card Footer: Price & Social */}
-                            <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 group-hover:bg-slate-50/30 dark:group-hover:bg-slate-800/30 transition-colors">
-                                <div className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-5 h-5 rounded-full ${cfg.avatarColor} flex items-center justify-center text-[9px] text-white font-bold ring-2 ring-white dark:ring-slate-900 shadow-sm`}>
-                                            {cfg.author[0].toUpperCase()}
-                                        </div>
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
-                                            <button 
-                                                onClick={(e) => handleToggleLikeClick(e, cfg)}
-                                                className={`flex items-center gap-1 px-2 py-1 -ml-2 rounded-full transition-all active:scale-95 border ${cfg.isLiked ? 'text-pink-500 bg-pink-50 dark:bg-pink-500/10 border-pink-200 dark:border-pink-500/30 shadow-sm' : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-                                            >
-                                                <Heart size={14} className={cfg.isLiked ? 'fill-current' : ''} />
-                                                <span>{cfg.likes} <span className="text-[10px]">赞</span></span>
-                                            </button>
-                                            <span className="text-slate-300 dark:text-slate-600">·</span>
-                                            <span className="text-[10px] text-slate-400 dark:text-slate-500">{new Date(cfg.date).toLocaleDateString('zh-CN')}</span>
-                                        </div>
+                            {/* Card Footer */}
+                            <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
+                                <div className="flex items-center gap-2">
+                                    <div className={`w-6 h-6 rounded ${cfg.avatarColor} flex items-center justify-center text-[10px] text-white font-bold`}>
+                                        {cfg.author[0].toUpperCase()}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-slate-400">
+                                        <button 
+                                            onClick={(e) => handleToggleLikeClick(e, cfg)}
+                                            className={`flex items-center gap-1 transition-colors ${cfg.isLiked ? 'text-pink-500' : 'hover:text-slate-600'}`}
+                                        >
+                                            <Heart size={12} className={cfg.isLiked ? 'fill-current' : ''} />
+                                            <span className="text-[10px] font-bold">{cfg.likes}</span>
+                                        </button>
+                                        <span className="text-[10px] font-medium">{new Date(cfg.date).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })}</span>
                                     </div>
                                 </div>
-                                <div className="text-lg font-mono font-bold text-slate-900 dark:text-white tracking-tight">
+                                <div className="text-base font-mono font-bold text-slate-900 dark:text-white tracking-tighter">
                                     ¥{finalPrice.toLocaleString()}
                                 </div>
                             </div>

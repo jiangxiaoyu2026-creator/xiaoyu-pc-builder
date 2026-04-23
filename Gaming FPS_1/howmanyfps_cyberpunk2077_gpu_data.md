@@ -1,0 +1,106 @@
+# Cyberpunk 2077 GPU 帧率数据 — HowManyFPS
+## 游戏: Cyberpunk 2077 | CPU: Ryzen 9 9950X3D
+## 采集时间: 2026-04-23
+
+| GPU | 分辨率 | Real-Time Average | 1% Lows |
+|-----|--------|-------------------|---------|
+
+| GeForce RTX 5090 | 1920x1080 (1K) | 123 FPS | 77 FPS |
+| GeForce RTX 5090 | 2560x1440 (2K) | 102 FPS | 61 FPS |
+| GeForce RTX 5090 | 3840x2160 (4K) | 51 FPS | 24 FPS |
+| GeForce RTX 4090 | 1920x1080 (1K) | 98 FPS | 70 FPS |
+| GeForce RTX 4090 | 2560x1440 (2K) | 77 FPS | 55 FPS |
+| GeForce RTX 4090 | 3840x2160 (4K) | 26 FPS | 17 FPS |
+| GeForce RTX 4080 Super | 1920x1080 (1K) | 98 FPS | 70 FPS |
+| GeForce RTX 4080 Super | 2560x1440 (2K) | 77 FPS | 55 FPS |
+| GeForce RTX 4080 Super | 3840x2160 (4K) | 26 FPS | 17 FPS |
+| GeForce RTX 4080 | 1920x1080 (1K) | 76 FPS | 57 FPS |
+| GeForce RTX 4080 | 2560x1440 (2K) | 55 FPS | 41 FPS |
+| GeForce RTX 4080 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 3080 Ti | 1920x1080 (1K) | 48 FPS | 36 FPS |
+| GeForce RTX 3080 Ti | 2560x1440 (2K) | 27 FPS | 20 FPS |
+| GeForce RTX 3080 Ti | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 3080 | 1920x1080 (1K) | 40 FPS | 30 FPS |
+| GeForce RTX 3080 | 2560x1440 (2K) | 19 FPS | 14 FPS |
+| GeForce RTX 3080 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 5070 Ti | 1920x1080 (1K) | 74 FPS | 56 FPS |
+| GeForce RTX 5070 Ti | 2560x1440 (2K) | 54 FPS | 40 FPS |
+| GeForce RTX 5070 Ti | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 5070 | 1920x1080 (1K) | 58 FPS | 43 FPS |
+| GeForce RTX 5070 | 2560x1440 (2K) | 37 FPS | 28 FPS |
+| GeForce RTX 5070 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 4070 Ti Super | 1920x1080 (1K) | 58 FPS | 43 FPS |
+| GeForce RTX 4070 Ti Super | 2560x1440 (2K) | 37 FPS | 28 FPS |
+| GeForce RTX 4070 Ti Super | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 4070 Super | 1920x1080 (1K) | 58 FPS | 43 FPS |
+| GeForce RTX 4070 Super | 2560x1440 (2K) | 37 FPS | 28 FPS |
+| GeForce RTX 4070 Super | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 4070 Ti | 1920x1080 (1K) | 58 FPS | 44 FPS |
+| GeForce RTX 4070 Ti | 2560x1440 (2K) | 37 FPS | 28 FPS |
+| GeForce RTX 4070 Ti | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 4070 | 1920x1080 (1K) | 41 FPS | 30 FPS |
+| GeForce RTX 4070 | 2560x1440 (2K) | 20 FPS | 15 FPS |
+| GeForce RTX 4070 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 3070 Ti | 1920x1080 (1K) | 29 FPS | 22 FPS |
+| GeForce RTX 3070 Ti | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| GeForce RTX 3070 Ti | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 3070 | 1920x1080 (1K) | 24 FPS | 18 FPS |
+| GeForce RTX 3070 | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| GeForce RTX 3070 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 5060 Ti | 1920x1080 (1K) | 33 FPS | 24 FPS |
+| GeForce RTX 5060 Ti | 2560x1440 (2K) | 12 FPS | 10 FPS |
+| GeForce RTX 5060 Ti | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 5060 | 1920x1080 (1K) | 24 FPS | 18 FPS |
+| GeForce RTX 5060 | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| GeForce RTX 5060 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 4060 Ti | 1920x1080 (1K) | 23 FPS | 17 FPS |
+| GeForce RTX 4060 Ti | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| GeForce RTX 4060 Ti | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 4060 | 1920x1080 (1K) | 10 FPS | 10 FPS |
+| GeForce RTX 4060 | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| GeForce RTX 4060 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 3060 Ti | 1920x1080 (1K) | 15 FPS | 11 FPS |
+| GeForce RTX 3060 Ti | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| GeForce RTX 3060 Ti | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 3060 | 1920x1080 (1K) | 15 FPS | 11 FPS |
+| GeForce RTX 3060 | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| GeForce RTX 3060 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 5050 | 1920x1080 (1K) | 10 FPS | 10 FPS |
+| GeForce RTX 5050 | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| GeForce RTX 5050 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 7900 XTX | 1920x1080 (1K) | 83 FPS | 62 FPS |
+| Radeon RX 7900 XTX | 2560x1440 (2K) | 62 FPS | 46 FPS |
+| Radeon RX 7900 XTX | 3840x2160 (4K) | 11 FPS | 10 FPS |
+| Radeon RX 7900 XT | 1920x1080 (1K) | 72 FPS | 54 FPS |
+| Radeon RX 7900 XT | 2560x1440 (2K) | 51 FPS | 38 FPS |
+| Radeon RX 7900 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 7900 GRE | 1920x1080 (1K) | 58 FPS | 43 FPS |
+| Radeon RX 7900 GRE | 2560x1440 (2K) | 37 FPS | 27 FPS |
+| Radeon RX 7900 GRE | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 9800 XT | 1920x1080 (1K) | 58 FPS | 43 FPS |
+| Radeon RX 9800 XT | 2560x1440 (2K) | 37 FPS | 27 FPS |
+| Radeon RX 9800 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 9700 XT | 1920x1080 (1K) | 58 FPS | 43 FPS |
+| Radeon RX 9700 XT | 2560x1440 (2K) | 37 FPS | 27 FPS |
+| Radeon RX 9700 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 970 | 1920x1080 (1K) | 58 FPS | 43 FPS |
+| Radeon RX 970 | 2560x1440 (2K) | 37 FPS | 27 FPS |
+| Radeon RX 970 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 8800 XT | 1920x1080 (1K) | 58 FPS | 43 FPS |
+| Radeon RX 8800 XT | 2560x1440 (2K) | 37 FPS | 27 FPS |
+| Radeon RX 8800 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 7800 XT | 1920x1080 (1K) | 49 FPS | 37 FPS |
+| Radeon RX 7800 XT | 2560x1440 (2K) | 28 FPS | 21 FPS |
+| Radeon RX 7800 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 7700 XT | 1920x1080 (1K) | 38 FPS | 28 FPS |
+| Radeon RX 7700 XT | 2560x1440 (2K) | 17 FPS | 13 FPS |
+| Radeon RX 7700 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 7600 XT | 1920x1080 (1K) | 13 FPS | 10 FPS |
+| Radeon RX 7600 XT | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| Radeon RX 7600 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 7600 | 1920x1080 (1K) | 12 FPS | 10 FPS |
+| Radeon RX 7600 | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| Radeon RX 7600 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6600 | 1920x1080 (1K) | 10 FPS | 10 FPS |
+| Radeon RX 6600 | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| Radeon RX 6600 | 3840x2160 (4K) | 10 FPS | 10 FPS |

@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon, Gamepad2 } from 'lucide-react';
 import { BuildEntry, ConfigTemplate, Category, UserItem } from '../types/clientTypes';
 import { DEFAULT_BUILD_TEMPLATE, HARDWARE_DB } from '../data/clientData';
@@ -436,7 +437,9 @@ export default function ClientApp() {
                 return { ...entry, item: null, quantity: 1 };
             });
             setBuildList(newList);
-            setViewMode('visual');
+            if (viewMode !== 'streamer') {
+                setViewMode('visual');
+            }
             setShowLibraryModal(false);
             showToast(`✅ 已载入配置：${config.title} `);
         } catch (err) {
@@ -588,36 +591,36 @@ export default function ClientApp() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800 dark:text-slate-200 transition-colors duration-300">
-            <header className="relative md:sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 shadow-sm transition-all duration-300">
+        <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0B10] font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800 dark:text-slate-200 transition-colors duration-300">
+            <header className="relative md:sticky top-0 z-40 bg-white/70 dark:bg-[#0B0B10]/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-[#1E293B]/50 transition-all duration-300">
                 <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 bg-slate-900 dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200 dark:shadow-none">
-                            <Monitor className="text-white" size={20} />
+                        <div className="w-9 h-9 bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] rounded-xl flex items-center justify-center shadow-sm dark:shadow-none">
+                            <Monitor className="text-indigo-600 dark:text-indigo-400" size={20} />
                         </div>
-                        <span className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">蒋小鱼装机平台</span>
+                        <span className="text-xl font-display font-bold text-slate-900 dark:text-white tracking-tight">蒋小鱼装机平台</span>
                     </div>
                     {/* Navigation Tabs - Hidden on mobile, visible on tablet/desktop */}
-                    <div className="hidden md:flex bg-slate-50/90 dark:bg-slate-800/80 p-2 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 backdrop-blur-xl shadow-inner overflow-x-auto no-scrollbar max-w-none gap-1">
+                    <div className="hidden md:flex bg-slate-100/50 dark:bg-[#1A1A24]/50 p-1.5 rounded-xl border border-slate-200/50 dark:border-[#2D3748]/50 backdrop-blur-xl gap-1">
                         <TabButton
                             active={viewMode === 'streamer'}
                             onClick={() => {
                                 setViewMode('streamer');
                             }}
-                            icon={<Zap size={16} />}
+                            icon={<Zap />}
                             label="主播中心"
                         />
-                        <TabButton active={viewMode === 'visual'} onClick={() => setViewMode('visual')} icon={<LayoutGrid size={16} />} label="AI装机台" />
-                        <TabButton active={viewMode === 'square'} onClick={() => setViewMode('square')} icon={<Share2 size={16} />} label="配置广场" />
-                        <TabButton active={viewMode === 'gamefps'} onClick={() => setViewMode('gamefps')} icon={<Gamepad2 size={16} />} label="游戏FPS" />
-                        <TabButton active={viewMode === 'used'} onClick={() => setViewMode('used')} icon={<ShoppingBag size={16} />} label="二手闲置" />
+                        <TabButton active={viewMode === 'visual'} onClick={() => setViewMode('visual')} icon={<LayoutGrid />} label="AI装机台" />
+                        <TabButton active={viewMode === 'square'} onClick={() => setViewMode('square')} icon={<Share2 />} label="配置广场" />
+                        <TabButton active={viewMode === 'gamefps'} onClick={() => setViewMode('gamefps')} icon={<Gamepad2 />} label="游戏FPS" />
+                        <TabButton active={viewMode === 'used'} onClick={() => setViewMode('used')} icon={<ShoppingBag />} label="二手闲置" />
                     </div>
 
                     <div className="flex items-center gap-2">
                         {/* Theme Toggle */}
                         <button
                             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                            className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            className="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2D3748] transition-colors"
                             title="切换深浅色主题"
                         >
                             {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
@@ -625,8 +628,8 @@ export default function ClientApp() {
                         
                         {currentUser ? (
                             <div className={`flex items-center gap-2 border p-1 rounded-2xl shadow-sm transition-all cursor-pointer hover:shadow-md active:scale-95 duration-300 ${['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())
-                                ? 'bg-slate-900 dark:bg-slate-800 border-amber-500/40 dark:border-amber-500/20'
-                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                                ? 'bg-slate-900 dark:bg-[#1A1A24] border-amber-500/40 dark:border-amber-500/20'
+                                : 'bg-white dark:bg-[#1A1A24] border-slate-200 dark:border-[#2D3748]'
                                 } `}
                                 onClick={() => setShowUserCenter(true)}
                             >
@@ -646,14 +649,14 @@ export default function ClientApp() {
                         ) : (
                             <button
                                 onClick={() => setShowLoginModal(true)}
-                                className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                className="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2D3748] transition-colors"
                             >
                                 <User size={20} />
                             </button>
                         )}
 
                         <button
-                            className="hidden md:flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 dark:bg-slate-800 text-white shadow-lg shadow-slate-200 dark:shadow-none active:scale-90 transition-all tap-active"
+                            className="hidden md:flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 dark:bg-[#1A1A24] border border-transparent dark:border-[#2D3748] text-white dark:text-slate-300 shadow-sm dark:shadow-none active:scale-90 transition-all tap-active"
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
                         >
                             {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
@@ -666,10 +669,10 @@ export default function ClientApp() {
             {showMobileMenu && (
                 <div className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in flex flex-col justify-end" onClick={() => setShowMobileMenu(false)}>
                     <div
-                        className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-2xl rounded-t-3xl animate-in slide-in-from-bottom duration-300 pb-safe pb-24"
+                        className="bg-white dark:bg-[#121218] border-t border-x border-slate-200 dark:border-[#1E293B] shadow-lg dark:shadow-none rounded-t-[24px] animate-in slide-in-from-bottom duration-300 pb-safe pb-24"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto my-3" />
+                        <div className="w-12 h-1.5 bg-slate-200 dark:bg-[#2D3748] rounded-full mx-auto my-3" />
                         <div className="px-5 pb-5 pt-2 max-h-[70vh] overflow-y-auto space-y-2">
                             {/* Login Banner for Mobile Menu */}
                             {!currentUser && (
@@ -678,7 +681,7 @@ export default function ClientApp() {
                                         setShowLoginModal(true);
                                         setShowMobileMenu(false);
                                     }}
-                                    className="w-full flex items-center gap-5 p-5 rounded-[24px] mb-6 bg-slate-900 dark:bg-indigo-600/20 text-white shadow-2xl shadow-slate-200 dark:shadow-none border border-transparent dark:border-indigo-500/30 group active:scale-[0.98] transition-all"
+                                    className="w-full flex items-center gap-4 p-4 rounded-xl mb-4 bg-slate-900 dark:bg-indigo-600/20 text-white shadow-md shadow-slate-200/50 dark:shadow-none border border-transparent dark:border-indigo-500/30 group active:scale-[0.98] transition-all"
                                 >
                                     <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center border border-white/10 group-hover:bg-white/20 transition-colors">
                                         <User size={28} className="text-white/90" />
@@ -771,7 +774,7 @@ export default function ClientApp() {
             )}
 
             {/* Application Mobile Bottom Tab Bar */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[45] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-800/60 pb-safe pt-1 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] dark:shadow-none">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[45] bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl border-t border-slate-200 dark:border-[#1E293B] pb-safe pt-1 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] dark:shadow-none">
                 <div className="flex justify-around items-center h-[56px] px-2 relative">
                     {[
                         { id: 'visual', icon: LayoutGrid, label: '装机' },
@@ -813,8 +816,16 @@ export default function ClientApp() {
             </nav>
 
             {/* Main Content Area with fluid animation */}
-            <main className="flex-1 w-full max-w-7xl mx-auto overflow-hidden animate-in fade-in zoom-in-95 duration-300 pb-[70px] md:pb-0" key={viewMode}>
-                <div className="h-full overflow-y-auto custom-scrollbar pb-0" id="main-scroll-container">
+            <AnimatePresence mode="wait">
+                <motion.main 
+                    key={viewMode}
+                    initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0, y: -15, filter: 'blur(4px)' }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="flex-1 w-full max-w-7xl mx-auto overflow-hidden pb-[70px] md:pb-0"
+                >
+                    <div className="h-full overflow-y-auto custom-scrollbar pb-0" id="main-scroll-container">
                     {viewMode === 'streamer' && (
                         <StreamerWorkbench
                             buildList={buildList}
@@ -878,7 +889,8 @@ export default function ClientApp() {
                     {viewMode === 'gamefps' && <GameFPSViewer />}
                     {viewMode === 'about' && <AboutUs />}
                 </div>
-            </main>
+                </motion.main>
+            </AnimatePresence>
 
             {showPaymentModal && currentUser && (
                 <PaymentModal
@@ -1008,14 +1020,14 @@ export default function ClientApp() {
 
             {toast.show && (
                 <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] animate-bounce">
-                    <div className="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 border border-slate-800/50 backdrop-blur-lg">
+                    <div className="bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg shadow-slate-900/20 flex items-center gap-2 border border-slate-800/50 backdrop-blur-lg">
                         <span>{toast.msg}</span>
                     </div>
                 </div>
             )}
 
             {viewMode === 'visual' && (
-                <footer className="fixed bottom-[60px] md:bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                <footer className="fixed bottom-[60px] md:bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl border-t border-slate-200 dark:border-[#1E293B] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-none">
                     <div className="max-w-7xl mx-auto px-3 md:px-4 h-14 flex items-center justify-between gap-2">
                         {/* Price Info */}
                         <div className="flex items-center gap-2 md:gap-4">
@@ -1081,7 +1093,7 @@ export default function ClientApp() {
             )}
 
             {/* Sheet */}
-            <div className={`fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-out transform ${showDiscountSheet ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'} md:hidden`}>
+            <div className={`fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-xl p-5 border-t border-slate-200 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] transition-transform duration-300 ease-out transform ${showDiscountSheet ? 'translate-y-0 pointer-events-auto' : 'translate-y-full pointer-events-none'} md:hidden`}>
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold text-slate-900">选择优惠方案</h3>
                     <button onClick={() => setShowDiscountSheet(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:text-slate-800">
@@ -1124,10 +1136,10 @@ export default function ClientApp() {
 
             {/* Footer - About Us link */}
             {viewMode !== 'streamer' && (
-                <div className="hidden md:flex items-center justify-center py-3 border-t border-slate-100 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm">
+                <div className="hidden md:flex items-center justify-center py-3 border-t border-slate-200 dark:border-[#1E293B] bg-white/50 dark:bg-[#0B0B10]/50 backdrop-blur-sm">
                     <button
                         onClick={() => setViewMode('about')}
-                        className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 transition-colors"
+                        className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400 transition-colors"
                     >
                         <Info size={12} />
                         <span>关于我们 · DIYXX 小鱼装机</span>

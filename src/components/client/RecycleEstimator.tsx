@@ -203,13 +203,13 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
     if (step === 'success') {
         return (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white rounded-3xl w-full max-w-sm p-8 text-center animate-scale-up shadow-2xl">
-                    <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-500">
+                <div className="bg-white rounded-2xl w-full max-w-sm p-8 text-center animate-scale-up shadow-xl border border-slate-200">
+                    <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-600">
                         <CheckCircle2 size={48} />
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-800 mb-2">申请已提交</h2>
-                    <p className="text-slate-500 mb-8">我们的客服人员会尽快通过微信联系您进行复核与最终估价。</p>
-                    <button onClick={() => { onClose(); onSuccess(); }} className="w-full py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/30">
+                    <h2 className="text-xl font-bold text-slate-900 mb-2">申请已提交</h2>
+                    <p className="text-slate-500 mb-8 text-sm">我们的客服人员会尽快通过微信联系您进行复核与最终估价。</p>
+                    <button onClick={() => { onClose(); onSuccess(); }} className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm active:scale-[0.98]">
                         完成
                     </button>
                 </div>
@@ -221,8 +221,8 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
         ? 'w-full animate-fade-in'
         : 'fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in';
     const innerClass = inline
-        ? 'bg-white dark:bg-slate-900 rounded-3xl w-full shadow-xl flex flex-col overflow-hidden relative border border-slate-200 dark:border-slate-700'
-        : 'bg-white rounded-3xl w-full max-w-2xl shadow-2xl animate-scale-up flex flex-col h-[85vh] md:h-[800px] overflow-hidden relative';
+        ? 'bg-white dark:bg-slate-900 rounded-xl w-full shadow-sm flex flex-col overflow-hidden relative border border-slate-200 dark:border-slate-800'
+        : 'bg-white rounded-2xl w-full max-w-2xl shadow-xl border border-slate-200 animate-scale-up flex flex-col h-[85vh] md:h-[800px] overflow-hidden relative';
 
     return (
         <div className={wrapperClass}>
@@ -248,7 +248,7 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
                 <div className="flex-1 overflow-y-auto bg-slate-50 p-4 md:p-6 custom-scrollbar">
                     
                     {/* Components Table */}
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8">
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-8">
                         <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                             <h3 className="font-bold text-slate-800">硬件清单</h3>
                             <button 
@@ -319,7 +319,7 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
                     {/* Submission Form */}
                     {!inline && (
                         <form id="recycleForm" onSubmit={submitRequest} className="space-y-6">
-                            <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <div className="bg-white p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm">
                                 <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
                                     补充联系方式与细节
                                 </h3>
@@ -379,7 +379,7 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
                 <div className="p-4 md:p-6 border-t border-slate-100 bg-white z-10 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.03)] pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-6">
                     <div className="flex items-center justify-between gap-4 md:gap-6">
                         <div className="flex flex-col">
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">最高预估总价</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">最高预估总价</span>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-lg md:text-xl font-bold text-indigo-600">¥</span>
                                 <span className="text-3xl md:text-4xl font-black font-mono text-indigo-600 tracking-tighter">{totalPrice.toLocaleString()}</span>
@@ -391,7 +391,7 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
                                 type="submit" 
                                 form="recycleForm"
                                 disabled={loading}
-                                className="flex-1 max-w-[200px] md:max-w-xs py-3.5 md:py-4 bg-slate-900 hover:bg-indigo-600 text-white font-black text-sm md:text-base rounded-2xl shadow-lg shadow-slate-900/20 transition-all disabled:opacity-50 active:scale-[0.98]"
+                                className="flex-1 max-w-[200px] md:max-w-xs py-3 md:py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm md:text-base rounded-xl shadow-sm transition-all disabled:opacity-50 active:scale-[0.98]"
                             >
                                 {loading ? '正在提交...' : '提交估价申请'}
                             </button>
@@ -433,7 +433,7 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
                                     placeholder={`输入如：${modalCategory.code === 'gpu' ? '4060' : modalCategory.code === 'cpu' ? '13600' : '关键词'}...`}
                                     value={keyword}
                                     onChange={e => handleSearch(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-medium text-slate-800 shadow-sm text-lg transition-all"
+                                    className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 font-medium text-slate-800 shadow-sm text-base transition-all"
                                 />
                                 {searching && <div className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin"></div>}
                             </div>
@@ -445,7 +445,7 @@ export default function RecycleEstimator({ onClose, onSuccess, currentUser, show
                                             <button 
                                                 key={item.id}
                                                 onClick={() => handleSelectItem(item)}
-                                                className="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:border-indigo-300 hover:shadow-md transition-all text-left group active:scale-[0.99]"
+                                                className="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-indigo-400 hover:-translate-y-0.5 hover:shadow-md transition-all text-left group active:scale-[0.99]"
                                             >
                                                 <div className="flex-1 min-w-0 pr-4">
                                                     <div className="flex items-center gap-2 mb-1">
