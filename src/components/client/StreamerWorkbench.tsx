@@ -488,25 +488,77 @@ function StreamerWorkbench({
         // Match CPU/GPU model names to keys in gamesFpsData
         const findKey = (item: HardwareItem | null | undefined, type: 'cpu' | 'gpu') => {
             if (!item) return null;
-            const modelStr = `${item.brand} ${item.model}`.toUpperCase();
+            const modelStr = `${item.brand} ${item.model}`.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            const modelOnly = item.model.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            
             for (const game of Object.keys(gamesFpsData)) {
                 const entries = Object.keys(gamesFpsData[game][type] || {});
                 for (const key of entries) {
-                    if (modelStr.includes(key.toUpperCase()) || key.toUpperCase().includes(modelStr)) {
+                    const cleanKey = key.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    if (modelStr.includes(cleanKey) || cleanKey.includes(modelStr) || modelOnly.includes(cleanKey) || cleanKey.includes(modelOnly)) {
                         return key;
                     }
                 }
             }
-            // Fuzzy: try partial match on model only
-            const modelOnly = item.model.toUpperCase();
-            for (const game of Object.keys(gamesFpsData)) {
-                const entries = Object.keys(gamesFpsData[game][type] || {});
-                for (const key of entries) {
-                    if (key.toUpperCase().includes(modelOnly) || modelOnly.includes(key.toUpperCase())) {
-                        return key;
+            
+            if (type === 'cpu') {
+                const match = item.model.toUpperCase().match(/\d{4,5}[A-Z]{0,3}/);
+                if (match) {
+                    const identifier = match[0];
+                    for (const game of Object.keys(gamesFpsData)) {
+                        const entries = Object.keys(gamesFpsData[game][type] || {});
+                        for (const key of entries) {
+                            if (key.toUpperCase().includes(identifier)) return key;
+                        }
+                    }
+                    const numMatch = identifier.match(/\d+/);
+                    if (numMatch) {
+                        for (const game of Object.keys(gamesFpsData)) {
+                            const entries = Object.keys(gamesFpsData[game][type] || {});
+                            for (const key of entries) {
+                                if (key.toUpperCase().includes(numMatch[0])) return key;
+                            }
+                        }
                     }
                 }
             }
+            
+            if (type === 'gpu') {
+                const numMatch = item.model.match(/\d{4}/);
+                if (numMatch) {
+                    const num = numMatch[0];
+                    const isTi = /TI/i.test(item.model);
+                    const isSuper = /SUPER/i.test(item.model);
+                    const isXTX = /XTX/i.test(item.model);
+                    const isXT = /XT\b/i.test(item.model) && !isXTX;
+                    const isGRE = /GRE/i.test(item.model);
+                    
+                    for (const game of Object.keys(gamesFpsData)) {
+                        const entries = Object.keys(gamesFpsData[game][type] || {});
+                        for (const key of entries) {
+                            const upperKey = key.toUpperCase();
+                            if (upperKey.includes(num)) {
+                                const keyTi = /TI/i.test(upperKey);
+                                const keySuper = /SUPER/i.test(upperKey);
+                                const keyXTX = /XTX/i.test(upperKey);
+                                const keyXT = /XT\b/i.test(upperKey) && !keyXTX;
+                                const keyGRE = /GRE/i.test(upperKey);
+                                
+                                if (isTi === keyTi && isSuper === keySuper && isXTX === keyXTX && isXT === keyXT && isGRE === keyGRE) {
+                                    return key;
+                                }
+                            }
+                        }
+                    }
+                    for (const game of Object.keys(gamesFpsData)) {
+                        const entries = Object.keys(gamesFpsData[game][type] || {});
+                        for (const key of entries) {
+                            if (key.toUpperCase().includes(num)) return key;
+                        }
+                    }
+                }
+            }
+            
             return null;
         };
 
@@ -1000,7 +1052,7 @@ function StreamerWorkbench({
                     {/* === Left: Config Table === */}
                     <div className="flex-1 min-w-0 max-w-[1550px]">
                         <div className="overflow-x-auto">
-                            <div className="min-w-[600px]">
+                            <div className="min-w-[1550px]">
                                 <div className={`grid grid-cols-[85px_1fr_50px_56px_24px] gap-3 px-5 py-1.5 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-[10px] font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>

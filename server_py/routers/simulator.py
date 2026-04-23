@@ -171,7 +171,31 @@ async def validate_bom(request: ValidationRequest, db: Session = Depends(get_ses
     for item in items:
         specs = item["specs"]
         # 累加跑分
-        total_lu_score += int(specs.get("master_lu_score", 0))
+        base_score = int(specs.get("master_lu_score", 0))
+        if base_score == 0:
+            cat = item.get("category")
+            name_upper = item.get("name", "").upper()
+            if cat == "storage":
+                if "GEN5" in name_upper or "PCIE5" in name_upper or "PCI-E 5.0" in name_upper:
+                    base_score = 350000
+                elif "GEN4" in name_upper or "PCIE4" in name_upper or "PCI-E 4.0" in name_upper:
+                    base_score = 220000
+                elif "NVME" in name_upper or "M.2" in name_upper:
+                    base_score = 120000
+                elif "SATA" in name_upper:
+                    base_score = 40000
+                else:
+                    base_score = 100000
+            elif cat == "ram":
+                if "DDR5" in name_upper:
+                    base_score = 200000
+                elif "DDR4" in name_upper:
+                    base_score = 120000
+                else:
+                    base_score = 100000
+        
+        total_lu_score += base_score
+        
         # 累加功耗 (如果部分硬件没功耗比如主板，取个默认值)
         draw = int(specs.get("power_draw", 0))
         if draw:

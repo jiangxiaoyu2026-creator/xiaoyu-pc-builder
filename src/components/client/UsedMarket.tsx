@@ -113,7 +113,7 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                     <div className="flex gap-3">
                         <button
                             onClick={currentUser ? onRecycle : onLogin}
-                            className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
+                            className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl font-bold transition-all flex items-center gap-2 text-sm text-white"
                         >
                             <Recycle size={16} />
                             我要回收
