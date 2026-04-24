@@ -21,18 +21,28 @@ const gpuSet = new Set<string>();
 const gameNameMapping: Record<string, string> = {
   "Apex Legends": "Apex 英雄",
   "Black Myth Wukong": "黑神话：悟空",
+  "Call of Duty Warzone 2.0": "使命召唤：战区 2.0",
   "Counter-Strike 2": "反恐精英 2",
   "Cyberpunk 2077": "赛博朋克 2077",
   "Delta Force": "三角洲行动",
+  "Destiny 2": "命运 2",
   "Dota 2": "刀塔 2",
+  "Elden Ring": "艾尔登法环",
+  "Escape From Tarkov": "逃离塔科夫",
+  "Fortnite": "堡垒之夜",
+  "Grand Theft Auto V": "侠盗猎车手 5",
+  "League of Legends": "英雄联盟",
   "Minecraft": "我的世界",
   "Overwatch 2": "守望先锋 2",
   "PUBG": "绝地求生",
   "PlayerUnknown's Battlegrounds": "绝地求生",
   "RDR2": "荒野大镖客：救赎 2",
   "Red Dead Redemption 2": "荒野大镖客：救赎 2",
+  "Rocket League": "火箭联盟",
   "Rust": "腐蚀",
-  "Valorant": "无畏契约"
+  "Tom Clancy's Rainbow Six Siege": "彩虹六号：围攻",
+  "Valorant": "无畏契约",
+  "World of Warcraft": "魔兽世界"
 };
 
 for (const file of files) {
