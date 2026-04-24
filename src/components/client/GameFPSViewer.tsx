@@ -350,13 +350,14 @@ export const GameFPSViewer: React.FC = () => {
                                             </button>
                                         ))}
                                     </div>
-                                    <div className="mt-4 text-[11px] text-slate-500 dark:text-slate-400 bg-amber-50/50 dark:bg-amber-900/10 p-3 rounded-xl border border-amber-100/50 dark:border-amber-800/20 flex items-start gap-2 leading-relaxed">
-                                        <div className="text-amber-500 mt-0.5"><Activity size={14} /></div>
-                                        <div>
-                                            <span className="font-bold text-amber-700 dark:text-amber-500">测算基准：最高/超级画质。</span>
-                                            实际游玩时若使用默认或中低画质，游戏帧率会比当前测算值<span className="text-amber-600 dark:text-amber-400 font-bold mx-0.5">大幅提升</span>。
-                                        </div>
-                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="mt-6 text-[12px] text-slate-500 dark:text-slate-400 bg-amber-50/50 dark:bg-amber-900/10 p-3 sm:p-4 rounded-xl border border-amber-100/50 dark:border-amber-800/20 flex items-center justify-center gap-2 leading-relaxed">
+                                <div className="text-amber-500"><Activity size={16} /></div>
+                                <div>
+                                    <span className="font-bold text-amber-700 dark:text-amber-500">测算基准：最高/超级画质。</span>
+                                    实际游玩时若使用默认或中低画质，游戏帧率会比当前测算值<span className="text-amber-600 dark:text-amber-400 font-bold mx-0.5">大幅提升</span>。
                                 </div>
                             </div>
                         </motion.div>
