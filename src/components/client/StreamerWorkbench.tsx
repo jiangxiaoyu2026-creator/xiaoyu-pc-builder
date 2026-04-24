@@ -200,6 +200,13 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             e.preventDefault();
             priceRef.current?.focus();
             priceRef.current?.select();
+        } else if (e.key === 'ArrowRight') {
+            const target = e.target as HTMLInputElement;
+            if (target.selectionStart === target.value.length && target.selectionEnd === target.value.length) {
+                e.preventDefault();
+                priceRef.current?.focus();
+                priceRef.current?.select();
+            }
         }
     };
 
@@ -207,6 +214,24 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
         if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
             // From price field, move to next row
+            onEnter();
+        } else if (e.key === 'ArrowLeft') {
+            const target = e.target as HTMLInputElement;
+            if (target.selectionStart === 0 && target.selectionEnd === 0) {
+                e.preventDefault();
+                inputRef.current?.focus();
+                setTimeout(() => {
+                    if (inputRef.current) {
+                        const len = inputRef.current.value.length;
+                        inputRef.current.setSelectionRange(len, len);
+                    }
+                }, 0);
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            onPrev();
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
             onEnter();
         }
     };
