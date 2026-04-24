@@ -104,3 +104,19 @@
 | Radeon RX 6600 | 1920x1080 (1K) | 60 FPS | 45 FPS |
 | Radeon RX 6600 | 2560x1440 (2K) | 46 FPS | 34 FPS |
 | Radeon RX 6600 | 3840x2160 (4K) | 11 FPS | 10 FPS |
+
+| GeForce RTX 5080 | 1920x1080 (1K) | 109 FPS | 82 FPS |
+| GeForce RTX 5080 | 2560x1440 (2K) | 144 FPS | 108 FPS |
+| GeForce RTX 5080 | 3840x2160 (4K) | 109 FPS | 82 FPS |
+
+| GeForce RTX 3090 Ti | 1920x1080 (1K) | 63 FPS | 47 FPS |
+| GeForce RTX 3090 Ti | 2560x1440 (2K) | 98 FPS | 74 FPS |
+| GeForce RTX 3090 Ti | 3840x2160 (4K) | 63 FPS | 47 FPS |
+
+| GeForce RTX 3090 | 1920x1080 (1K) | 56 FPS | 42 FPS |
+| GeForce RTX 3090 | 2560x1440 (2K) | 90 FPS | 68 FPS |
+| GeForce RTX 3090 | 3840x2160 (4K) | 56 FPS | 42 FPS |
+
+| GeForce RTX 3050 | 1920x1080 (1K) | Under 10 FPS | Under 10 FPS |
+| GeForce RTX 3050 | 2560x1440 (2K) | 16 FPS | 12 FPS |
+| GeForce RTX 3050 | 3840x2160 (4K) | Under 10 FPS | Under 10 FPS |

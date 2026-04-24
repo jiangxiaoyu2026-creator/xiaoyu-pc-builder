@@ -5,7 +5,7 @@
 | GPU | 分辨率 | Real-Time Average | 1% Lows |
 |-----|--------|-------------------|---------|
 
-| GeForce RTX 5090 | 1920x1080 (1K) |  FPS |  FPS |
+| GeForce RTX 5090 | 1920x1080 (1K) | 440 FPS | 103 FPS |
 | GeForce RTX 5090 | 2560x1440 (2K) | 415 FPS | 89 FPS |
 | GeForce RTX 5090 | 3840x2160 (4K) | 356 FPS | 55 FPS |
 | GeForce RTX 4090 | 1920x1080 (1K) | 374 FPS | 135 FPS |
@@ -104,3 +104,19 @@
 | Radeon RX 6600 | 1920x1080 (1K) | 206 FPS | 111 FPS |
 | Radeon RX 6600 | 2560x1440 (2K) | 182 FPS | 97 FPS |
 | Radeon RX 6600 | 3840x2160 (4K) | 122 FPS | 63 FPS |
+
+| GeForce RTX 5080 | 1920x1080 (1K) | 270 FPS | 92 FPS |
+| GeForce RTX 5080 | 2560x1440 (2K) | 330 FPS | 126 FPS |
+| GeForce RTX 5080 | 3840x2160 (4K) | 270 FPS | 92 FPS |
+
+| GeForce RTX 3090 | 1920x1080 (1K) | 190 FPS | 91 FPS |
+| GeForce RTX 3090 | 2560x1440 (2K) | 250 FPS | 126 FPS |
+| GeForce RTX 3090 | 3840x2160 (4K) | 190 FPS | 91 FPS |
+
+| GeForce RTX 3090 Ti | 1920x1080 (1K) | 203 FPS | 93 FPS |
+| GeForce RTX 3090 Ti | 2560x1440 (2K) | 262 FPS | 128 FPS |
+| GeForce RTX 3090 Ti | 3840x2160 (4K) | 203 FPS | 93 FPS |
+
+| GeForce RTX 3050 | 1920x1080 (1K) | 81 FPS | 36 FPS |
+| GeForce RTX 3050 | 2560x1440 (2K) | 140 FPS | 71 FPS |
+| GeForce RTX 3050 | 3840x2160 (4K) | 81 FPS | 36 FPS |
