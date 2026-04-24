@@ -1003,7 +1003,10 @@ function VisualBuilder({
                             fpsData.map((item, idx) => (
                                     <div key={idx} className="group/item">
                                         <div className="flex justify-between items-end text-[11px] mb-2">
-                                            <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors">{item.name}</span>
+                                            <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5">
+                                                <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                                {item.name}
+                                            </span>
                                             <div className="flex items-baseline gap-1.5">
                                                 {item.lowFps && (
                                                     <span className="flex items-baseline gap-0.5 text-slate-400">

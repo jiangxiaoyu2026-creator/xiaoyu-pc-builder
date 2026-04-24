@@ -267,7 +267,8 @@ export const GameFPSViewer: React.FC = () => {
                                             : 'bg-transparent border border-transparent hover:bg-slate-50 dark:hover:bg-white/5'
                                         }`}
                                     >
-                                        <span className={`text-[15px] font-medium transition-colors truncate pr-4 ${isActive ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200'}`}>
+                                        <span className={`text-[15px] font-medium transition-colors truncate pr-4 flex items-center gap-2.5 ${isActive ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200'}`}>
+                                            <img src={`/images/games/icons/${game}.png`} alt="" className="w-6 h-6 rounded-[6px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                             {game}
                                         </span>
                                         {isActive && (
@@ -289,11 +290,11 @@ export const GameFPSViewer: React.FC = () => {
                         <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} className="relative overflow-hidden rounded-[24px] bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] min-h-[160px] flex items-center shadow-sm transition-colors duration-300">
                             <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.15] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-600 via-transparent to-transparent"></div>
                             
-                            {/* 游戏图片占位 - 读取 public/images/games 目录下的同名jpg图片 */}
+                            {/* 游戏图片占位 - 读取 public/images/games/covers 目录下的同名jpg图片 */}
                             <div 
                                 className="absolute right-0 top-0 bottom-0 w-2/3 md:w-1/2 opacity-30 dark:opacity-40 bg-cover bg-center bg-no-repeat pointer-events-none" 
                                 style={{ 
-                                    backgroundImage: `url('/images/games/${selectedGame}.jpg')`,
+                                    backgroundImage: `url('/images/games/covers/${selectedGame}.jpg')`,
                                     maskImage: 'linear-gradient(to right, transparent, black)',
                                     WebkitMaskImage: 'linear-gradient(to right, transparent, black)'
                                 }}
