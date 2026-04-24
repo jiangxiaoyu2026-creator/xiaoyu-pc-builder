@@ -2670,16 +2670,16 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
       },
       "GeForce RTX 4060": {
         "1080p": {
-          "avg": 10,
-          "low": 10
+          "avg": 62,
+          "low": 48
         },
         "1440p": {
-          "avg": 10,
-          "low": 10
+          "avg": 42,
+          "low": 32
         },
         "4K": {
-          "avg": 10,
-          "low": 10
+          "avg": 20,
+          "low": 15
         }
       },
       "GeForce RTX 3060 Ti": {
@@ -2710,14 +2710,18 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 10
         }
       },
-      "GeForce RTX 5050": { "1080p": { avg: 68, low: 45 }, "1440p": { avg: 45, low: 30 }, "4K": { avg: 22, low: 15 } },
+      "GeForce RTX 5050": {
+        "1080p": {
+          "avg": 68,
+          "low": 45
+        },
         "1440p": {
-          "avg": 10,
-          "low": 10
+          "avg": 45,
+          "low": 30
         },
         "4K": {
-          "avg": 10,
-          "low": 10
+          "avg": 22,
+          "low": 15
         }
       },
       "Radeon RX 7900 XTX": {
@@ -2876,15 +2880,15 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
       },
       "Radeon RX 6600": {
         "1080p": {
-          "avg": 10,
-          "low": 10
+          "avg": 45,
+          "low": 33
         },
         "1440p": {
-          "avg": 10,
-          "low": 10
+          "avg": 30,
+          "low": 22
         },
         "4K": {
-          "avg": 10,
+          "avg": 14,
           "low": 10
         }
       }
