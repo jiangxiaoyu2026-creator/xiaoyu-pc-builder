@@ -1,0 +1,71 @@
+[
+  {
+    "hw": "GeForce RTX 3050 6 GB",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3050 6 GB",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3050 6 GB",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 8 GB",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 8 GB",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 8 GB",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 Ti GDDR6X",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 Ti GDDR6X",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 4080 SUPER",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 4090 D",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RTX 4070 Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RTX 4070 Ti Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RTX 4080 Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RX 970",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Radeon RX 9060 XT 16GB",
+    "reason": "not_found"
+  }
+]

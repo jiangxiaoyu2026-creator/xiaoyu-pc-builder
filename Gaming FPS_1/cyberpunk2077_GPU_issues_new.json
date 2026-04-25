@@ -1,0 +1,539 @@
+[
+  {
+    "hw": "GeForce RTX 3050",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3050",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3050",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3050 6 GB",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3050 6 GB",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3050 6 GB",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3060",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 8 GB",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 8 GB",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 8 GB",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 Ti",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 Ti",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 Ti",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3060 Ti GDDR6X",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3060 Ti GDDR6X",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3070",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3070",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3070 Ti",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3070 Ti",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3080",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3080 Ti",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3090",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 3090 Ti",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4060",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4060",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4060",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4060 Ti",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4060 Ti",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4070",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4070 SUPER",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4070 Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "GeForce RTX 4070 Ti",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4070 Ti SUPER",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4070 Ti Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "GeForce RTX 4080",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4080 SUPER",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 4080 Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "GeForce RTX 4090 D",
+    "reason": "not_found"
+  },
+  {
+    "hw": "GeForce RTX 5050",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 5050",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 5050",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 5060",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低"
+  },
+  {
+    "hw": "GeForce RTX 5060",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 5060 Ti",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低"
+  },
+  {
+    "hw": "GeForce RTX 5060 Ti",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 5070",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "GeForce RTX 5070 Ti",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "RX 6500 XT",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "RX 6500 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "RX 6500 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "RX 970",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Radeon RX 6400",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6400",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6400",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6500 XT",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6500 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6500 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6600",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 6600",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6600",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6600 XT",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6600 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6600 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6650 XT",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6650 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6650 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6700",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6700",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6700 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6700 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6800",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6800 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6900 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 7600",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低"
+  },
+  {
+    "hw": "Radeon RX 7600",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 7600",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 7600 XT",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低"
+  },
+  {
+    "hw": "Radeon RX 7600 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 7600 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 7650 GRE",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低"
+  },
+  {
+    "hw": "Radeon RX 7650 GRE",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 7650 GRE",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 7700 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 7700 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 7800 XT",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 7800 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 7800 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 7900 GRE",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 7900 GRE",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 7900 GRE",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 7900 XT",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 7900 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 7900 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 7900 XTX",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低"
+  },
+  {
+    "hw": "Radeon RX 8800 XT",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Radeon RX 9060 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 9060 XT 16GB",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Radeon RX 9070",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 9070 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 970",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Radeon RX 9700 XT",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Radeon RX 9800 XT",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RTX 3060 8 GB",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "RTX 3060 8 GB",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "RTX 3060 8 GB",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "RTX 4070 Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RTX 4070 Ti Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RTX 4080 Super",
+    "reason": "not_found"
+  }
+]

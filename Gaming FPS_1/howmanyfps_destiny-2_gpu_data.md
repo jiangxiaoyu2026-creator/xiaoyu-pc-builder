@@ -112,7 +112,6 @@
 | GeForce RTX 3090 | 3840x2160 (4K) | 168 FPS | 126 FPS |
 | GeForce RTX 3050 | 1920x1080 (1K) | 63 FPS | 47 FPS |
 | GeForce RTX 3050 | 2560x1440 (2K) | 42 FPS | 31 FPS |
-| GeForce RTX 3050 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | Radeon RX 6500 XT | 1920x1080 (1K) | 64 FPS | 48 FPS |
 | Radeon RX 6500 XT | 2560x1440 (2K) | 43 FPS | 32 FPS |
-| Radeon RX 6500 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+

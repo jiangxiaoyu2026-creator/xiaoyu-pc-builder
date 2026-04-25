@@ -58,7 +58,6 @@
 | GeForce RTX 4060 Ti | 3840x2160 (4K) | 24 FPS | 18 FPS |
 | GeForce RTX 4060 | 1920x1080 (1K) | 78 FPS | 53 FPS |
 | GeForce RTX 4060 | 2560x1440 (2K) | 57 FPS | 40 FPS |
-| GeForce RTX 4060 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | GeForce RTX 3060 Ti | 1920x1080 (1K) | 86 FPS | 58 FPS |
 | GeForce RTX 3060 Ti | 2560x1440 (2K) | 66 FPS | 45 FPS |
 | GeForce RTX 3060 Ti | 3840x2160 (4K) | 11 FPS | 10 FPS |
@@ -67,7 +66,6 @@
 | GeForce RTX 3060 | 3840x2160 (4K) | 11 FPS | 10 FPS |
 | GeForce RTX 5050 | 1920x1080 (1K) | 75 FPS | 51 FPS |
 | GeForce RTX 5050 | 2560x1440 (2K) | 54 FPS | 38 FPS |
-| GeForce RTX 5050 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | Radeon RX 7900 XTX | 1920x1080 (1K) | 189 FPS | 95 FPS |
 | Radeon RX 7900 XTX | 2560x1440 (2K) | 168 FPS | 82 FPS |
 | Radeon RX 7900 XTX | 3840x2160 (4K) | 114 FPS | 50 FPS |
@@ -97,13 +95,10 @@
 | Radeon RX 7700 XT | 3840x2160 (4K) | 48 FPS | 33 FPS |
 | Radeon RX 7600 XT | 1920x1080 (1K) | 82 FPS | 55 FPS |
 | Radeon RX 7600 XT | 2560x1440 (2K) | 61 FPS | 42 FPS |
-| Radeon RX 7600 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | Radeon RX 7600 | 1920x1080 (1K) | 80 FPS | 54 FPS |
 | Radeon RX 7600 | 2560x1440 (2K) | 60 FPS | 41 FPS |
-| Radeon RX 7600 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | Radeon RX 6600 | 1920x1080 (1K) | 70 FPS | 47 FPS |
 | Radeon RX 6600 | 2560x1440 (2K) | 49 FPS | 34 FPS |
-| Radeon RX 6600 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 
 | GeForce RTX 3090 Ti | 1920x1080 (1K) | 149 FPS | 89 FPS |
 | GeForce RTX 3090 Ti | 2560x1440 (2K) | 128 FPS | 76 FPS |
@@ -120,3 +115,4 @@
 | GeForce RTX 3090 | 1920x1080 (1K) | 136 FPS | 83 FPS |
 | GeForce RTX 3090 | 2560x1440 (2K) | 118 FPS | 73 FPS |
 | GeForce RTX 3090 | 3840x2160 (4K) | 64 FPS | 40 FPS |
+

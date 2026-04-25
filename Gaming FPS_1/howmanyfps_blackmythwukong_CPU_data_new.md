@@ -1,0 +1,194 @@
+# 黑神话：悟空 CPU 帧率数据 — HowManyFPS
+## 游戏: 黑神话：悟空
+## 采集时间: 2026-04-25
+
+| CPU | 分辨率 | Real-Time Average | 1% Lows |
+|-----|--------|-------------------|--------|
+| Core Ultra 5 245K | 2560x1440 (2K) | 92 FPS | 69 FPS |
+| Core Ultra 5 245K | 3840x2160 (4K) | 70 FPS | 53 FPS |
+| Core Ultra 5 245KF | 1920x1080 (1K) | 102 FPS | 77 FPS |
+| Core Ultra 5 245KF | 2560x1440 (2K) | 92 FPS | 69 FPS |
+| Core Ultra 5 245KF | 3840x2160 (4K) | 71 FPS | 53 FPS |
+| Core Ultra 7 265K | 1920x1080 (1K) | 104 FPS | 78 FPS |
+| Core Ultra 7 265K | 2560x1440 (2K) | 93 FPS | 70 FPS |
+| Core Ultra 7 265K | 3840x2160 (4K) | 72 FPS | 54 FPS |
+| Core Ultra 7 265KF | 1920x1080 (1K) | 104 FPS | 78 FPS |
+| Core Ultra 7 265KF | 2560x1440 (2K) | 93 FPS | 70 FPS |
+| Core Ultra 7 265KF | 3840x2160 (4K) | 72 FPS | 54 FPS |
+| Core Ultra 9 285K | 1920x1080 (1K) | 105 FPS | 79 FPS |
+| Core Ultra 9 285K | 2560x1440 (2K) | 95 FPS | 71 FPS |
+| Core Ultra 9 285K | 3840x2160 (4K) | 74 FPS | 55 FPS |
+| Core i3-12100 | 1920x1080 (1K) | 85 FPS | 64 FPS |
+| Core i3-12100 | 2560x1440 (2K) | 75 FPS | 56 FPS |
+| Core i3-12100 | 3840x2160 (4K) | 54 FPS | 40 FPS |
+| Core i3-12100F | 1920x1080 (1K) | 85 FPS | 64 FPS |
+| Core i3-12100F | 2560x1440 (2K) | 75 FPS | 56 FPS |
+| Core i3-12100F | 3840x2160 (4K) | 54 FPS | 40 FPS |
+| Core i3-12300 | 1920x1080 (1K) | 87 FPS | 65 FPS |
+| Core i3-12300 | 2560x1440 (2K) | 76 FPS | 57 FPS |
+| Core i3-12300 | 3840x2160 (4K) | 55 FPS | 41 FPS |
+| Core i3-13100 | 1920x1080 (1K) | 87 FPS | 65 FPS |
+| Core i3-13100 | 2560x1440 (2K) | 77 FPS | 57 FPS |
+| Core i3-13100 | 3840x2160 (4K) | 55 FPS | 41 FPS |
+| Core i3-13100F | 1920x1080 (1K) | 87 FPS | 65 FPS |
+| Core i3-13100F | 3840x2160 (4K) | 55 FPS | 41 FPS |
+| Core i3-14100 | 1920x1080 (1K) | 90 FPS | 68 FPS |
+| Core i3-14100 | 2560x1440 (2K) | 80 FPS | 60 FPS |
+| Core i3-14100 | 3840x2160 (4K) | 58 FPS | 44 FPS |
+| Core i5-11400F | 2560x1440 (2K) | 72 FPS | 54 FPS |
+| Core i5-11500 | 1920x1080 (1K) | 83 FPS | 62 FPS |
+| Core i5-11500 | 2560x1440 (2K) | 73 FPS | 54 FPS |
+| Core i5-11500 | 3840x2160 (4K) | 51 FPS | 38 FPS |
+| Core i5-11600 | 1920x1080 (1K) | 87 FPS | 65 FPS |
+| Core i5-11600 | 2560x1440 (2K) | 76 FPS | 57 FPS |
+| Core i5-11600 | 3840x2160 (4K) | 55 FPS | 41 FPS |
+| Core i5-11600K | 1920x1080 (1K) | 87 FPS | 65 FPS |
+| Core i5-11600K | 2560x1440 (2K) | 76 FPS | 57 FPS |
+| Core i5-11600K | 3840x2160 (4K) | 55 FPS | 41 FPS |
+| Core i5-11600KF | 1920x1080 (1K) | 87 FPS | 65 FPS |
+| Core i5-11600KF | 2560x1440 (2K) | 76 FPS | 57 FPS |
+| Core i5-11600KF | 3840x2160 (4K) | 55 FPS | 41 FPS |
+| Core i5-12400 | 1920x1080 (1K) | 88 FPS | 66 FPS |
+| Core i5-12400 | 2560x1440 (2K) | 77 FPS | 58 FPS |
+| Core i5-12400 | 3840x2160 (4K) | 56 FPS | 42 FPS |
+| Core i5-12400F | 1920x1080 (1K) | 88 FPS | 66 FPS |
+| Core i5-12400F | 2560x1440 (2K) | 77 FPS | 58 FPS |
+| Core i5-12400F | 3840x2160 (4K) | 56 FPS | 42 FPS |
+| Core i5-12500 | 2560x1440 (2K) | 65 FPS | 48 FPS |
+| Core i5-12500 | 3840x2160 (4K) | 43 FPS | 32 FPS |
+| Core i5-12600 | 1920x1080 (1K) | 94 FPS | 70 FPS |
+| Core i5-12600 | 2560x1440 (2K) | 83 FPS | 62 FPS |
+| Core i5-12600 | 3840x2160 (4K) | 62 FPS | 46 FPS |
+| Core i5-12600KF | 1920x1080 (1K) | 94 FPS | 70 FPS |
+| Core i5-12600KF | 2560x1440 (2K) | 83 FPS | 62 FPS |
+| Core i5-12600KF | 3840x2160 (4K) | 62 FPS | 46 FPS |
+| Core i5-13400 | 1920x1080 (1K) | 91 FPS | 68 FPS |
+| Core i5-13400 | 2560x1440 (2K) | 80 FPS | 60 FPS |
+| Core i5-13400 | 3840x2160 (4K) | 59 FPS | 44 FPS |
+| Core i5-13400F | 1920x1080 (1K) | 91 FPS | 68 FPS |
+| Core i5-13400F | 2560x1440 (2K) | 80 FPS | 60 FPS |
+| Core i5-13400F | 3840x2160 (4K) | 59 FPS | 44 FPS |
+| Core i5-13500 | 1920x1080 (1K) | 94 FPS | 70 FPS |
+| Core i5-13500 | 2560x1440 (2K) | 83 FPS | 62 FPS |
+| Core i5-13500 | 3840x2160 (4K) | 62 FPS | 46 FPS |
+| Core i5-13600 | 1920x1080 (1K) | 99 FPS | 74 FPS |
+| Core i5-13600 | 2560x1440 (2K) | 88 FPS | 66 FPS |
+| Core i5-13600 | 3840x2160 (4K) | 67 FPS | 50 FPS |
+| Core i5-13600KF | 1920x1080 (1K) | 99 FPS | 74 FPS |
+| Core i5-13600KF | 2560x1440 (2K) | 88 FPS | 66 FPS |
+| Core i5-13600KF | 3840x2160 (4K) | 67 FPS | 50 FPS |
+| Core i5-14600 | 1920x1080 (1K) | 100 FPS | 75 FPS |
+| Core i5-14600 | 2560x1440 (2K) | 90 FPS | 67 FPS |
+| Core i5-14600 | 3840x2160 (4K) | 69 FPS | 51 FPS |
+| Core i7-11700F | 1920x1080 (1K) | 86 FPS | 64 FPS |
+| Core i7-11700F | 3840x2160 (4K) | 54 FPS | 40 FPS |
+| Core i7-11700K | 2560x1440 (2K) | 79 FPS | 59 FPS |
+| Core i7-11700KF | 1920x1080 (1K) | 90 FPS | 67 FPS |
+| Core i7-11700KF | 2560x1440 (2K) | 79 FPS | 59 FPS |
+| Core i7-11700KF | 3840x2160 (4K) | 58 FPS | 43 FPS |
+| Core i7-12700 | 1920x1080 (1K) | 88 FPS | 66 FPS |
+| Core i7-12700 | 2560x1440 (2K) | 77 FPS | 58 FPS |
+| Core i7-12700 | 3840x2160 (4K) | 56 FPS | 42 FPS |
+| Core i7-12700F | 1920x1080 (1K) | 88 FPS | 66 FPS |
+| Core i7-12700F | 2560x1440 (2K) | 77 FPS | 58 FPS |
+| Core i7-12700F | 3840x2160 (4K) | 56 FPS | 42 FPS |
+| Core i7-12700K | 2560x1440 (2K) | 85 FPS | 64 FPS |
+| Core i7-12700K | 3840x2160 (4K) | 64 FPS | 48 FPS |
+| Core i7-12700KF | 1920x1080 (1K) | 96 FPS | 72 FPS |
+| Core i7-12700KF | 2560x1440 (2K) | 85 FPS | 64 FPS |
+| Core i7-12700KF | 3840x2160 (4K) | 64 FPS | 48 FPS |
+| Core i7-13700 | 2560x1440 (2K) | 90 FPS | 68 FPS |
+| Core i7-13700 | 3840x2160 (4K) | 69 FPS | 52 FPS |
+| Core i7-14700 | 1920x1080 (1K) | 100 FPS | 75 FPS |
+| Core i7-14700 | 2560x1440 (2K) | 89 FPS | 67 FPS |
+| Core i7-14700 | 3840x2160 (4K) | 68 FPS | 51 FPS |
+| Core i9-11900F | 1920x1080 (1K) | 90 FPS | 67 FPS |
+| Core i9-11900F | 2560x1440 (2K) | 79 FPS | 59 FPS |
+| Core i9-11900F | 3840x2160 (4K) | 58 FPS | 43 FPS |
+| Core i9-11900K | 1920x1080 (1K) | 90 FPS | 67 FPS |
+| Core i9-11900K | 2560x1440 (2K) | 79 FPS | 59 FPS |
+| Core i9-11900K | 3840x2160 (4K) | 58 FPS | 43 FPS |
+| Core i9-11900KF | 1920x1080 (1K) | 90 FPS | 67 FPS |
+| Core i9-11900KF | 2560x1440 (2K) | 79 FPS | 59 FPS |
+| Core i9-11900KF | 3840x2160 (4K) | 58 FPS | 43 FPS |
+| Core i9-12900 | 3840x2160 (4K) | 66 FPS | 49 FPS |
+| Core i9-12900KF | 3840x2160 (4K) | 66 FPS | 49 FPS |
+| Ryzen 3 5300G | 1920x1080 (1K) | 75 FPS | 56 FPS |
+| Ryzen 3 5300G | 2560x1440 (2K) | 65 FPS | 48 FPS |
+| Ryzen 3 5300G | 3840x2160 (4K) | 43 FPS | 32 FPS |
+| Ryzen 5 5500 | 1920x1080 (1K) | 81 FPS | 60 FPS |
+| Ryzen 5 5500 | 2560x1440 (2K) | 70 FPS | 52 FPS |
+| Ryzen 5 5500 | 3840x2160 (4K) | 49 FPS | 36 FPS |
+| Ryzen 5 5600 | 1920x1080 (1K) | 86 FPS | 64 FPS |
+| Ryzen 5 5600 | 2560x1440 (2K) | 75 FPS | 56 FPS |
+| Ryzen 5 5600 | 3840x2160 (4K) | 54 FPS | 40 FPS |
+| Ryzen 5 5600G | 1920x1080 (1K) | 84 FPS | 63 FPS |
+| Ryzen 5 5600G | 2560x1440 (2K) | 73 FPS | 55 FPS |
+| Ryzen 5 5600G | 3840x2160 (4K) | 52 FPS | 39 FPS |
+| Ryzen 5 5600GT | 1920x1080 (1K) | 84 FPS | 63 FPS |
+| Ryzen 5 5600GT | 2560x1440 (2K) | 73 FPS | 55 FPS |
+| Ryzen 5 5600GT | 3840x2160 (4K) | 52 FPS | 39 FPS |
+| Ryzen 5 5600X | 1920x1080 (1K) | 86 FPS | 64 FPS |
+| Ryzen 5 5600X | 2560x1440 (2K) | 75 FPS | 56 FPS |
+| Ryzen 5 5600X | 3840x2160 (4K) | 54 FPS | 40 FPS |
+| Ryzen 5 5600X3D | 1920x1080 (1K) | 99 FPS | 74 FPS |
+| Ryzen 5 5600X3D | 2560x1440 (2K) | 88 FPS | 66 FPS |
+| Ryzen 5 5600X3D | 3840x2160 (4K) | 67 FPS | 50 FPS |
+| Ryzen 5 5600XT | 1920x1080 (1K) | 87 FPS | 65 FPS |
+| Ryzen 5 5600XT | 2560x1440 (2K) | 76 FPS | 57 FPS |
+| Ryzen 5 5600XT | 3840x2160 (4K) | 55 FPS | 41 FPS |
+| Ryzen 5 7500F | 1920x1080 (1K) | 98 FPS | 73 FPS |
+| Ryzen 5 7500F | 2560x1440 (2K) | 87 FPS | 65 FPS |
+| Ryzen 5 7500F | 3840x2160 (4K) | 66 FPS | 49 FPS |
+| Ryzen 5 7600 | 1920x1080 (1K) | 100 FPS | 75 FPS |
+| Ryzen 5 7600 | 2560x1440 (2K) | 89 FPS | 67 FPS |
+| Ryzen 5 7600 | 3840x2160 (4K) | 68 FPS | 51 FPS |
+| Ryzen 5 8500G | 1920x1080 (1K) | 94 FPS | 70 FPS |
+| Ryzen 5 8500G | 2560x1440 (2K) | 83 FPS | 62 FPS |
+| Ryzen 5 8500G | 3840x2160 (4K) | 62 FPS | 46 FPS |
+| Ryzen 5 8600G | 3840x2160 (4K) | 63 FPS | 47 FPS |
+| Ryzen 5 9600X | 1920x1080 (1K) | 105 FPS | 79 FPS |
+| Ryzen 5 9600X | 2560x1440 (2K) | 95 FPS | 71 FPS |
+| Ryzen 5 9600X | 3840x2160 (4K) | 73 FPS | 55 FPS |
+| Ryzen 7 5700 | 1920x1080 (1K) | 84 FPS | 63 FPS |
+| Ryzen 7 5700 | 2560x1440 (2K) | 73 FPS | 55 FPS |
+| Ryzen 7 5700 | 3840x2160 (4K) | 52 FPS | 39 FPS |
+| Ryzen 7 5700G | 1920x1080 (1K) | 84 FPS | 63 FPS |
+| Ryzen 7 5700G | 2560x1440 (2K) | 74 FPS | 55 FPS |
+| Ryzen 7 5700G | 3840x2160 (4K) | 52 FPS | 39 FPS |
+| Ryzen 7 5700X | 1920x1080 (1K) | 87 FPS | 65 FPS |
+| Ryzen 7 5700X | 2560x1440 (2K) | 76 FPS | 57 FPS |
+| Ryzen 7 5700X | 3840x2160 (4K) | 55 FPS | 41 FPS |
+| Ryzen 7 5700X3D | 1920x1080 (1K) | 97 FPS | 73 FPS |
+| Ryzen 7 5700X3D | 2560x1440 (2K) | 87 FPS | 65 FPS |
+| Ryzen 7 5700X3D | 3840x2160 (4K) | 66 FPS | 49 FPS |
+| Ryzen 7 5800 | 1920x1080 (1K) | 88 FPS | 66 FPS |
+| Ryzen 7 5800 | 2560x1440 (2K) | 78 FPS | 58 FPS |
+| Ryzen 7 5800 | 3840x2160 (4K) | 56 FPS | 42 FPS |
+| Ryzen 7 5800X | 1920x1080 (1K) | 88 FPS | 66 FPS |
+| Ryzen 7 5800X | 2560x1440 (2K) | 78 FPS | 58 FPS |
+| Ryzen 7 5800X | 3840x2160 (4K) | 56 FPS | 42 FPS |
+| Ryzen 7 5800X3D | 1920x1080 (1K) | 100 FPS | 75 FPS |
+| Ryzen 7 5800X3D | 2560x1440 (2K) | 90 FPS | 67 FPS |
+| Ryzen 7 5800X3D | 3840x2160 (4K) | 69 FPS | 51 FPS |
+| Ryzen 7 7700 | 1920x1080 (1K) | 101 FPS | 75 FPS |
+| Ryzen 7 7700 | 2560x1440 (2K) | 90 FPS | 67 FPS |
+| Ryzen 7 7700 | 3840x2160 (4K) | 69 FPS | 51 FPS |
+| Ryzen 7 8700G | 1920x1080 (1K) | 97 FPS | 73 FPS |
+| Ryzen 7 8700G | 2560x1440 (2K) | 87 FPS | 65 FPS |
+| Ryzen 7 8700G | 3840x2160 (4K) | 65 FPS | 49 FPS |
+| Ryzen 7 9700X | 1920x1080 (1K) | 106 FPS | 80 FPS |
+| Ryzen 7 9700X | 2560x1440 (2K) | 96 FPS | 72 FPS |
+| Ryzen 7 9700X | 3840x2160 (4K) | 74 FPS | 56 FPS |
+| Ryzen 7 9800X3D | 1920x1080 (1K) | 114 FPS | 85 FPS |
+| Ryzen 7 9800X3D | 2560x1440 (2K) | 104 FPS | 78 FPS |
+| Ryzen 7 9800X3D | 3840x2160 (4K) | 82 FPS | 61 FPS |
+| Ryzen 9 5900 | 1920x1080 (1K) | 89 FPS | 67 FPS |
+| Ryzen 9 5900 | 2560x1440 (2K) | 79 FPS | 59 FPS |
+| Ryzen 9 5900 | 3840x2160 (4K) | 57 FPS | 43 FPS |
+| Ryzen 9 5900X | 1920x1080 (1K) | 89 FPS | 67 FPS |
+| Ryzen 9 5900X | 2560x1440 (2K) | 79 FPS | 59 FPS |
+| Ryzen 9 5900X | 3840x2160 (4K) | 57 FPS | 43 FPS |
+| Ryzen 9 5950X | 1920x1080 (1K) | 89 FPS | 67 FPS |
+| Ryzen 9 5950X | 2560x1440 (2K) | 79 FPS | 59 FPS |
+| Ryzen 9 5950X | 3840x2160 (4K) | 58 FPS | 43 FPS |

@@ -1,0 +1,171 @@
+[
+  {
+    "hw": "Core Ultra 9 285K",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i3-14100",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-11500",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-11600",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-11600",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-11600",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-11600K",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-11600K",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-11600KF",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-11600KF",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-13600",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-14600",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-14600",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i7-11700K",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-11900K",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-11900KF",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-12900",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-12900",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-12900",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-12900F",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-12900F",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-12900F",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-12900KF",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-12900KF",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i9-12900KF",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 5 5500",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 5 5600XT",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 5 8500G",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 7 5700X",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 7 5800",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 7 5800X",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 9 5900",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 9 5950X",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 9 9850X3D",
+    "reason": "not_found"
+  }
+]

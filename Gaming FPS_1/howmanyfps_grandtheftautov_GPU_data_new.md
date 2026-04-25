@@ -1,0 +1,62 @@
+# 侠盗猎车手 5 GPU 帧率数据 — HowManyFPS
+## 游戏: 侠盗猎车手 5
+## 采集时间: 2026-04-25
+
+| GPU | 分辨率 | Real-Time Average | 1% Lows |
+|-----|--------|-------------------|--------|
+| GeForce RTX 3050 6 GB | 1920x1080 (1K) | 43 FPS | 32 FPS |
+| GeForce RTX 3050 6 GB | 2560x1440 (2K) | 35 FPS | 26 FPS |
+| GeForce RTX 3050 6 GB | 3840x2160 (4K) | 14 FPS | 10 FPS |
+| GeForce RTX 3060 8 GB | 1920x1080 (1K) | 52 FPS | 39 FPS |
+| GeForce RTX 3060 8 GB | 2560x1440 (2K) | 44 FPS | 33 FPS |
+| GeForce RTX 3060 8 GB | 3840x2160 (4K) | 23 FPS | 17 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 1920x1080 (1K) | 67 FPS | 50 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 2560x1440 (2K) | 60 FPS | 45 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 3840x2160 (4K) | 38 FPS | 28 FPS |
+| GeForce RTX 4070 Ti SUPER | 1920x1080 (1K) | 109 FPS | 82 FPS |
+| GeForce RTX 4070 Ti SUPER | 2560x1440 (2K) | 102 FPS | 76 FPS |
+| GeForce RTX 4070 Ti SUPER | 3840x2160 (4K) | 80 FPS | 60 FPS |
+| GeForce RTX 4080 SUPER | 1920x1080 (1K) | 126 FPS | 94 FPS |
+| GeForce RTX 4080 SUPER | 2560x1440 (2K) | 118 FPS | 88 FPS |
+| GeForce RTX 4080 SUPER | 3840x2160 (4K) | 97 FPS | 72 FPS |
+| RTX 3060 8 GB | 1920x1080 (1K) | 52 FPS | 39 FPS |
+| RTX 3060 8 GB | 2560x1440 (2K) | 44 FPS | 33 FPS |
+| RTX 3060 8 GB | 3840x2160 (4K) | 23 FPS | 17 FPS |
+| RX 6500 XT | 1920x1080 (1K) | 43 FPS | 32 FPS |
+| RX 6500 XT | 2560x1440 (2K) | 36 FPS | 27 FPS |
+| RX 6500 XT | 3840x2160 (4K) | 14 FPS | 11 FPS |
+| Radeon RX 6400 | 1920x1080 (1K) | 38 FPS | 28 FPS |
+| Radeon RX 6400 | 2560x1440 (2K) | 30 FPS | 22 FPS |
+| Radeon RX 6400 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6600 XT | 1920x1080 (1K) | 59 FPS | 44 FPS |
+| Radeon RX 6600 XT | 2560x1440 (2K) | 51 FPS | 38 FPS |
+| Radeon RX 6600 XT | 3840x2160 (4K) | 30 FPS | 22 FPS |
+| Radeon RX 6650 XT | 1920x1080 (1K) | 60 FPS | 45 FPS |
+| Radeon RX 6650 XT | 2560x1440 (2K) | 52 FPS | 39 FPS |
+| Radeon RX 6650 XT | 3840x2160 (4K) | 31 FPS | 23 FPS |
+| Radeon RX 6700 | 1920x1080 (1K) | 69 FPS | 52 FPS |
+| Radeon RX 6700 | 2560x1440 (2K) | 61 FPS | 46 FPS |
+| Radeon RX 6700 | 3840x2160 (4K) | 40 FPS | 30 FPS |
+| Radeon RX 6700 XT | 1920x1080 (1K) | 69 FPS | 52 FPS |
+| Radeon RX 6700 XT | 2560x1440 (2K) | 61 FPS | 46 FPS |
+| Radeon RX 6700 XT | 3840x2160 (4K) | 40 FPS | 30 FPS |
+| Radeon RX 6800 | 2560x1440 (2K) | 84 FPS | 63 FPS |
+| Radeon RX 6800 | 3840x2160 (4K) | 62 FPS | 46 FPS |
+| Radeon RX 6800 XT | 1920x1080 (1K) | 91 FPS | 68 FPS |
+| Radeon RX 6800 XT | 2560x1440 (2K) | 84 FPS | 63 FPS |
+| Radeon RX 6800 XT | 3840x2160 (4K) | 62 FPS | 46 FPS |
+| Radeon RX 6900 XT | 1920x1080 (1K) | 96 FPS | 72 FPS |
+| Radeon RX 6900 XT | 2560x1440 (2K) | 89 FPS | 66 FPS |
+| Radeon RX 6900 XT | 3840x2160 (4K) | 67 FPS | 50 FPS |
+| Radeon RX 7650 GRE | 1920x1080 (1K) | 63 FPS | 47 FPS |
+| Radeon RX 7650 GRE | 2560x1440 (2K) | 55 FPS | 41 FPS |
+| Radeon RX 7650 GRE | 3840x2160 (4K) | 34 FPS | 25 FPS |
+| Radeon RX 9060 XT | 1920x1080 (1K) | 81 FPS | 61 FPS |
+| Radeon RX 9060 XT | 2560x1440 (2K) | 73 FPS | 55 FPS |
+| Radeon RX 9060 XT | 3840x2160 (4K) | 52 FPS | 39 FPS |
+| Radeon RX 9070 | 1920x1080 (1K) | 132 FPS | 99 FPS |
+| Radeon RX 9070 | 2560x1440 (2K) | 125 FPS | 93 FPS |
+| Radeon RX 9070 | 3840x2160 (4K) | 103 FPS | 77 FPS |
+| Radeon RX 9070 XT | 1920x1080 (1K) | 132 FPS | 99 FPS |
+| Radeon RX 9070 XT | 2560x1440 (2K) | 125 FPS | 93 FPS |
+| Radeon RX 9070 XT | 3840x2160 (4K) | 103 FPS | 77 FPS |

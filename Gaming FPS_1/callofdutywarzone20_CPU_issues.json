@@ -1,0 +1,101 @@
+[
+  {
+    "hw": "Core Ultra 5 225",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core Ultra 5 225",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core Ultra 5 225F",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core Ultra 5 225F",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core Ultra 5 235",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core Ultra 5 235",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core Ultra 5 235",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core Ultra 5 245K",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core Ultra 5 245K",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core Ultra 5 245K",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Core i5-13500",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 5 5600G",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 7 5700G",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 7 5700X",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 7 5700X",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 7 5700X",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 7 5700X3D",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 7 5700X3D",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 7 5700X3D",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 9 9850X3D",
+    "reason": "not_found"
+  }
+]

@@ -1,0 +1,121 @@
+[
+  {
+    "type": "cpu",
+    "name": "Ryzen 5 8600G",
+    "resolution": "2560x1440 (2K)",
+    "avg": "586",
+    "low": "360"
+  },
+  {
+    "type": "gpu",
+    "name": "GeForce RTX 3060 8 GB",
+    "resolution": "1920x1080 (1K)",
+    "avg": "240",
+    "low": "162"
+  },
+  {
+    "type": "gpu",
+    "name": "GeForce RTX 3060 8 GB",
+    "resolution": "2560x1440 (2K)",
+    "avg": "210",
+    "low": "143"
+  },
+  {
+    "type": "gpu",
+    "name": "GeForce RTX 3060 8 GB",
+    "resolution": "3840x2160 (4K)",
+    "avg": "123",
+    "low": "87"
+  },
+  {
+    "type": "gpu",
+    "name": "GeForce RTX 4080 Super",
+    "resolution": "1920x1080 (1K)",
+    "avg": "359",
+    "low": "240"
+  },
+  {
+    "type": "gpu",
+    "name": "GeForce RTX 4090 D",
+    "resolution": "1920x1080 (1K)",
+    "avg": "359",
+    "low": "240"
+  },
+  {
+    "type": "gpu",
+    "name": "GeForce RTX 4090 D",
+    "resolution": "2560x1440 (2K)",
+    "avg": "328",
+    "low": "221"
+  },
+  {
+    "type": "gpu",
+    "name": "GeForce RTX 4090 D",
+    "resolution": "3840x2160 (4K)",
+    "avg": "241",
+    "low": "165"
+  },
+  {
+    "type": "gpu",
+    "name": "Radeon RX 8800 XT",
+    "resolution": "1920x1080 (1K)",
+    "avg": "359",
+    "low": "240"
+  },
+  {
+    "type": "gpu",
+    "name": "Radeon RX 8800 XT",
+    "resolution": "2560x1440 (2K)",
+    "avg": "328",
+    "low": "221"
+  },
+  {
+    "type": "gpu",
+    "name": "Radeon RX 8800 XT",
+    "resolution": "3840x2160 (4K)",
+    "avg": "241",
+    "low": "165"
+  },
+  {
+    "type": "gpu",
+    "name": "Radeon RX 9700 XT",
+    "resolution": "1920x1080 (1K)",
+    "avg": "359",
+    "low": "240"
+  },
+  {
+    "type": "gpu",
+    "name": "Radeon RX 9700 XT",
+    "resolution": "2560x1440 (2K)",
+    "avg": "328",
+    "low": "221"
+  },
+  {
+    "type": "gpu",
+    "name": "Radeon RX 9700 XT",
+    "resolution": "3840x2160 (4K)",
+    "avg": "241",
+    "low": "165"
+  },
+  {
+    "type": "gpu",
+    "name": "Radeon RX 9800 XT",
+    "resolution": "1920x1080 (1K)",
+    "avg": "359",
+    "low": "240"
+  },
+  {
+    "type": "gpu",
+    "name": "Radeon RX 9800 XT",
+    "resolution": "2560x1440 (2K)",
+    "avg": "328",
+    "low": "221"
+  },
+  {
+    "type": "gpu",
+    "name": "Radeon RX 9800 XT",
+    "resolution": "3840x2160 (4K)",
+    "avg": "241",
+    "low": "165"
+  }
+]

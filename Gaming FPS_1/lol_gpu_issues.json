@@ -1,0 +1,37 @@
+[
+  {
+    "hardware": "RX 6500 XT",
+    "resolution": "1920x1080 (1K)",
+    "issues": [
+      "FPS异常: undefined"
+    ]
+  },
+  {
+    "hardware": "RX 6500 XT",
+    "resolution": "2560x1440 (2K)",
+    "issues": [
+      "FPS异常: undefined"
+    ]
+  },
+  {
+    "hardware": "RX 970",
+    "resolution": "1920x1080 (1K)",
+    "issues": [
+      "FPS异常: undefined"
+    ]
+  },
+  {
+    "hardware": "RX 970",
+    "resolution": "2560x1440 (2K)",
+    "issues": [
+      "FPS异常: undefined"
+    ]
+  },
+  {
+    "hardware": "RX 970",
+    "resolution": "3840x2160 (4K)",
+    "issues": [
+      "FPS异常: undefined"
+    ]
+  }
+]

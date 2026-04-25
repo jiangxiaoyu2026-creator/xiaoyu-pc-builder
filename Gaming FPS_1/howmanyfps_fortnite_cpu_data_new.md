@@ -1,0 +1,69 @@
+# Fortnite CPU 帧率数据 — HowManyFPS
+## 游戏: Fortnite
+## 采集时间: 2026-04-25
+
+| CPU | 分辨率 | Real-Time Average | 1% Lows |
+|-----|--------|-------------------|--------|
+| Core i3-12300 | 1920x1080 (1K) | 318 FPS | 126 FPS |
+| Core i3-12300 | 2560x1440 (2K) | 297 FPS | 113 FPS |
+| Core i3-12300 | 3840x2160 (4K) | 243 FPS | 81 FPS |
+| Core i3-13100 | 1920x1080 (1K) | 318 FPS | 126 FPS |
+| Core i3-13100 | 2560x1440 (2K) | 297 FPS | 113 FPS |
+| Core i3-13100 | 3840x2160 (4K) | 243 FPS | 81 FPS |
+| Core i3-13100F | 1920x1080 (1K) | 318 FPS | 126 FPS |
+| Core i3-13100F | 2560x1440 (2K) | 297 FPS | 113 FPS |
+| Core i3-13100F | 3840x2160 (4K) | 243 FPS | 81 FPS |
+| Core i5-13600 | 1920x1080 (1K) | 313 FPS | 123 FPS |
+| Core i5-13600 | 2560x1440 (2K) | 292 FPS | 110 FPS |
+| Core i5-13600 | 3840x2160 (4K) | 238 FPS | 77 FPS |
+| Core i5-13600KF | 1920x1080 (1K) | 313 FPS | 123 FPS |
+| Core i5-13600KF | 2560x1440 (2K) | 292 FPS | 110 FPS |
+| Core i5-13600KF | 3840x2160 (4K) | 238 FPS | 77 FPS |
+| Core i5-14600 | 1920x1080 (1K) | 311 FPS | 121 FPS |
+| Core i5-14600 | 2560x1440 (2K) | 290 FPS | 108 FPS |
+| Core i5-14600 | 3840x2160 (4K) | 236 FPS | 76 FPS |
+| Core i7-11700K | 1920x1080 (1K) | 318 FPS | 126 FPS |
+| Core i7-11700K | 2560x1440 (2K) | 297 FPS | 113 FPS |
+| Core i7-11700K | 3840x2160 (4K) | 243 FPS | 81 FPS |
+| Core i7-11700KF | 1920x1080 (1K) | 318 FPS | 126 FPS |
+| Core i7-11700KF | 2560x1440 (2K) | 297 FPS | 113 FPS |
+| Core i7-11700KF | 3840x2160 (4K) | 243 FPS | 81 FPS |
+| Core i7-12700KF | 1920x1080 (1K) | undefined FPS | undefined FPS |
+| Core i7-12700KF | 2560x1440 (2K) | undefined FPS | undefined FPS |
+| Core i7-12700KF | 3840x2160 (4K) | undefined FPS | undefined FPS |
+| Core i7-13700 | 1920x1080 (1K) | 313 FPS | 123 FPS |
+| Core i7-13700 | 2560x1440 (2K) | 292 FPS | 110 FPS |
+| Core i7-13700 | 3840x2160 (4K) | 238 FPS | 78 FPS |
+| Core i7-14700 | 1920x1080 (1K) | 311 FPS | 121 FPS |
+| Core i7-14700 | 2560x1440 (2K) | 290 FPS | 108 FPS |
+| Core i7-14700 | 3840x2160 (4K) | 236 FPS | 76 FPS |
+| Core i9-11900K | 1920x1080 (1K) | 318 FPS | 126 FPS |
+| Core i9-11900K | 2560x1440 (2K) | 297 FPS | 113 FPS |
+| Core i9-11900K | 3840x2160 (4K) | 243 FPS | 81 FPS |
+| Core i9-11900KF | 1920x1080 (1K) | 318 FPS | 126 FPS |
+| Core i9-11900KF | 2560x1440 (2K) | 297 FPS | 113 FPS |
+| Core i9-11900KF | 3840x2160 (4K) | 243 FPS | 81 FPS |
+| Core i9-12900F | 1920x1080 (1K) | 315 FPS | 125 FPS |
+| Core i9-12900F | 2560x1440 (2K) | 294 FPS | 112 FPS |
+| Core i9-12900F | 3840x2160 (4K) | 240 FPS | 79 FPS |
+| Core i9-13900KF | 1920x1080 (1K) | 307 FPS | 118 FPS |
+| Core i9-13900KF | 2560x1440 (2K) | 286 FPS | 105 FPS |
+| Core i9-13900KF | 3840x2160 (4K) | 232 FPS | 72 FPS |
+| Ryzen 3 5300G | 1920x1080 (1K) | 315 FPS | 123 FPS |
+| Ryzen 3 5300G | 2560x1440 (2K) | 294 FPS | 110 FPS |
+| Ryzen 3 5300G | 3840x2160 (4K) | 240 FPS | 77 FPS |
+| Ryzen 5 5600G | 1920x1080 (1K) | 317 FPS | 125 FPS |
+| Ryzen 5 5600G | 2560x1440 (2K) | 296 FPS | 113 FPS |
+| Ryzen 5 5600G | 3840x2160 (4K) | 242 FPS | 80 FPS |
+| Ryzen 5 5600GT | 1920x1080 (1K) | 317 FPS | 125 FPS |
+| Ryzen 5 5600GT | 2560x1440 (2K) | 296 FPS | 113 FPS |
+| Ryzen 5 5600GT | 3840x2160 (4K) | 242 FPS | 80 FPS |
+| Ryzen 5 5600XT | 1920x1080 (1K) | 318 FPS | 126 FPS |
+| Ryzen 5 5600XT | 2560x1440 (2K) | 297 FPS | 113 FPS |
+| Ryzen 5 5600XT | 3840x2160 (4K) | 243 FPS | 81 FPS |
+| Ryzen 7 5800 | 1920x1080 (1K) | 318 FPS | 126 FPS |
+| Ryzen 7 5800 | 2560x1440 (2K) | 297 FPS | 113 FPS |
+| Ryzen 7 5800 | 3840x2160 (4K) | 243 FPS | 81 FPS |
+| Ryzen 9 9850X3D | 1920x1080 (1K) | 236 FPS | 57 FPS |
+| Ryzen 9 9850X3D | 2560x1440 (2K) | 215 FPS | 44 FPS |
+| Ryzen 9 9850X3D | 3840x2160 (4K) | 161 FPS | 12 FPS |

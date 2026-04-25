@@ -58,16 +58,12 @@
 | GeForce RTX 4060 Ti | 3840x2160 (4K) | 14 FPS | 10 FPS |
 | GeForce RTX 4060 | 1920x1080 (1K) | 39 FPS | 29 FPS |
 | GeForce RTX 4060 | 2560x1440 (2K) | 29 FPS | 21 FPS |
-| GeForce RTX 4060 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | GeForce RTX 3060 Ti | 1920x1080 (1K) | 42 FPS | 31 FPS |
 | GeForce RTX 3060 Ti | 2560x1440 (2K) | 31 FPS | 23 FPS |
-| GeForce RTX 3060 Ti | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | GeForce RTX 3060 | 1920x1080 (1K) | 42 FPS | 31 FPS |
 | GeForce RTX 3060 | 2560x1440 (2K) | 31 FPS | 23 FPS |
-| GeForce RTX 3060 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | GeForce RTX 5050 | 1920x1080 (1K) | 39 FPS | 29 FPS |
 | GeForce RTX 5050 | 2560x1440 (2K) | 28 FPS | 21 FPS |
-| GeForce RTX 5050 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | Radeon RX 7900 XTX | 1920x1080 (1K) | 81 FPS | 60 FPS |
 | Radeon RX 7900 XTX | 2560x1440 (2K) | 70 FPS | 52 FPS |
 | Radeon RX 7900 XTX | 3840x2160 (4K) | 49 FPS | 36 FPS |
@@ -97,13 +93,10 @@
 | Radeon RX 7700 XT | 3840x2160 (4K) | 22 FPS | 16 FPS |
 | Radeon RX 7600 XT | 1920x1080 (1K) | 41 FPS | 30 FPS |
 | Radeon RX 7600 XT | 2560x1440 (2K) | 30 FPS | 22 FPS |
-| Radeon RX 7600 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | Radeon RX 7600 | 1920x1080 (1K) | 40 FPS | 30 FPS |
 | Radeon RX 7600 | 2560x1440 (2K) | 30 FPS | 22 FPS |
-| Radeon RX 7600 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | Radeon RX 6600 | 1920x1080 (1K) | 37 FPS | 28 FPS |
 | Radeon RX 6600 | 2560x1440 (2K) | 26 FPS | 20 FPS |
-| Radeon RX 6600 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | GeForce RTX 5080 | 1920x1080 (1K) | 85 FPS | 64 FPS |
 | GeForce RTX 5080 | 2560x1440 (2K) | 75 FPS | 56 FPS |
 | GeForce RTX 5080 | 3840x2160 (4K) | 53 FPS | 40 FPS |
@@ -112,7 +105,6 @@
 | GeForce RTX 3090 | 3840x2160 (4K) | 27 FPS | 20 FPS |
 | GeForce RTX 3050 | 1920x1080 (1K) | 23 FPS | 14 FPS |
 | GeForce RTX 3050 | 2560x1440 (2K) | 12 FPS | 10 FPS |
-| GeForce RTX 3050 | 3840x2160 (4K) | 10 FPS | 10 FPS |
 | Radeon RX 6500 XT | 1920x1080 (1K) | 23 FPS | 15 FPS |
 | Radeon RX 6500 XT | 2560x1440 (2K) | 12 FPS | 10 FPS |
-| Radeon RX 6500 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+

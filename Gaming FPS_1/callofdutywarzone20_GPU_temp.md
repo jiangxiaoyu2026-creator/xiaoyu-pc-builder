@@ -1,0 +1,41 @@
+# 使命召唤：战区 2.0 GPU 帧率数据 — HowManyFPS
+## 游戏: 使命召唤：战区 2.0
+## 采集时间: 2026-04-25
+
+| GPU | 分辨率 | Real-Time Average | 1% Lows |
+|-----|--------|-------------------|--------|
+| GeForce RTX 3060 Ti GDDR6X | 1920x1080 (1K) | 146 FPS | 80 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 2560x1440 (2K) | 127 FPS | 66 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 3840x2160 (4K) | 80 FPS | 30 FPS |
+| GeForce RTX 3090 Ti | 1920x1080 (1K) | 193 FPS | 115 FPS |
+| GeForce RTX 3090 Ti | 2560x1440 (2K) | 174 FPS | 101 FPS |
+| GeForce RTX 3090 Ti | 3840x2160 (4K) | 127 FPS | 65 FPS |
+| GeForce RTX 4070 SUPER | 1920x1080 (1K) | 189 FPS | 112 FPS |
+| GeForce RTX 4070 SUPER | 2560x1440 (2K) | 170 FPS | 98 FPS |
+| GeForce RTX 4070 SUPER | 3840x2160 (4K) | 123 FPS | 62 FPS |
+| GeForce RTX 4070 Ti SUPER | 1920x1080 (1K) | 202 FPS | 123 FPS |
+| GeForce RTX 4070 Ti SUPER | 2560x1440 (2K) | 184 FPS | 108 FPS |
+| GeForce RTX 4070 Ti SUPER | 3840x2160 (4K) | 136 FPS | 72 FPS |
+| GeForce RTX 4080 SUPER | 1920x1080 (1K) | 217 FPS | 134 FPS |
+| GeForce RTX 4080 SUPER | 2560x1440 (2K) | 198 FPS | 120 FPS |
+| GeForce RTX 4080 SUPER | 3840x2160 (4K) | 151 FPS | 84 FPS |
+| RTX 3060 8 GB | 1920x1080 (1K) | 112 FPS | 56 FPS |
+| RTX 3060 8 GB | 2560x1440 (2K) | 93 FPS | 42 FPS |
+| RTX 3060 8 GB | 3840x2160 (4K) | 46 FPS | 10 FPS |
+| RX 6500 XT | 1920x1080 (1K) | 88 FPS | 40 FPS |
+| RX 6500 XT | 3840x2160 (4K) | 22 FPS | 10 FPS |
+| Radeon RX 6600 XT | 1920x1080 (1K) | 129 FPS | 68 FPS |
+| Radeon RX 6600 XT | 2560x1440 (2K) | 110 FPS | 54 FPS |
+| Radeon RX 6600 XT | 3840x2160 (4K) | 63 FPS | 18 FPS |
+| Radeon RX 6650 XT | 1920x1080 (1K) | 131 FPS | 70 FPS |
+| Radeon RX 6650 XT | 2560x1440 (2K) | 112 FPS | 55 FPS |
+| Radeon RX 6650 XT | 3840x2160 (4K) | 65 FPS | 19 FPS |
+| Radeon RX 6700 | 1920x1080 (1K) | 149 FPS | 83 FPS |
+| Radeon RX 6700 | 2560x1440 (2K) | 131 FPS | 68 FPS |
+| Radeon RX 6700 | 3840x2160 (4K) | 83 FPS | 32 FPS |
+| Radeon RX 6700 XT | 1920x1080 (1K) | 149 FPS | 83 FPS |
+| Radeon RX 6700 XT | 2560x1440 (2K) | 131 FPS | 68 FPS |
+| Radeon RX 6700 XT | 3840x2160 (4K) | 83 FPS | 32 FPS |
+| Radeon RX 6800 | 1920x1080 (1K) | 182 FPS | 107 FPS |
+| Radeon RX 6800 | 2560x1440 (2K) | 164 FPS | 93 FPS |
+| Radeon RX 6800 | 3840x2160 (4K) | 116 FPS | 57 FPS |

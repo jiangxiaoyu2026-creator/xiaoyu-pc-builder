@@ -1,0 +1,44 @@
+# 黑神话：悟空 GPU 帧率数据 — HowManyFPS
+## 游戏: 黑神话：悟空
+## 采集时间: 2026-04-25
+
+| GPU | 分辨率 | Real-Time Average | 1% Lows |
+|-----|--------|-------------------|--------|
+| GeForce RTX 3050 6 GB | 1920x1080 (1K) | 23 FPS | 14 FPS |
+| GeForce RTX 3050 6 GB | 2560x1440 (2K) | 12 FPS | 10 FPS |
+| GeForce RTX 3050 6 GB | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 3060 8 GB | 1920x1080 (1K) | 31 FPS | 22 FPS |
+| GeForce RTX 3060 8 GB | 2560x1440 (2K) | 20 FPS | 14 FPS |
+| GeForce RTX 3060 8 GB | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 1920x1080 (1K) | 43 FPS | 32 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 2560x1440 (2K) | 33 FPS | 24 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 3840x2160 (4K) | 11 FPS | 10 FPS |
+| GeForce RTX 3090 Ti | 1920x1080 (1K) | 63 FPS | 47 FPS |
+| GeForce RTX 4070 Ti SUPER | 2560x1440 (2K) | 57 FPS | 43 FPS |
+| GeForce RTX 4070 Ti SUPER | 3840x2160 (4K) | 36 FPS | 27 FPS |
+| GeForce RTX 4080 SUPER | 1920x1080 (1K) | 76 FPS | 57 FPS |
+| GeForce RTX 4080 SUPER | 2560x1440 (2K) | 65 FPS | 49 FPS |
+| GeForce RTX 4080 SUPER | 3840x2160 (4K) | 44 FPS | 33 FPS |
+| RTX 3060 8 GB | 1920x1080 (1K) | 31 FPS | 22 FPS |
+| RTX 3060 8 GB | 2560x1440 (2K) | 20 FPS | 14 FPS |
+| RTX 3060 8 GB | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| RX 6500 XT | 1920x1080 (1K) | 23 FPS | 15 FPS |
+| RX 6500 XT | 2560x1440 (2K) | 12 FPS | 10 FPS |
+| RX 6500 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6400 | 1920x1080 (1K) | 17 FPS | 10 FPS |
+| Radeon RX 6400 | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| Radeon RX 6400 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6600 XT | 1920x1080 (1K) | 37 FPS | 28 FPS |
+| Radeon RX 6600 XT | 2560x1440 (2K) | 26 FPS | 20 FPS |
+| Radeon RX 6600 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6650 XT | 1920x1080 (1K) | 38 FPS | 28 FPS |
+| Radeon RX 6650 XT | 2560x1440 (2K) | 27 FPS | 20 FPS |
+| Radeon RX 6650 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6700 | 1920x1080 (1K) | 44 FPS | 33 FPS |
+| Radeon RX 6700 | 3840x2160 (4K) | 13 FPS | 10 FPS |
+| Radeon RX 6700 XT | 1920x1080 (1K) | 44 FPS | 33 FPS |
+| Radeon RX 6700 XT | 2560x1440 (2K) | 34 FPS | 25 FPS |
+| Radeon RX 6700 XT | 3840x2160 (4K) | 13 FPS | 10 FPS |
+| Radeon RX 6800 | 1920x1080 (1K) | 58 FPS | 43 FPS |
+| Radeon RX 6800 | 2560x1440 (2K) | 47 FPS | 35 FPS |
+| Radeon RX 6800 | 3840x2160 (4K) | 26 FPS | 20 FPS |

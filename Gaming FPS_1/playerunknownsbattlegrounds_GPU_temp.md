@@ -1,0 +1,42 @@
+# 绝地求生 GPU 帧率数据 — HowManyFPS
+## 游戏: 绝地求生
+## 采集时间: 2026-04-25
+
+| GPU | 分辨率 | Real-Time Average | 1% Lows |
+|-----|--------|-------------------|--------|
+| GeForce RTX 3090 Ti | 1920x1080 (1K) | 286 FPS | 142 FPS |
+| GeForce RTX 3090 Ti | 2560x1440 (2K) | 262 FPS | 128 FPS |
+| GeForce RTX 3090 Ti | 3840x2160 (4K) | 202 FPS | 93 FPS |
+| GeForce RTX 4070 SUPER | 1920x1080 (1K) | 280 FPS | 141 FPS |
+| GeForce RTX 4070 SUPER | 2560x1440 (2K) | 256 FPS | 127 FPS |
+| GeForce RTX 4070 SUPER | 3840x2160 (4K) | 196 FPS | 92 FPS |
+| GeForce RTX 4070 Ti SUPER | 1920x1080 (1K) | 300 FPS | 144 FPS |
+| GeForce RTX 4070 Ti SUPER | 2560x1440 (2K) | 276 FPS | 130 FPS |
+| GeForce RTX 4070 Ti SUPER | 3840x2160 (4K) | 217 FPS | 95 FPS |
+| GeForce RTX 4080 SUPER | 1920x1080 (1K) | 325 FPS | 144 FPS |
+| GeForce RTX 4080 SUPER | 2560x1440 (2K) | 301 FPS | 130 FPS |
+| GeForce RTX 4080 SUPER | 3840x2160 (4K) | 241 FPS | 95 FPS |
+| RTX 3060 8 GB | 1920x1080 (1K) | 188 FPS | 100 FPS |
+| RTX 3060 8 GB | 2560x1440 (2K) | 164 FPS | 86 FPS |
+| RTX 3060 8 GB | 3840x2160 (4K) | 104 FPS | 52 FPS |
+| RX 6500 XT | 1920x1080 (1K) | 165 FPS | 85 FPS |
+| RX 6500 XT | 2560x1440 (2K) | 141 FPS | 71 FPS |
+| RX 6500 XT | 3840x2160 (4K) | 81 FPS | 37 FPS |
+| Radeon RX 6400 | 1920x1080 (1K) | 150 FPS | 75 FPS |
+| Radeon RX 6400 | 2560x1440 (2K) | 126 FPS | 61 FPS |
+| Radeon RX 6400 | 3840x2160 (4K) | 66 FPS | 27 FPS |
+| Radeon RX 6600 XT | 1920x1080 (1K) | 206 FPS | 111 FPS |
+| Radeon RX 6600 XT | 2560x1440 (2K) | 181 FPS | 97 FPS |
+| Radeon RX 6600 XT | 3840x2160 (4K) | 122 FPS | 63 FPS |
+| Radeon RX 6650 XT | 1920x1080 (1K) | 208 FPS | 112 FPS |
+| Radeon RX 6650 XT | 2560x1440 (2K) | 183 FPS | 98 FPS |
+| Radeon RX 6650 XT | 3840x2160 (4K) | 124 FPS | 64 FPS |
+| Radeon RX 6700 | 1920x1080 (1K) | 228 FPS | 123 FPS |
+| Radeon RX 6700 | 2560x1440 (2K) | 204 FPS | 109 FPS |
+| Radeon RX 6700 | 3840x2160 (4K) | 144 FPS | 75 FPS |
+| Radeon RX 6700 XT | 1920x1080 (1K) | 228 FPS | 123 FPS |
+| Radeon RX 6700 XT | 2560x1440 (2K) | 204 FPS | 109 FPS |
+| Radeon RX 6700 XT | 3840x2160 (4K) | 144 FPS | 75 FPS |
+| Radeon RX 6800 | 1920x1080 (1K) | 271 FPS | 139 FPS |
+| Radeon RX 6800 | 2560x1440 (2K) | 246 FPS | 125 FPS |
+| Radeon RX 6800 | 3840x2160 (4K) | 187 FPS | 90 FPS |

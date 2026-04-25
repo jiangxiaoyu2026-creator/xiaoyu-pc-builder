@@ -45,6 +45,8 @@ export const cpuList = [
   "Core i3-13100",
   "Core i3-13100F",
   "Core i3-14100",
+  "Core i3-14100F",
+  "Core i5-11400",
   "Core i5-11400F",
   "Core i5-11500",
   "Core i5-11600",
@@ -56,6 +58,7 @@ export const cpuList = [
   "Core i5-12600",
   "Core i5-12600K",
   "Core i5-12600KF",
+  "Core i5-12600T",
   "Core i5-13400",
   "Core i5-13400F",
   "Core i5-13500",
@@ -68,14 +71,17 @@ export const cpuList = [
   "Core i5-14600",
   "Core i5-14600K",
   "Core i5-14600KF",
+  "Core i7-11700",
   "Core i7-11700F",
   "Core i7-11700K",
   "Core i7-11700KF",
+  "Core i7-11700T",
   "Core i7-12700",
   "Core i7-12700F",
   "Core i7-12700K",
   "Core i7-12700KF",
   "Core i7-13700",
+  "Core i7-13700F",
   "Core i7-13700K",
   "Core i7-13700KF",
   "Core i7-14700",
@@ -91,6 +97,7 @@ export const cpuList = [
   "Core i9-12900KF",
   "Core i9-12900KS",
   "Core i9-13900",
+  "Core i9-13900F",
   "Core i9-13900K",
   "Core i9-13900KF",
   "Core i9-13900KS",
@@ -129,10 +136,12 @@ export const cpuList = [
   "Ryzen 9 5900",
   "Ryzen 9 5900X",
   "Ryzen 9 5950X",
+  "Ryzen 9 7900",
   "Ryzen 9 7900X",
   "Ryzen 9 7900X3D",
   "Ryzen 9 7950X",
   "Ryzen 9 7950X3D",
+  "Ryzen 9 9850X3D",
   "Ryzen 9 9900X",
   "Ryzen 9 9950X",
   "Ryzen 9 9950X3D"
@@ -1875,10 +1884,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "1440p": {
           "avg": 29,
           "low": 21
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
         }
       },
       "GeForce RTX 3060 Ti": {
@@ -1889,10 +1894,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "1440p": {
           "avg": 31,
           "low": 23
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
         }
       },
       "GeForce RTX 3060": {
@@ -1903,10 +1904,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "1440p": {
           "avg": 31,
           "low": 23
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
         }
       },
       "GeForce RTX 5050": {
@@ -1917,10 +1914,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "1440p": {
           "avg": 28,
           "low": 21
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
         }
       },
       "Radeon RX 7900 XTX": {
@@ -2057,10 +2050,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "1440p": {
           "avg": 30,
           "low": 22
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
         }
       },
       "Radeon RX 7600": {
@@ -2071,10 +2060,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "1440p": {
           "avg": 30,
           "low": 22
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
         }
       },
       "Radeon RX 6600": {
@@ -2085,10 +2070,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "1440p": {
           "avg": 26,
           "low": 20
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
         }
       },
       "GeForce RTX 5080": {
@@ -2127,10 +2108,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "1440p": {
           "avg": 12,
           "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
         }
       },
       "Radeon RX 6500 XT": {
@@ -2140,10 +2117,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         },
         "1440p": {
           "avg": 12,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
           "low": 10
         }
       }
@@ -2600,526 +2573,7 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         }
       }
     },
-    "gpu": {
-      "GeForce RTX 5090": {
-        "1080p": {
-          "avg": 123,
-          "low": 77
-        },
-        "1440p": {
-          "avg": 102,
-          "low": 61
-        },
-        "4K": {
-          "avg": 51,
-          "low": 24
-        }
-      },
-      "GeForce RTX 4090": {
-        "1080p": {
-          "avg": 98,
-          "low": 70
-        },
-        "1440p": {
-          "avg": 77,
-          "low": 55
-        },
-        "4K": {
-          "avg": 26,
-          "low": 17
-        }
-      },
-      "GeForce RTX 4080 Super": {
-        "1080p": {
-          "avg": 98,
-          "low": 70
-        },
-        "1440p": {
-          "avg": 77,
-          "low": 55
-        },
-        "4K": {
-          "avg": 26,
-          "low": 17
-        }
-      },
-      "GeForce RTX 4080": {
-        "1080p": {
-          "avg": 76,
-          "low": 57
-        },
-        "1440p": {
-          "avg": 55,
-          "low": 41
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 3080 Ti": {
-        "1080p": {
-          "avg": 48,
-          "low": 36
-        },
-        "1440p": {
-          "avg": 27,
-          "low": 20
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 3080": {
-        "1080p": {
-          "avg": 40,
-          "low": 30
-        },
-        "1440p": {
-          "avg": 19,
-          "low": 14
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 5070 Ti": {
-        "1080p": {
-          "avg": 74,
-          "low": 56
-        },
-        "1440p": {
-          "avg": 54,
-          "low": 40
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 5070": {
-        "1080p": {
-          "avg": 58,
-          "low": 43
-        },
-        "1440p": {
-          "avg": 37,
-          "low": 28
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 4070 Ti Super": {
-        "1080p": {
-          "avg": 58,
-          "low": 43
-        },
-        "1440p": {
-          "avg": 37,
-          "low": 28
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 4070 Super": {
-        "1080p": {
-          "avg": 58,
-          "low": 43
-        },
-        "1440p": {
-          "avg": 37,
-          "low": 28
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 4070 Ti": {
-        "1080p": {
-          "avg": 58,
-          "low": 44
-        },
-        "1440p": {
-          "avg": 37,
-          "low": 28
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 4070": {
-        "1080p": {
-          "avg": 41,
-          "low": 30
-        },
-        "1440p": {
-          "avg": 20,
-          "low": 15
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 3070 Ti": {
-        "1080p": {
-          "avg": 29,
-          "low": 22
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 3070": {
-        "1080p": {
-          "avg": 24,
-          "low": 18
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 5060 Ti": {
-        "1080p": {
-          "avg": 33,
-          "low": 24
-        },
-        "1440p": {
-          "avg": 12,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 5060": {
-        "1080p": {
-          "avg": 24,
-          "low": 18
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 4060 Ti": {
-        "1080p": {
-          "avg": 23,
-          "low": 17
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 4060": {
-        "1080p": {
-          "avg": 10,
-          "low": 10
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 3060 Ti": {
-        "1080p": {
-          "avg": 15,
-          "low": 11
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 3060": {
-        "1080p": {
-          "avg": 15,
-          "low": 11
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 5050": {
-        "1080p": {
-          "avg": 10,
-          "low": 10
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 7900 XTX": {
-        "1080p": {
-          "avg": 83,
-          "low": 62
-        },
-        "1440p": {
-          "avg": 62,
-          "low": 46
-        },
-        "4K": {
-          "avg": 11,
-          "low": 10
-        }
-      },
-      "Radeon RX 7900 XT": {
-        "1080p": {
-          "avg": 72,
-          "low": 54
-        },
-        "1440p": {
-          "avg": 51,
-          "low": 38
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 7900 GRE": {
-        "1080p": {
-          "avg": 58,
-          "low": 43
-        },
-        "1440p": {
-          "avg": 37,
-          "low": 27
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 9800 XT": {
-        "1080p": {
-          "avg": 58,
-          "low": 43
-        },
-        "1440p": {
-          "avg": 37,
-          "low": 27
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 9700 XT": {
-        "1080p": {
-          "avg": 58,
-          "low": 43
-        },
-        "1440p": {
-          "avg": 37,
-          "low": 27
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 970": {
-        "1080p": {
-          "avg": 58,
-          "low": 43
-        },
-        "1440p": {
-          "avg": 37,
-          "low": 27
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 8800 XT": {
-        "1080p": {
-          "avg": 58,
-          "low": 43
-        },
-        "1440p": {
-          "avg": 37,
-          "low": 27
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 7800 XT": {
-        "1080p": {
-          "avg": 49,
-          "low": 37
-        },
-        "1440p": {
-          "avg": 28,
-          "low": 21
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 7700 XT": {
-        "1080p": {
-          "avg": 38,
-          "low": 28
-        },
-        "1440p": {
-          "avg": 17,
-          "low": 13
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 7600 XT": {
-        "1080p": {
-          "avg": 13,
-          "low": 10
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 7600": {
-        "1080p": {
-          "avg": 12,
-          "low": 10
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 6600": {
-        "1080p": {
-          "avg": 10,
-          "low": 10
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 5080": {
-        "1080p": {
-          "avg": 89,
-          "low": 67
-        },
-        "1440p": {
-          "avg": 68,
-          "low": 51
-        },
-        "4K": {
-          "avg": 18,
-          "low": 13
-        }
-      },
-      "GeForce RTX 3090": {
-        "1080p": {
-          "avg": 49,
-          "low": 36
-        },
-        "1440p": {
-          "avg": 28,
-          "low": 21
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "GeForce RTX 3050": {
-        "1080p": {
-          "avg": 10,
-          "low": 10
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      },
-      "Radeon RX 6500 XT": {
-        "1080p": {
-          "avg": 10,
-          "low": 10
-        },
-        "1440p": {
-          "avg": 10,
-          "low": 10
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
-        }
-      }
-    }
+    "gpu": {}
   },
   "刀塔 2": {
     "cpu": {
@@ -5505,266 +4959,18 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
       }
     },
     "gpu": {
-      "GeForce RTX 5090": {
+      "GeForce RTX 3050": {
         "1080p": {
-          "avg": 440,
-          "low": 103
+          "avg": 81,
+          "low": 36
         },
         "1440p": {
-          "avg": 415,
-          "low": 89
-        },
-        "4K": {
-          "avg": 356,
-          "low": 55
-        }
-      },
-      "GeForce RTX 4090": {
-        "1080p": {
-          "avg": 374,
-          "low": 135
-        },
-        "1440p": {
-          "avg": 350,
-          "low": 121
-        },
-        "4K": {
-          "avg": 290,
-          "low": 86
-        }
-      },
-      "GeForce RTX 4080 Super": {
-        "1080p": {
-          "avg": 374,
-          "low": 135
-        },
-        "1440p": {
-          "avg": 350,
-          "low": 121
-        },
-        "4K": {
-          "avg": 290,
-          "low": 86
-        }
-      },
-      "GeForce RTX 4080": {
-        "1080p": {
-          "avg": 325,
-          "low": 144
-        },
-        "1440p": {
-          "avg": 301,
-          "low": 130
-        },
-        "4K": {
-          "avg": 242,
-          "low": 95
-        }
-      },
-      "GeForce RTX 3080 Ti": {
-        "1080p": {
-          "avg": 273,
-          "low": 139
-        },
-        "1440p": {
-          "avg": 249,
-          "low": 125
-        },
-        "4K": {
-          "avg": 189,
-          "low": 91
-        }
-      },
-      "GeForce RTX 3080": {
-        "1080p": {
-          "avg": 260,
-          "low": 136
-        },
-        "1440p": {
-          "avg": 236,
-          "low": 122
-        },
-        "4K": {
-          "avg": 177,
-          "low": 87
-        }
-      },
-      "GeForce RTX 5070 Ti": {
-        "1080p": {
-          "avg": 322,
-          "low": 144
-        },
-        "1440p": {
-          "avg": 298,
-          "low": 130
-        },
-        "4K": {
-          "avg": 239,
-          "low": 96
-        }
-      },
-      "GeForce RTX 5070": {
-        "1080p": {
-          "avg": 291,
-          "low": 143
-        },
-        "1440p": {
-          "avg": 267,
-          "low": 129
-        },
-        "4K": {
-          "avg": 208,
-          "low": 94
-        }
-      },
-      "GeForce RTX 4070 Ti Super": {
-        "1080p": {
-          "avg": 291,
-          "low": 143
-        },
-        "1440p": {
-          "avg": 267,
-          "low": 129
-        },
-        "4K": {
-          "avg": 208,
-          "low": 94
-        }
-      },
-      "GeForce RTX 4070 Super": {
-        "1080p": {
-          "avg": 291,
-          "low": 143
-        },
-        "1440p": {
-          "avg": 267,
-          "low": 129
-        },
-        "4K": {
-          "avg": 208,
-          "low": 94
-        }
-      },
-      "GeForce RTX 4070 Ti": {
-        "1080p": {
-          "avg": 292,
-          "low": 143
-        },
-        "1440p": {
-          "avg": 268,
-          "low": 129
-        },
-        "4K": {
-          "avg": 208,
-          "low": 94
-        }
-      },
-      "GeForce RTX 4070": {
-        "1080p": {
-          "avg": 261,
-          "low": 136
-        },
-        "1440p": {
-          "avg": 237,
-          "low": 122
-        },
-        "4K": {
-          "avg": 177,
-          "low": 88
-        }
-      },
-      "GeForce RTX 3070 Ti": {
-        "1080p": {
-          "avg": 242,
-          "low": 129
-        },
-        "1440p": {
-          "avg": 218,
-          "low": 115
-        },
-        "4K": {
-          "avg": 159,
-          "low": 81
-        }
-      },
-      "GeForce RTX 3070": {
-        "1080p": {
-          "avg": 234,
-          "low": 126
-        },
-        "1440p": {
-          "avg": 210,
-          "low": 112
-        },
-        "4K": {
-          "avg": 150,
-          "low": 77
-        }
-      },
-      "GeForce RTX 5060 Ti": {
-        "1080p": {
-          "avg": 248,
-          "low": 131
-        },
-        "1440p": {
-          "avg": 224,
-          "low": 117
-        },
-        "4K": {
-          "avg": 164,
-          "low": 83
-        }
-      },
-      "GeForce RTX 5060": {
-        "1080p": {
-          "avg": 235,
-          "low": 126
-        },
-        "1440p": {
-          "avg": 211,
-          "low": 112
-        },
-        "4K": {
-          "avg": 151,
-          "low": 78
-        }
-      },
-      "GeForce RTX 4060 Ti": {
-        "1080p": {
-          "avg": 233,
-          "low": 125
-        },
-        "1440p": {
-          "avg": 209,
-          "low": 111
-        },
-        "4K": {
-          "avg": 149,
-          "low": 77
-        }
-      },
-      "GeForce RTX 4060": {
-        "1440p": {
-          "avg": 189,
-          "low": 101
-        },
-        "4K": {
-          "avg": 129,
-          "low": 67
-        }
-      },
-      "GeForce RTX 3060 Ti": {
-        "1080p": {
-          "avg": 221,
-          "low": 119
-        },
-        "1440p": {
-          "avg": 197,
-          "low": 105
-        },
-        "4K": {
-          "avg": 137,
+          "avg": 140,
           "low": 71
+        },
+        "4K": {
+          "avg": 81,
+          "low": 36
         }
       },
       "GeForce RTX 3060": {
@@ -5781,200 +4987,74 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 71
         }
       },
-      "GeForce RTX 5050": {
+      "GeForce RTX 3060 Ti": {
         "1080p": {
-          "avg": 211,
-          "low": 114
+          "avg": 221,
+          "low": 119
         },
         "1440p": {
-          "avg": 187,
-          "low": 100
+          "avg": 197,
+          "low": 105
         },
         "4K": {
-          "avg": 127,
-          "low": 65
+          "avg": 137,
+          "low": 71
         }
       },
-      "Radeon RX 7900 XTX": {
+      "GeForce RTX 3070": {
         "1080p": {
-          "avg": 340,
-          "low": 142
-        },
-        "1440p": {
-          "avg": 316,
-          "low": 128
-        },
-        "4K": {
-          "avg": 256,
-          "low": 94
-        }
-      },
-      "Radeon RX 7900 XT": {
-        "1080p": {
-          "avg": 318,
-          "low": 144
-        },
-        "1440p": {
-          "avg": 294,
-          "low": 130
-        },
-        "4K": {
           "avg": 234,
-          "low": 96
-        }
-      },
-      "Radeon RX 7900 GRE": {
-        "1080p": {
-          "avg": 290,
-          "low": 142
-        },
-        "1440p": {
-          "avg": 266,
-          "low": 129
-        },
-        "4K": {
-          "avg": 207,
-          "low": 94
-        }
-      },
-      "Radeon RX 9800 XT": {
-        "1080p": {
-          "avg": 290,
-          "low": 142
-        },
-        "1440p": {
-          "avg": 266,
-          "low": 129
-        },
-        "4K": {
-          "avg": 207,
-          "low": 94
-        }
-      },
-      "Radeon RX 9700 XT": {
-        "1080p": {
-          "avg": 290,
-          "low": 142
-        },
-        "1440p": {
-          "avg": 266,
-          "low": 129
-        },
-        "4K": {
-          "avg": 207,
-          "low": 94
-        }
-      },
-      "Radeon RX 970": {
-        "1080p": {
-          "avg": 290,
-          "low": 142
-        },
-        "1440p": {
-          "avg": 266,
-          "low": 129
-        },
-        "4K": {
-          "avg": 207,
-          "low": 94
-        }
-      },
-      "Radeon RX 8800 XT": {
-        "1080p": {
-          "avg": 290,
-          "low": 142
-        },
-        "1440p": {
-          "avg": 266,
-          "low": 129
-        },
-        "4K": {
-          "avg": 207,
-          "low": 94
-        }
-      },
-      "Radeon RX 7800 XT": {
-        "1080p": {
-          "avg": 276,
-          "low": 140
-        },
-        "1440p": {
-          "avg": 251,
           "low": 126
         },
+        "1440p": {
+          "avg": 210,
+          "low": 112
+        },
         "4K": {
-          "avg": 192,
+          "avg": 150,
+          "low": 77
+        }
+      },
+      "GeForce RTX 3070 Ti": {
+        "1080p": {
+          "avg": 242,
+          "low": 129
+        },
+        "1440p": {
+          "avg": 218,
+          "low": 115
+        },
+        "4K": {
+          "avg": 159,
+          "low": 81
+        }
+      },
+      "GeForce RTX 3080": {
+        "1080p": {
+          "avg": 260,
+          "low": 136
+        },
+        "1440p": {
+          "avg": 236,
+          "low": 122
+        },
+        "4K": {
+          "avg": 177,
+          "low": 87
+        }
+      },
+      "GeForce RTX 3080 Ti": {
+        "1080p": {
+          "avg": 273,
+          "low": 139
+        },
+        "1440p": {
+          "avg": 249,
+          "low": 125
+        },
+        "4K": {
+          "avg": 189,
           "low": 91
-        }
-      },
-      "Radeon RX 7700 XT": {
-        "1080p": {
-          "avg": 257,
-          "low": 135
-        },
-        "1440p": {
-          "avg": 233,
-          "low": 121
-        },
-        "4K": {
-          "avg": 173,
-          "low": 86
-        }
-      },
-      "Radeon RX 7600 XT": {
-        "1080p": {
-          "avg": 217,
-          "low": 117
-        },
-        "1440p": {
-          "avg": 193,
-          "low": 103
-        },
-        "4K": {
-          "avg": 133,
-          "low": 69
-        }
-      },
-      "Radeon RX 7600": {
-        "1080p": {
-          "avg": 216,
-          "low": 116
-        },
-        "1440p": {
-          "avg": 191,
-          "low": 103
-        },
-        "4K": {
-          "avg": 132,
-          "low": 68
-        }
-      },
-      "Radeon RX 6600": {
-        "1080p": {
-          "avg": 206,
-          "low": 111
-        },
-        "1440p": {
-          "avg": 182,
-          "low": 97
-        },
-        "4K": {
-          "avg": 122,
-          "low": 63
-        }
-      },
-      "GeForce RTX 5080": {
-        "1080p": {
-          "avg": 270,
-          "low": 92
-        },
-        "1440p": {
-          "avg": 330,
-          "low": 126
-        },
-        "4K": {
-          "avg": 270,
-          "low": 92
         }
       },
       "GeForce RTX 3090": {
@@ -6005,18 +5085,392 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 93
         }
       },
-      "GeForce RTX 3050": {
-        "1080p": {
-          "avg": 81,
-          "low": 36
-        },
+      "GeForce RTX 4060": {
         "1440p": {
-          "avg": 140,
-          "low": 71
+          "avg": 189,
+          "low": 101
         },
         "4K": {
-          "avg": 81,
-          "low": 36
+          "avg": 129,
+          "low": 67
+        }
+      },
+      "GeForce RTX 4060 Ti": {
+        "1080p": {
+          "avg": 233,
+          "low": 125
+        },
+        "1440p": {
+          "avg": 209,
+          "low": 111
+        },
+        "4K": {
+          "avg": 149,
+          "low": 77
+        }
+      },
+      "GeForce RTX 4070": {
+        "1080p": {
+          "avg": 261,
+          "low": 136
+        },
+        "1440p": {
+          "avg": 237,
+          "low": 122
+        },
+        "4K": {
+          "avg": 177,
+          "low": 88
+        }
+      },
+      "GeForce RTX 4070 Super": {
+        "1080p": {
+          "avg": 291,
+          "low": 143
+        },
+        "1440p": {
+          "avg": 267,
+          "low": 129
+        },
+        "4K": {
+          "avg": 208,
+          "low": 94
+        }
+      },
+      "GeForce RTX 4070 Ti": {
+        "1080p": {
+          "avg": 292,
+          "low": 143
+        },
+        "1440p": {
+          "avg": 268,
+          "low": 129
+        },
+        "4K": {
+          "avg": 208,
+          "low": 94
+        }
+      },
+      "GeForce RTX 4070 Ti Super": {
+        "1080p": {
+          "avg": 291,
+          "low": 143
+        },
+        "1440p": {
+          "avg": 267,
+          "low": 129
+        },
+        "4K": {
+          "avg": 208,
+          "low": 94
+        }
+      },
+      "GeForce RTX 4080": {
+        "1080p": {
+          "avg": 325,
+          "low": 144
+        },
+        "1440p": {
+          "avg": 301,
+          "low": 130
+        },
+        "4K": {
+          "avg": 242,
+          "low": 95
+        }
+      },
+      "GeForce RTX 4080 Super": {
+        "1080p": {
+          "avg": 374,
+          "low": 135
+        },
+        "1440p": {
+          "avg": 350,
+          "low": 121
+        },
+        "4K": {
+          "avg": 290,
+          "low": 86
+        }
+      },
+      "GeForce RTX 4090": {
+        "1080p": {
+          "avg": 374,
+          "low": 135
+        },
+        "1440p": {
+          "avg": 350,
+          "low": 121
+        },
+        "4K": {
+          "avg": 290,
+          "low": 86
+        }
+      },
+      "GeForce RTX 5050": {
+        "1080p": {
+          "avg": 211,
+          "low": 114
+        },
+        "1440p": {
+          "avg": 187,
+          "low": 100
+        },
+        "4K": {
+          "avg": 127,
+          "low": 65
+        }
+      },
+      "GeForce RTX 5060": {
+        "1080p": {
+          "avg": 235,
+          "low": 126
+        },
+        "1440p": {
+          "avg": 211,
+          "low": 112
+        },
+        "4K": {
+          "avg": 151,
+          "low": 78
+        }
+      },
+      "GeForce RTX 5060 Ti": {
+        "1080p": {
+          "avg": 248,
+          "low": 131
+        },
+        "1440p": {
+          "avg": 224,
+          "low": 117
+        },
+        "4K": {
+          "avg": 164,
+          "low": 83
+        }
+      },
+      "GeForce RTX 5070": {
+        "1080p": {
+          "avg": 291,
+          "low": 143
+        },
+        "1440p": {
+          "avg": 267,
+          "low": 129
+        },
+        "4K": {
+          "avg": 208,
+          "low": 94
+        }
+      },
+      "GeForce RTX 5070 Ti": {
+        "1080p": {
+          "avg": 322,
+          "low": 144
+        },
+        "1440p": {
+          "avg": 298,
+          "low": 130
+        },
+        "4K": {
+          "avg": 239,
+          "low": 96
+        }
+      },
+      "GeForce RTX 5080": {
+        "1080p": {
+          "avg": 270,
+          "low": 92
+        },
+        "1440p": {
+          "avg": 330,
+          "low": 126
+        },
+        "4K": {
+          "avg": 270,
+          "low": 92
+        }
+      },
+      "GeForce RTX 5090": {
+        "1080p": {
+          "avg": 440,
+          "low": 103
+        },
+        "1440p": {
+          "avg": 415,
+          "low": 89
+        },
+        "4K": {
+          "avg": 356,
+          "low": 55
+        }
+      },
+      "Radeon RX 6600": {
+        "1080p": {
+          "avg": 206,
+          "low": 111
+        },
+        "1440p": {
+          "avg": 182,
+          "low": 97
+        },
+        "4K": {
+          "avg": 122,
+          "low": 63
+        }
+      },
+      "Radeon RX 7600": {
+        "1080p": {
+          "avg": 216,
+          "low": 116
+        },
+        "1440p": {
+          "avg": 191,
+          "low": 103
+        },
+        "4K": {
+          "avg": 132,
+          "low": 68
+        }
+      },
+      "Radeon RX 7600 XT": {
+        "1080p": {
+          "avg": 217,
+          "low": 117
+        },
+        "1440p": {
+          "avg": 193,
+          "low": 103
+        },
+        "4K": {
+          "avg": 133,
+          "low": 69
+        }
+      },
+      "Radeon RX 7700 XT": {
+        "1080p": {
+          "avg": 257,
+          "low": 135
+        },
+        "1440p": {
+          "avg": 233,
+          "low": 121
+        },
+        "4K": {
+          "avg": 173,
+          "low": 86
+        }
+      },
+      "Radeon RX 7800 XT": {
+        "1080p": {
+          "avg": 276,
+          "low": 140
+        },
+        "1440p": {
+          "avg": 251,
+          "low": 126
+        },
+        "4K": {
+          "avg": 192,
+          "low": 91
+        }
+      },
+      "Radeon RX 7900 GRE": {
+        "1080p": {
+          "avg": 290,
+          "low": 142
+        },
+        "1440p": {
+          "avg": 266,
+          "low": 129
+        },
+        "4K": {
+          "avg": 207,
+          "low": 94
+        }
+      },
+      "Radeon RX 7900 XT": {
+        "1080p": {
+          "avg": 318,
+          "low": 144
+        },
+        "1440p": {
+          "avg": 294,
+          "low": 130
+        },
+        "4K": {
+          "avg": 234,
+          "low": 96
+        }
+      },
+      "Radeon RX 7900 XTX": {
+        "1080p": {
+          "avg": 340,
+          "low": 142
+        },
+        "1440p": {
+          "avg": 316,
+          "low": 128
+        },
+        "4K": {
+          "avg": 256,
+          "low": 94
+        }
+      },
+      "Radeon RX 8800 XT": {
+        "1080p": {
+          "avg": 290,
+          "low": 142
+        },
+        "1440p": {
+          "avg": 266,
+          "low": 129
+        },
+        "4K": {
+          "avg": 207,
+          "low": 94
+        }
+      },
+      "Radeon RX 970": {
+        "1080p": {
+          "avg": 290,
+          "low": 142
+        },
+        "1440p": {
+          "avg": 266,
+          "low": 129
+        },
+        "4K": {
+          "avg": 207,
+          "low": 94
+        }
+      },
+      "Radeon RX 9700 XT": {
+        "1080p": {
+          "avg": 290,
+          "low": 142
+        },
+        "1440p": {
+          "avg": 266,
+          "low": 129
+        },
+        "4K": {
+          "avg": 207,
+          "low": 94
+        }
+      },
+      "Radeon RX 9800 XT": {
+        "1080p": {
+          "avg": 290,
+          "low": 142
+        },
+        "1440p": {
+          "avg": 266,
+          "low": 129
+        },
+        "4K": {
+          "avg": 207,
+          "low": 94
         }
       }
     }
@@ -8924,6 +8378,520 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "avg": 464,
           "low": 286
         }
+      },
+      "Core Ultra 5 225": {
+        "1080p": {
+          "avg": 643,
+          "low": 394
+        },
+        "1440p": {
+          "avg": 612,
+          "low": 374
+        },
+        "4K": {
+          "avg": 525,
+          "low": 319
+        }
+      },
+      "Core Ultra 5 225F": {
+        "1080p": {
+          "avg": 643,
+          "low": 394
+        },
+        "1440p": {
+          "avg": 612,
+          "low": 374
+        },
+        "4K": {
+          "avg": 525,
+          "low": 319
+        }
+      },
+      "Core Ultra 5 235": {
+        "1080p": {
+          "avg": 630,
+          "low": 387
+        },
+        "1440p": {
+          "avg": 600,
+          "low": 368
+        },
+        "4K": {
+          "avg": 513,
+          "low": 312
+        }
+      },
+      "Core Ultra 5 245K": {
+        "1080p": {
+          "avg": 668,
+          "low": 408
+        },
+        "1440p": {
+          "avg": 637,
+          "low": 388
+        },
+        "4K": {
+          "avg": 550,
+          "low": 333
+        }
+      },
+      "Core Ultra 5 245KF": {
+        "1080p": {
+          "avg": 671,
+          "low": 409
+        },
+        "1440p": {
+          "avg": 640,
+          "low": 390
+        },
+        "4K": {
+          "avg": 553,
+          "low": 334
+        }
+      },
+      "Core Ultra 7 265K": {
+        "1080p": {
+          "avg": 683,
+          "low": 416
+        },
+        "1440p": {
+          "avg": 652,
+          "low": 396
+        },
+        "4K": {
+          "avg": 565,
+          "low": 341
+        }
+      },
+      "Core Ultra 7 265KF": {
+        "1080p": {
+          "avg": 683,
+          "low": 416
+        },
+        "1440p": {
+          "avg": 652,
+          "low": 396
+        },
+        "4K": {
+          "avg": 565,
+          "low": 341
+        }
+      },
+      "Core Ultra 9 285K": {
+        "1080p": {
+          "avg": 698,
+          "low": 424
+        },
+        "1440p": {
+          "avg": 667,
+          "low": 405
+        },
+        "4K": {
+          "avg": 580,
+          "low": 349
+        }
+      },
+      "Core i3-12100": {
+        "1080p": {
+          "avg": 554,
+          "low": 346
+        },
+        "1440p": {
+          "avg": 524,
+          "low": 327
+        },
+        "4K": {
+          "avg": 437,
+          "low": 271
+        }
+      },
+      "Core i3-12100F": {
+        "1080p": {
+          "avg": 554,
+          "low": 346
+        },
+        "1440p": {
+          "avg": 524,
+          "low": 327
+        },
+        "4K": {
+          "avg": 437,
+          "low": 271
+        }
+      },
+      "Core i3-12300": {
+        "1080p": {
+          "avg": 562,
+          "low": 350
+        },
+        "1440p": {
+          "avg": 531,
+          "low": 331
+        },
+        "4K": {
+          "avg": 444,
+          "low": 275
+        }
+      },
+      "Core i5-11400F": {
+        "1080p": {
+          "avg": 538,
+          "low": 338
+        },
+        "1440p": {
+          "avg": 507,
+          "low": 318
+        },
+        "4K": {
+          "avg": 420,
+          "low": 263
+        }
+      },
+      "Core i5-11500": {
+        "1080p": {
+          "avg": 541,
+          "low": 340
+        },
+        "1440p": {
+          "avg": 511,
+          "low": 320
+        },
+        "4K": {
+          "avg": 424,
+          "low": 265
+        }
+      },
+      "Core i5-11600": {
+        "1080p": {
+          "avg": 561,
+          "low": 350
+        },
+        "1440p": {
+          "avg": 531,
+          "low": 331
+        },
+        "4K": {
+          "avg": 443,
+          "low": 275
+        }
+      },
+      "Core i5-12500": {
+        "1080p": {
+          "avg": 563,
+          "low": 351
+        },
+        "1440p": {
+          "avg": 532,
+          "low": 332
+        },
+        "4K": {
+          "avg": 445,
+          "low": 276
+        }
+      },
+      "Core i5-12600K": {
+        "1080p": {
+          "avg": 608,
+          "low": 375
+        },
+        "1440p": {
+          "avg": 577,
+          "low": 355
+        },
+        "4K": {
+          "avg": 490,
+          "low": 300
+        }
+      },
+      "Core i5-13600": {
+        "1080p": {
+          "avg": 640,
+          "low": 392
+        },
+        "1440p": {
+          "avg": 609,
+          "low": 373
+        },
+        "4K": {
+          "avg": 522,
+          "low": 317
+        }
+      },
+      "Core i5-14600": {
+        "1080p": {
+          "avg": 654,
+          "low": 400
+        },
+        "1440p": {
+          "avg": 623,
+          "low": 381
+        },
+        "4K": {
+          "avg": 536,
+          "low": 325
+        }
+      },
+      "Core i7-11700F": {
+        "1080p": {
+          "avg": 558,
+          "low": 348
+        },
+        "1440p": {
+          "avg": 527,
+          "low": 329
+        },
+        "4K": {
+          "avg": 440,
+          "low": 273
+        }
+      },
+      "Core i7-12700": {
+        "1080p": {
+          "avg": 569,
+          "low": 354
+        },
+        "1440p": {
+          "avg": 539,
+          "low": 335
+        },
+        "4K": {
+          "avg": 451,
+          "low": 279
+        }
+      },
+      "Core i7-13700": {
+        "1080p": {
+          "avg": 638,
+          "low": 391
+        },
+        "1440p": {
+          "avg": 608,
+          "low": 372
+        },
+        "4K": {
+          "avg": 520,
+          "low": 316
+        }
+      },
+      "Core i7-13700KF": {
+        "1080p": {
+          "avg": 662,
+          "low": 404
+        },
+        "1440p": {
+          "avg": 631,
+          "low": 385
+        },
+        "4K": {
+          "avg": 544,
+          "low": 329
+        }
+      },
+      "Core i7-14700": {
+        "1080p": {
+          "avg": 651,
+          "low": 399
+        },
+        "1440p": {
+          "avg": 621,
+          "low": 379
+        },
+        "4K": {
+          "avg": 534,
+          "low": 324
+        }
+      },
+      "Core i9-11900F": {
+        "1080p": {
+          "avg": 580,
+          "low": 360
+        },
+        "1440p": {
+          "avg": 549,
+          "low": 341
+        },
+        "4K": {
+          "avg": 462,
+          "low": 285
+        }
+      },
+      "Core i9-12900KS": {
+        "1080p": {
+          "avg": 647,
+          "low": 396
+        },
+        "1440p": {
+          "avg": 616,
+          "low": 377
+        },
+        "4K": {
+          "avg": 529,
+          "low": 321
+        }
+      },
+      "Core i9-13900": {
+        "1080p": {
+          "avg": 673,
+          "low": 410
+        },
+        "1440p": {
+          "avg": 642,
+          "low": 391
+        },
+        "4K": {
+          "avg": 555,
+          "low": 335
+        }
+      },
+      "Core i9-13900KF": {
+        "1080p": {
+          "avg": 672,
+          "low": 410
+        },
+        "1440p": {
+          "avg": 641,
+          "low": 390
+        },
+        "4K": {
+          "avg": 554,
+          "low": 335
+        }
+      },
+      "Core i9-14900": {
+        "1080p": {
+          "avg": 683,
+          "low": 416
+        },
+        "1440p": {
+          "avg": 652,
+          "low": 396
+        },
+        "4K": {
+          "avg": 565,
+          "low": 341
+        }
+      },
+      "Ryzen 3 5300G": {
+        "1080p": {
+          "avg": 497,
+          "low": 317
+        },
+        "1440p": {
+          "avg": 466,
+          "low": 297
+        },
+        "4K": {
+          "avg": 379,
+          "low": 242
+        }
+      },
+      "Ryzen 5 8500G": {
+        "1080p": {
+          "avg": 608,
+          "low": 375
+        },
+        "1440p": {
+          "avg": 577,
+          "low": 355
+        },
+        "4K": {
+          "avg": 490,
+          "low": 300
+        }
+      },
+      "Ryzen 5 8600G": {
+        "1080p": {
+          "avg": 617,
+          "low": 380
+        },
+        "4K": {
+          "avg": 499,
+          "low": 305
+        }
+      },
+      "Ryzen 5 9600X": {
+        "1080p": {
+          "avg": 695,
+          "low": 423
+        },
+        "1440p": {
+          "avg": 665,
+          "low": 403
+        },
+        "4K": {
+          "avg": 578,
+          "low": 348
+        }
+      },
+      "Ryzen 7 5700": {
+        "1080p": {
+          "avg": 547,
+          "low": 342
+        },
+        "1440p": {
+          "avg": 516,
+          "low": 323
+        },
+        "4K": {
+          "avg": 429,
+          "low": 267
+        }
+      },
+      "Ryzen 7 5700G": {
+        "1080p": {
+          "avg": 548,
+          "low": 343
+        },
+        "1440p": {
+          "avg": 518,
+          "low": 324
+        },
+        "4K": {
+          "avg": 430,
+          "low": 268
+        }
+      },
+      "Ryzen 7 8700G": {
+        "1080p": {
+          "avg": 631,
+          "low": 387
+        },
+        "1440p": {
+          "avg": 600,
+          "low": 368
+        },
+        "4K": {
+          "avg": 513,
+          "low": 312
+        }
+      },
+      "Ryzen 7 9700X": {
+        "1080p": {
+          "avg": 705,
+          "low": 428
+        },
+        "1440p": {
+          "avg": 674,
+          "low": 409
+        },
+        "4K": {
+          "avg": 587,
+          "low": 353
+        }
+      },
+      "Ryzen 9 9850X3D": {
+        "1080p": {
+          "avg": 809,
+          "low": 487
+        },
+        "1440p": {
+          "avg": 778,
+          "low": 467
+        },
+        "4K": {
+          "avg": 691,
+          "low": 412
+        }
       }
     },
     "gpu": {
@@ -9663,6 +9631,86 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "4K": {
           "avg": 290,
           "low": 176
+        }
+      },
+      "GeForce RTX 3050": {
+        "1080p": {
+          "avg": 420,
+          "low": 258
+        },
+        "1440p": {
+          "avg": 389,
+          "low": 238
+        },
+        "4K": {
+          "avg": 302,
+          "low": 183
+        }
+      },
+      "GeForce RTX 4070 Super": {
+        "1080p": {
+          "avg": 473,
+          "low": 303
+        },
+        "1440p": {
+          "avg": 442,
+          "low": 284
+        },
+        "4K": {
+          "avg": 355,
+          "low": 228
+        }
+      },
+      "GeForce RTX 4070 Ti Super": {
+        "1080p": {
+          "avg": 503,
+          "low": 321
+        },
+        "1440p": {
+          "avg": 472,
+          "low": 301
+        },
+        "4K": {
+          "avg": 385,
+          "low": 246
+        }
+      },
+      "GeForce RTX 4080 Super": {
+        "1440p": {
+          "avg": 514,
+          "low": 325
+        },
+        "4K": {
+          "avg": 427,
+          "low": 269
+        }
+      },
+      "Radeon RX 6500 XT": {
+        "1080p": {
+          "avg": 419,
+          "low": 258
+        },
+        "1440p": {
+          "avg": 389,
+          "low": 238
+        },
+        "4K": {
+          "avg": 301,
+          "low": 183
+        }
+      },
+      "Radeon RX 970": {
+        "1080p": {
+          "avg": 563,
+          "low": 354
+        },
+        "1440p": {
+          "avg": 532,
+          "low": 335
+        },
+        "4K": {
+          "avg": 445,
+          "low": 279
         }
       }
     }
@@ -10621,10 +10669,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "1440p": {
           "avg": 42,
           "low": 31
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
         }
       },
       "Radeon RX 6500 XT": {
@@ -10635,10 +10679,6 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "1440p": {
           "avg": 43,
           "low": 32
-        },
-        "4K": {
-          "avg": 10,
-          "low": 10
         }
       }
     }
@@ -12577,564 +12617,116 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
   },
   "堡垒之夜": {
     "cpu": {
-      "Ryzen 9 9950X3D": {
+      "Core i3-12100": {
         "1080p": {
-          "avg": 246,
-          "low": 65
-        },
-        "1440p": {
-          "avg": 225,
-          "low": 52
-        },
-        "4K": {
-          "avg": 171,
-          "low": 20
-        }
-      },
-      "Ryzen 9 9950X": {
-        "1080p": {
-          "avg": 246,
-          "low": 65
-        },
-        "1440p": {
-          "avg": 225,
-          "low": 52
-        },
-        "4K": {
-          "avg": 171,
-          "low": 20
-        }
-      },
-      "Ryzen 9 9900X": {
-        "1080p": {
-          "avg": 296,
-          "low": 109
-        },
-        "1440p": {
-          "avg": 276,
-          "low": 96
-        },
-        "4K": {
-          "avg": 221,
-          "low": 64
-        }
-      },
-      "Ryzen 7 7800X3D": {
-        "1080p": {
-          "avg": 288,
-          "low": 102
-        },
-        "1440p": {
-          "avg": 267,
-          "low": 89
-        },
-        "4K": {
-          "avg": 213,
-          "low": 57
-        }
-      },
-      "Ryzen 7 7700X": {
-        "1080p": {
-          "avg": 309,
-          "low": 119
-        },
-        "1440p": {
-          "avg": 288,
-          "low": 106
-        },
-        "4K": {
-          "avg": 233,
-          "low": 74
-        }
-      },
-      "Ryzen 5 7600X": {
-        "1080p": {
-          "avg": 311,
-          "low": 121
-        },
-        "1440p": {
-          "avg": 291,
-          "low": 109
-        },
-        "4K": {
-          "avg": 236,
-          "low": 76
-        }
-      },
-      "Ryzen 9 7950X3D": {
-        "1080p": {
-          "avg": 280,
-          "low": 95
-        },
-        "1440p": {
-          "avg": 259,
-          "low": 82
-        },
-        "4K": {
-          "avg": 205,
-          "low": 49
-        }
-      },
-      "Ryzen 9 7900X3D": {
-        "1080p": {
-          "avg": 278,
-          "low": 93
-        },
-        "1440p": {
-          "avg": 257,
-          "low": 81
-        },
-        "4K": {
-          "avg": 203,
-          "low": 48
-        }
-      },
-      "Ryzen 9 7950X": {
-        "1080p": {
-          "avg": 309,
-          "low": 119
-        },
-        "1440p": {
-          "avg": 288,
-          "low": 107
-        },
-        "4K": {
-          "avg": 233,
-          "low": 73
-        }
-      },
-      "Ryzen 9 7900X": {
-        "1080p": {
-          "avg": 308,
-          "low": 119
-        },
-        "1440p": {
-          "avg": 287,
-          "low": 106
-        },
-        "4K": {
-          "avg": 233,
-          "low": 73
-        }
-      },
-      "Core i9-14900K": {
-        "1080p": {
-          "avg": 304,
-          "low": 115
-        },
-        "1440p": {
-          "avg": 283,
-          "low": 102
-        },
-        "4K": {
-          "avg": 229,
-          "low": 70
-        }
-      },
-      "Core i9-14900KS": {
-        "1080p": {
-          "avg": 301,
-          "low": 113
-        },
-        "1440p": {
-          "avg": 280,
-          "low": 100
-        },
-        "4K": {
-          "avg": 226,
-          "low": 67
-        }
-      },
-      "Core i9-14900": {
-        "1080p": {
-          "avg": 309,
-          "low": 119
-        },
-        "1440p": {
-          "avg": 288,
-          "low": 107
-        },
-        "4K": {
-          "avg": 234,
-          "low": 74
-        }
-      },
-      "Core i9-14900F": {
-        "1080p": {
-          "avg": 308,
-          "low": 119
-        },
-        "1440p": {
-          "avg": 287,
-          "low": 106
-        },
-        "4K": {
-          "avg": 233,
-          "low": 73
-        }
-      },
-      "Core i9-14900KF": {
-        "1080p": {
-          "avg": 304,
-          "low": 115
-        },
-        "1440p": {
-          "avg": 283,
-          "low": 102
-        },
-        "4K": {
-          "avg": 229,
-          "low": 70
-        }
-      },
-      "Core i7-14700K": {
-        "1080p": {
-          "avg": 307,
-          "low": 118
-        },
-        "1440p": {
-          "avg": 286,
-          "low": 105
-        },
-        "4K": {
-          "avg": 232,
-          "low": 72
-        }
-      },
-      "Core i7-14700KF": {
-        "1080p": {
-          "avg": 307,
-          "low": 118
-        },
-        "1440p": {
-          "avg": 286,
-          "low": 105
-        },
-        "4K": {
-          "avg": 232,
-          "low": 72
-        }
-      },
-      "Core i7-14700F": {
-        "1080p": {
-          "avg": 311,
-          "low": 121
-        },
-        "1440p": {
-          "avg": 290,
-          "low": 108
-        },
-        "4K": {
-          "avg": 236,
-          "low": 76
-        }
-      },
-      "Core i5-14600K": {
-        "1080p": {
-          "avg": 311,
-          "low": 121
-        },
-        "1440p": {
-          "avg": 290,
-          "low": 108
-        },
-        "4K": {
-          "avg": 235,
-          "low": 75
-        }
-      },
-      "Core i5-14600KF": {
-        "1080p": {
-          "avg": 311,
-          "low": 121
-        },
-        "1440p": {
-          "avg": 291,
-          "low": 109
-        },
-        "4K": {
-          "avg": 236,
-          "low": 76
-        }
-      },
-      "Core i5-14500": {
-        "1080p": {
-          "avg": 316,
+          "avg": 317,
           "low": 125
         },
         "1440p": {
-          "avg": 295,
+          "avg": 297,
+          "low": 113
+        },
+        "4K": {
+          "avg": 242,
+          "low": 80
+        }
+      },
+      "Core i3-12100F": {
+        "1080p": {
+          "avg": 318,
+          "low": 126
+        },
+        "1440p": {
+          "avg": 297,
+          "low": 113
+        },
+        "4K": {
+          "avg": 242,
+          "low": 80
+        }
+      },
+      "Core i3-14100": {
+        "1080p": {
+          "avg": 318,
+          "low": 126
+        },
+        "1440p": {
+          "avg": 297,
+          "low": 113
+        },
+        "4K": {
+          "avg": 243,
+          "low": 81
+        }
+      },
+      "Core i5-11400F": {
+        "1080p": {
+          "avg": 317,
+          "low": 125
+        },
+        "1440p": {
+          "avg": 296,
           "low": 112
         },
         "4K": {
-          "avg": 241,
+          "avg": 242,
           "low": 80
         }
       },
-      "Core i5-14400": {
+      "Core i5-11500": {
         "1080p": {
           "avg": 317,
-          "low": 126
-        },
-        "1440p": {
-          "avg": 296,
-          "low": 113
-        },
-        "4K": {
-          "avg": 242,
-          "low": 81
-        }
-      },
-      "Core i5-14400F": {
-        "1080p": {
-          "avg": 317,
-          "low": 126
-        },
-        "1440p": {
-          "avg": 296,
-          "low": 113
-        },
-        "4K": {
-          "avg": 242,
-          "low": 81
-        }
-      },
-      "Core i9-13900KS": {
-        "1080p": {
-          "avg": 303,
-          "low": 115
-        },
-        "1440p": {
-          "avg": 283,
-          "low": 102
-        },
-        "4K": {
-          "avg": 228,
-          "low": 70
-        }
-      },
-      "Core i9-13900K": {
-        "1080p": {
-          "avg": 306,
-          "low": 117
-        },
-        "1440p": {
-          "avg": 286,
-          "low": 105
-        },
-        "4K": {
-          "avg": 231,
-          "low": 72
-        }
-      },
-      "Core i9-13900": {
-        "1080p": {
-          "avg": 306,
-          "low": 117
-        },
-        "1440p": {
-          "avg": 286,
-          "low": 105
-        },
-        "4K": {
-          "avg": 231,
-          "low": 72
-        }
-      },
-      "Core i9-12900KS": {
-        "1080p": {
-          "avg": 312,
-          "low": 122
-        },
-        "1440p": {
-          "avg": 291,
-          "low": 109
-        },
-        "4K": {
-          "avg": 237,
-          "low": 77
-        }
-      },
-      "Core i9-12900K": {
-        "1080p": {
-          "avg": 314,
-          "low": 124
-        },
-        "1440p": {
-          "avg": 293,
-          "low": 111
-        },
-        "4K": {
-          "avg": 239,
-          "low": 78
-        }
-      },
-      "Core i7-13700K": {
-        "1080p": {
-          "avg": 310,
-          "low": 120
-        },
-        "1440p": {
-          "avg": 289,
-          "low": 107
-        },
-        "4K": {
-          "avg": 235,
-          "low": 75
-        }
-      },
-      "Core i7-13700KF": {
-        "1080p": {
-          "avg": 309,
-          "low": 119
-        },
-        "1440p": {
-          "avg": 288,
-          "low": 107
-        },
-        "4K": {
-          "avg": 234,
-          "low": 74
-        }
-      },
-      "Core i5-13600K": {
-        "1080p": {
-          "avg": 313,
-          "low": 123
-        },
-        "1440p": {
-          "avg": 292,
-          "low": 110
-        },
-        "4K": {
-          "avg": 238,
-          "low": 77
-        }
-      },
-      "Core i5-12600K": {
-        "1080p": {
-          "avg": 316,
           "low": 125
         },
         "1440p": {
           "avg": 296,
-          "low": 113
+          "low": 112
         },
         "4K": {
-          "avg": 241,
+          "avg": 242,
           "low": 80
         }
       },
-      "Core Ultra 9 285K": {
+      "Core i5-11600": {
         "1080p": {
-          "avg": 225,
-          "low": 66
+          "avg": 317,
+          "low": 126
         },
         "1440p": {
-          "avg": 279,
-          "low": 99
+          "avg": 297,
+          "low": 113
         },
         "4K": {
-          "avg": 225,
-          "low": 66
+          "avg": 242,
+          "low": 80
         }
       },
-      "Core Ultra 7 265K": {
+      "Core i5-11600K": {
         "1080p": {
-          "avg": 228,
-          "low": 69
+          "avg": 318,
+          "low": 126
         },
         "1440p": {
-          "avg": 282,
-          "low": 102
+          "avg": 297,
+          "low": 113
         },
         "4K": {
-          "avg": 228,
-          "low": 69
+          "avg": 243,
+          "low": 81
         }
       },
-      "Core Ultra 7 265KF": {
+      "Core i5-11600KF": {
         "1080p": {
-          "avg": 229,
-          "low": 70
+          "avg": 318,
+          "low": 126
         },
         "1440p": {
-          "avg": 283,
-          "low": 103
+          "avg": 297,
+          "low": 113
         },
         "4K": {
-          "avg": 229,
-          "low": 70
-        }
-      },
-      "Core Ultra 5 245K": {
-        "1080p": {
-          "avg": 308,
-          "low": 118
-        },
-        "1440p": {
-          "avg": 287,
-          "low": 106
-        },
-        "4K": {
-          "avg": 233,
-          "low": 73
-        }
-      },
-      "Core Ultra 5 245KF": {
-        "1080p": {
-          "avg": 307,
-          "low": 118
-        },
-        "1440p": {
-          "avg": 286,
-          "low": 105
-        },
-        "4K": {
-          "avg": 232,
-          "low": 73
-        }
-      },
-      "Core Ultra 5 235": {
-        "1080p": {
-          "avg": 311,
-          "low": 121
-        },
-        "1440p": {
-          "avg": 290,
-          "low": 108
-        },
-        "4K": {
-          "avg": 236,
-          "low": 76
-        }
-      },
-      "Core Ultra 5 225": {
-        "1080p": {
-          "avg": 313,
-          "low": 123
-        },
-        "1440p": {
-          "avg": 292,
-          "low": 110
-        },
-        "4K": {
-          "avg": 238,
-          "low": 77
-        }
-      },
-      "Core Ultra 5 225F": {
-        "1080p": {
-          "avg": 312,
-          "low": 122
-        },
-        "1440p": {
-          "avg": 292,
-          "low": 109
-        },
-        "4K": {
-          "avg": 237,
-          "low": 77
+          "avg": 243,
+          "low": 81
         }
       },
       "Core i5-12400": {
@@ -13165,105 +12757,49 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 81
         }
       },
-      "Ryzen 7 9800X3D": {
+      "Core i5-12500": {
         "1080p": {
-          "avg": 253,
-          "low": 71
+          "avg": 318,
+          "low": 126
         },
         "1440p": {
-          "avg": 232,
-          "low": 58
-        },
-        "4K": {
-          "avg": 178,
-          "low": 26
-        }
-      },
-      "Ryzen 7 9700X": {
-        "1080p": {
           "avg": 297,
-          "low": 109
-        },
-        "1440p": {
-          "avg": 276,
-          "low": 97
+          "low": 113
         },
         "4K": {
-          "avg": 222,
-          "low": 64
+          "avg": 242,
+          "low": 81
         }
       },
-      "Ryzen 5 9600X": {
+      "Core i5-12600": {
         "1080p": {
-          "avg": 300,
-          "low": 112
+          "avg": 317,
+          "low": 126
         },
         "1440p": {
-          "avg": 279,
-          "low": 99
+          "avg": 296,
+          "low": 113
         },
         "4K": {
-          "avg": 225,
-          "low": 67
+          "avg": 242,
+          "low": 81
         }
       },
-      "Ryzen 7 7700": {
-        "1080p": {
-          "avg": 310,
-          "low": 120
-        },
-        "1440p": {
-          "avg": 289,
-          "low": 108
-        },
-        "4K": {
-          "avg": 237,
-          "low": 76
-        }
-      },
-      "Ryzen 5 7500F": {
-        "1080p": {
-          "avg": 314,
-          "low": 123
-        },
-        "1440p": {
-          "avg": 293,
-          "low": 111
-        },
-        "4K": {
-          "avg": 239,
-          "low": 78
-        }
-      },
-      "Ryzen 7 8700G": {
-        "1080p": {
-          "avg": 314,
-          "low": 124
-        },
-        "1440p": {
-          "avg": 293,
-          "low": 111
-        },
-        "4K": {
-          "avg": 239,
-          "low": 78
-        }
-      },
-      "Ryzen 5 8600G": {
+      "Core i5-12600K": {
         "1080p": {
           "avg": 316,
           "low": 125
         },
         "1440p": {
-          "avg": 295,
-          "low": 112
+          "avg": 296,
+          "low": 113
         },
         "4K": {
           "avg": 241,
           "low": 80
         }
       },
-      "Ryzen 5 8500G": {
+      "Core i5-12600KF": {
         "1080p": {
           "avg": 316,
           "low": 125
@@ -13319,7 +12855,21 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 80
         }
       },
-      "Core i5-12600": {
+      "Core i5-13600K": {
+        "1080p": {
+          "avg": 313,
+          "low": 123
+        },
+        "1440p": {
+          "avg": 292,
+          "low": 110
+        },
+        "4K": {
+          "avg": 238,
+          "low": 77
+        }
+      },
+      "Core i5-14400": {
         "1080p": {
           "avg": 317,
           "low": 126
@@ -13333,35 +12883,63 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 81
         }
       },
-      "Core i5-12600KF": {
+      "Core i5-14400F": {
         "1080p": {
-          "avg": 316,
-          "low": 125
+          "avg": 317,
+          "low": 126
         },
         "1440p": {
           "avg": 296,
           "low": 113
         },
         "4K": {
+          "avg": 242,
+          "low": 81
+        }
+      },
+      "Core i5-14500": {
+        "1080p": {
+          "avg": 316,
+          "low": 125
+        },
+        "1440p": {
+          "avg": 295,
+          "low": 112
+        },
+        "4K": {
           "avg": 241,
           "low": 80
         }
       },
-      "Core i7-12700K": {
+      "Core i5-14600K": {
         "1080p": {
-          "avg": 315,
-          "low": 125
+          "avg": 311,
+          "low": 121
         },
         "1440p": {
-          "avg": 294,
-          "low": 112
+          "avg": 290,
+          "low": 108
         },
         "4K": {
-          "avg": 240,
-          "low": 79
+          "avg": 235,
+          "low": 75
         }
       },
-      "Core i5-12500": {
+      "Core i5-14600KF": {
+        "1080p": {
+          "avg": 311,
+          "low": 121
+        },
+        "1440p": {
+          "avg": 291,
+          "low": 109
+        },
+        "4K": {
+          "avg": 236,
+          "low": 76
+        }
+      },
+      "Core i7-11700F": {
         "1080p": {
           "avg": 318,
           "low": 126
@@ -13371,8 +12949,22 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 113
         },
         "4K": {
+          "avg": 243,
+          "low": 80
+        }
+      },
+      "Core i7-12700": {
+        "1080p": {
+          "avg": 317,
+          "low": 126
+        },
+        "1440p": {
+          "avg": 296,
+          "low": 113
+        },
+        "4K": {
           "avg": 242,
-          "low": 81
+          "low": 80
         }
       },
       "Core i7-12700F": {
@@ -13389,7 +12981,91 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 81
         }
       },
-      "Ryzen 9 5950X": {
+      "Core i7-12700K": {
+        "1080p": {
+          "avg": 315,
+          "low": 125
+        },
+        "1440p": {
+          "avg": 294,
+          "low": 112
+        },
+        "4K": {
+          "avg": 240,
+          "low": 79
+        }
+      },
+      "Core i7-13700K": {
+        "1080p": {
+          "avg": 310,
+          "low": 120
+        },
+        "1440p": {
+          "avg": 289,
+          "low": 107
+        },
+        "4K": {
+          "avg": 235,
+          "low": 75
+        }
+      },
+      "Core i7-13700KF": {
+        "1080p": {
+          "avg": 309,
+          "low": 119
+        },
+        "1440p": {
+          "avg": 288,
+          "low": 107
+        },
+        "4K": {
+          "avg": 234,
+          "low": 74
+        }
+      },
+      "Core i7-14700F": {
+        "1080p": {
+          "avg": 311,
+          "low": 121
+        },
+        "1440p": {
+          "avg": 290,
+          "low": 108
+        },
+        "4K": {
+          "avg": 236,
+          "low": 76
+        }
+      },
+      "Core i7-14700K": {
+        "1080p": {
+          "avg": 307,
+          "low": 118
+        },
+        "1440p": {
+          "avg": 286,
+          "low": 105
+        },
+        "4K": {
+          "avg": 232,
+          "low": 72
+        }
+      },
+      "Core i7-14700KF": {
+        "1080p": {
+          "avg": 307,
+          "low": 118
+        },
+        "1440p": {
+          "avg": 286,
+          "low": 105
+        },
+        "4K": {
+          "avg": 232,
+          "low": 72
+        }
+      },
+      "Core i9-11900F": {
         "1080p": {
           "avg": 318,
           "low": 126
@@ -13403,24 +13079,178 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 81
         }
       },
-      "Ryzen 9 5900X": {
+      "Core i9-12900": {
         "1080p": {
-          "avg": 318,
-          "low": 126
+          "avg": 316,
+          "low": 125
         },
         "1440p": {
-          "avg": 297,
-          "low": 113
+          "avg": 295,
+          "low": 112
         },
         "4K": {
-          "avg": 243,
-          "low": 81
+          "avg": 241,
+          "low": 79
         }
       },
-      "Ryzen 5 5600X3D": {
+      "Core i9-12900K": {
+        "1080p": {
+          "avg": 314,
+          "low": 124
+        },
+        "1440p": {
+          "avg": 293,
+          "low": 111
+        },
+        "4K": {
+          "avg": 239,
+          "low": 78
+        }
+      },
+      "Core i9-12900KF": {
+        "1080p": {
+          "avg": 314,
+          "low": 124
+        },
+        "1440p": {
+          "avg": 293,
+          "low": 111
+        },
+        "4K": {
+          "avg": 239,
+          "low": 78
+        }
+      },
+      "Core i9-12900KS": {
+        "1080p": {
+          "avg": 312,
+          "low": 122
+        },
+        "1440p": {
+          "avg": 291,
+          "low": 109
+        },
+        "4K": {
+          "avg": 237,
+          "low": 77
+        }
+      },
+      "Core i9-13900": {
+        "1080p": {
+          "avg": 306,
+          "low": 117
+        },
+        "1440p": {
+          "avg": 286,
+          "low": 105
+        },
+        "4K": {
+          "avg": 231,
+          "low": 72
+        }
+      },
+      "Core i9-13900K": {
+        "1080p": {
+          "avg": 306,
+          "low": 117
+        },
+        "1440p": {
+          "avg": 286,
+          "low": 105
+        },
+        "4K": {
+          "avg": 231,
+          "low": 72
+        }
+      },
+      "Core i9-13900KS": {
+        "1080p": {
+          "avg": 303,
+          "low": 115
+        },
+        "1440p": {
+          "avg": 283,
+          "low": 102
+        },
+        "4K": {
+          "avg": 228,
+          "low": 70
+        }
+      },
+      "Core i9-14900": {
+        "1080p": {
+          "avg": 309,
+          "low": 119
+        },
+        "1440p": {
+          "avg": 288,
+          "low": 107
+        },
+        "4K": {
+          "avg": 234,
+          "low": 74
+        }
+      },
+      "Core i9-14900F": {
+        "1080p": {
+          "avg": 308,
+          "low": 119
+        },
+        "1440p": {
+          "avg": 287,
+          "low": 106
+        },
+        "4K": {
+          "avg": 233,
+          "low": 73
+        }
+      },
+      "Core i9-14900K": {
+        "1080p": {
+          "avg": 304,
+          "low": 115
+        },
+        "1440p": {
+          "avg": 283,
+          "low": 102
+        },
+        "4K": {
+          "avg": 229,
+          "low": 70
+        }
+      },
+      "Core i9-14900KF": {
+        "1080p": {
+          "avg": 304,
+          "low": 115
+        },
+        "1440p": {
+          "avg": 283,
+          "low": 102
+        },
+        "4K": {
+          "avg": 229,
+          "low": 70
+        }
+      },
+      "Core i9-14900KS": {
+        "1080p": {
+          "avg": 301,
+          "low": 113
+        },
+        "1440p": {
+          "avg": 280,
+          "low": 100
+        },
+        "4K": {
+          "avg": 226,
+          "low": 67
+        }
+      },
+      "Core Ultra 5 225": {
         "1080p": {
           "avg": 313,
-          "low": 122
+          "low": 123
         },
         "1440p": {
           "avg": 292,
@@ -13429,6 +13259,104 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         "4K": {
           "avg": 238,
           "low": 77
+        }
+      },
+      "Core Ultra 5 225F": {
+        "1080p": {
+          "avg": 312,
+          "low": 122
+        },
+        "1440p": {
+          "avg": 292,
+          "low": 109
+        },
+        "4K": {
+          "avg": 237,
+          "low": 77
+        }
+      },
+      "Core Ultra 5 235": {
+        "1080p": {
+          "avg": 311,
+          "low": 121
+        },
+        "1440p": {
+          "avg": 290,
+          "low": 108
+        },
+        "4K": {
+          "avg": 236,
+          "low": 76
+        }
+      },
+      "Core Ultra 5 245K": {
+        "1080p": {
+          "avg": 308,
+          "low": 118
+        },
+        "1440p": {
+          "avg": 287,
+          "low": 106
+        },
+        "4K": {
+          "avg": 233,
+          "low": 73
+        }
+      },
+      "Core Ultra 5 245KF": {
+        "1080p": {
+          "avg": 307,
+          "low": 118
+        },
+        "1440p": {
+          "avg": 286,
+          "low": 105
+        },
+        "4K": {
+          "avg": 232,
+          "low": 73
+        }
+      },
+      "Core Ultra 7 265K": {
+        "1080p": {
+          "avg": 228,
+          "low": 69
+        },
+        "1440p": {
+          "avg": 282,
+          "low": 102
+        },
+        "4K": {
+          "avg": 228,
+          "low": 69
+        }
+      },
+      "Core Ultra 7 265KF": {
+        "1080p": {
+          "avg": 229,
+          "low": 70
+        },
+        "1440p": {
+          "avg": 283,
+          "low": 103
+        },
+        "4K": {
+          "avg": 229,
+          "low": 70
+        }
+      },
+      "Core Ultra 9 285K": {
+        "1080p": {
+          "avg": 225,
+          "low": 66
+        },
+        "1440p": {
+          "avg": 279,
+          "low": 99
+        },
+        "4K": {
+          "avg": 225,
+          "low": 66
         }
       },
       "Ryzen 5 5500": {
@@ -13445,21 +13373,21 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 79
         }
       },
-      "Ryzen 7 5800X3D": {
+      "Ryzen 5 5600": {
         "1080p": {
-          "avg": 310,
-          "low": 121
+          "avg": 317,
+          "low": 125
         },
         "1440p": {
-          "avg": 290,
-          "low": 108
+          "avg": 297,
+          "low": 113
         },
         "4K": {
-          "avg": 235,
-          "low": 75
+          "avg": 242,
+          "low": 80
         }
       },
-      "Ryzen 7 5800X": {
+      "Ryzen 5 5600X": {
         "1080p": {
           "avg": 318,
           "low": 126
@@ -13469,11 +13397,25 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 113
         },
         "4K": {
-          "avg": 243,
-          "low": 81
+          "avg": 242,
+          "low": 80
         }
       },
-      "Ryzen 7 5700X3D": {
+      "Ryzen 5 5600X3D": {
+        "1080p": {
+          "avg": 313,
+          "low": 122
+        },
+        "1440p": {
+          "avg": 292,
+          "low": 110
+        },
+        "4K": {
+          "avg": 238,
+          "low": 77
+        }
+      },
+      "Ryzen 5 7500F": {
         "1080p": {
           "avg": 314,
           "low": 123
@@ -13487,18 +13429,74 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 78
         }
       },
-      "Ryzen 7 5700X": {
+      "Ryzen 5 7600": {
         "1080p": {
-          "avg": 318,
-          "low": 126
+          "avg": 314,
+          "low": 123
         },
         "1440p": {
-          "avg": 297,
+          "avg": 293,
+          "low": 110
+        },
+        "4K": {
+          "avg": 239,
+          "low": 78
+        }
+      },
+      "Ryzen 5 7600X": {
+        "1080p": {
+          "avg": 311,
+          "low": 121
+        },
+        "1440p": {
+          "avg": 291,
+          "low": 109
+        },
+        "4K": {
+          "avg": 236,
+          "low": 76
+        }
+      },
+      "Ryzen 5 8500G": {
+        "1080p": {
+          "avg": 316,
+          "low": 125
+        },
+        "1440p": {
+          "avg": 296,
           "low": 113
         },
         "4K": {
-          "avg": 243,
-          "low": 81
+          "avg": 241,
+          "low": 80
+        }
+      },
+      "Ryzen 5 8600G": {
+        "1080p": {
+          "avg": 316,
+          "low": 125
+        },
+        "1440p": {
+          "avg": 295,
+          "low": 112
+        },
+        "4K": {
+          "avg": 241,
+          "low": 80
+        }
+      },
+      "Ryzen 5 9600X": {
+        "1080p": {
+          "avg": 300,
+          "low": 112
+        },
+        "1440p": {
+          "avg": 279,
+          "low": 99
+        },
+        "4K": {
+          "avg": 225,
+          "low": 67
         }
       },
       "Ryzen 7 5700": {
@@ -13529,21 +13527,7 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 80
         }
       },
-      "Ryzen 5 7600": {
-        "1080p": {
-          "avg": 314,
-          "low": 123
-        },
-        "1440p": {
-          "avg": 293,
-          "low": 110
-        },
-        "4K": {
-          "avg": 239,
-          "low": 78
-        }
-      },
-      "Core i9-11900F": {
+      "Ryzen 7 5700X": {
         "1080p": {
           "avg": 318,
           "low": 126
@@ -13557,7 +13541,21 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 81
         }
       },
-      "Core i7-11700F": {
+      "Ryzen 7 5700X3D": {
+        "1080p": {
+          "avg": 314,
+          "low": 123
+        },
+        "1440p": {
+          "avg": 293,
+          "low": 111
+        },
+        "4K": {
+          "avg": 239,
+          "low": 78
+        }
+      },
+      "Ryzen 7 5800X": {
         "1080p": {
           "avg": 318,
           "low": 126
@@ -13568,21 +13566,105 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
         },
         "4K": {
           "avg": 243,
-          "low": 80
+          "low": 81
         }
       },
-      "Core i5-11600": {
+      "Ryzen 7 5800X3D": {
         "1080p": {
-          "avg": 317,
-          "low": 126
+          "avg": 310,
+          "low": 121
         },
         "1440p": {
-          "avg": 297,
-          "low": 113
+          "avg": 290,
+          "low": 108
         },
         "4K": {
-          "avg": 242,
-          "low": 80
+          "avg": 235,
+          "low": 75
+        }
+      },
+      "Ryzen 7 7700": {
+        "1080p": {
+          "avg": 310,
+          "low": 120
+        },
+        "1440p": {
+          "avg": 289,
+          "low": 108
+        },
+        "4K": {
+          "avg": 237,
+          "low": 76
+        }
+      },
+      "Ryzen 7 7700X": {
+        "1080p": {
+          "avg": 309,
+          "low": 119
+        },
+        "1440p": {
+          "avg": 288,
+          "low": 106
+        },
+        "4K": {
+          "avg": 233,
+          "low": 74
+        }
+      },
+      "Ryzen 7 7800X3D": {
+        "1080p": {
+          "avg": 288,
+          "low": 102
+        },
+        "1440p": {
+          "avg": 267,
+          "low": 89
+        },
+        "4K": {
+          "avg": 213,
+          "low": 57
+        }
+      },
+      "Ryzen 7 8700G": {
+        "1080p": {
+          "avg": 314,
+          "low": 124
+        },
+        "1440p": {
+          "avg": 293,
+          "low": 111
+        },
+        "4K": {
+          "avg": 239,
+          "low": 78
+        }
+      },
+      "Ryzen 7 9700X": {
+        "1080p": {
+          "avg": 297,
+          "low": 109
+        },
+        "1440p": {
+          "avg": 276,
+          "low": 97
+        },
+        "4K": {
+          "avg": 222,
+          "low": 64
+        }
+      },
+      "Ryzen 7 9800X3D": {
+        "1080p": {
+          "avg": 253,
+          "low": 71
+        },
+        "1440p": {
+          "avg": 232,
+          "low": 58
+        },
+        "4K": {
+          "avg": 178,
+          "low": 26
         }
       },
       "Ryzen 9 5900": {
@@ -13599,35 +13681,7 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 81
         }
       },
-      "Ryzen 5 5600X": {
-        "1080p": {
-          "avg": 318,
-          "low": 126
-        },
-        "1440p": {
-          "avg": 297,
-          "low": 113
-        },
-        "4K": {
-          "avg": 242,
-          "low": 80
-        }
-      },
-      "Ryzen 5 5600": {
-        "1080p": {
-          "avg": 317,
-          "low": 125
-        },
-        "1440p": {
-          "avg": 297,
-          "low": 113
-        },
-        "4K": {
-          "avg": 242,
-          "low": 80
-        }
-      },
-      "Core i5-11600K": {
+      "Ryzen 9 5900X": {
         "1080p": {
           "avg": 318,
           "low": 126
@@ -13641,7 +13695,7 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 81
         }
       },
-      "Core i5-11600KF": {
+      "Ryzen 9 5950X": {
         "1080p": {
           "avg": 318,
           "low": 126
@@ -13655,116 +13709,102 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
           "low": 81
         }
       },
-      "Core i5-11500": {
+      "Ryzen 9 7900X": {
         "1080p": {
-          "avg": 317,
-          "low": 125
+          "avg": 308,
+          "low": 119
         },
         "1440p": {
-          "avg": 296,
-          "low": 112
+          "avg": 287,
+          "low": 106
         },
         "4K": {
-          "avg": 242,
-          "low": 80
+          "avg": 233,
+          "low": 73
         }
       },
-      "Core i5-11400F": {
+      "Ryzen 9 7900X3D": {
         "1080p": {
-          "avg": 317,
-          "low": 125
+          "avg": 278,
+          "low": 93
         },
         "1440p": {
-          "avg": 296,
-          "low": 112
-        },
-        "4K": {
-          "avg": 242,
-          "low": 80
-        }
-      },
-      "Core i3-12100F": {
-        "1080p": {
-          "avg": 318,
-          "low": 126
-        },
-        "1440p": {
-          "avg": 297,
-          "low": 113
-        },
-        "4K": {
-          "avg": 242,
-          "low": 80
-        }
-      },
-      "Core i9-12900": {
-        "1080p": {
-          "avg": 316,
-          "low": 125
-        },
-        "1440p": {
-          "avg": 295,
-          "low": 112
-        },
-        "4K": {
-          "avg": 241,
-          "low": 79
-        }
-      },
-      "Core i9-12900KF": {
-        "1080p": {
-          "avg": 314,
-          "low": 124
-        },
-        "1440p": {
-          "avg": 293,
-          "low": 111
-        },
-        "4K": {
-          "avg": 239,
-          "low": 78
-        }
-      },
-      "Core i7-12700": {
-        "1080p": {
-          "avg": 317,
-          "low": 126
-        },
-        "1440p": {
-          "avg": 296,
-          "low": 113
-        },
-        "4K": {
-          "avg": 242,
-          "low": 80
-        }
-      },
-      "Core i3-14100": {
-        "1080p": {
-          "avg": 318,
-          "low": 126
-        },
-        "1440p": {
-          "avg": 297,
-          "low": 113
-        },
-        "4K": {
-          "avg": 243,
+          "avg": 257,
           "low": 81
-        }
-      },
-      "Core i3-12100": {
-        "1080p": {
-          "avg": 317,
-          "low": 125
-        },
-        "1440p": {
-          "avg": 297,
-          "low": 113
         },
         "4K": {
-          "avg": 242,
-          "low": 80
+          "avg": 203,
+          "low": 48
+        }
+      },
+      "Ryzen 9 7950X": {
+        "1080p": {
+          "avg": 309,
+          "low": 119
+        },
+        "1440p": {
+          "avg": 288,
+          "low": 107
+        },
+        "4K": {
+          "avg": 233,
+          "low": 73
+        }
+      },
+      "Ryzen 9 7950X3D": {
+        "1080p": {
+          "avg": 280,
+          "low": 95
+        },
+        "1440p": {
+          "avg": 259,
+          "low": 82
+        },
+        "4K": {
+          "avg": 205,
+          "low": 49
+        }
+      },
+      "Ryzen 9 9900X": {
+        "1080p": {
+          "avg": 296,
+          "low": 109
+        },
+        "1440p": {
+          "avg": 276,
+          "low": 96
+        },
+        "4K": {
+          "avg": 221,
+          "low": 64
+        }
+      },
+      "Ryzen 9 9950X": {
+        "1080p": {
+          "avg": 246,
+          "low": 65
+        },
+        "1440p": {
+          "avg": 225,
+          "low": 52
+        },
+        "4K": {
+          "avg": 171,
+          "low": 20
+        }
+      },
+      "Ryzen 9 9950X3D": {
+        "1080p": {
+          "avg": 246,
+          "low": 65
+        },
+        "1440p": {
+          "avg": 225,
+          "low": 52
+        },
+        "4K": {
+          "avg": 171,
+          "low": 20
         }
       }
     },
@@ -19486,7 +19526,1296 @@ export const gamesFpsData: Record<string, { cpu: Record<string, Partial<Record<R
     }
   },
   "无畏契约": {
-    "cpu": {},
+    "cpu": {
+      "Core i3-12100": {
+        "1080p": {
+          "avg": 661,
+          "low": 461
+        },
+        "1440p": {
+          "avg": 608,
+          "low": 437
+        },
+        "4K": {
+          "avg": 478,
+          "low": 358
+        }
+      },
+      "Core i3-12100F": {
+        "1080p": {
+          "avg": 666,
+          "low": 465
+        },
+        "1440p": {
+          "avg": 613,
+          "low": 441
+        },
+        "4K": {
+          "avg": 482,
+          "low": 362
+        }
+      },
+      "Core i3-13100": {
+        "1080p": {
+          "avg": 676,
+          "low": 474
+        },
+        "1440p": {
+          "avg": 623,
+          "low": 450
+        },
+        "4K": {
+          "avg": 493,
+          "low": 369
+        }
+      },
+      "Core i3-13100F": {
+        "1080p": {
+          "avg": 673,
+          "low": 471
+        },
+        "1440p": {
+          "avg": 620,
+          "low": 447
+        },
+        "4K": {
+          "avg": 490,
+          "low": 367
+        }
+      },
+      "Core i3-14100": {
+        "1080p": {
+          "avg": 685,
+          "low": 481
+        },
+        "1440p": {
+          "avg": 632,
+          "low": 457
+        },
+        "4K": {
+          "avg": 501,
+          "low": 376
+        }
+      },
+      "Core i3-14100F": {
+        "1080p": {
+          "avg": 695,
+          "low": 489
+        },
+        "1440p": {
+          "avg": 642,
+          "low": 465
+        },
+        "4K": {
+          "avg": 512,
+          "low": 384
+        }
+      },
+      "Core i5-11400": {
+        "1080p": {
+          "avg": 650,
+          "low": 452
+        },
+        "1440p": {
+          "avg": 597,
+          "low": 428
+        },
+        "4K": {
+          "avg": 466,
+          "low": 350
+        }
+      },
+      "Core i5-11600K": {
+        "1080p": {
+          "avg": 672,
+          "low": 470
+        },
+        "1440p": {
+          "avg": 619,
+          "low": 446
+        },
+        "4K": {
+          "avg": 489,
+          "low": 366
+        }
+      },
+      "Core i5-12400": {
+        "1080p": {
+          "avg": 679,
+          "low": 476
+        },
+        "1440p": {
+          "avg": 626,
+          "low": 452
+        },
+        "4K": {
+          "avg": 496,
+          "low": 372
+        }
+      },
+      "Core i5-12400F": {
+        "1080p": {
+          "avg": 680,
+          "low": 477
+        },
+        "1440p": {
+          "avg": 627,
+          "low": 453
+        },
+        "4K": {
+          "avg": 497,
+          "low": 373
+        }
+      },
+      "Core i5-12500": {
+        "1080p": {
+          "avg": 695,
+          "low": 489
+        },
+        "1440p": {
+          "avg": 642,
+          "low": 465
+        },
+        "4K": {
+          "avg": 512,
+          "low": 384
+        }
+      },
+      "Core i5-12600": {
+        "1080p": {
+          "avg": 704,
+          "low": 496
+        },
+        "1440p": {
+          "avg": 651,
+          "low": 472
+        },
+        "4K": {
+          "avg": 521,
+          "low": 390
+        }
+      },
+      "Core i5-12600K": {
+        "1080p": {
+          "avg": 720,
+          "low": 510
+        },
+        "1440p": {
+          "avg": 667,
+          "low": 486
+        },
+        "4K": {
+          "avg": 537,
+          "low": 403
+        }
+      },
+      "Core i5-12600KF": {
+        "1080p": {
+          "avg": 720,
+          "low": 509
+        },
+        "1440p": {
+          "avg": 667,
+          "low": 486
+        },
+        "4K": {
+          "avg": 537,
+          "low": 402
+        }
+      },
+      "Core i5-12600T": {
+        "1080p": {
+          "avg": 665,
+          "low": 465
+        },
+        "1440p": {
+          "avg": 612,
+          "low": 441
+        },
+        "4K": {
+          "avg": 482,
+          "low": 361
+        }
+      },
+      "Core i5-13400F": {
+        "1080p": {
+          "avg": 697,
+          "low": 491
+        },
+        "1440p": {
+          "avg": 644,
+          "low": 467
+        },
+        "4K": {
+          "avg": 514,
+          "low": 385
+        }
+      },
+      "Core i5-13500": {
+        "1080p": {
+          "avg": 719,
+          "low": 508
+        },
+        "1440p": {
+          "avg": 666,
+          "low": 484
+        },
+        "4K": {
+          "avg": 536,
+          "low": 402
+        }
+      },
+      "Core i5-13600K": {
+        "1080p": {
+          "avg": 757,
+          "low": 540
+        },
+        "1440p": {
+          "avg": 704,
+          "low": 516
+        },
+        "4K": {
+          "avg": 574,
+          "low": 430
+        }
+      },
+      "Core i5-14400": {
+        "1080p": {
+          "avg": 706,
+          "low": 498
+        },
+        "1440p": {
+          "avg": 653,
+          "low": 474
+        },
+        "4K": {
+          "avg": 523,
+          "low": 392
+        }
+      },
+      "Core i5-14400F": {
+        "1080p": {
+          "avg": 706,
+          "low": 498
+        },
+        "1440p": {
+          "avg": 653,
+          "low": 474
+        },
+        "4K": {
+          "avg": 523,
+          "low": 392
+        }
+      },
+      "Core i5-14500": {
+        "1080p": {
+          "avg": 731,
+          "low": 519
+        },
+        "1440p": {
+          "avg": 678,
+          "low": 495
+        },
+        "4K": {
+          "avg": 548,
+          "low": 411
+        }
+      },
+      "Core i5-14600K": {
+        "1080p": {
+          "avg": 774,
+          "low": 555
+        },
+        "1440p": {
+          "avg": 721,
+          "low": 531
+        },
+        "4K": {
+          "avg": 591,
+          "low": 443
+        }
+      },
+      "Core i5-14600KF": {
+        "1080p": {
+          "avg": 769,
+          "low": 550
+        },
+        "1440p": {
+          "avg": 716,
+          "low": 526
+        },
+        "4K": {
+          "avg": 586,
+          "low": 439
+        }
+      },
+      "Core i7-11700": {
+        "1080p": {
+          "avg": 669,
+          "low": 468
+        },
+        "1440p": {
+          "avg": 616,
+          "low": 444
+        },
+        "4K": {
+          "avg": 485,
+          "low": 364
+        }
+      },
+      "Core i7-11700F": {
+        "1080p": {
+          "avg": 668,
+          "low": 467
+        },
+        "1440p": {
+          "avg": 615,
+          "low": 443
+        },
+        "4K": {
+          "avg": 485,
+          "low": 364
+        }
+      },
+      "Core i7-11700K": {
+        "1080p": {
+          "avg": 683,
+          "low": 479
+        },
+        "1440p": {
+          "avg": 630,
+          "low": 455
+        },
+        "4K": {
+          "avg": 499,
+          "low": 374
+        }
+      },
+      "Core i7-11700KF": {
+        "1080p": {
+          "avg": 691,
+          "low": 485
+        },
+        "1440p": {
+          "avg": 638,
+          "low": 462
+        },
+        "4K": {
+          "avg": 507,
+          "low": 380
+        }
+      },
+      "Core i7-11700T": {
+        "1080p": {
+          "avg": 643,
+          "low": 447
+        },
+        "1440p": {
+          "avg": 590,
+          "low": 423
+        },
+        "4K": {
+          "avg": 459,
+          "low": 344
+        }
+      },
+      "Core i7-12700": {
+        "1080p": {
+          "avg": 713,
+          "low": 504
+        },
+        "1440p": {
+          "avg": 660,
+          "low": 480
+        },
+        "4K": {
+          "avg": 530,
+          "low": 397
+        }
+      },
+      "Core i7-12700F": {
+        "1080p": {
+          "avg": 680,
+          "low": 476
+        },
+        "1440p": {
+          "avg": 627,
+          "low": 452
+        },
+        "4K": {
+          "avg": 496,
+          "low": 372
+        }
+      },
+      "Core i7-12700K": {
+        "1080p": {
+          "avg": 735,
+          "low": 522
+        },
+        "1440p": {
+          "avg": 682,
+          "low": 498
+        },
+        "4K": {
+          "avg": 551,
+          "low": 413
+        }
+      },
+      "Core i7-12700KF": {
+        "1080p": {
+          "avg": 732,
+          "low": 519
+        },
+        "1440p": {
+          "avg": 679,
+          "low": 495
+        },
+        "4K": {
+          "avg": 549,
+          "low": 412
+        }
+      },
+      "Core i7-13700F": {
+        "1080p": {
+          "avg": 755,
+          "low": 538
+        },
+        "1440p": {
+          "avg": 702,
+          "low": 514
+        },
+        "4K": {
+          "avg": 571,
+          "low": 428
+        }
+      },
+      "Core i7-13700K": {
+        "1080p": {
+          "avg": 780,
+          "low": 559
+        },
+        "1440p": {
+          "avg": 727,
+          "low": 535
+        },
+        "4K": {
+          "avg": 597,
+          "low": 447
+        }
+      },
+      "Core i7-13700KF": {
+        "1080p": {
+          "avg": 784,
+          "low": 563
+        },
+        "1440p": {
+          "avg": 731,
+          "low": 539
+        },
+        "4K": {
+          "avg": 601,
+          "low": 450
+        }
+      },
+      "Core i7-14700F": {
+        "1080p": {
+          "avg": 771,
+          "low": 552
+        },
+        "1440p": {
+          "avg": 718,
+          "low": 528
+        },
+        "4K": {
+          "avg": 588,
+          "low": 441
+        }
+      },
+      "Core i7-14700K": {
+        "1080p": {
+          "avg": 796,
+          "low": 573
+        },
+        "1440p": {
+          "avg": 742,
+          "low": 549
+        },
+        "4K": {
+          "avg": 612,
+          "low": 459
+        }
+      },
+      "Core i7-14700KF": {
+        "1080p": {
+          "avg": 796,
+          "low": 573
+        },
+        "1440p": {
+          "avg": 742,
+          "low": 549
+        },
+        "4K": {
+          "avg": 612,
+          "low": 459
+        }
+      },
+      "Core i9-11900K": {
+        "1080p": {
+          "avg": 703,
+          "low": 496
+        },
+        "1440p": {
+          "avg": 650,
+          "low": 472
+        },
+        "4K": {
+          "avg": 520,
+          "low": 390
+        }
+      },
+      "Core i9-11900KF": {
+        "1080p": {
+          "avg": 692,
+          "low": 487
+        },
+        "1440p": {
+          "avg": 639,
+          "low": 463
+        },
+        "4K": {
+          "avg": 509,
+          "low": 382
+        }
+      },
+      "Core i9-12900": {
+        "1080p": {
+          "avg": 732,
+          "low": 519
+        },
+        "1440p": {
+          "avg": 679,
+          "low": 495
+        },
+        "4K": {
+          "avg": 548,
+          "low": 411
+        }
+      },
+      "Core i9-12900F": {
+        "1080p": {
+          "avg": 735,
+          "low": 522
+        },
+        "1440p": {
+          "avg": 682,
+          "low": 498
+        },
+        "4K": {
+          "avg": 552,
+          "low": 414
+        }
+      },
+      "Core i9-12900K": {
+        "1080p": {
+          "avg": 747,
+          "low": 532
+        },
+        "1440p": {
+          "avg": 694,
+          "low": 508
+        },
+        "4K": {
+          "avg": 564,
+          "low": 423
+        }
+      },
+      "Core i9-12900KF": {
+        "1080p": {
+          "avg": 747,
+          "low": 531
+        },
+        "1440p": {
+          "avg": 694,
+          "low": 507
+        },
+        "4K": {
+          "avg": 563,
+          "low": 422
+        }
+      },
+      "Core i9-12900KS": {
+        "1080p": {
+          "avg": 766,
+          "low": 548
+        },
+        "1440p": {
+          "avg": 713,
+          "low": 524
+        },
+        "4K": {
+          "avg": 583,
+          "low": 437
+        }
+      },
+      "Core i9-13900": {
+        "1080p": {
+          "avg": 797,
+          "low": 574
+        },
+        "1440p": {
+          "avg": 744,
+          "low": 550
+        },
+        "4K": {
+          "avg": 614,
+          "low": 460
+        }
+      },
+      "Core i9-13900F": {
+        "1080p": {
+          "avg": 776,
+          "low": 556
+        },
+        "1440p": {
+          "avg": 723,
+          "low": 532
+        },
+        "4K": {
+          "avg": 592,
+          "low": 444
+        }
+      },
+      "Core i9-13900K": {
+        "1080p": {
+          "avg": 797,
+          "low": 574
+        },
+        "1440p": {
+          "avg": 744,
+          "low": 550
+        },
+        "4K": {
+          "avg": 614,
+          "low": 460
+        }
+      },
+      "Core i9-13900KF": {
+        "1080p": {
+          "avg": 795,
+          "low": 573
+        },
+        "1440p": {
+          "avg": 742,
+          "low": 549
+        },
+        "4K": {
+          "avg": 612,
+          "low": 459
+        }
+      },
+      "Core i9-13900KS": {
+        "1080p": {
+          "avg": 811,
+          "low": 586
+        },
+        "1440p": {
+          "avg": 758,
+          "low": 562
+        },
+        "4K": {
+          "avg": 627,
+          "low": 470
+        }
+      },
+      "Core i9-14900": {
+        "1080p": {
+          "avg": 809,
+          "low": 584
+        },
+        "1440p": {
+          "avg": 756,
+          "low": 560
+        },
+        "4K": {
+          "avg": 626,
+          "low": 469
+        }
+      },
+      "Core i9-14900F": {
+        "1080p": {
+          "avg": 789,
+          "low": 567
+        },
+        "1440p": {
+          "avg": 736,
+          "low": 543
+        },
+        "4K": {
+          "avg": 605,
+          "low": 454
+        }
+      },
+      "Core i9-14900K": {
+        "1080p": {
+          "avg": 810,
+          "low": 585
+        },
+        "1440p": {
+          "avg": 756,
+          "low": 561
+        },
+        "4K": {
+          "avg": 626,
+          "low": 469
+        }
+      },
+      "Core i9-14900KF": {
+        "1080p": {
+          "avg": 810,
+          "low": 585
+        },
+        "1440p": {
+          "avg": 756,
+          "low": 561
+        },
+        "4K": {
+          "avg": 626,
+          "low": 469
+        }
+      },
+      "Core i9-14900KS": {
+        "1080p": {
+          "avg": 822,
+          "low": 596
+        },
+        "1440p": {
+          "avg": 769,
+          "low": 572
+        },
+        "4K": {
+          "avg": 639,
+          "low": 479
+        }
+      },
+      "Core Ultra 5 225": {
+        "1080p": {
+          "avg": 758,
+          "low": 541
+        },
+        "1440p": {
+          "avg": 705,
+          "low": 517
+        },
+        "4K": {
+          "avg": 575,
+          "low": 431
+        }
+      },
+      "Core Ultra 5 225F": {
+        "1080p": {
+          "avg": 761,
+          "low": 543
+        },
+        "1440p": {
+          "avg": 708,
+          "low": 519
+        },
+        "4K": {
+          "avg": 577,
+          "low": 433
+        }
+      },
+      "Core Ultra 5 235": {
+        "1080p": {
+          "avg": 772,
+          "low": 553
+        },
+        "1440p": {
+          "avg": 719,
+          "low": 529
+        },
+        "4K": {
+          "avg": 589,
+          "low": 441
+        }
+      },
+      "Core Ultra 5 245K": {
+        "1080p": {
+          "avg": 791,
+          "low": 569
+        },
+        "1440p": {
+          "avg": 738,
+          "low": 545
+        },
+        "4K": {
+          "avg": 607,
+          "low": 455
+        }
+      },
+      "Core Ultra 5 245KF": {
+        "1080p": {
+          "avg": 794,
+          "low": 572
+        },
+        "1440p": {
+          "avg": 741,
+          "low": 548
+        },
+        "4K": {
+          "avg": 611,
+          "low": 458
+        }
+      },
+      "Core Ultra 7 265K": {
+        "1080p": {
+          "avg": 809,
+          "low": 584
+        },
+        "1440p": {
+          "avg": 756,
+          "low": 560
+        },
+        "4K": {
+          "avg": 626,
+          "low": 469
+        }
+      },
+      "Ryzen 5 5500": {
+        "1080p": {
+          "avg": 640,
+          "low": 445
+        },
+        "1440p": {
+          "avg": 587,
+          "low": 421
+        },
+        "4K": {
+          "avg": 457,
+          "low": 343
+        }
+      },
+      "Ryzen 5 5600": {
+        "1080p": {
+          "avg": 661,
+          "low": 462
+        },
+        "1440p": {
+          "avg": 608,
+          "low": 438
+        },
+        "4K": {
+          "avg": 478,
+          "low": 358
+        }
+      },
+      "Ryzen 5 5600G": {
+        "1080p": {
+          "avg": 658,
+          "low": 459
+        },
+        "1440p": {
+          "avg": 605,
+          "low": 435
+        },
+        "4K": {
+          "avg": 475,
+          "low": 356
+        }
+      },
+      "Ryzen 5 5600GT": {
+        "1080p": {
+          "avg": 657,
+          "low": 459
+        },
+        "1440p": {
+          "avg": 604,
+          "low": 435
+        },
+        "4K": {
+          "avg": 474,
+          "low": 355
+        }
+      },
+      "Ryzen 5 5600X": {
+        "1080p": {
+          "avg": 666,
+          "low": 466
+        },
+        "1440p": {
+          "avg": 613,
+          "low": 442
+        },
+        "4K": {
+          "avg": 483,
+          "low": 362
+        }
+      },
+      "Ryzen 5 5600X3D": {
+        "1080p": {
+          "avg": 760,
+          "low": 543
+        },
+        "1440p": {
+          "avg": 707,
+          "low": 519
+        },
+        "4K": {
+          "avg": 577,
+          "low": 432
+        }
+      },
+      "Ryzen 5 7500F": {
+        "1080p": {
+          "avg": 750,
+          "low": 534
+        },
+        "1440p": {
+          "avg": 697,
+          "low": 511
+        },
+        "4K": {
+          "avg": 567,
+          "low": 425
+        }
+      },
+      "Ryzen 5 7600": {
+        "1080p": {
+          "avg": 752,
+          "low": 536
+        },
+        "1440p": {
+          "avg": 699,
+          "low": 512
+        },
+        "4K": {
+          "avg": 569,
+          "low": 426
+        }
+      },
+      "Ryzen 5 7600X": {
+        "1080p": {
+          "avg": 769,
+          "low": 550
+        },
+        "1440p": {
+          "avg": 716,
+          "low": 526
+        },
+        "4K": {
+          "avg": 586,
+          "low": 439
+        }
+      },
+      "Ryzen 5 8500G": {
+        "1080p": {
+          "avg": 721,
+          "low": 510
+        },
+        "1440p": {
+          "avg": 668,
+          "low": 486
+        },
+        "4K": {
+          "avg": 537,
+          "low": 403
+        }
+      },
+      "Ryzen 5 8600G": {
+        "1080p": {
+          "avg": 730,
+          "low": 518
+        },
+        "1440p": {
+          "avg": 677,
+          "low": 494
+        },
+        "4K": {
+          "avg": 547,
+          "low": 410
+        }
+      },
+      "Ryzen 5 9600X": {
+        "1080p": {
+          "avg": 826,
+          "low": 598
+        },
+        "1440p": {
+          "avg": 773,
+          "low": 575
+        },
+        "4K": {
+          "avg": 642,
+          "low": 482
+        }
+      },
+      "Ryzen 7 5700G": {
+        "1080p": {
+          "avg": 660,
+          "low": 461
+        },
+        "1440p": {
+          "avg": 607,
+          "low": 437
+        },
+        "4K": {
+          "avg": 477,
+          "low": 357
+        }
+      },
+      "Ryzen 7 5700X": {
+        "1080p": {
+          "avg": 675,
+          "low": 473
+        },
+        "1440p": {
+          "avg": 622,
+          "low": 449
+        },
+        "4K": {
+          "avg": 492,
+          "low": 369
+        }
+      },
+      "Ryzen 7 5800X3D": {
+        "1080p": {
+          "avg": 775,
+          "low": 555
+        },
+        "1440p": {
+          "avg": 722,
+          "low": 531
+        },
+        "4K": {
+          "avg": 592,
+          "low": 444
+        }
+      },
+      "Ryzen 7 7700": {
+        "1080p": {
+          "avg": 776,
+          "low": 556
+        },
+        "1440p": {
+          "avg": 723,
+          "low": 532
+        },
+        "4K": {
+          "avg": 592,
+          "low": 444
+        }
+      },
+      "Ryzen 7 7700X": {
+        "1080p": {
+          "avg": 786,
+          "low": 565
+        },
+        "1440p": {
+          "avg": 733,
+          "low": 541
+        },
+        "4K": {
+          "avg": 603,
+          "low": 452
+        }
+      },
+      "Ryzen 7 7800X3D": {
+        "1080p": {
+          "avg": 868,
+          "low": 635
+        },
+        "1440p": {
+          "avg": 815,
+          "low": 611
+        },
+        "4K": {
+          "avg": 685,
+          "low": 514
+        }
+      },
+      "Ryzen 7 8700G": {
+        "1080p": {
+          "avg": 746,
+          "low": 531
+        },
+        "1440p": {
+          "avg": 693,
+          "low": 507
+        },
+        "4K": {
+          "avg": 563,
+          "low": 422
+        }
+      },
+      "Ryzen 7 9700X": {
+        "1080p": {
+          "avg": 838,
+          "low": 609
+        },
+        "1440p": {
+          "avg": 785,
+          "low": 585
+        },
+        "4K": {
+          "avg": 654,
+          "low": 491
+        }
+      },
+      "Ryzen 7 9800X3D": {
+        "1080p": {
+          "avg": 956,
+          "low": 713
+        },
+        "1440p": {
+          "avg": 903,
+          "low": 677
+        },
+        "4K": {
+          "avg": 772,
+          "low": 579
+        }
+      },
+      "Ryzen 9 5900X": {
+        "1080p": {
+          "avg": 688,
+          "low": 483
+        },
+        "1440p": {
+          "avg": 635,
+          "low": 459
+        },
+        "4K": {
+          "avg": 505,
+          "low": 379
+        }
+      },
+      "Ryzen 9 5950X": {
+        "1080p": {
+          "avg": 689,
+          "low": 484
+        },
+        "1440p": {
+          "avg": 636,
+          "low": 460
+        },
+        "4K": {
+          "avg": 505,
+          "low": 379
+        }
+      },
+      "Ryzen 9 7900": {
+        "1080p": {
+          "avg": 776,
+          "low": 556
+        },
+        "1440p": {
+          "avg": 723,
+          "low": 532
+        },
+        "4K": {
+          "avg": 592,
+          "low": 444
+        }
+      },
+      "Ryzen 9 7900X": {
+        "1080p": {
+          "avg": 789,
+          "low": 567
+        },
+        "1440p": {
+          "avg": 736,
+          "low": 543
+        },
+        "4K": {
+          "avg": 606,
+          "low": 454
+        }
+      },
+      "Ryzen 9 7900X3D": {
+        "1080p": {
+          "avg": 896,
+          "low": 660
+        },
+        "1440p": {
+          "avg": 843,
+          "low": 632
+        },
+        "4K": {
+          "avg": 713,
+          "low": 535
+        }
+      },
+      "Ryzen 9 7950X": {
+        "1080p": {
+          "avg": 892,
+          "low": 656
+        },
+        "1440p": {
+          "avg": 839,
+          "low": 629
+        },
+        "4K": {
+          "avg": 709,
+          "low": 531
+        }
+      },
+      "Ryzen 9 7950X3D": {
+        "1080p": {
+          "avg": 892,
+          "low": 656
+        },
+        "1440p": {
+          "avg": 839,
+          "low": 629
+        },
+        "4K": {
+          "avg": 709,
+          "low": 531
+        }
+      },
+      "Ryzen 9 9900X": {
+        "1080p": {
+          "avg": 839,
+          "low": 610
+        },
+        "1440p": {
+          "avg": 786,
+          "low": 586
+        },
+        "4K": {
+          "avg": 656,
+          "low": 492
+        }
+      },
+      "Ryzen 9 9950X": {
+        "1080p": {
+          "avg": 969,
+          "low": 724
+        },
+        "1440p": {
+          "avg": 916,
+          "low": 687
+        },
+        "4K": {
+          "avg": 785,
+          "low": 589
+        }
+      },
+      "Ryzen 9 9950X3D": {
+        "1080p": {
+          "avg": 969,
+          "low": 724
+        },
+        "1440p": {
+          "avg": 916,
+          "low": 687
+        },
+        "4K": {
+          "avg": 785,
+          "low": 589
+        }
+      }
+    },
     "gpu": {
       "GeForce RTX 5090": {
         "1080p": {

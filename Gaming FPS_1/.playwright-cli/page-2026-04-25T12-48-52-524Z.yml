@@ -1,0 +1,1017 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Skip to main content" [ref=e4] [cursor=pointer]:
+        - /url: "#main-content"
+      - generic [ref=e5]:
+        - banner [ref=e8]:
+          - generic [ref=e9]:
+            - link "HowManyFPS Logo" [ref=e10] [cursor=pointer]:
+              - /url: /
+              - img [ref=e11]
+            - search "Search games and hardware" [ref=e30]:
+              - generic [ref=e31]:
+                - img
+                - combobox "Search games and hardware" [ref=e32]
+              - status [ref=e33]
+            - generic [ref=e34]:
+              - link "Sign In" [ref=e36] [cursor=pointer]:
+                - /url: /api/auth/login?returnTo=/games/cyberpunk-2077
+                - img [ref=e37]
+                - text: Sign In
+              - link "Cart" [ref=e39] [cursor=pointer]:
+                - /url: /pc-builder
+                - img [ref=e41]
+                - text: Cart
+          - navigation "Main" [ref=e46]:
+            - list [ref=e47]:
+              - listitem [ref=e48] [cursor=pointer]:
+                - link "Home" [ref=e49]:
+                  - /url: /
+                  - generic [ref=e50]: home
+                  - text: Home
+              - listitem [ref=e51] [cursor=pointer]:
+                - link "Games" [ref=e52]:
+                  - /url: /games
+                  - generic [ref=e53]: sports_esports
+                  - text: Games
+              - listitem [ref=e54] [cursor=pointer]:
+                - link "Benchmarks" [ref=e55]:
+                  - /url: /benchmarks
+                  - generic [ref=e56]: speed
+                  - text: Benchmarks
+              - listitem [ref=e57] [cursor=pointer]:
+                - link "Community" [ref=e58]:
+                  - /url: /users
+                  - generic [ref=e59]: group
+                  - text: Community
+              - listitem [ref=e60] [cursor=pointer]:
+                - link "My PC" [ref=e61]:
+                  - /url: /user/pc
+                  - generic [ref=e62]: desktop_windows
+                  - text: My PC
+              - listitem [ref=e63]:
+                - link "Parts" [ref=e64] [cursor=pointer]:
+                  - /url: /graphics-cards
+                  - text: Parts
+                  - img [ref=e65]
+              - listitem [ref=e67]:
+                - link "Ready-to-Game" [ref=e68] [cursor=pointer]:
+                  - /url: /desktops
+                  - text: Ready-to-Game
+                  - img [ref=e69]
+              - listitem [ref=e71]:
+                - link "Tools" [ref=e72] [cursor=pointer]:
+                  - /url: /games
+                  - text: Tools
+                  - img [ref=e73]
+              - listitem [ref=e75]:
+                - button "United States, $" [ref=e77] [cursor=pointer]:
+                  - img [ref=e78]
+                  - generic [ref=e85]: United States, $
+                  - img [ref=e86]
+        - navigation "breadcrumb" [ref=e88]:
+          - list [ref=e91]:
+            - listitem [ref=e92]:
+              - link "Home" [ref=e93] [cursor=pointer]:
+                - /url: /
+                - img [ref=e94]
+            - listitem [ref=e96]: /
+            - listitem [ref=e97]:
+              - link "Games" [ref=e98] [cursor=pointer]:
+                - /url: /games
+            - listitem [ref=e99]: /
+            - listitem [ref=e100]: Cyberpunk 2077
+        - main [ref=e101]:
+          - generic [ref=e102]:
+            - generic [ref=e103]:
+              - generic [ref=e104]:
+                - link "FPS Bench — Boost Your FPS v1.16.10 Spot bottlenecks in over 100 games — Available Now" [ref=e105] [cursor=pointer]:
+                  - /url: /download
+                  - img [ref=e107]
+                  - generic [ref=e119]:
+                    - generic [ref=e120]:
+                      - text: FPS Bench — Boost Your FPS
+                      - generic [ref=e121]: v1.16.10
+                    - generic [ref=e122]: Spot bottlenecks in over 100 games — Available Now
+                - generic [ref=e123]:
+                  - link "Sign in Not connected" [ref=e124] [cursor=pointer]:
+                    - /url: /api/auth/login?returnTo=/games/cyberpunk-2077
+                    - generic [ref=e126]:
+                      - generic [ref=e129]: Sign in
+                      - generic [ref=e130]: Not connected
+                  - link "Download FPS Bench" [ref=e133] [cursor=pointer]:
+                    - /url: /download
+                    - img [ref=e134]
+                    - text: Download FPS Bench
+              - generic [ref=e137]:
+                - generic:
+                  - generic:
+                    - img
+                - generic [ref=e142]:
+                  - generic [ref=e143]:
+                    - generic [ref=e144]:
+                      - generic [ref=e145]: FPS Calculator
+                      - heading "Can I Run Cyberpunk 2077?" [level=1] [ref=e146]
+                      - paragraph [ref=e147]: See how Cyberpunk 2077 runs on your hardware — results powered by real gameplay benchmarks.
+                    - generic [ref=e150]:
+                      - link "help How to Benchmark" [ref=e151] [cursor=pointer]:
+                        - /url: /how-to-benchmark/cyberpunk-2077
+                        - generic [ref=e152]: help
+                        - text: How to Benchmark
+                      - link "build Fix My FPS" [ref=e153] [cursor=pointer]:
+                        - /url: /fix-fps/cyberpunk-2077
+                        - generic [ref=e154]: build
+                        - text: Fix My FPS
+                      - link "bar_chart Benchmarks" [ref=e155] [cursor=pointer]:
+                        - /url: /benchmarks/cyberpunk-2077
+                        - generic [ref=e156]: bar_chart
+                        - text: Benchmarks
+                      - link "group Community" [ref=e157] [cursor=pointer]:
+                        - /url: /users
+                        - generic [ref=e158]: group
+                        - text: Community
+                  - generic [ref=e159]:
+                    - generic [ref=e160]:
+                      - generic [ref=e161]:
+                        - generic [ref=e162]:
+                          - generic [ref=e163]: Developer
+                          - generic [ref=e164]: CD PROJEKT RED
+                        - generic [ref=e165]:
+                          - generic [ref=e166]: Updated
+                          - generic [ref=e167]: Apr 16, 2026
+                      - generic [ref=e168]:
+                        - paragraph [ref=e169]: Released in 2020
+                        - img "Cyberpunk 2077 PC system requirements" [ref=e171] [cursor=pointer]
+                        - button "Cyberpunk 2077 Change Game" [ref=e173] [cursor=pointer]:
+                          - generic [ref=e174]:
+                            - img [ref=e175]
+                            - img [ref=e193]
+                          - generic [ref=e200]:
+                            - paragraph [ref=e201]: Cyberpunk 2077
+                            - paragraph [ref=e202]: Change Game
+                      - button "Unlock All Games 100+ games" [ref=e204] [cursor=pointer]:
+                        - img [ref=e206]
+                        - paragraph [ref=e208]: Unlock All Games
+                        - generic [ref=e209]: 100+ games
+                      - link "389 watching now" [ref=e210] [cursor=pointer]:
+                        - /url: https://www.twitch.tv/directory/category/cyberpunk-2077
+                        - img [ref=e211]
+                        - generic [ref=e216]:
+                          - strong [ref=e217]: "389"
+                          - text: watching now
+                      - link "37K playing now" [ref=e218] [cursor=pointer]:
+                        - /url: https://store.steampowered.com/app/1091500/Cyberpunk_2077/
+                        - img [ref=e219]
+                        - generic [ref=e221]:
+                          - strong [ref=e222]: 37K
+                          - text: playing now
+                      - generic [ref=e223]:
+                        - generic [ref=e224]: Very Positive
+                        - generic [ref=e225]: 932K reviews
+                    - generic [ref=e226]:
+                      - generic [ref=e227]:
+                        - img [ref=e228]
+                        - paragraph [ref=e230]: Actual FPS may vary due to overclocking, background apps, RAM speeds (XMP/EXPO), and thermal throttling.
+                      - generic [ref=e231]:
+                        - generic [ref=e232]:
+                          - generic [ref=e233]:
+                            - generic [ref=e234]:
+                              - generic [ref=e235]:
+                                - img [ref=e236]
+                                - paragraph [ref=e262]: GPU
+                              - generic [ref=e263]:
+                                - link "$3,999.00" [ref=e265] [cursor=pointer]:
+                                  - /url: /graphics-cards/geforce-rtx-5090
+                                  - generic [ref=e269]: $3,999.00
+                                - link "Compare" [ref=e270] [cursor=pointer]:
+                                  - /url: /graphics-cards/comparisons/geforce-rtx-5090
+                                  - img [ref=e271]
+                                  - text: Compare
+                                - link "All GPUs" [ref=e273] [cursor=pointer]:
+                                  - /url: /graphics-cards
+                            - combobox "Search for a GPU" [expanded] [ref=e275] [cursor=pointer]:
+                              - generic [ref=e1346]:
+                                - textbox "GPU" [active] [ref=e1347]:
+                                  - /placeholder: GeForce RTX 5090
+                                - generic [ref=e1348]: Search for a GPU
+                              - generic [ref=e287]: TOP 1
+                              - button "Toggle Search for a GPU options" [ref=e288]:
+                                - img [ref=e289]
+                              - listbox "GPU" [ref=e1349]:
+                                - link "NVIDIA GeForce RTX 5090 Logo GeForce RTX 5090 100% Score View specs" [ref=e1351]:
+                                  - /url: /graphics-cards/geforce-rtx-5090
+                                  - generic [ref=e1352]:
+                                    - generic:
+                                      - generic:
+                                        - img "NVIDIA GeForce RTX 5090 Logo"
+                                  - generic [ref=e1353]:
+                                    - generic [ref=e1354]: GeForce RTX 5090
+                                    - generic [ref=e1359]: 100% Score
+                                  - generic [ref=e1360]:
+                                    - text: View specs
+                                    - img [ref=e1361]
+                                - generic [ref=e1366]:
+                                  - option "NVIDIA GeForce RTX 5070 Logo GeForce RTX 5070 $635.99 -65 FPS" [ref=e1367]:
+                                    - generic [ref=e1369]:
+                                      - generic:
+                                        - generic:
+                                          - img "NVIDIA GeForce RTX 5070 Logo"
+                                      - generic [ref=e1370]:
+                                        - generic [ref=e1371]: GeForce RTX 5070
+                                        - generic [ref=e1372]: $635.99
+                                      - generic [ref=e1375]: "-65 FPS"
+                                  - option "NVIDIA GeForce RTX 5060 Ti Logo GeForce RTX 5060 Ti $589.99 -90 FPS" [ref=e1376]:
+                                    - generic [ref=e1378]:
+                                      - generic:
+                                        - generic:
+                                          - img "NVIDIA GeForce RTX 5060 Ti Logo"
+                                      - generic [ref=e1379]:
+                                        - generic [ref=e1380]: GeForce RTX 5060 Ti
+                                        - generic [ref=e1381]: $589.99
+                                      - generic [ref=e1384]: "-90 FPS"
+                                  - option "NVIDIA GeForce RTX 5060 Logo GeForce RTX 5060 $329.99 -99 FPS" [ref=e1385]:
+                                    - generic [ref=e1387]:
+                                      - generic:
+                                        - generic:
+                                          - img "NVIDIA GeForce RTX 5060 Logo"
+                                      - generic [ref=e1388]:
+                                        - generic [ref=e1389]: GeForce RTX 5060
+                                        - generic [ref=e1390]: $329.99
+                                      - generic [ref=e1393]: "-99 FPS"
+                                  - option "NVIDIA GeForce RTX 5070 Ti Logo GeForce RTX 5070 Ti $1,099.99 -49 FPS" [ref=e1394]:
+                                    - generic [ref=e1396]:
+                                      - generic:
+                                        - generic:
+                                          - img "NVIDIA GeForce RTX 5070 Ti Logo"
+                                      - generic [ref=e1397]:
+                                        - generic [ref=e1398]: GeForce RTX 5070 Ti
+                                        - generic [ref=e1399]: $1,099.99
+                                      - generic [ref=e1402]: "-49 FPS"
+                                  - option "NVIDIA GeForce RTX 5080 Logo GeForce RTX 5080 $1,644.99 -34 FPS" [ref=e1403]:
+                                    - generic [ref=e1405]:
+                                      - generic:
+                                        - generic:
+                                          - img "NVIDIA GeForce RTX 5080 Logo"
+                                      - generic [ref=e1406]:
+                                        - generic [ref=e1407]: GeForce RTX 5080
+                                        - generic [ref=e1408]: $1,644.99
+                                      - generic [ref=e1411]: "-34 FPS"
+                                  - option "NVIDIA GeForce RTX 5060 Ti 16 GB Logo GeForce RTX 5060 Ti 16 GB $567.09 -89 FPS" [ref=e1412]:
+                                    - generic [ref=e1414]:
+                                      - generic:
+                                        - generic:
+                                          - img "NVIDIA GeForce RTX 5060 Ti 16 GB Logo"
+                                      - generic [ref=e1415]:
+                                        - generic [ref=e1416]: GeForce RTX 5060 Ti 16 GB
+                                        - generic [ref=e1417]: $567.09
+                                      - generic [ref=e1420]: "-89 FPS"
+                          - generic [ref=e291]:
+                            - generic [ref=e292]:
+                              - generic [ref=e293]:
+                                - img [ref=e294]
+                                - paragraph [ref=e333]: CPU
+                              - generic [ref=e334]:
+                                - link "$657.00" [ref=e336] [cursor=pointer]:
+                                  - /url: /processors/ryzen-9-9950x3d
+                                  - generic [ref=e340]: $657.00
+                                - link "Compare" [ref=e341] [cursor=pointer]:
+                                  - /url: /processors/comparisons/ryzen-9-9950x3d
+                                  - img [ref=e342]
+                                  - text: Compare
+                                - link "All CPUs" [ref=e344] [cursor=pointer]:
+                                  - /url: /processors
+                            - combobox "Search for a CPU" [ref=e346] [cursor=pointer]:
+                              - generic [ref=e347]:
+                                - generic [ref=e348]:
+                                  - generic:
+                                    - generic:
+                                      - img "AMD Ryzen 9 9950X3D Logo"
+                                - generic [ref=e349]:
+                                  - generic [ref=e350]: Ryzen 9 9950X3D
+                                  - generic [ref=e355]: 97% Score
+                              - textbox "CPU" [ref=e356]
+                              - generic [ref=e358]: TOP 2
+                              - button "Toggle Search for a CPU options" [ref=e359]:
+                                - img [ref=e360]
+                        - link "Bottleneck Calculator" [ref=e365] [cursor=pointer]:
+                          - /url: /bottleneck-calculator/geforce-rtx-5090-vs-ryzen-9-9950x3d
+                          - generic [ref=e366]: compress
+                          - text: Bottleneck Calculator
+                      - generic [ref=e367]:
+                        - generic [ref=e368]:
+                          - generic [ref=e369]:
+                            - generic [ref=e370]:
+                              - img [ref=e371]
+                              - paragraph [ref=e402]:
+                                - generic [ref=e403] [cursor=pointer]:
+                                  - text: RAM
+                                  - img [ref=e404]
+                            - link "All RAMs" [ref=e407] [cursor=pointer]:
+                              - /url: /rams
+                          - combobox "Select RAM" [ref=e409] [cursor=pointer]:
+                            - generic [ref=e410]: 32 GB
+                            - generic:
+                              - textbox "RAM":
+                                - /placeholder: 32 GB
+                            - generic [ref=e412]:
+                              - img [ref=e413]
+                              - generic [ref=e415]: Passes
+                            - button "Toggle ram options" [ref=e416]:
+                              - img [ref=e417]
+                        - generic [ref=e419]:
+                          - generic [ref=e421]:
+                            - img [ref=e422]
+                            - paragraph [ref=e437]: Resolution
+                          - combobox "Select game resolution" [ref=e439] [cursor=pointer]:
+                            - generic [ref=e440]: 1920 x 1080
+                            - generic:
+                              - textbox "Resolution":
+                                - /placeholder: 1920 x 1080
+                            - button "Toggle resolution options" [ref=e441]:
+                              - img [ref=e442]
+                        - generic [ref=e444]:
+                          - generic [ref=e446]:
+                            - img [ref=e447]
+                            - paragraph [ref=e450]: Graphics Preset
+                          - combobox "Select game graphics" [ref=e452] [cursor=pointer]:
+                            - generic [ref=e453]: RT Overdrive
+                            - generic:
+                              - textbox "Graphics Preset":
+                                - /placeholder: RT Overdrive
+                            - button "Toggle preset options" [ref=e454]:
+                              - img [ref=e455]
+                        - generic [ref=e457]:
+                          - paragraph [ref=e460]: Upscaling
+                          - combobox "Select game upscaling" [ref=e462] [cursor=pointer]:
+                            - generic [ref=e463]: Native
+                            - generic:
+                              - textbox "Upscaling":
+                                - /placeholder: Native
+                            - button "Toggle upscaling options" [ref=e464]:
+                              - img [ref=e465]
+                        - generic [ref=e467]:
+                          - paragraph [ref=e470]: Frame Generation
+                          - combobox "Select frame generation" [ref=e472] [cursor=pointer]:
+                            - generic [ref=e473]: "Off"
+                            - generic:
+                              - textbox "Frame Generation":
+                                - /placeholder: "Off"
+                            - button "Toggle frameGeneration options" [ref=e474]:
+                              - img [ref=e475]
+                      - generic [ref=e477]:
+                        - generic [ref=e478]:
+                          - generic [ref=e480]:
+                            - generic [ref=e481]:
+                              - img [ref=e482]
+                              - text: GPU
+                              - generic [ref=e509]: 88%
+                            - generic [ref=e510] [cursor=pointer]:
+                              - paragraph [ref=e511]: GPU Reliant
+                              - img [ref=e512]
+                            - generic [ref=e514]:
+                              - img [ref=e515]
+                              - text: CPU
+                              - generic [ref=e555]: 12%
+                          - generic [ref=e561]:
+                            - generic [ref=e562]:
+                              - paragraph [ref=e564] [cursor=pointer]:
+                                - text: Offset
+                                - img [ref=e565]
+                              - generic [ref=e567]: ±19%
+                            - generic [ref=e570] [cursor=pointer]: Apply Offset
+                        - generic [ref=e571]:
+                          - generic [ref=e574]:
+                            - paragraph [ref=e576]: 123 FPS
+                            - paragraph [ref=e580]: Real-Time Average
+                          - generic [ref=e583]:
+                            - paragraph [ref=e585]: 77 FPS
+                            - paragraph [ref=e589]: 1% Lows
+              - generic [ref=e592]:
+                - generic [ref=e593]:
+                  - heading "See how Cyberpunk 2077 actually runs on your PC" [level=2] [ref=e594]
+                  - paragraph [ref=e595]: FPS, temperatures, bottlenecks, background apps — all in one free benchmark
+                - generic [ref=e597]:
+                  - generic [ref=e598]:
+                    - generic [ref=e599]: speed
+                    - generic [ref=e600]:
+                      - generic [ref=e601]:
+                        - generic [ref=e1421]: "78"
+                        - generic [ref=e603]: FPS
+                        - generic [ref=e1423]: Good
+                      - generic [ref=e606]: Avg FPS in Cyberpunk 2077
+                  - generic [ref=e608]:
+                    - generic [ref=e609]: show_chart
+                    - generic [ref=e610]:
+                      - generic [ref=e611]:
+                        - generic [ref=e1424]: "52"
+                        - generic [ref=e613]: FPS
+                        - generic [ref=e1426]: Moderate
+                      - generic [ref=e616]: 1% lows — stutter & frame drops
+                  - generic [ref=e618]:
+                    - generic [ref=e619]: thermostat
+                    - generic [ref=e620]:
+                      - generic [ref=e621]:
+                        - generic [ref=e1427]: "82"
+                        - generic [ref=e623]: °C
+                        - generic [ref=e1429]: Hot
+                      - generic [ref=e626]: GPU temperature under load
+                  - generic [ref=e628]:
+                    - generic [ref=e629]: compress
+                    - generic [ref=e630]:
+                      - generic [ref=e1431]: GPU Limited
+                      - generic [ref=e634]: Bottleneck found — upgrade priority
+                - generic [ref=e635]:
+                  - link "Download FPS Bench — Free" [ref=e636] [cursor=pointer]:
+                    - /url: /download
+                    - generic [ref=e637]: download
+                    - text: Download FPS Bench — Free
+                  - generic [ref=e638]: Windows · 1-minute setup · 100+ games supported
+            - region "Cyberpunk 2077 system requirements" [ref=e639]:
+              - heading "Cyberpunk 2077 System Requirements" [level=2] [ref=e640]
+              - paragraph [ref=e641]: Minimum and recommended PC specs to run Cyberpunk 2077. Use the FPS calculator above to see exactly how many frames your hardware gets.
+              - generic [ref=e642]:
+                - generic [ref=e643]:
+                  - generic [ref=e645]:
+                    - img [ref=e646]
+                    - generic [ref=e648]: Recommended
+                  - generic [ref=e649]:
+                    - img [ref=e650]
+                    - generic [ref=e652]: Minimum
+                - generic [ref=e653]:
+                  - generic [ref=e654]:
+                    - generic [ref=e655]: memory
+                    - generic [ref=e656]: GPU
+                  - generic [ref=e657]:
+                    - link "GeForce RTX 2060 Super" [ref=e658] [cursor=pointer]:
+                      - /url: /graphics-cards/geforce-rtx-2060-super
+                    - text: /
+                    - link "Radeon RX 5700 XT" [ref=e659] [cursor=pointer]:
+                      - /url: /graphics-cards/radeon-rx-5700-xt
+                  - generic [ref=e660]:
+                    - text: GeForce GTX 1060 /
+                    - link "Radeon RX 580" [ref=e661] [cursor=pointer]:
+                      - /url: /graphics-cards/radeon-rx-580
+                - generic [ref=e662]:
+                  - generic [ref=e663]:
+                    - generic [ref=e664]: developer_board
+                    - generic [ref=e665]: CPU
+                  - generic [ref=e666]:
+                    - link "Core i7-12700" [ref=e667] [cursor=pointer]:
+                      - /url: /processors/core-i7-12700
+                    - text: /
+                    - link "Ryzen 7 7800X3D" [ref=e668] [cursor=pointer]:
+                      - /url: /processors/ryzen-7-7800x3d
+                  - generic [ref=e669]:
+                    - link "Core i7-6700" [ref=e670] [cursor=pointer]:
+                      - /url: /processors/core-i7-6700
+                    - text: /
+                    - link "Ryzen 5 1600" [ref=e671] [cursor=pointer]:
+                      - /url: /processors/ryzen-5-1600
+                - generic [ref=e672]:
+                  - generic [ref=e673]:
+                    - generic [ref=e674]: storage
+                    - generic [ref=e675]: RAM
+                  - generic [ref=e676]: 16 GB
+                  - generic [ref=e677]: 12 GB
+                - generic [ref=e678]:
+                  - generic [ref=e679]:
+                    - generic [ref=e680]: hard_drive
+                    - generic [ref=e681]: Storage
+                  - generic [ref=e682]: 70 GB
+                  - generic [ref=e683]: 70 GB
+                - generic [ref=e684]:
+                  - generic [ref=e685]:
+                    - generic [ref=e686]: computer
+                    - generic [ref=e687]: OS
+                  - generic [ref=e688]: Windows 10 (64-bit)
+                  - generic [ref=e689]: Windows 10 (64-bit)
+            - generic [ref=e691]:
+              - generic [ref=e692]:
+                - heading "Recent Public Cyberpunk 2077 FPS Benchmarks" [level=2] [ref=e693]:
+                  - link "Recent Public Cyberpunk 2077 FPS Benchmarks" [ref=e694] [cursor=pointer]:
+                    - /url: /benchmarks
+                - link "View Other Games" [ref=e695] [cursor=pointer]:
+                  - /url: /benchmarks
+                  - text: View Other Games
+                  - generic [ref=e696]: →
+              - generic [ref=e698]:
+                - generic [ref=e699]: public
+                - text: No Public Benchmarks
+            - generic [ref=e700]:
+              - generic [ref=e702]:
+                - generic [ref=e703]:
+                  - img [ref=e704]
+                  - generic [ref=e705]: Cyberpunk 2077
+                - generic [ref=e710]:
+                  - img [ref=e712]
+                  - img [ref=e714]
+              - heading "Why Is My PC Slow in Cyberpunk 2077?" [level=2] [ref=e718]
+              - paragraph [ref=e719]: Join thousands of gamers already benchmarking their rigs.
+              - link "Download FPS Bench" [ref=e720] [cursor=pointer]:
+                - /url: /download
+                - img [ref=e721]
+                - generic [ref=e724]:
+                  - text: Download
+                  - strong [ref=e725]: FPS Bench
+              - paragraph [ref=e726]: Windows 10/11 — under 50 MB — always free
+              - generic [ref=e727]:
+                - generic [ref=e728]: Spot Bottlenecks
+                - generic [ref=e729]: Boost FPS
+                - generic [ref=e730]: 100+ Games
+          - generic [ref=e732]:
+            - generic [ref=e733]:
+              - generic [ref=e734] [cursor=pointer]:
+                - textbox "Search" [ref=e735]:
+                  - /placeholder: Search for a game
+                - img [ref=e736]
+              - list [ref=e739]:
+                - listitem "alphabetic" [ref=e740] [cursor=pointer]
+                - listitem [ref=e741]
+                - listitem "popular" [ref=e742] [cursor=pointer]
+                - listitem [ref=e743]
+                - listitem "recent" [ref=e744] [cursor=pointer]
+            - generic [ref=e747]:
+              - generic [ref=e748]:
+                - link [ref=e749] [cursor=pointer]:
+                  - /url: /games/valorant
+                  - article [ref=e750]:
+                    - generic [ref=e751]:
+                      - paragraph [ref=e752]: "2020"
+                      - img "Valorant PC system requirements" [ref=e754]
+                    - generic [ref=e756]:
+                      - paragraph [ref=e757]: Valorant
+                      - generic [ref=e758]:
+                        - generic [ref=e759]:
+                          - img [ref=e760]
+                          - generic [ref=e763]: "99"
+                        - generic [ref=e764]:
+                          - paragraph [ref=e766]: Optimization Score
+                          - paragraph [ref=e767]: How well optimized
+                      - generic [ref=e768]:
+                        - paragraph [ref=e769]: Watching now
+                        - generic [ref=e770]:
+                          - img [ref=e771]
+                          - paragraph [ref=e776]: 122K
+                      - paragraph [ref=e777]: Check Your FPS
+                - link [ref=e778] [cursor=pointer]:
+                  - /url: /games/league-of-legends
+                  - article [ref=e779]:
+                    - generic [ref=e780]:
+                      - paragraph [ref=e781]: "2009"
+                      - img "League of Legends PC system requirements" [ref=e783]
+                    - generic [ref=e785]:
+                      - paragraph [ref=e786]: League of Legends
+                      - generic [ref=e787]:
+                        - generic [ref=e788]:
+                          - img [ref=e789]
+                          - generic [ref=e792]: "97"
+                        - generic [ref=e793]:
+                          - paragraph [ref=e795]: Optimization Score
+                          - paragraph [ref=e796]: How well optimized
+                      - generic [ref=e797]:
+                        - paragraph [ref=e798]: Watching now
+                        - generic [ref=e799]:
+                          - img [ref=e800]
+                          - paragraph [ref=e805]: 121K
+                      - paragraph [ref=e806]: Check Your FPS
+                - link [ref=e807] [cursor=pointer]:
+                  - /url: /games/dota-2
+                  - article [ref=e808]:
+                    - generic [ref=e809]:
+                      - paragraph [ref=e810]: "2013"
+                      - img "Dota 2 PC system requirements" [ref=e812]
+                    - generic [ref=e814]:
+                      - paragraph [ref=e815]: Dota 2
+                      - generic [ref=e816]:
+                        - generic [ref=e817]:
+                          - img [ref=e818]
+                          - generic [ref=e821]: "94"
+                        - generic [ref=e822]:
+                          - paragraph [ref=e824]: Optimization Score
+                          - paragraph [ref=e825]: How well optimized
+                      - generic [ref=e826]:
+                        - paragraph [ref=e827]: Watching now
+                        - generic [ref=e828]:
+                          - img [ref=e829]
+                          - paragraph [ref=e834]: 115K
+                      - paragraph [ref=e835]: Check Your FPS
+                - link [ref=e836] [cursor=pointer]:
+                  - /url: /games/counter-strike-2
+                  - article [ref=e837]:
+                    - generic [ref=e838]:
+                      - paragraph [ref=e839]: "2023"
+                      - img "Counter-Strike 2 PC system requirements" [ref=e841]
+                    - generic [ref=e843]:
+                      - paragraph [ref=e844]: Counter-Strike 2
+                      - generic [ref=e845]:
+                        - generic [ref=e846]:
+                          - img [ref=e847]
+                          - generic [ref=e850]: "96"
+                        - generic [ref=e851]:
+                          - paragraph [ref=e853]: Optimization Score
+                          - paragraph [ref=e854]: How well optimized
+                      - generic [ref=e855]:
+                        - paragraph [ref=e856]: Watching now
+                        - generic [ref=e857]:
+                          - img [ref=e858]
+                          - paragraph [ref=e863]: 99K
+                      - paragraph [ref=e864]: Check Your FPS
+                - link [ref=e865] [cursor=pointer]:
+                  - /url: /games/grand-theft-auto-v
+                  - article [ref=e866]:
+                    - generic [ref=e867]:
+                      - paragraph [ref=e868]: "2013"
+                      - img "Grand Theft Auto V PC system requirements" [ref=e870]
+                    - generic [ref=e872]:
+                      - paragraph [ref=e873]: Grand Theft Auto V
+                      - generic [ref=e874]:
+                        - generic [ref=e875]:
+                          - img [ref=e876]
+                          - generic [ref=e879]: "22"
+                        - generic [ref=e880]:
+                          - paragraph [ref=e882]: Optimization Score
+                          - paragraph [ref=e883]: How well optimized
+                      - generic [ref=e884]:
+                        - paragraph [ref=e885]: Watching now
+                        - generic [ref=e886]:
+                          - img [ref=e887]
+                          - paragraph [ref=e892]: 82K
+                      - paragraph [ref=e893]: Check Your FPS
+                - link [ref=e894] [cursor=pointer]:
+                  - /url: /games/overwatch-2
+                  - article [ref=e895]:
+                    - generic [ref=e896]:
+                      - paragraph [ref=e897]: "2023"
+                      - img "Overwatch 2 PC system requirements" [ref=e899]
+                    - generic [ref=e901]:
+                      - paragraph [ref=e902]: Overwatch 2
+                      - generic [ref=e903]:
+                        - generic [ref=e904]:
+                          - img [ref=e905]
+                          - generic [ref=e908]: "87"
+                        - generic [ref=e909]:
+                          - paragraph [ref=e911]: Optimization Score
+                          - paragraph [ref=e912]: How well optimized
+                      - generic [ref=e913]:
+                        - paragraph [ref=e914]: Watching now
+                        - generic [ref=e915]:
+                          - img [ref=e916]
+                          - paragraph [ref=e921]: 43K
+                      - paragraph [ref=e922]: Check Your FPS
+                - link [ref=e923] [cursor=pointer]:
+                  - /url: /games/world-of-warcraft
+                  - article [ref=e924]:
+                    - generic [ref=e925]:
+                      - paragraph [ref=e926]: "2004"
+                      - img "World of Warcraft PC system requirements" [ref=e928]
+                    - generic [ref=e930]:
+                      - paragraph [ref=e931]: World of Warcraft
+                      - generic [ref=e932]:
+                        - generic [ref=e933]:
+                          - img [ref=e934]
+                          - generic [ref=e937]: "79"
+                        - generic [ref=e938]:
+                          - paragraph [ref=e940]: Optimization Score
+                          - paragraph [ref=e941]: How well optimized
+                      - generic [ref=e942]:
+                        - paragraph [ref=e943]: Watching now
+                        - generic [ref=e944]:
+                          - img [ref=e945]
+                          - paragraph [ref=e950]: 31K
+                      - paragraph [ref=e951]: Check Your FPS
+                - link [ref=e952] [cursor=pointer]:
+                  - /url: /games/fortnite
+                  - article [ref=e953]:
+                    - generic [ref=e954]:
+                      - paragraph [ref=e955]: "2017"
+                      - img "Fortnite PC system requirements" [ref=e957]
+                    - generic [ref=e959]:
+                      - paragraph [ref=e960]: Fortnite
+                      - generic [ref=e961]:
+                        - generic [ref=e962]:
+                          - img [ref=e963]
+                          - generic [ref=e966]: "37"
+                        - generic [ref=e967]:
+                          - paragraph [ref=e969]: Optimization Score
+                          - paragraph [ref=e970]: How well optimized
+                      - generic [ref=e971]:
+                        - paragraph [ref=e972]: Watching now
+                        - generic [ref=e973]:
+                          - img [ref=e974]
+                          - paragraph [ref=e979]: 23K
+                      - paragraph [ref=e980]: Check Your FPS
+                - link [ref=e981] [cursor=pointer]:
+                  - /url: /games/apex-legends
+                  - article [ref=e982]:
+                    - generic [ref=e983]:
+                      - paragraph [ref=e984]: "2019"
+                      - img "Apex Legends PC system requirements" [ref=e986]
+                    - generic [ref=e988]:
+                      - paragraph [ref=e989]: Apex Legends
+                      - generic [ref=e990]:
+                        - generic [ref=e991]:
+                          - img [ref=e992]
+                          - generic [ref=e995]: "82"
+                        - generic [ref=e996]:
+                          - paragraph [ref=e998]: Optimization Score
+                          - paragraph [ref=e999]: How well optimized
+                      - generic [ref=e1000]:
+                        - paragraph [ref=e1001]: Watching now
+                        - generic [ref=e1002]:
+                          - img [ref=e1003]
+                          - paragraph [ref=e1008]: 22K
+                      - paragraph [ref=e1009]: Check Your FPS
+                - link [ref=e1010] [cursor=pointer]:
+                  - /url: /games/minecraft
+                  - article [ref=e1011]:
+                    - generic [ref=e1012]:
+                      - paragraph [ref=e1013]: "2011"
+                      - img "Minecraft PC system requirements" [ref=e1015]
+                    - generic [ref=e1017]:
+                      - paragraph [ref=e1018]: Minecraft
+                      - generic [ref=e1019]:
+                        - generic [ref=e1020]:
+                          - img [ref=e1021]
+                          - generic [ref=e1024]: "100"
+                        - generic [ref=e1025]:
+                          - paragraph [ref=e1027]: Optimization Score
+                          - paragraph [ref=e1028]: How well optimized
+                      - generic [ref=e1029]:
+                        - paragraph [ref=e1030]: Watching now
+                        - generic [ref=e1031]:
+                          - img [ref=e1032]
+                          - paragraph [ref=e1037]: 21K
+                      - paragraph [ref=e1038]: Check Your FPS
+                - link [ref=e1039] [cursor=pointer]:
+                  - /url: /games/rust
+                  - article [ref=e1040]:
+                    - generic [ref=e1041]:
+                      - paragraph [ref=e1042]: "2018"
+                      - img "Rust PC system requirements" [ref=e1044]
+                    - generic [ref=e1046]:
+                      - paragraph [ref=e1047]: Rust
+                      - generic [ref=e1048]:
+                        - generic [ref=e1049]:
+                          - img [ref=e1050]
+                          - generic [ref=e1053]: "71"
+                        - generic [ref=e1054]:
+                          - paragraph [ref=e1056]: Optimization Score
+                          - paragraph [ref=e1057]: How well optimized
+                      - generic [ref=e1058]:
+                        - paragraph [ref=e1059]: Watching now
+                        - generic [ref=e1060]:
+                          - img [ref=e1061]
+                          - paragraph [ref=e1066]: 14K
+                      - paragraph [ref=e1067]: Check Your FPS
+                - link [ref=e1068] [cursor=pointer]:
+                  - /url: /games/world-of-tanks
+                  - article [ref=e1069]:
+                    - generic [ref=e1070]:
+                      - paragraph [ref=e1071]: "2010"
+                      - img "World of Tanks PC system requirements" [ref=e1073]
+                    - generic [ref=e1075]:
+                      - paragraph [ref=e1076]: World of Tanks
+                      - generic [ref=e1077]:
+                        - generic [ref=e1078]:
+                          - img [ref=e1079]
+                          - generic [ref=e1082]: "95"
+                        - generic [ref=e1083]:
+                          - paragraph [ref=e1085]: Optimization Score
+                          - paragraph [ref=e1086]: How well optimized
+                      - generic [ref=e1087]:
+                        - paragraph [ref=e1088]: Watching now
+                        - generic [ref=e1089]:
+                          - img [ref=e1090]
+                          - paragraph [ref=e1095]: 10K
+                      - paragraph [ref=e1096]: Check Your FPS
+                - link [ref=e1097] [cursor=pointer]:
+                  - /url: /games/playerunknowns-battlegrounds
+                  - article [ref=e1098]:
+                    - generic [ref=e1099]:
+                      - paragraph [ref=e1100]: "2017"
+                      - img "PlayerUnknown's Battlegrounds PC system requirements" [ref=e1102]
+                    - generic [ref=e1104]:
+                      - paragraph [ref=e1105]: PlayerUnknown's Battlegrounds
+                      - generic [ref=e1106]:
+                        - generic [ref=e1107]:
+                          - img [ref=e1108]
+                          - generic [ref=e1111]: "81"
+                        - generic [ref=e1112]:
+                          - paragraph [ref=e1114]: Optimization Score
+                          - paragraph [ref=e1115]: How well optimized
+                      - generic [ref=e1116]:
+                        - paragraph [ref=e1117]: Watching now
+                        - generic [ref=e1118]:
+                          - img [ref=e1119]
+                          - paragraph [ref=e1124]: "9903"
+                      - paragraph [ref=e1125]: Check Your FPS
+                - link [ref=e1126] [cursor=pointer]:
+                  - /url: /games/call-of-duty-warzone-20
+                  - article [ref=e1127]:
+                    - generic [ref=e1128]:
+                      - paragraph [ref=e1129]: "2020"
+                      - 'img "Call of Duty: Warzone 2.0 PC system requirements" [ref=e1131]'
+                    - generic [ref=e1133]:
+                      - paragraph [ref=e1134]: "Call of Duty: Warzone 2.0"
+                      - generic [ref=e1135]:
+                        - generic [ref=e1136]:
+                          - img [ref=e1137]
+                          - generic [ref=e1140]: "62"
+                        - generic [ref=e1141]:
+                          - paragraph [ref=e1143]: Optimization Score
+                          - paragraph [ref=e1144]: How well optimized
+                      - generic [ref=e1145]:
+                        - paragraph [ref=e1146]: Watching now
+                        - generic [ref=e1147]:
+                          - img [ref=e1148]
+                          - paragraph [ref=e1153]: "8920"
+                      - paragraph [ref=e1154]: Check Your FPS
+                - link [ref=e1155] [cursor=pointer]:
+                  - /url: /games/elden-ring
+                  - article [ref=e1156]:
+                    - generic [ref=e1157]:
+                      - paragraph [ref=e1158]: "2022"
+                      - img "Elden Ring PC system requirements" [ref=e1160]
+                    - generic [ref=e1162]:
+                      - paragraph [ref=e1163]: Elden Ring
+                      - generic [ref=e1164]:
+                        - generic [ref=e1165]:
+                          - img [ref=e1166]
+                          - generic [ref=e1169]: "50"
+                        - generic [ref=e1170]:
+                          - paragraph [ref=e1172]: Optimization Score
+                          - paragraph [ref=e1173]: How well optimized
+                      - generic [ref=e1174]:
+                        - paragraph [ref=e1175]: Watching now
+                        - generic [ref=e1176]:
+                          - img [ref=e1177]
+                          - paragraph [ref=e1182]: "6018"
+                      - paragraph [ref=e1183]: Check Your FPS
+              - list [ref=e1184]:
+                - listitem [ref=e1185] [cursor=pointer]:
+                  - button "Previous page" [disabled] [ref=e1186]: Previous
+                - listitem [ref=e1187] [cursor=pointer]:
+                  - link "Page 1 is your current page" [ref=e1188]:
+                    - /url: /games/cyberpunk-2077
+                    - text: "1"
+                - listitem [ref=e1189] [cursor=pointer]:
+                  - link "Page 2" [ref=e1190]:
+                    - /url: /games/cyberpunk-2077?page=2
+                    - text: "2"
+                - listitem [ref=e1191] [cursor=pointer]:
+                  - link "Page 3" [ref=e1192]:
+                    - /url: /games/cyberpunk-2077?page=3
+                    - text: "3"
+                - listitem [ref=e1193] [cursor=pointer]:
+                  - link "Page 4" [ref=e1194]:
+                    - /url: /games/cyberpunk-2077?page=4
+                    - text: "4"
+                - listitem [ref=e1195] [cursor=pointer]:
+                  - button "⋯" [ref=e1196]
+                - listitem [ref=e1197] [cursor=pointer]:
+                  - link "Page 10" [ref=e1198]:
+                    - /url: /games/cyberpunk-2077?page=10
+                    - text: "10"
+                - listitem [ref=e1199] [cursor=pointer]:
+                  - link "Page 11" [ref=e1200]:
+                    - /url: /games/cyberpunk-2077?page=11
+                    - text: "11"
+                - listitem [ref=e1201] [cursor=pointer]:
+                  - link "Page 12" [ref=e1202]:
+                    - /url: /games/cyberpunk-2077?page=12
+                    - text: "12"
+                - listitem [ref=e1203] [cursor=pointer]:
+                  - button "Next page" [ref=e1204]: Next
+      - contentinfo [ref=e1205]:
+        - navigation "Footer navigation" [ref=e1206]:
+          - generic [ref=e1207]:
+            - generic [ref=e1208]:
+              - link "HowManyFPS Logo" [ref=e1209] [cursor=pointer]:
+                - /url: /
+                - img [ref=e1210]
+              - paragraph [ref=e1229]: Real FPS data from real gameplay. See what your hardware actually delivers across 100+ games — then fix what's holding you back.
+              - link "Build Your Gaming PC →" [ref=e1230] [cursor=pointer]:
+                - /url: /pc-builder
+            - generic [ref=e1231]:
+              - link "FPS Bench — Boost Your FPS v1.16.10 Application is not running" [ref=e1233] [cursor=pointer]:
+                - /url: /download
+                - img [ref=e1235]
+                - generic [ref=e1247]:
+                  - generic [ref=e1248]:
+                    - text: FPS Bench — Boost Your FPS
+                    - generic [ref=e1249]: v1.16.10
+                  - generic [ref=e1250]: Application is not running
+              - link "Download FPS Bench" [ref=e1253] [cursor=pointer]:
+                - /url: /download
+                - img [ref=e1254]
+                - text: Download FPS Bench
+          - generic [ref=e1257]:
+            - generic [ref=e1258]:
+              - paragraph [ref=e1259]: Tools
+              - generic [ref=e1260]:
+                - link "FPS Calculator" [ref=e1261] [cursor=pointer]:
+                  - /url: /games
+                - link "Bottleneck Calculator" [ref=e1262] [cursor=pointer]:
+                  - /url: /bottleneck-calculator
+                - link "PC Builder" [ref=e1263] [cursor=pointer]:
+                  - /url: /pc-builder
+                - link "Benchmarks" [ref=e1264] [cursor=pointer]:
+                  - /url: /benchmarks
+                - link "Download FPS Bench" [ref=e1265] [cursor=pointer]:
+                  - /url: /download
+            - generic [ref=e1266]:
+              - paragraph [ref=e1267]: Gaming Systems
+              - generic [ref=e1268]:
+                - link "Graphics Cards" [ref=e1269] [cursor=pointer]:
+                  - /url: /graphics-cards
+                - link "Processors" [ref=e1270] [cursor=pointer]:
+                  - /url: /processors
+                - link "Prebuilt Desktops" [ref=e1271] [cursor=pointer]:
+                  - /url: /desktops
+                - link "Gaming Laptops" [ref=e1272] [cursor=pointer]:
+                  - /url: /laptops
+            - generic [ref=e1273]:
+              - paragraph [ref=e1274]: Components
+              - generic [ref=e1275]:
+                - link "Motherboards" [ref=e1276] [cursor=pointer]:
+                  - /url: /motherboards
+                - link "Memory (RAM)" [ref=e1277] [cursor=pointer]:
+                  - /url: /rams
+                - link "Storage (SSD)" [ref=e1278] [cursor=pointer]:
+                  - /url: /ssds
+                - link "Power Supplies" [ref=e1279] [cursor=pointer]:
+                  - /url: /psus
+                - link "CPU Coolers" [ref=e1280] [cursor=pointer]:
+                  - /url: /cpu-coolers
+                - link "Cases" [ref=e1281] [cursor=pointer]:
+                  - /url: /cases
+            - generic [ref=e1282]:
+              - paragraph [ref=e1283]: Company
+              - generic [ref=e1284]:
+                - link "About" [ref=e1285] [cursor=pointer]:
+                  - /url: /about
+                - link "Contact" [ref=e1286] [cursor=pointer]:
+                  - /url: /contact
+                - link "Affiliate Disclosure" [ref=e1287] [cursor=pointer]:
+                  - /url: /affiliate-disclosure
+                - link "Terms and Conditions" [ref=e1288] [cursor=pointer]:
+                  - /url: /terms
+                - link "Privacy Policy" [ref=e1289] [cursor=pointer]:
+                  - /url: /privacy-policy
+            - generic [ref=e1290]:
+              - paragraph [ref=e1291]: For Businesses
+              - generic [ref=e1292]:
+                - link "Developer API" [ref=e1293] [cursor=pointer]:
+                  - /url: /developer-api
+                - link "Internet Cafes" [ref=e1294] [cursor=pointer]:
+                  - /url: /internet-cafes
+                - link "PC Builders" [ref=e1295] [cursor=pointer]:
+                  - /url: /pc-builders
+                - link "Tournament Production" [ref=e1296] [cursor=pointer]:
+                  - /url: /tournament-production
+                - link "Game QA" [ref=e1297] [cursor=pointer]:
+                  - /url: /game-qa
+        - region "Frequently asked questions" [ref=e1298]:
+          - heading "Frequently Asked Questions" [level=2] [ref=e1299]
+          - generic [ref=e1300]:
+            - group [ref=e1301]:
+              - generic "help What is HowManyFPS? expand_more" [ref=e1302] [cursor=pointer]:
+                - generic [ref=e1303]: help
+                - generic [ref=e1304]: What is HowManyFPS?
+                - generic [ref=e1305]: expand_more
+            - group [ref=e1306]:
+              - generic "verified Where does your FPS data come from? expand_more" [ref=e1307] [cursor=pointer]:
+                - generic [ref=e1308]: verified
+                - generic [ref=e1309]: Where does your FPS data come from?
+                - generic [ref=e1310]: expand_more
+            - group [ref=e1311]:
+              - generic "attach_money Is this site free? expand_more" [ref=e1312] [cursor=pointer]:
+                - generic [ref=e1313]: attach_money
+                - generic [ref=e1314]: Is this site free?
+                - generic [ref=e1315]: expand_more
+            - group [ref=e1316]:
+              - generic "group Who is behind this? expand_more" [ref=e1317] [cursor=pointer]:
+                - generic [ref=e1318]: group
+                - generic [ref=e1319]: Who is behind this?
+                - generic [ref=e1320]: expand_more
+        - generic [ref=e1322]:
+          - generic [ref=e1323]:
+            - generic [ref=e1324]:
+              - paragraph [ref=e1325]: © 2026 HowManyFPS. All rights reserved.
+              - paragraph [ref=e1326]:
+                - text: As an Amazon Associate
+                - strong [ref=e1327]: HowManyFPS
+                - text: earns from qualifying purchases.
+            - generic [ref=e1328]:
+              - link "info@howmanyfps.com" [ref=e1329] [cursor=pointer]:
+                - /url: mailto:info@howmanyfps.com
+              - paragraph [ref=e1330]: Feature requests, bugs, or partnerships
+          - button "United States, $" [ref=e1332] [cursor=pointer]:
+            - img [ref=e1333]
+            - generic [ref=e1340]: United States, $
+            - img [ref=e1341]
+    - iframe
+    - region "Notifications Alt+T"
+  - alert [ref=e1343]
+  - status [ref=e1344]

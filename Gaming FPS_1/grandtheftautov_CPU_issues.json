@@ -1,0 +1,30 @@
+[
+  {
+    "hw": "Core Ultra 5 225",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 5600G",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 5 5600G",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 5 5600GT",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 5 8500G",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Ryzen 9 9850X3D",
+    "reason": "not_found"
+  }
+]

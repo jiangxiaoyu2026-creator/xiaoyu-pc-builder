@@ -1,0 +1,120 @@
+[
+  {
+    "gpu": "GeForce RTX 3050 6 GB",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "gpu": "GeForce RTX 3050 6 GB",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "GeForce RTX 3060 8 GB",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "gpu": "GeForce RTX 3060 8 GB",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "gpu": "GeForce RTX 4090 D",
+    "reason": "not_found"
+  },
+  {
+    "gpu": "RTX 3060 8 GB",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "RTX 4070 Super",
+    "reason": "not_found"
+  },
+  {
+    "gpu": "RTX 4070 Ti Super",
+    "reason": "not_found"
+  },
+  {
+    "gpu": "RTX 4080 Super",
+    "reason": "not_found"
+  },
+  {
+    "gpu": "RX 6500 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "RX 6500 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "RX 970",
+    "reason": "not_found"
+  },
+  {
+    "gpu": "Radeon RX 6400",
+    "res": "1920x1080 (1K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 6400",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 6400",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 6500 XT",
+    "res": "2560x1440 (2K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 6500 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 6600",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 6600 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 6650 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 7600",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 7600 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 7650 GRE",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "gpu": "Radeon RX 9060 XT 16GB",
+    "reason": "not_found"
+  },
+  {
+    "gpu": "Radeon RX 970",
+    "reason": "not_found"
+  }
+]

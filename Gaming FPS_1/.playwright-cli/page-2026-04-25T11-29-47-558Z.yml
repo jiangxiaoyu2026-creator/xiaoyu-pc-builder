@@ -1,0 +1,1238 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e5]:
+      - banner [ref=e8]:
+        - generic [ref=e9]:
+          - link "HowManyFPS Logo" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - img [ref=e11]
+          - search "Search games and hardware" [ref=e30]:
+            - generic [ref=e31]:
+              - img
+              - combobox "Search games and hardware" [ref=e32]
+            - status [ref=e33]
+          - generic [ref=e34]:
+            - link "Sign In" [ref=e36] [cursor=pointer]:
+              - /url: /api/auth/login?returnTo=/games/grand-theft-auto-v
+              - img [ref=e37]
+              - text: Sign In
+            - link "Cart" [ref=e39] [cursor=pointer]:
+              - /url: /pc-builder
+              - img [ref=e41]
+              - text: Cart
+        - navigation "Main" [ref=e46]:
+          - list [ref=e47]:
+            - listitem [ref=e48] [cursor=pointer]:
+              - link "Home" [ref=e49]:
+                - /url: /
+                - generic [ref=e50]: home
+                - text: Home
+            - listitem [ref=e51] [cursor=pointer]:
+              - link "Games" [ref=e52]:
+                - /url: /games
+                - generic [ref=e53]: sports_esports
+                - text: Games
+            - listitem [ref=e54] [cursor=pointer]:
+              - link "Benchmarks" [ref=e55]:
+                - /url: /benchmarks
+                - generic [ref=e56]: speed
+                - text: Benchmarks
+            - listitem [ref=e57] [cursor=pointer]:
+              - link "Community" [ref=e58]:
+                - /url: /users
+                - generic [ref=e59]: group
+                - text: Community
+            - listitem [ref=e60] [cursor=pointer]:
+              - link "My PC" [ref=e61]:
+                - /url: /user/pc
+                - generic [ref=e62]: desktop_windows
+                - text: My PC
+            - listitem [ref=e63]:
+              - link "Parts" [ref=e64] [cursor=pointer]:
+                - /url: /graphics-cards
+                - text: Parts
+                - img [ref=e65]
+            - listitem [ref=e67]:
+              - link "Ready-to-Game" [ref=e68] [cursor=pointer]:
+                - /url: /desktops
+                - text: Ready-to-Game
+                - img [ref=e69]
+            - listitem [ref=e71]:
+              - link "Tools" [ref=e72] [cursor=pointer]:
+                - /url: /games
+                - text: Tools
+                - img [ref=e73]
+            - listitem [ref=e75]:
+              - button "United States, $" [ref=e77] [cursor=pointer]:
+                - img [ref=e78]
+                - generic [ref=e85]: United States, $
+                - img [ref=e86]
+      - navigation "breadcrumb" [ref=e88]:
+        - list [ref=e91]:
+          - listitem [ref=e92]:
+            - link "Home" [ref=e93] [cursor=pointer]:
+              - /url: /
+              - img [ref=e94]
+          - listitem [ref=e96]: /
+          - listitem [ref=e97]:
+            - link "Games" [ref=e98] [cursor=pointer]:
+              - /url: /games
+          - listitem [ref=e99]: /
+          - listitem [ref=e100]: Grand Theft Auto V
+      - main [ref=e101]:
+        - generic [ref=e102]:
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - link "FPS Bench — Boost Your FPS v1.16.10 Spot bottlenecks in over 100 games — Available Now" [ref=e105] [cursor=pointer]:
+                - /url: /download
+                - img [ref=e107]
+                - generic [ref=e119]:
+                  - generic [ref=e120]:
+                    - text: FPS Bench — Boost Your FPS
+                    - generic [ref=e121]: v1.16.10
+                  - generic [ref=e122]: Spot bottlenecks in over 100 games — Available Now
+              - generic [ref=e123]:
+                - link "Sign in Not connected" [ref=e124] [cursor=pointer]:
+                  - /url: /api/auth/login?returnTo=/games/grand-theft-auto-v
+                  - generic [ref=e126]:
+                    - generic [ref=e129]: Sign in
+                    - generic [ref=e130]: Not connected
+                - link "Download FPS Bench" [ref=e133] [cursor=pointer]:
+                  - /url: /download
+                  - img [ref=e134]
+                  - text: Download FPS Bench
+            - generic [ref=e137]:
+              - generic:
+                - generic:
+                  - img
+              - generic [ref=e142]:
+                - generic [ref=e143]:
+                  - generic [ref=e144]:
+                    - generic [ref=e146]:
+                      - generic [ref=e147]:
+                        - generic [ref=e148]:
+                          - generic [ref=e149]: Developer
+                          - generic [ref=e150]: Rockstar North
+                        - generic [ref=e151]:
+                          - generic [ref=e152]: Updated
+                          - generic [ref=e153]: Apr 17, 2026
+                      - generic [ref=e154]:
+                        - paragraph [ref=e155]: Released in 2013
+                        - img "Grand Theft Auto V PC system requirements" [ref=e157] [cursor=pointer]
+                        - button "Grand Theft Auto V Change Game" [ref=e159] [cursor=pointer]:
+                          - generic [ref=e160]:
+                            - img [ref=e161]
+                            - img [ref=e179]
+                          - generic [ref=e186]:
+                            - paragraph [ref=e187]: Grand Theft Auto V
+                            - paragraph [ref=e188]: Change Game
+                      - link "52K watching now" [ref=e189] [cursor=pointer]:
+                        - /url: https://www.twitch.tv/directory/game/Grand%20Theft%20Auto%20V
+                        - img [ref=e190]
+                        - generic [ref=e195]:
+                          - strong [ref=e196]: 52K
+                          - text: watching now
+                      - link "69K playing now" [ref=e197] [cursor=pointer]:
+                        - /url: https://store.steampowered.com/app/271590/Grand_Theft_Auto_V/
+                        - img [ref=e198]
+                        - generic [ref=e200]:
+                          - strong [ref=e201]: 69K
+                          - text: playing now
+                      - generic [ref=e202]:
+                        - generic [ref=e203]: Very Positive
+                        - generic [ref=e204]: 2.1M reviews
+                    - generic [ref=e206]:
+                      - generic [ref=e207]:
+                        - generic [ref=e208]:
+                          - generic [ref=e209]: Developer
+                          - generic [ref=e210]: Rockstar North
+                        - generic [ref=e211]:
+                          - generic [ref=e212]: Updated
+                          - generic [ref=e213]: Apr 17, 2026
+                      - generic [ref=e214]:
+                        - paragraph [ref=e215]: Released in 2013
+                        - img "Grand Theft Auto V PC system requirements" [ref=e217] [cursor=pointer]
+                        - button "Grand Theft Auto V Change Game" [ref=e219] [cursor=pointer]:
+                          - generic [ref=e220]:
+                            - img [ref=e221]
+                            - img [ref=e239]
+                          - generic [ref=e246]:
+                            - paragraph [ref=e247]: Grand Theft Auto V
+                            - paragraph [ref=e248]: Change Game
+                      - link "52K watching now" [ref=e249] [cursor=pointer]:
+                        - /url: https://www.twitch.tv/directory/game/Grand%20Theft%20Auto%20V
+                        - img [ref=e250]
+                        - generic [ref=e255]:
+                          - strong [ref=e256]: 52K
+                          - text: watching now
+                      - link "69K playing now" [ref=e257] [cursor=pointer]:
+                        - /url: https://store.steampowered.com/app/271590/Grand_Theft_Auto_V/
+                        - img [ref=e258]
+                        - generic [ref=e260]:
+                          - strong [ref=e261]: 69K
+                          - text: playing now
+                      - generic [ref=e262]:
+                        - generic [ref=e263]: Very Positive
+                        - generic [ref=e264]: 2.1M reviews
+                    - generic [ref=e266]:
+                      - generic [ref=e267]:
+                        - generic [ref=e268]:
+                          - generic [ref=e269]: Developer
+                          - generic [ref=e270]: Rockstar North
+                        - generic [ref=e271]:
+                          - generic [ref=e272]: Updated
+                          - generic [ref=e273]: Apr 17, 2026
+                      - generic [ref=e274]:
+                        - paragraph [ref=e275]: Released in 2013
+                        - img "Grand Theft Auto V PC system requirements" [ref=e277] [cursor=pointer]
+                        - button "Grand Theft Auto V Change Game" [ref=e279] [cursor=pointer]:
+                          - generic [ref=e280]:
+                            - img [ref=e281]
+                            - img [ref=e299]
+                          - generic [ref=e306]:
+                            - paragraph [ref=e307]: Grand Theft Auto V
+                            - paragraph [ref=e308]: Change Game
+                      - link "52K watching now" [ref=e309] [cursor=pointer]:
+                        - /url: https://www.twitch.tv/directory/game/Grand%20Theft%20Auto%20V
+                        - img [ref=e310]
+                        - generic [ref=e315]:
+                          - strong [ref=e316]: 52K
+                          - text: watching now
+                      - link "69K playing now" [ref=e317] [cursor=pointer]:
+                        - /url: https://store.steampowered.com/app/271590/Grand_Theft_Auto_V/
+                        - img [ref=e318]
+                        - generic [ref=e320]:
+                          - strong [ref=e321]: 69K
+                          - text: playing now
+                      - generic [ref=e322]:
+                        - generic [ref=e323]: Very Positive
+                        - generic [ref=e324]: 2.1M reviews
+                    - generic [ref=e326]:
+                      - generic [ref=e327]:
+                        - generic [ref=e328]:
+                          - generic [ref=e329]: Developer
+                          - generic [ref=e330]: Rockstar North
+                        - generic [ref=e331]:
+                          - generic [ref=e332]: Updated
+                          - generic [ref=e333]: Apr 17, 2026
+                      - generic [ref=e334]:
+                        - paragraph [ref=e335]: Released in 2013
+                        - img "Grand Theft Auto V PC system requirements" [ref=e337] [cursor=pointer]
+                        - button "Grand Theft Auto V Change Game" [ref=e339] [cursor=pointer]:
+                          - generic [ref=e340]:
+                            - img [ref=e341]
+                            - img [ref=e359]
+                          - generic [ref=e366]:
+                            - paragraph [ref=e367]: Grand Theft Auto V
+                            - paragraph [ref=e368]: Change Game
+                      - link "52K watching now" [ref=e369] [cursor=pointer]:
+                        - /url: https://www.twitch.tv/directory/game/Grand%20Theft%20Auto%20V
+                        - img [ref=e370]
+                        - generic [ref=e375]:
+                          - strong [ref=e376]: 52K
+                          - text: watching now
+                      - link "69K playing now" [ref=e377] [cursor=pointer]:
+                        - /url: https://store.steampowered.com/app/271590/Grand_Theft_Auto_V/
+                        - img [ref=e378]
+                        - generic [ref=e380]:
+                          - strong [ref=e381]: 69K
+                          - text: playing now
+                      - generic [ref=e382]:
+                        - generic [ref=e383]: Very Positive
+                        - generic [ref=e384]: 2.1M reviews
+                  - generic [ref=e385]:
+                    - text: FPS Calculator
+                    - heading "Can I Run Grand Theft Auto V?" [level=1] [ref=e386]
+                    - paragraph [ref=e387]: See how Grand Theft Auto V runs on your hardware — results powered by real gameplay benchmarks.
+                  - generic [ref=e390]:
+                    - link "help How to Benchmark" [ref=e391] [cursor=pointer]:
+                      - /url: /how-to-benchmark/grand-theft-auto-v
+                      - generic [ref=e392]: help
+                      - text: How to Benchmark
+                    - link "build Fix My FPS" [ref=e393] [cursor=pointer]:
+                      - /url: /fix-fps/grand-theft-auto-v
+                      - generic [ref=e394]: build
+                      - text: Fix My FPS
+                    - link "bar_chart Benchmarks" [ref=e395] [cursor=pointer]:
+                      - /url: /benchmarks/grand-theft-auto-v
+                      - generic [ref=e396]: bar_chart
+                      - text: Benchmarks
+                    - link "group Community" [ref=e397] [cursor=pointer]:
+                      - /url: /users
+                      - generic [ref=e398]: group
+                      - text: Community
+                - generic [ref=e399]:
+                  - generic [ref=e400]:
+                    - generic [ref=e401]:
+                      - generic [ref=e402]:
+                        - generic [ref=e403]: Developer
+                        - generic [ref=e404]: Rockstar North
+                      - generic [ref=e405]:
+                        - generic [ref=e406]: Updated
+                        - generic [ref=e407]: Apr 17, 2026
+                    - generic [ref=e408]:
+                      - paragraph [ref=e409]: Released in 2013
+                      - img "Grand Theft Auto V PC system requirements" [ref=e411] [cursor=pointer]
+                      - button "Grand Theft Auto V Change Game" [ref=e413] [cursor=pointer]:
+                        - generic [ref=e414]:
+                          - img [ref=e415]
+                          - img [ref=e433]
+                        - generic [ref=e440]:
+                          - paragraph [ref=e441]: Grand Theft Auto V
+                          - paragraph [ref=e442]: Change Game
+                    - button "Unlock All Games 100+ games" [ref=e444] [cursor=pointer]:
+                      - img [ref=e446]
+                      - paragraph [ref=e448]: Unlock All Games
+                      - generic [ref=e449]: 100+ games
+                    - link "52K watching now" [ref=e450] [cursor=pointer]:
+                      - /url: https://www.twitch.tv/directory/game/Grand%20Theft%20Auto%20V
+                      - img [ref=e451]
+                      - generic [ref=e456]:
+                        - strong [ref=e457]: 52K
+                        - text: watching now
+                    - link "69K playing now" [ref=e458] [cursor=pointer]:
+                      - /url: https://store.steampowered.com/app/271590/Grand_Theft_Auto_V/
+                      - img [ref=e459]
+                      - generic [ref=e461]:
+                        - strong [ref=e462]: 69K
+                        - text: playing now
+                    - generic [ref=e463]:
+                      - generic [ref=e464]: Very Positive
+                      - generic [ref=e465]: 2.1M reviews
+                  - generic [ref=e466]:
+                    - generic [ref=e467]:
+                      - img [ref=e468]
+                      - paragraph [ref=e470]: Actual FPS may vary due to overclocking, background apps, RAM speeds (XMP/EXPO), and thermal throttling.
+                    - generic [ref=e471]:
+                      - generic [ref=e472]:
+                        - generic [ref=e473]:
+                          - generic [ref=e474]:
+                            - generic [ref=e475]:
+                              - img [ref=e476]
+                              - paragraph [ref=e502]: GPU
+                            - generic [ref=e503]:
+                              - link "View" [ref=e504] [cursor=pointer]:
+                                - /url: /graphics-cards/geforce-rtx-5090
+                              - link "Compare" [ref=e505] [cursor=pointer]:
+                                - /url: /graphics-cards/comparisons/geforce-rtx-5090
+                                - img [ref=e506]
+                                - text: Compare
+                              - link "All GPUs" [ref=e508] [cursor=pointer]:
+                                - /url: /graphics-cards
+                          - combobox "Search for a GPU" [ref=e510] [cursor=pointer]:
+                            - generic [ref=e511]:
+                              - generic [ref=e512]:
+                                - generic:
+                                  - generic:
+                                    - img "NVIDIA GeForce RTX 5090 Logo"
+                              - generic [ref=e513]:
+                                - generic [ref=e514]: GeForce RTX 5090
+                                - generic [ref=e519]: 100% Score
+                            - textbox "GPU" [ref=e520]
+                            - generic [ref=e522]: TOP 1
+                            - button "Toggle Search for a GPU options" [ref=e523]:
+                              - img [ref=e524]
+                        - generic [ref=e526]:
+                          - generic [ref=e527]:
+                            - generic [ref=e528]:
+                              - img [ref=e529]
+                              - paragraph [ref=e568]: CPU
+                            - generic [ref=e569]:
+                              - link "View" [ref=e570] [cursor=pointer]:
+                                - /url: /processors/ryzen-9-9950x3d
+                              - link "Compare" [ref=e571] [cursor=pointer]:
+                                - /url: /processors/comparisons/ryzen-9-9950x3d
+                                - img [ref=e572]
+                                - text: Compare
+                              - link "All CPUs" [ref=e574] [cursor=pointer]:
+                                - /url: /processors
+                          - combobox "Search for a CPU" [ref=e576] [cursor=pointer]:
+                            - generic [ref=e577]:
+                              - generic [ref=e578]:
+                                - generic:
+                                  - generic:
+                                    - img "AMD Ryzen 9 9950X3D Logo"
+                              - generic [ref=e579]:
+                                - generic [ref=e580]: Ryzen 9 9950X3D
+                                - generic [ref=e585]: 97% Score
+                            - textbox "CPU" [ref=e586]
+                            - generic [ref=e588]: TOP 2
+                            - button "Toggle Search for a CPU options" [ref=e589]:
+                              - img [ref=e590]
+                      - link "Bottleneck Calculator" [ref=e593] [cursor=pointer]:
+                        - /url: /bottleneck-calculator/geforce-rtx-5090-vs-ryzen-9-9950x3d
+                        - generic [ref=e594]: compress
+                        - text: Bottleneck Calculator
+                    - generic [ref=e595]:
+                      - generic [ref=e596]:
+                        - generic [ref=e597]:
+                          - generic [ref=e598]:
+                            - img [ref=e599]
+                            - paragraph [ref=e630]:
+                              - generic [ref=e631]:
+                                - text: RAM
+                                - img [ref=e632]
+                          - link "All RAMs" [ref=e635] [cursor=pointer]:
+                            - /url: /rams
+                        - combobox "Select RAM" [ref=e637] [cursor=pointer]:
+                          - generic [ref=e638]: 32 GB
+                          - generic:
+                            - textbox "RAM":
+                              - /placeholder: 32 GB
+                          - generic [ref=e640]:
+                            - img [ref=e641]
+                            - text: PassesOK
+                          - button "Toggle ram options" [ref=e643]:
+                            - img [ref=e644]
+                      - generic [ref=e646]:
+                        - generic [ref=e648]:
+                          - img [ref=e649]
+                          - paragraph [ref=e664]: Resolution
+                        - combobox "Select game resolution" [ref=e666] [cursor=pointer]:
+                          - generic [ref=e667]: 1920 x 1080
+                          - generic:
+                            - textbox "Resolution":
+                              - /placeholder: 1920 x 1080
+                          - button "Toggle resolution options" [ref=e668]:
+                            - img [ref=e669]
+                      - generic [ref=e671]:
+                        - generic [ref=e673]:
+                          - img [ref=e674]
+                          - paragraph [ref=e677]: Graphics Preset
+                        - combobox "Select game graphics" [ref=e679] [cursor=pointer]:
+                          - generic [ref=e680]: Ultra
+                          - generic:
+                            - textbox "Graphics Preset":
+                              - /placeholder: Ultra
+                          - button "Toggle preset options" [ref=e681]:
+                            - img [ref=e682]
+                      - generic [ref=e684]:
+                        - paragraph [ref=e687]: Game Mode
+                        - combobox "Select game mode" [ref=e689] [cursor=pointer]:
+                          - generic [ref=e690]: Singleplayer
+                          - generic:
+                            - textbox "Game Mode":
+                              - /placeholder: Singleplayer
+                          - button "Toggle gameMode options" [ref=e691]:
+                            - img [ref=e692]
+                      - generic [ref=e694]:
+                        - paragraph [ref=e697]: MSAA
+                        - combobox "Select msaa" [ref=e699] [cursor=pointer]:
+                          - generic [ref=e700]: 8x
+                          - generic:
+                            - textbox "MSAA":
+                              - /placeholder: 8x
+                          - button "Toggle msaa options" [ref=e701]:
+                            - img [ref=e702]
+                    - generic [ref=e704]:
+                      - generic [ref=e705]:
+                        - generic [ref=e707]:
+                          - generic [ref=e708]:
+                            - img [ref=e709]
+                            - text: GPU
+                            - generic [ref=e736]: 91%
+                          - generic [ref=e737]:
+                            - paragraph [ref=e738]: GPU Reliant
+                            - img [ref=e739]
+                          - generic [ref=e741]:
+                            - img [ref=e742]
+                            - text: CPU
+                            - generic [ref=e782]: 9%
+                        - generic [ref=e787]:
+                          - paragraph [ref=e790]:
+                            - text: Offset
+                            - img [ref=e791]
+                          - generic [ref=e795] [cursor=pointer]: Apply Offset
+                      - generic [ref=e796]:
+                        - generic [ref=e798]:
+                          - img [ref=e799]
+                          - generic [ref=e801]:
+                            - paragraph [ref=e803]: — FPS
+                            - paragraph [ref=e807]: Real-Time Average
+                        - generic [ref=e809]:
+                          - img [ref=e810]
+                          - generic [ref=e812]:
+                            - paragraph [ref=e814]: — FPS
+                            - paragraph [ref=e818]: 1% Lows
+                    - button "Unlock All Games 100+ games" [ref=e820] [cursor=pointer]:
+                      - img [ref=e822]
+                      - paragraph [ref=e824]: Unlock All Games
+                      - generic [ref=e825]: 100+ games
+            - generic [ref=e828]:
+              - generic [ref=e829]:
+                - heading "See how Grand Theft Auto V actually runs on your PC" [level=2] [ref=e830]
+                - paragraph [ref=e831]: FPS, temperatures, bottlenecks, background apps — all in one free benchmark
+              - generic [ref=e833]:
+                - generic [ref=e834]:
+                  - generic [ref=e835]: speed
+                  - generic [ref=e836]:
+                    - generic [ref=e837]:
+                      - text: 312FPS
+                      - generic [ref=e838]: Excellent
+                    - generic [ref=e839]: Avg FPS in Grand Theft Auto V
+                - generic [ref=e840]:
+                  - generic [ref=e841]: show_chart
+                  - generic [ref=e842]:
+                    - generic [ref=e843]:
+                      - text: 187FPS
+                      - generic [ref=e844]: Excellent
+                    - text: 1% lows — stutter & frame drops
+                - generic [ref=e845]:
+                  - generic [ref=e846]: thermostat
+                  - generic [ref=e847]:
+                    - generic [ref=e848]:
+                      - text: 62°C
+                      - generic [ref=e849]: Good
+                    - text: GPU temperature under load
+                - generic [ref=e850]:
+                  - generic [ref=e851]: compress
+                  - generic [ref=e852]:
+                    - generic [ref=e854]: CPU Limited
+                    - text: Bottleneck found — upgrade priority
+              - generic [ref=e855]:
+                - link "Download FPS Bench — Free" [ref=e856] [cursor=pointer]:
+                  - /url: /download
+                  - generic [ref=e857]: download
+                  - text: Download FPS Bench — Free
+                - text: Windows · 1-minute setup · 100+ games supported
+          - region "Grand Theft Auto V system requirements" [ref=e858]:
+            - heading "Grand Theft Auto V System Requirements" [level=2] [ref=e859]
+            - paragraph [ref=e860]: Minimum and recommended PC specs to run Grand Theft Auto V. Use the FPS calculator above to see exactly how many frames your hardware gets.
+            - generic [ref=e861]:
+              - generic [ref=e862]:
+                - generic [ref=e863]:
+                  - img [ref=e864]
+                  - text: Recommended
+                - generic [ref=e866]:
+                  - img [ref=e867]
+                  - text: Minimum
+              - generic [ref=e869]:
+                - generic [ref=e870]:
+                  - generic [ref=e871]: memory
+                  - text: GPU
+                - generic [ref=e872]:
+                  - link "GeForce GTX 660" [ref=e873] [cursor=pointer]:
+                    - /url: /graphics-cards/geforce-gtx-660
+                  - text: / Radeon HD 7870
+                - generic [ref=e874]:
+                  - link "GeForce 9800 GT" [ref=e875] [cursor=pointer]:
+                    - /url: /graphics-cards/geforce-9800-gt
+                  - text: / Radeon HD 4870
+              - generic [ref=e876]:
+                - generic [ref=e877]:
+                  - generic [ref=e878]: developer_board
+                  - text: CPU
+                - generic [ref=e879]:
+                  - link "Core i5-3470" [ref=e880] [cursor=pointer]:
+                    - /url: /processors/core-i5-3470
+                  - text: /
+                  - link "Ryzen 5 2400G" [ref=e881] [cursor=pointer]:
+                    - /url: /processors/ryzen-5-2400g
+                - generic [ref=e882]: Core 2 Quad Q6600 / Phenom 9850
+              - generic [ref=e883]:
+                - generic [ref=e884]:
+                  - generic [ref=e885]: storage
+                  - text: RAM
+                - generic [ref=e886]: 8 GB
+                - generic [ref=e887]: 4 GB
+              - generic [ref=e888]:
+                - generic [ref=e889]:
+                  - generic [ref=e890]: hard_drive
+                  - text: Storage
+                - generic [ref=e891]: 120 GB
+                - generic [ref=e892]: 120 GB
+              - generic [ref=e893]:
+                - generic [ref=e894]:
+                  - generic [ref=e895]: computer
+                  - text: OS
+                - generic [ref=e896]: Windows 10 (64-bit)
+                - generic [ref=e897]: Windows 10 (64-bit)
+          - generic [ref=e899]:
+            - generic [ref=e900]:
+              - heading "Recent Public Grand Theft Auto V FPS Benchmarks" [level=2] [ref=e901]:
+                - link "Recent Public Grand Theft Auto V FPS Benchmarks" [ref=e902] [cursor=pointer]:
+                  - /url: /benchmarks
+              - link "View Other Games" [ref=e903] [cursor=pointer]:
+                - /url: /benchmarks
+                - text: View Other Games
+                - generic [ref=e904]: →
+            - generic [ref=e907]:
+              - link [ref=e909] [cursor=pointer]:
+                - /url: /benchmarks/grand-theft-auto-v/69db9808b66ba5a1a99696cd
+                - article [ref=e910]:
+                  - generic [ref=e911]:
+                    - img "Grand Theft Auto V" [ref=e914]
+                    - generic [ref=e916]:
+                      - generic [ref=e917]: Grand Theft Auto V
+                      - generic [ref=e918]:
+                        - text: 1080p@
+                        - generic [ref=e919]: 240Hz
+                        - text: ·
+                        - generic [ref=e920]: 1:19:19 played
+                      - generic [ref=e921]:
+                        - generic [ref=e922]:
+                          - img [ref=e923]
+                          - text: Player_1925d3
+                        - generic [ref=e925]: ·
+                        - generic [ref=e926]: 12d ago
+                      - generic [ref=e927]:
+                        - generic [ref=e928]:
+                          - img [ref=e929]
+                          - text: Public
+                        - generic [ref=e932]:
+                          - generic [ref=e933]: lightbulb
+                          - text: 4 Tips
+                  - generic [ref=e934]:
+                    - generic [ref=e935]:
+                      - generic [ref=e936]: "591"
+                      - generic [ref=e937]:
+                        - generic [ref=e938]: FPS
+                        - generic [ref=e939]: Average
+                    - generic [ref=e941]:
+                      - generic [ref=e942]: "364"
+                      - generic [ref=e943]:
+                        - generic [ref=e944]: FPS
+                        - generic [ref=e945]: 1% Low
+                  - generic [ref=e946]:
+                    - generic [ref=e947]:
+                      - generic [ref=e948]:
+                        - generic:
+                          - generic:
+                            - img "NVIDIA NVIDIA GeForce RTX 3060 Ti Logo"
+                        - generic [ref=e949]: RTX 3060 Ti
+                      - generic [ref=e950]:
+                        - generic [ref=e953]: 94%
+                        - generic [ref=e954]: /
+                        - generic [ref=e955]: 74°C
+                    - generic [ref=e956]:
+                      - generic [ref=e957]:
+                        - generic:
+                          - generic:
+                            - img "Intel Intel(R) Core(TM) Ultra 7 265KF Logo"
+                        - generic [ref=e958]: Ultra 7 265KF
+                      - generic [ref=e959]:
+                        - generic [ref=e962]: 39%
+                        - generic [ref=e963]: /
+                        - generic [ref=e964]: 60°C
+                    - generic [ref=e965]:
+                      - generic [ref=e966]:
+                        - img [ref=e967]
+                        - text: 16 GB
+                      - generic [ref=e998]:
+                        - generic [ref=e1001]: 92%
+                        - generic [ref=e1002]: usage
+              - link [ref=e1004] [cursor=pointer]:
+                - /url: /benchmarks/grand-theft-auto-v/69a32269d84a1b5e56dd8eb0
+                - article [ref=e1005]:
+                  - generic [ref=e1006]:
+                    - img "Grand Theft Auto V" [ref=e1009]
+                    - generic [ref=e1011]:
+                      - generic [ref=e1012]: Grand Theft Auto V
+                      - generic [ref=e1013]:
+                        - text: 1080p@
+                        - generic [ref=e1014]: 180Hz
+                        - text: ·
+                        - generic [ref=e1015]: 31:53 played
+                      - generic [ref=e1016]:
+                        - generic [ref=e1017]:
+                          - img [ref=e1018]
+                          - text: GG_KLP
+                        - generic [ref=e1020]: ·
+                        - generic [ref=e1021]: 1mo ago
+                      - generic [ref=e1022]:
+                        - generic [ref=e1023]:
+                          - img [ref=e1024]
+                          - text: Public
+                        - generic [ref=e1027]:
+                          - generic [ref=e1028]: lightbulb
+                          - text: 3 Tips
+                  - generic [ref=e1029]:
+                    - generic [ref=e1030]:
+                      - generic [ref=e1031]: "60"
+                      - generic [ref=e1032]:
+                        - generic [ref=e1033]: FPS
+                        - generic [ref=e1034]: Average
+                    - generic [ref=e1036]:
+                      - generic [ref=e1037]: "59"
+                      - generic [ref=e1038]:
+                        - generic [ref=e1039]: FPS
+                        - generic [ref=e1040]: 1% Low
+                  - generic [ref=e1041]:
+                    - generic [ref=e1042]:
+                      - generic [ref=e1043]:
+                        - generic:
+                          - generic:
+                            - img "NVIDIA NVIDIA GeForce RTX 3060 Ti Logo"
+                        - generic [ref=e1044]: RTX 3060 Ti
+                      - generic [ref=e1045]:
+                        - generic [ref=e1048]: 41%
+                        - generic [ref=e1049]: /
+                        - generic [ref=e1050]: 52°C
+                    - generic [ref=e1051]:
+                      - generic [ref=e1052]:
+                        - generic:
+                          - generic:
+                            - img "AMD AMD Ryzen 7 5800X3D 8-Core Processor Logo"
+                        - generic [ref=e1053]: Ryzen 7 5800X3D
+                      - generic [ref=e1054]:
+                        - generic [ref=e1057]: 20%
+                        - generic [ref=e1058]: /
+                        - generic [ref=e1059]: 74°C
+                    - generic [ref=e1060]:
+                      - generic [ref=e1061]:
+                        - img [ref=e1062]
+                        - text: 16 GB
+                      - generic [ref=e1093]:
+                        - generic [ref=e1096]: 68%
+                        - generic [ref=e1097]: usage
+              - link [ref=e1099] [cursor=pointer]:
+                - /url: /benchmarks/grand-theft-auto-v/69a302b7d84a1b5e56dcef7b
+                - article [ref=e1100]:
+                  - generic [ref=e1101]:
+                    - img "Grand Theft Auto V" [ref=e1104]
+                    - generic [ref=e1106]:
+                      - generic [ref=e1107]: Grand Theft Auto V
+                      - generic [ref=e1108]:
+                        - text: 1080p@
+                        - generic [ref=e1109]: 180Hz
+                        - text: ·
+                        - generic [ref=e1110]: 38:12 played
+                      - generic [ref=e1111]:
+                        - generic [ref=e1112]:
+                          - img [ref=e1113]
+                          - text: GG_KLP
+                        - generic [ref=e1115]: ·
+                        - generic [ref=e1116]: 1mo ago
+                      - generic [ref=e1117]:
+                        - generic [ref=e1118]:
+                          - img [ref=e1119]
+                          - text: Public
+                        - generic [ref=e1122]:
+                          - generic [ref=e1123]: lightbulb
+                          - text: 4 Tips
+                  - generic [ref=e1124]:
+                    - generic [ref=e1125]:
+                      - generic [ref=e1126]: "60"
+                      - generic [ref=e1127]:
+                        - generic [ref=e1128]: FPS
+                        - generic [ref=e1129]: Average
+                    - generic [ref=e1131]:
+                      - generic [ref=e1132]: "60"
+                      - generic [ref=e1133]:
+                        - generic [ref=e1134]: FPS
+                        - generic [ref=e1135]: 1% Low
+                  - generic [ref=e1136]:
+                    - generic [ref=e1137]:
+                      - generic [ref=e1138]:
+                        - generic:
+                          - generic:
+                            - img "NVIDIA NVIDIA GeForce RTX 3060 Ti Logo"
+                        - generic [ref=e1139]: RTX 3060 Ti
+                      - generic [ref=e1140]:
+                        - generic [ref=e1143]: 43%
+                        - generic [ref=e1144]: /
+                        - generic [ref=e1145]: 50°C
+                    - generic [ref=e1146]:
+                      - generic [ref=e1147]:
+                        - generic:
+                          - generic:
+                            - img "AMD AMD Ryzen 7 5800X3D 8-Core Processor Logo"
+                        - generic [ref=e1148]: Ryzen 7 5800X3D
+                      - generic [ref=e1149]:
+                        - generic [ref=e1152]: 24%
+                        - generic [ref=e1153]: /
+                        - generic [ref=e1154]: 69°C
+                    - generic [ref=e1155]:
+                      - generic [ref=e1156]:
+                        - img [ref=e1157]
+                        - text: 16 GB
+                      - generic [ref=e1188]:
+                        - generic [ref=e1191]: 67%
+                        - generic [ref=e1192]: usage
+          - generic [ref=e1193]:
+            - generic [ref=e1195]:
+              - generic [ref=e1196]:
+                - img [ref=e1197]
+                - generic [ref=e1198]: Grand Theft Auto V
+              - generic [ref=e1203]:
+                - img [ref=e1205]
+                - img [ref=e1207]
+            - heading "Why Is My PC Slow in Grand Theft Auto V?" [level=2] [ref=e1211]
+            - paragraph [ref=e1212]: Join thousands of gamers already benchmarking their rigs.
+            - link "Download FPS Bench" [ref=e1213] [cursor=pointer]:
+              - /url: /download
+              - img [ref=e1214]
+              - generic [ref=e1217]:
+                - text: Download
+                - strong [ref=e1218]: FPS Bench
+            - paragraph [ref=e1219]: Windows 10/11 — under 50 MB — always free
+            - generic [ref=e1220]:
+              - generic [ref=e1221]: Spot Bottlenecks
+              - generic [ref=e1222]: Boost FPS
+              - generic [ref=e1223]: 100+ Games
+        - generic [ref=e1225]:
+          - generic [ref=e1226]:
+            - generic [ref=e1227] [cursor=pointer]:
+              - textbox "Search" [ref=e1228]:
+                - /placeholder: Search for a game
+              - img [ref=e1229]
+            - list [ref=e1232]:
+              - listitem "alphabetic" [ref=e1233] [cursor=pointer]
+              - listitem [ref=e1234]
+              - listitem "popular" [ref=e1235] [cursor=pointer]
+              - listitem [ref=e1236]
+              - listitem "recent" [ref=e1237] [cursor=pointer]
+          - generic [ref=e1238]:
+            - generic [ref=e1239]:
+              - link [ref=e1240] [cursor=pointer]:
+                - /url: /games/league-of-legends
+                - article [ref=e1241]:
+                  - generic [ref=e1242]:
+                    - paragraph [ref=e1243]: "2009"
+                    - img "League of Legends PC system requirements" [ref=e1245]
+                  - generic [ref=e1247]:
+                    - paragraph [ref=e1248]: League of Legends
+                    - generic [ref=e1249]:
+                      - img [ref=e1251]
+                      - generic [ref=e1254]:
+                        - paragraph [ref=e1256]: Optimization Score
+                        - paragraph [ref=e1257]: How well optimized
+                    - generic [ref=e1258]:
+                      - paragraph [ref=e1259]: Watching now
+                      - generic [ref=e1260]:
+                        - img [ref=e1261]
+                        - paragraph [ref=e1266]: 169K
+                    - paragraph [ref=e1267]: Check Your FPS
+              - link [ref=e1268] [cursor=pointer]:
+                - /url: /games/valorant
+                - article [ref=e1269]:
+                  - generic [ref=e1270]:
+                    - paragraph [ref=e1271]: "2020"
+                    - img "Valorant PC system requirements" [ref=e1273]
+                  - generic [ref=e1275]:
+                    - paragraph [ref=e1276]: Valorant
+                    - generic [ref=e1277]:
+                      - img [ref=e1279]
+                      - generic [ref=e1282]:
+                        - paragraph [ref=e1284]: Optimization Score
+                        - paragraph [ref=e1285]: How well optimized
+                    - generic [ref=e1286]:
+                      - paragraph [ref=e1287]: Watching now
+                      - generic [ref=e1288]:
+                        - img [ref=e1289]
+                        - paragraph [ref=e1294]: 110K
+                    - paragraph [ref=e1295]: Check Your FPS
+              - link [ref=e1296] [cursor=pointer]:
+                - /url: /games/dota-2
+                - article [ref=e1297]:
+                  - generic [ref=e1298]:
+                    - paragraph [ref=e1299]: "2013"
+                    - img "Dota 2 PC system requirements" [ref=e1301]
+                  - generic [ref=e1303]:
+                    - paragraph [ref=e1304]: Dota 2
+                    - generic [ref=e1305]:
+                      - img [ref=e1307]
+                      - generic [ref=e1310]:
+                        - paragraph [ref=e1312]: Optimization Score
+                        - paragraph [ref=e1313]: How well optimized
+                    - generic [ref=e1314]:
+                      - paragraph [ref=e1315]: Watching now
+                      - generic [ref=e1316]:
+                        - img [ref=e1317]
+                        - paragraph [ref=e1322]: 108K
+                    - paragraph [ref=e1323]: Check Your FPS
+              - link [ref=e1324] [cursor=pointer]:
+                - /url: /games/overwatch-2
+                - article [ref=e1325]:
+                  - generic [ref=e1326]:
+                    - paragraph [ref=e1327]: "2023"
+                    - img "Overwatch 2 PC system requirements" [ref=e1329]
+                  - generic [ref=e1331]:
+                    - paragraph [ref=e1332]: Overwatch 2
+                    - generic [ref=e1333]:
+                      - img [ref=e1335]
+                      - generic [ref=e1338]:
+                        - paragraph [ref=e1340]: Optimization Score
+                        - paragraph [ref=e1341]: How well optimized
+                    - generic [ref=e1342]:
+                      - paragraph [ref=e1343]: Watching now
+                      - generic [ref=e1344]:
+                        - img [ref=e1345]
+                        - paragraph [ref=e1350]: 73K
+                    - paragraph [ref=e1351]: Check Your FPS
+              - link [ref=e1352] [cursor=pointer]:
+                - /url: /games/counter-strike-2
+                - article [ref=e1353]:
+                  - generic [ref=e1354]:
+                    - paragraph [ref=e1355]: "2023"
+                    - img "Counter-Strike 2 PC system requirements" [ref=e1357]
+                  - generic [ref=e1359]:
+                    - paragraph [ref=e1360]: Counter-Strike 2
+                    - generic [ref=e1361]:
+                      - img [ref=e1363]
+                      - generic [ref=e1366]:
+                        - paragraph [ref=e1368]: Optimization Score
+                        - paragraph [ref=e1369]: How well optimized
+                    - generic [ref=e1370]:
+                      - paragraph [ref=e1371]: Watching now
+                      - generic [ref=e1372]:
+                        - img [ref=e1373]
+                        - paragraph [ref=e1378]: 66K
+                    - paragraph [ref=e1379]: Check Your FPS
+              - link [ref=e1380] [cursor=pointer]:
+                - /url: /games/grand-theft-auto-v
+                - article [ref=e1381]:
+                  - generic [ref=e1382]:
+                    - paragraph [ref=e1383]: "2013"
+                    - img "Grand Theft Auto V PC system requirements" [ref=e1385]
+                  - generic [ref=e1387]:
+                    - paragraph [ref=e1388]: Grand Theft Auto V
+                    - generic [ref=e1389]:
+                      - img [ref=e1391]
+                      - generic [ref=e1394]:
+                        - paragraph [ref=e1396]: Optimization Score
+                        - paragraph [ref=e1397]: How well optimized
+                    - generic [ref=e1398]:
+                      - paragraph [ref=e1399]: Watching now
+                      - generic [ref=e1400]:
+                        - img [ref=e1401]
+                        - paragraph [ref=e1406]: 52K
+                    - paragraph [ref=e1407]: Check Your FPS
+              - link [ref=e1408] [cursor=pointer]:
+                - /url: /games/apex-legends
+                - article [ref=e1409]:
+                  - generic [ref=e1410]:
+                    - paragraph [ref=e1411]: "2019"
+                    - img "Apex Legends PC system requirements" [ref=e1413]
+                  - generic [ref=e1415]:
+                    - paragraph [ref=e1416]: Apex Legends
+                    - generic [ref=e1417]:
+                      - img [ref=e1419]
+                      - generic [ref=e1422]:
+                        - paragraph [ref=e1424]: Optimization Score
+                        - paragraph [ref=e1425]: How well optimized
+                    - generic [ref=e1426]:
+                      - paragraph [ref=e1427]: Watching now
+                      - generic [ref=e1428]:
+                        - img [ref=e1429]
+                        - paragraph [ref=e1434]: 27K
+                    - paragraph [ref=e1435]: Check Your FPS
+              - link [ref=e1436] [cursor=pointer]:
+                - /url: /games/fortnite
+                - article [ref=e1437]:
+                  - generic [ref=e1438]:
+                    - paragraph [ref=e1439]: "2017"
+                    - img "Fortnite PC system requirements" [ref=e1441]
+                  - generic [ref=e1443]:
+                    - paragraph [ref=e1444]: Fortnite
+                    - generic [ref=e1445]:
+                      - img [ref=e1447]
+                      - generic [ref=e1450]:
+                        - paragraph [ref=e1452]: Optimization Score
+                        - paragraph [ref=e1453]: How well optimized
+                    - generic [ref=e1454]:
+                      - paragraph [ref=e1455]: Watching now
+                      - generic [ref=e1456]:
+                        - img [ref=e1457]
+                        - paragraph [ref=e1462]: 26K
+                    - paragraph [ref=e1463]: Check Your FPS
+              - link [ref=e1464] [cursor=pointer]:
+                - /url: /games/world-of-warcraft
+                - article [ref=e1465]:
+                  - generic [ref=e1466]:
+                    - paragraph [ref=e1467]: "2004"
+                    - img "World of Warcraft PC system requirements" [ref=e1469]
+                  - generic [ref=e1471]:
+                    - paragraph [ref=e1472]: World of Warcraft
+                    - generic [ref=e1473]:
+                      - img [ref=e1475]
+                      - generic [ref=e1478]:
+                        - paragraph [ref=e1480]: Optimization Score
+                        - paragraph [ref=e1481]: How well optimized
+                    - generic [ref=e1482]:
+                      - paragraph [ref=e1483]: Watching now
+                      - generic [ref=e1484]:
+                        - img [ref=e1485]
+                        - paragraph [ref=e1490]: 26K
+                    - paragraph [ref=e1491]: Check Your FPS
+              - link [ref=e1492] [cursor=pointer]:
+                - /url: /games/rust
+                - article [ref=e1493]:
+                  - generic [ref=e1494]:
+                    - paragraph [ref=e1495]: "2018"
+                    - img "Rust PC system requirements" [ref=e1497]
+                  - generic [ref=e1499]:
+                    - paragraph [ref=e1500]: Rust
+                    - generic [ref=e1501]:
+                      - img [ref=e1503]
+                      - generic [ref=e1506]:
+                        - paragraph [ref=e1508]: Optimization Score
+                        - paragraph [ref=e1509]: How well optimized
+                    - generic [ref=e1510]:
+                      - paragraph [ref=e1511]: Watching now
+                      - generic [ref=e1512]:
+                        - img [ref=e1513]
+                        - paragraph [ref=e1518]: 16K
+                    - paragraph [ref=e1519]: Check Your FPS
+              - link [ref=e1520] [cursor=pointer]:
+                - /url: /games/minecraft
+                - article [ref=e1521]:
+                  - generic [ref=e1522]:
+                    - paragraph [ref=e1523]: "2011"
+                    - img "Minecraft PC system requirements" [ref=e1525]
+                  - generic [ref=e1527]:
+                    - paragraph [ref=e1528]: Minecraft
+                    - generic [ref=e1529]:
+                      - img [ref=e1531]
+                      - generic [ref=e1534]:
+                        - paragraph [ref=e1536]: Optimization Score
+                        - paragraph [ref=e1537]: How well optimized
+                    - generic [ref=e1538]:
+                      - paragraph [ref=e1539]: Watching now
+                      - generic [ref=e1540]:
+                        - img [ref=e1541]
+                        - paragraph [ref=e1546]: 14K
+                    - paragraph [ref=e1547]: Check Your FPS
+              - link [ref=e1548] [cursor=pointer]:
+                - /url: /games/playerunknowns-battlegrounds
+                - article [ref=e1549]:
+                  - generic [ref=e1550]:
+                    - paragraph [ref=e1551]: "2017"
+                    - img "PlayerUnknown's Battlegrounds PC system requirements" [ref=e1553]
+                  - generic [ref=e1555]:
+                    - paragraph [ref=e1556]: PlayerUnknown's Battlegrounds
+                    - generic [ref=e1557]:
+                      - img [ref=e1559]
+                      - generic [ref=e1562]:
+                        - paragraph [ref=e1564]: Optimization Score
+                        - paragraph [ref=e1565]: How well optimized
+                    - generic [ref=e1566]:
+                      - paragraph [ref=e1567]: Watching now
+                      - generic [ref=e1568]:
+                        - img [ref=e1569]
+                        - paragraph [ref=e1574]: "8208"
+                    - paragraph [ref=e1575]: Check Your FPS
+              - link [ref=e1576] [cursor=pointer]:
+                - /url: /games/world-of-tanks
+                - article [ref=e1577]:
+                  - generic [ref=e1578]:
+                    - paragraph [ref=e1579]: "2010"
+                    - img "World of Tanks PC system requirements" [ref=e1581]
+                  - generic [ref=e1583]:
+                    - paragraph [ref=e1584]: World of Tanks
+                    - generic [ref=e1585]:
+                      - img [ref=e1587]
+                      - generic [ref=e1590]:
+                        - paragraph [ref=e1592]: Optimization Score
+                        - paragraph [ref=e1593]: How well optimized
+                    - generic [ref=e1594]:
+                      - paragraph [ref=e1595]: Watching now
+                      - generic [ref=e1596]:
+                        - img [ref=e1597]
+                        - paragraph [ref=e1602]: "8170"
+                    - paragraph [ref=e1603]: Check Your FPS
+              - link [ref=e1604] [cursor=pointer]:
+                - /url: /games/call-of-duty-warzone-20
+                - article [ref=e1605]:
+                  - generic [ref=e1606]:
+                    - paragraph [ref=e1607]: "2020"
+                    - 'img "Call of Duty: Warzone 2.0 PC system requirements" [ref=e1609]'
+                  - generic [ref=e1611]:
+                    - paragraph [ref=e1612]: "Call of Duty: Warzone 2.0"
+                    - generic [ref=e1613]:
+                      - img [ref=e1615]
+                      - generic [ref=e1618]:
+                        - paragraph [ref=e1620]: Optimization Score
+                        - paragraph [ref=e1621]: How well optimized
+                    - generic [ref=e1622]:
+                      - paragraph [ref=e1623]: Watching now
+                      - generic [ref=e1624]:
+                        - img [ref=e1625]
+                        - paragraph [ref=e1630]: "6512"
+                    - paragraph [ref=e1631]: Check Your FPS
+              - link [ref=e1632] [cursor=pointer]:
+                - /url: /games/rocket-league
+                - article [ref=e1633]:
+                  - generic [ref=e1634]:
+                    - paragraph [ref=e1635]: "2015"
+                    - img "Rocket League PC system requirements" [ref=e1637]
+                  - generic [ref=e1639]:
+                    - paragraph [ref=e1640]: Rocket League
+                    - generic [ref=e1641]:
+                      - img [ref=e1643]
+                      - generic [ref=e1646]:
+                        - paragraph [ref=e1648]: Optimization Score
+                        - paragraph [ref=e1649]: How well optimized
+                    - generic [ref=e1650]:
+                      - paragraph [ref=e1651]: Watching now
+                      - generic [ref=e1652]:
+                        - img [ref=e1653]
+                        - paragraph [ref=e1658]: "4476"
+                    - paragraph [ref=e1659]: Check Your FPS
+            - list [ref=e1660]:
+              - listitem [ref=e1661] [cursor=pointer]:
+                - button "Previous page" [disabled] [ref=e1662]: Previous
+              - listitem [ref=e1663] [cursor=pointer]:
+                - link "Page 1 is your current page" [ref=e1664]:
+                  - /url: /games/grand-theft-auto-v
+                  - text: "1"
+              - listitem [ref=e1665] [cursor=pointer]:
+                - link "Page 2" [ref=e1666]:
+                  - /url: /games/grand-theft-auto-v?page=2
+                  - text: "2"
+              - listitem [ref=e1667] [cursor=pointer]:
+                - link "Page 3" [ref=e1668]:
+                  - /url: /games/grand-theft-auto-v?page=3
+                  - text: "3"
+              - listitem [ref=e1669] [cursor=pointer]:
+                - link "Page 4" [ref=e1670]:
+                  - /url: /games/grand-theft-auto-v?page=4
+                  - text: "4"
+              - listitem [ref=e1671] [cursor=pointer]:
+                - button "⋯" [ref=e1672]
+              - listitem [ref=e1673] [cursor=pointer]:
+                - link "Page 10" [ref=e1674]:
+                  - /url: /games/grand-theft-auto-v?page=10
+                  - text: "10"
+              - listitem [ref=e1675] [cursor=pointer]:
+                - link "Page 11" [ref=e1676]:
+                  - /url: /games/grand-theft-auto-v?page=11
+                  - text: "11"
+              - listitem [ref=e1677] [cursor=pointer]:
+                - link "Page 12" [ref=e1678]:
+                  - /url: /games/grand-theft-auto-v?page=12
+                  - text: "12"
+              - listitem [ref=e1679] [cursor=pointer]:
+                - button "Next page" [ref=e1680]: Next
+    - contentinfo [ref=e1681]:
+      - navigation "Footer navigation" [ref=e1682]:
+        - generic [ref=e1683]:
+          - generic [ref=e1684]:
+            - link "HowManyFPS Logo" [ref=e1685] [cursor=pointer]:
+              - /url: /
+              - img [ref=e1686]
+            - paragraph [ref=e1705]: Real FPS data from real gameplay. See what your hardware actually delivers across 100+ games — then fix what's holding you back.
+            - link "Build Your Gaming PC →" [ref=e1706] [cursor=pointer]:
+              - /url: /pc-builder
+          - generic [ref=e1707]:
+            - link "FPS Bench — Boost Your FPS v1.16.10 Application is not running" [ref=e1709] [cursor=pointer]:
+              - /url: /download
+              - img [ref=e1711]
+              - generic [ref=e1723]:
+                - generic [ref=e1724]:
+                  - text: FPS Bench — Boost Your FPS
+                  - generic [ref=e1725]: v1.16.10
+                - generic [ref=e1726]: Application is not running
+            - link "Download FPS Bench" [ref=e1729] [cursor=pointer]:
+              - /url: /download
+              - img [ref=e1730]
+              - text: Download FPS Bench
+        - generic [ref=e1733]:
+          - generic [ref=e1734]:
+            - paragraph [ref=e1735]: Tools
+            - generic [ref=e1736]:
+              - link "FPS Calculator" [ref=e1737] [cursor=pointer]:
+                - /url: /games
+              - link "Bottleneck Calculator" [ref=e1738] [cursor=pointer]:
+                - /url: /bottleneck-calculator
+              - link "PC Builder" [ref=e1739] [cursor=pointer]:
+                - /url: /pc-builder
+              - link "Benchmarks" [ref=e1740] [cursor=pointer]:
+                - /url: /benchmarks
+              - link "Download FPS Bench" [ref=e1741] [cursor=pointer]:
+                - /url: /download
+          - generic [ref=e1742]:
+            - paragraph [ref=e1743]: Gaming Systems
+            - generic [ref=e1744]:
+              - link "Graphics Cards" [ref=e1745] [cursor=pointer]:
+                - /url: /graphics-cards
+              - link "Processors" [ref=e1746] [cursor=pointer]:
+                - /url: /processors
+              - link "Prebuilt Desktops" [ref=e1747] [cursor=pointer]:
+                - /url: /desktops
+              - link "Gaming Laptops" [ref=e1748] [cursor=pointer]:
+                - /url: /laptops
+          - generic [ref=e1749]:
+            - paragraph [ref=e1750]: Components
+            - generic [ref=e1751]:
+              - link "Motherboards" [ref=e1752] [cursor=pointer]:
+                - /url: /motherboards
+              - link "Memory (RAM)" [ref=e1753] [cursor=pointer]:
+                - /url: /rams
+              - link "Storage (SSD)" [ref=e1754] [cursor=pointer]:
+                - /url: /ssds
+              - link "Power Supplies" [ref=e1755] [cursor=pointer]:
+                - /url: /psus
+              - link "CPU Coolers" [ref=e1756] [cursor=pointer]:
+                - /url: /cpu-coolers
+              - link "Cases" [ref=e1757] [cursor=pointer]:
+                - /url: /cases
+          - generic [ref=e1758]:
+            - paragraph [ref=e1759]: Company
+            - generic [ref=e1760]:
+              - link "About" [ref=e1761] [cursor=pointer]:
+                - /url: /about
+              - link "Contact" [ref=e1762] [cursor=pointer]:
+                - /url: /contact
+              - link "Affiliate Disclosure" [ref=e1763] [cursor=pointer]:
+                - /url: /affiliate-disclosure
+              - link "Terms and Conditions" [ref=e1764] [cursor=pointer]:
+                - /url: /terms
+              - link "Privacy Policy" [ref=e1765] [cursor=pointer]:
+                - /url: /privacy-policy
+          - generic [ref=e1766]:
+            - paragraph [ref=e1767]: For Businesses
+            - generic [ref=e1768]:
+              - link "Developer API" [ref=e1769] [cursor=pointer]:
+                - /url: /developer-api
+              - link "Internet Cafes" [ref=e1770] [cursor=pointer]:
+                - /url: /internet-cafes
+              - link "PC Builders" [ref=e1771] [cursor=pointer]:
+                - /url: /pc-builders
+              - link "Tournament Production" [ref=e1772] [cursor=pointer]:
+                - /url: /tournament-production
+              - link "Game QA" [ref=e1773] [cursor=pointer]:
+                - /url: /game-qa
+      - region "Frequently asked questions" [ref=e1774]:
+        - heading "Frequently Asked Questions" [level=2] [ref=e1775]
+        - generic [ref=e1776]:
+          - group [ref=e1777]:
+            - generic "help What is HowManyFPS? expand_more" [ref=e1778] [cursor=pointer]:
+              - generic [ref=e1779]: help
+              - generic [ref=e1780]: What is HowManyFPS?
+              - generic [ref=e1781]: expand_more
+          - group [ref=e1782]:
+            - generic "verified Where does your FPS data come from? expand_more" [ref=e1783] [cursor=pointer]:
+              - generic [ref=e1784]: verified
+              - generic [ref=e1785]: Where does your FPS data come from?
+              - generic [ref=e1786]: expand_more
+          - group [ref=e1787]:
+            - generic "attach_money Is this site free? expand_more" [ref=e1788] [cursor=pointer]:
+              - generic [ref=e1789]: attach_money
+              - generic [ref=e1790]: Is this site free?
+              - generic [ref=e1791]: expand_more
+          - group [ref=e1792]:
+            - generic "group Who is behind this? expand_more" [ref=e1793] [cursor=pointer]:
+              - generic [ref=e1794]: group
+              - generic [ref=e1795]: Who is behind this?
+              - generic [ref=e1796]: expand_more
+      - generic [ref=e1798]:
+        - generic [ref=e1799]:
+          - generic [ref=e1800]:
+            - paragraph [ref=e1801]: © 2026 HowManyFPS. All rights reserved.
+            - paragraph [ref=e1802]:
+              - text: As an Amazon Associate
+              - strong [ref=e1803]: HowManyFPS
+              - text: earns from qualifying purchases.
+          - generic [ref=e1804]:
+            - link "info@howmanyfps.com" [ref=e1805] [cursor=pointer]:
+              - /url: mailto:info@howmanyfps.com
+            - paragraph [ref=e1806]: Feature requests, bugs, or partnerships
+        - button "United States, $" [ref=e1808] [cursor=pointer]:
+          - img [ref=e1809]
+          - generic [ref=e1816]: United States, $
+          - img [ref=e1817]
+  - iframe
+  - region "Notifications Alt+T"

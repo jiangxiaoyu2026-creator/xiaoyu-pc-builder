@@ -1,0 +1,75 @@
+# Fortnite GPU 帧率数据 — HowManyFPS
+## 游戏: Fortnite
+## 采集时间: 2026-04-25
+
+| GPU | 分辨率 | Real-Time Average | 1% Lows |
+|-----|--------|-------------------|--------|
+| GeForce RTX 3050 6 GB | 1920x1080 (1K) | 17 FPS | 13 FPS |
+| GeForce RTX 3050 6 GB | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| GeForce RTX 3060 8 GB | 1920x1080 (1K) | 48 FPS | 33 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 1920x1080 (1K) | 90 FPS | 60 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 2560x1440 (2K) | 69 FPS | 47 FPS |
+| GeForce RTX 3060 Ti GDDR6X | 3840x2160 (4K) | 15 FPS | 11 FPS |
+| GeForce RTX 4070 SUPER | 1920x1080 (1K) | 143 FPS | 87 FPS |
+| GeForce RTX 4070 SUPER | 2560x1440 (2K) | 122 FPS | 74 FPS |
+| GeForce RTX 4070 SUPER | 3840x2160 (4K) | 68 FPS | 42 FPS |
+| GeForce RTX 4070 Ti SUPER | 1920x1080 (1K) | 160 FPS | 92 FPS |
+| GeForce RTX 4070 Ti SUPER | 2560x1440 (2K) | 139 FPS | 79 FPS |
+| GeForce RTX 4070 Ti SUPER | 3840x2160 (4K) | 85 FPS | 47 FPS |
+| GeForce RTX 4080 SUPER | 1920x1080 (1K) | 178 FPS | 95 FPS |
+| GeForce RTX 4080 SUPER | 2560x1440 (2K) | 157 FPS | 82 FPS |
+| GeForce RTX 4080 SUPER | 3840x2160 (4K) | 103 FPS | 49 FPS |
+| RTX 3060 8 GB | 1920x1080 (1K) | 48 FPS | 33 FPS |
+| RTX 3060 8 GB | 2560x1440 (2K) | 27 FPS | 20 FPS |
+| RTX 3060 8 GB | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| RX 6500 XT | 1920x1080 (1K) | 18 FPS | 14 FPS |
+| RX 6500 XT | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| RX 6500 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6400 | 1920x1080 (1K) | 10 FPS | 10 FPS |
+| Radeon RX 6400 | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| Radeon RX 6400 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6500 XT | 1920x1080 (1K) | 18 FPS | 14 FPS |
+| Radeon RX 6500 XT | 2560x1440 (2K) | 10 FPS | 10 FPS |
+| Radeon RX 6500 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6600 | 1920x1080 (1K) | 69 FPS | 47 FPS |
+| Radeon RX 6600 | 2560x1440 (2K) | 48 FPS | 34 FPS |
+| Radeon RX 6600 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6600 XT | 1920x1080 (1K) | 69 FPS | 47 FPS |
+| Radeon RX 6600 XT | 2560x1440 (2K) | 48 FPS | 34 FPS |
+| Radeon RX 6600 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6650 XT | 1920x1080 (1K) | 71 FPS | 48 FPS |
+| Radeon RX 6650 XT | 2560x1440 (2K) | 50 FPS | 35 FPS |
+| Radeon RX 6650 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 6700 | 1920x1080 (1K) | 94 FPS | 62 FPS |
+| Radeon RX 6700 | 2560x1440 (2K) | 73 FPS | 50 FPS |
+| Radeon RX 6700 | 3840x2160 (4K) | 19 FPS | 14 FPS |
+| Radeon RX 6700 XT | 1920x1080 (1K) | 94 FPS | 62 FPS |
+| Radeon RX 6700 XT | 2560x1440 (2K) | 73 FPS | 50 FPS |
+| Radeon RX 6700 XT | 3840x2160 (4K) | 19 FPS | 14 FPS |
+| Radeon RX 6800 | 1920x1080 (1K) | 135 FPS | 84 FPS |
+| Radeon RX 6800 | 2560x1440 (2K) | 114 FPS | 71 FPS |
+| Radeon RX 6800 | 3840x2160 (4K) | 60 FPS | 38 FPS |
+| Radeon RX 6800 XT | 1920x1080 (1K) | 135 FPS | 84 FPS |
+| Radeon RX 6800 XT | 2560x1440 (2K) | 114 FPS | 71 FPS |
+| Radeon RX 6800 XT | 3840x2160 (4K) | 60 FPS | 38 FPS |
+| Radeon RX 6900 XT | 1920x1080 (1K) | 143 FPS | 87 FPS |
+| Radeon RX 6900 XT | 2560x1440 (2K) | 122 FPS | 74 FPS |
+| Radeon RX 6900 XT | 3840x2160 (4K) | 68 FPS | 41 FPS |
+| Radeon RX 7600 | 1920x1080 (1K) | 80 FPS | 54 FPS |
+| Radeon RX 7600 | 2560x1440 (2K) | 59 FPS | 41 FPS |
+| Radeon RX 7600 | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 7600 XT | 1920x1080 (1K) | 81 FPS | 55 FPS |
+| Radeon RX 7600 XT | 2560x1440 (2K) | 61 FPS | 42 FPS |
+| Radeon RX 7600 XT | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 7650 GRE | 1920x1080 (1K) | 79 FPS | 53 FPS |
+| Radeon RX 7650 GRE | 2560x1440 (2K) | 58 FPS | 40 FPS |
+| Radeon RX 7650 GRE | 3840x2160 (4K) | 10 FPS | 10 FPS |
+| Radeon RX 9060 XT | 1920x1080 (1K) | 118 FPS | 76 FPS |
+| Radeon RX 9060 XT | 2560x1440 (2K) | 97 FPS | 63 FPS |
+| Radeon RX 9060 XT | 3840x2160 (4K) | 43 FPS | 30 FPS |
+| Radeon RX 9070 | 1920x1080 (1K) | 185 FPS | 95 FPS |
+| Radeon RX 9070 | 2560x1440 (2K) | 164 FPS | 82 FPS |
+| Radeon RX 9070 | 3840x2160 (4K) | 110 FPS | 50 FPS |
+| Radeon RX 9070 XT | 1920x1080 (1K) | 185 FPS | 95 FPS |
+| Radeon RX 9070 XT | 2560x1440 (2K) | 164 FPS | 82 FPS |
+| Radeon RX 9070 XT | 3840x2160 (4K) | 110 FPS | 50 FPS |

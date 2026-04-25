@@ -1,0 +1,76 @@
+[
+  {
+    "hw": "GeForce RTX 3050 6 GB",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低"
+  },
+  {
+    "hw": "GeForce RTX 3090 Ti",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3090 Ti",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 3090 Ti",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 4070 SUPER",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 4070 SUPER",
+    "res": "2560x1440 (2K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 4070 SUPER",
+    "res": "3840x2160 (4K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "GeForce RTX 4090 D",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RTX 4070 Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RTX 4070 Ti Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RTX 4080 Super",
+    "reason": "not_found"
+  },
+  {
+    "hw": "RX 6500 XT",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低"
+  },
+  {
+    "hw": "RX 970",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Radeon RX 6400",
+    "res": "3840x2160 (4K)",
+    "reason": "FPS过低, 比例异常:1.00"
+  },
+  {
+    "hw": "Radeon RX 6800",
+    "res": "1920x1080 (1K)",
+    "reason": "no_data"
+  },
+  {
+    "hw": "Radeon RX 9060 XT 16GB",
+    "reason": "not_found"
+  }
+]

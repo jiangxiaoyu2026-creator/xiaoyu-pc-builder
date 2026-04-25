@@ -1,0 +1,298 @@
+[
+  {
+    "hw": "Core Ultra 5 225",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core Ultra 5 225F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core Ultra 5 235",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core Ultra 5 245K",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core Ultra 5 245KF",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core Ultra 7 265K",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core Ultra 7 265KF",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core Ultra 9 285K",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i3-12100",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i3-12100F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i3-12300",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i3-13100",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i3-13100F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i3-14100",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-11400F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-11500",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-11600",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-11600K",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-11600KF",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-12400",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-12400F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-12500",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-12600",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-12600KF",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-13400",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-13400F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-13500",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-13600",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-13600KF",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i5-14600",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i7-11700F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i7-11700K",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i7-11700KF",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i7-12700",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i7-12700F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i7-12700K",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i7-12700KF",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i7-13700",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i7-14700",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i9-11900F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i9-11900K",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i9-11900KF",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i9-12900",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i9-12900F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i9-12900KF",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Core i9-13900KF",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 3 5300G",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 5500",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 5600",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 5600G",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 5600GT",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 5600X",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 5600X3D",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 5600XT",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 7500F",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 7600",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 8500G",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 8600G",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 5 9600X",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 5700",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 5700G",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 5700X",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 5700X3D",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 5800",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 5800X",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 5800X3D",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 7700",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 8700G",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 9700X",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 7 9800X3D",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 9 5900",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 9 5900X",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 9 5950X",
+    "reason": "not_found"
+  },
+  {
+    "hw": "Ryzen 9 9850X3D",
+    "reason": "not_found"
+  }
+]
