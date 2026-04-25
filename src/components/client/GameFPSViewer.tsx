@@ -107,6 +107,7 @@ export const GameFPSViewer: React.FC = () => {
     const initialGame = gamesList.length > 0 ? gamesList[0] : '';
     const [selectedGame, setSelectedGame] = useState<string>(initialGame);
     const [selectedRes, setSelectedRes] = useState<Resolution>('1080p');
+    const [isMobileGamesOpen, setIsMobileGamesOpen] = useState(false);
     
     const initialCpus = Object.keys(gamesFpsData[initialGame]?.cpu || {}).sort();
     const initialGpus = Object.keys(gamesFpsData[initialGame]?.gpu || {}).sort();
@@ -245,22 +246,29 @@ export const GameFPSViewer: React.FC = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
                     
                     {/* 左侧：游戏列表选择器 */}
-                    <div className="xl:col-span-3 bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-[24px] p-5 shadow-sm flex flex-col h-[800px] relative z-10 transition-colors duration-300">
-                        <div className="flex items-center gap-3 mb-5 px-1">
+                    <div className={`xl:col-span-3 bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-[24px] p-5 shadow-sm flex flex-col relative z-40 transition-all duration-300 ${isMobileGamesOpen ? 'h-[60vh] xl:h-[800px]' : 'h-auto xl:h-[800px]'}`}>
+                        <div 
+                            className="flex items-center gap-3 xl:mb-5 px-1 cursor-pointer xl:cursor-default"
+                            onClick={() => setIsMobileGamesOpen(!isMobileGamesOpen)}
+                        >
                             <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400">
                                 <Layers size={18} />
                             </div>
                             <h2 className="text-sm font-bold text-slate-900 dark:text-white">测试库</h2>
                             <span className="ml-auto text-xs font-medium text-slate-500 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-full">{gamesList.length} 款</span>
+                            <ChevronDown size={18} className={`xl:hidden text-slate-400 transition-transform ${isMobileGamesOpen ? 'rotate-180' : ''}`} />
                         </div>
                         
-                        <div className="flex flex-col gap-2 overflow-y-auto pr-2 custom-scrollbar flex-1">
+                        <div className={`flex-col gap-2 overflow-y-auto pr-2 custom-scrollbar flex-1 ${isMobileGamesOpen ? 'flex mt-4' : 'hidden xl:flex'}`}>
                             {gamesList.map((game) => {
                                 const isActive = selectedGame === game;
                                 return (
                                     <div
                                         key={game}
-                                        onClick={() => handleSelectGame(game)}
+                                        onClick={() => {
+                                            handleSelectGame(game);
+                                            setIsMobileGamesOpen(false);
+                                        }}
                                         className={`group cursor-pointer rounded-xl px-4 py-4 transition-all flex items-center justify-between relative overflow-hidden ${
                                             isActive 
                                             ? 'bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 shadow-sm dark:shadow-none' 
