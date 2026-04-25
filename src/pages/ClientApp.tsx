@@ -729,15 +729,31 @@ export default function ClientApp() {
                                         iconColor: 'text-slate-900 dark:text-slate-200',
                                         chevronBg: 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-500'
                                     },
-                                    { id: 'square' as const, icon: Share2, label: '配置广场', desc: '热门配置分享' },
-                                    { id: 'used' as const, icon: ShoppingBag, label: '严选二手', desc: '性价比之选' },
+                                    {
+                                        id: 'streamer',
+                                        icon: Zap,
+                                        label: '主播工作台',
+                                        desc: '专业装机推流工具',
+                                        onClick: () => {
+                                            if (!hasStreamerPermission) {
+                                                showToast("🔒 此功能仅限合作主播与管理员使用");
+                                                return;
+                                            }
+                                            setViewMode('streamer');
+                                            setShowMobileMenu(false);
+                                        },
+                                        customBg: 'bg-amber-50 dark:bg-amber-500/10 border-amber-100/50 dark:border-amber-500/20 text-amber-700 dark:text-amber-400',
+                                        iconBg: 'bg-white dark:bg-slate-800',
+                                        iconColor: 'text-amber-500',
+                                        chevronBg: 'bg-amber-100/30 dark:bg-amber-500/20 text-amber-400'
+                                    }
                                 ].map((item) => {
                                     const Icon = item.icon;
                                     const isActive = viewMode === item.id;
-                                    const clickHandler = 'onClick' in item ? item.onClick : () => {
+                                    const clickHandler = item.onClick || (() => {
                                         setViewMode(item.id as any);
                                         setShowMobileMenu(false);
-                                    };
+                                    });
 
                                     return (
                                         <button
@@ -823,7 +839,7 @@ export default function ClientApp() {
                     animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                     exit={{ opacity: 0, y: -15, filter: 'blur(4px)' }}
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex-1 w-full max-w-7xl mx-auto overflow-hidden pb-[70px] md:pb-0"
+                    className="flex-1 w-full max-w-7xl mx-auto overflow-hidden pb-[calc(56px+env(safe-area-inset-bottom)+10px)] md:pb-0"
                 >
                     <div className="h-full overflow-y-auto custom-scrollbar pb-0" id="main-scroll-container">
                     {viewMode === 'streamer' && (
