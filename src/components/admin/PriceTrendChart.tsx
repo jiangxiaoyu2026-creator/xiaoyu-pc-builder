@@ -1709,7 +1709,8 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                                 setCategory(p.category);
                                             }
                                             setSelectedProductId(String(p.id));
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            // 自动滚动到顶部图表位置（兼容内部滚动容器）
+                                            chartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                         }}
                                         className={`group cursor-pointer hover:bg-indigo-50/50 transition-colors ${String(p.id) === selectedProductId ? 'bg-indigo-50 shadow-inner' : ''}`}
                                     >
