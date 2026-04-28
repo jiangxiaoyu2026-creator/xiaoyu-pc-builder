@@ -45,17 +45,26 @@ async def get_market_report_data(
     cutoff_dt = now - timedelta(days=days)
     
     # 将 cutoff 设置为截断至天，即当天的 00:00:00 (如果 daily 的话，即从昨天这个时候算起或者从今天 0点起)
-    # 对于 daily 行情，应该是指今天0点到现在，这里为了更加实用，设为：
+    # 结合运营需求，每天 13:00 前拉取 daily 报告时，自动出昨天的完整报告
+    end_date_str = None
     if period == "daily":
-        cutoff_date_str = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+        if now.hour < 13:
+            target_date = now - timedelta(days=1)
+            cutoff_date_str = target_date.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+            end_date_str = target_date.replace(hour=23, minute=59, second=59, microsecond=999999).isoformat()
+        else:
+            cutoff_date_str = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+            end_date_str = now.replace(hour=23, minute=59, second=59, microsecond=999999).isoformat()
     else:
         cutoff_date_str = cutoff_dt.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
 
     # 获取时间范围内的所有价格变动
+    query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff_date_str)
+    if end_date_str:
+        query = query.where(PriceHistory.changedAt <= end_date_str)
+    
     changes = session.exec(
-        select(PriceHistory)
-        .where(PriceHistory.changedAt >= cutoff_date_str)
-        .order_by(PriceHistory.changeAmount.asc())
+        query.order_by(PriceHistory.changeAmount.asc())
     ).all()
     
     # 按照正宗变动分组
