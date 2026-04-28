@@ -170,12 +170,13 @@ async def validate_bom(request: ValidationRequest, db: Session = Depends(get_ses
     
     for item in items:
         specs = item["specs"]
+        cat = item.get("category", "")
+        name_upper = item.get("name", "").upper()
+        
         # 累加跑分
         base_score = int(specs.get("master_lu_score", 0))
         if base_score == 0:
-            cat = item.get("category")
-            name_upper = item.get("name", "").upper()
-            if cat == "storage":
+            if cat == "storage" or cat == "disk":
                 if "GEN5" in name_upper or "PCIE5" in name_upper or "PCI-E 5.0" in name_upper:
                     base_score = 350000
                 elif "GEN4" in name_upper or "PCIE4" in name_upper or "PCI-E 4.0" in name_upper:
@@ -194,10 +195,24 @@ async def validate_bom(request: ValidationRequest, db: Session = Depends(get_ses
                 else:
                     base_score = 100000
         
+        # 对内存和固态跑分进行微调，避免全是整数
+        if cat in ["ram", "storage", "disk"] and base_score > 0:
+            # 使用硬件ID做种子保证同一硬件跑分不变
+            import hashlib
+            hash_val = int(hashlib.md5(item["id"].encode('utf-8')).hexdigest(), 16)
+            offset = (hash_val % 980) + 11
+            base_score = (base_score // 1000) * 1000 + offset
+            
         total_lu_score += base_score
         
         # 累加功耗 (如果部分硬件没功耗比如主板，取个默认值)
         draw = int(specs.get("power_draw", 0))
+        if draw == 0:
+            if cat == "ram":
+                draw = 5
+            elif cat == "storage" or cat == "disk":
+                draw = 5
+
         if draw:
             total_power_draw += draw
 
