@@ -172,7 +172,11 @@ async def get_price_trends(
 
     # Today's summary
     # Use CST to match stored timestamps
-    today = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d")
+    now_cst = datetime.utcnow() + timedelta(hours=8)
+    if now_cst.hour < 13:
+        today = (now_cst - timedelta(days=1)).strftime("%Y-%m-%d")
+    else:
+        today = now_cst.strftime("%Y-%m-%d")
     today_changes = [c for c in changes if c.changedAt.startswith(today)]
     today_up = [c for c in today_changes if c.changeAmount > 0]
     today_down = [c for c in today_changes if c.changeAmount < 0]
@@ -378,7 +382,11 @@ async def get_public_price_trends(
     changes = session.exec(query.limit(200)).all() # 限制给前台的数据量
     
     # Today's summary
-    today = (datetime.utcnow() + timedelta(hours=8)).strftime("%Y-%m-%d")
+    now_cst = datetime.utcnow() + timedelta(hours=8)
+    if now_cst.hour < 13:
+        today = (now_cst - timedelta(days=1)).strftime("%Y-%m-%d")
+    else:
+        today = now_cst.strftime("%Y-%m-%d")
     today_changes = [c for c in changes if c.changedAt.startswith(today)]
     today_up = [c for c in today_changes if c.changeAmount > 0]
     today_down = [c for c in today_changes if c.changeAmount < 0]
@@ -695,7 +703,10 @@ async def get_market_overview(
     days = min(days, 90)
     now_cst = datetime.utcnow() + timedelta(hours=8)
     cutoff = (now_cst - timedelta(days=days)).isoformat()
-    today = now_cst.strftime("%Y-%m-%d")
+    if now_cst.hour < 13:
+        today = (now_cst - timedelta(days=1)).strftime("%Y-%m-%d")
+    else:
+        today = now_cst.strftime("%Y-%m-%d")
     yesterday = (now_cst - timedelta(days=1)).strftime("%Y-%m-%d")
 
     # 1. Get ALL price changes in the window
