@@ -306,7 +306,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
 
     return (
-        <div className={`grid grid-cols-[75px_1fr_45px_50px_20px] gap-2 px-4 py-1 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
+        <div className={`grid grid-cols-[75px_1fr_45px_50px_20px] gap-2 px-4 py-2.5 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
 
             <div className={`flex items-center gap-3 font-bold text-sm transition-all ${theme.primary}`}>
                 <div
@@ -1243,7 +1243,7 @@ function StreamerWorkbench({
                     </div>
 
                     {/* === Right: Performance Sidebar === */}
-                    <div className="hidden xl:flex flex-col gap-4 w-[280px] shrink-0 border-l border-slate-200 dark:border-slate-700/80 p-4 bg-slate-50/50 dark:bg-slate-800/20">
+                    <div className="hidden xl:flex flex-col gap-4 w-[280px] shrink-0 border-l border-slate-200 dark:border-slate-700/80 p-4 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar">
 
                         {/* Module 1: 鲁大师跑分 */}
                         <div className={`bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-4 relative overflow-hidden group hover:border-slate-300 dark:hover:border-slate-600 transition-colors flex justify-between items-center`}>
@@ -1317,14 +1317,14 @@ function StreamerWorkbench({
                                                     <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                                     {item.name}
                                                 </span>
-                                                <div className="flex items-baseline gap-1.5">
-                                                    {item.lowFps && (
-                                                        <span className="flex items-baseline gap-0.5 text-slate-400">
-                                                            <span className="text-[10px] uppercase font-bold tracking-wider">Low</span>
+                                                <div className="flex items-baseline gap-2 justify-end min-w-[90px]">
+                                                    {item.lowFps ? (
+                                                        <span className="flex items-baseline gap-0.5 text-slate-400 w-10 justify-end">
+                                                            <span className="text-[9px] uppercase font-bold tracking-wider opacity-80">Low</span>
                                                             <span className="font-mono text-xs font-bold">{item.lowFps}</span>
                                                         </span>
-                                                    )}
-                                                    <div className="flex items-baseline gap-0.5 ml-1">
+                                                    ) : <span className="w-10"></span>}
+                                                    <div className="flex items-baseline gap-0.5 ml-1 w-14 justify-end">
                                                         <span className={`font-display font-black text-sm ${
                                                             item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
                                                             item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
