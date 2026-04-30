@@ -42,3 +42,22 @@ server_py/venv/
 # Python Cache
 __pycache__/
 *.pyc
+
+# AI & Agent Temporary Files
+.agent/
+.agents/
+.gemini/
+.claude/
+CLAUDE.md
+.cursorrules
+
+# Playwright & Testing
+.playwright/
+.playwright-cli/
+
+# Temporary Scripts & Backups
+scratch*.py
+temp_skill/
+*.bak
+Gaming FPS_1/
+

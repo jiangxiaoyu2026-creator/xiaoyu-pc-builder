@@ -529,7 +529,7 @@ function VisualBuilder({
                         <div className="flex flex-col gap-1 text-white/50 text-[10px] uppercase font-bold tracking-widest">
                             <p>Powered by</p>
                             <p className="text-white/80">小鱼装机平台智能引擎</p>
-                            <p className="text-white/40 text-[9px] mt-0.5 whitespace-nowrap tracking-wider">含 6% 装机售后服务费</p>
+                            <p className="text-white/40 text-[9px] mt-0.5 whitespace-nowrap tracking-wider">含 {((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}% 装机售后服务费</p>
                             <p className="mt-2 font-mono">{new Date().toLocaleDateString('zh-CN')} 生成</p>
                         </div>
                         <div className="text-right">
@@ -839,31 +839,7 @@ function VisualBuilder({
                         </div>
                     </div>
                 )}
-                {/* Mobile Action Bar (Fixed at bottom, above the global nav) */}
-                <div className="fixed bottom-[calc(56px+env(safe-area-inset-bottom))] left-0 right-0 z-[40] bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl border-t border-slate-200 dark:border-[#1E293B] p-3 px-4 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] dark:shadow-none flex items-center justify-between pointer-events-auto">
-                    <div className="flex flex-col">
-                        <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-slate-500 font-bold">预估总价</span>
-                            {(pricing.savedAmount || 0) > 0 && (
-                                <span className="bg-emerald-100 text-emerald-700 text-[8px] px-1 py-0.5 rounded-[4px] font-bold">省 ¥{pricing.savedAmount}</span>
-                            )}
-                        </div>
-                        <span className="text-xl font-black text-indigo-600 dark:text-indigo-400 font-display tracking-tight leading-none mt-0.5">
-                            ¥<BouncyNumber value={pricing.finalPrice || 0} />
-                        </span>
-                    </div>
-                    <div className="flex gap-2 h-10">
-                        <button onClick={onReset} className="w-10 h-full flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl active:scale-95 transition-all">
-                            <Trash2 size={16} />
-                        </button>
-                        <button onClick={onSave} className="px-4 h-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-sm transition-all active:scale-95">
-                            保存
-                        </button>
-                        <button onClick={handleShareClick} className="px-4 h-full flex items-center justify-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl text-sm shadow-lg shadow-slate-900/20 dark:shadow-none active:scale-95 gap-1.5">
-                            <Share2 size={14} /> 分享
-                        </button>
-                    </div>
-                </div>
+
             </div>
             {/* Merged Sidebar */}
             <div className="w-full lg:w-[320px] xl:w-[340px] shrink-0 flex flex-col gap-4 mt-2 lg:mt-0 mb-28 lg:mb-0 relative z-10">

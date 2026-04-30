@@ -1,0 +1,74 @@
+Extracting old prices...
+Extracting new prices...
+
+--- Price Comparison (4.7 vs 4.21) ---
+
+[处理器]:
+  Total compared: 274
+  Increased: 130 items (Avg increase: +45.82元)
+  Decreased: 44 items (Avg decrease: -50.34元)
+  Unchanged: 100 items
+  => Overall Trend: INCREASE (涨价为主)
+
+[主板]:
+  Total compared: 1611
+  Increased: 17 items (Avg increase: +68.00元)
+  Decreased: 32 items (Avg decrease: -99.84元)
+  Unchanged: 1562 items
+  => Overall Trend: DECREASE (降价为主)
+
+[内存]:
+  Total compared: 1146
+  Increased: 219 items (Avg increase: +189.73元)
+  Decreased: 92 items (Avg decrease: -127.83元)
+  Unchanged: 835 items
+  => Overall Trend: INCREASE (涨价为主)
+
+[硬盘]:
+  Total compared: 824
+  Increased: 346 items (Avg increase: +87.28元)
+  Decreased: 144 items (Avg decrease: -80.28元)
+  Unchanged: 334 items
+  => Overall Trend: INCREASE (涨价为主)
+
+[显卡]:
+  Total compared: 2405
+  Increased: 254 items (Avg increase: +103.01元)
+  Decreased: 500 items (Avg decrease: -112.82元)
+  Unchanged: 1651 items
+  => Overall Trend: DECREASE (降价为主)
+
+[电源]:
+  Total compared: 1009
+  Increased: 5 items (Avg increase: +15.00元)
+  Decreased: 16 items (Avg decrease: -17.19元)
+  Unchanged: 988 items
+  => Overall Trend: DECREASE (降价为主)
+
+[机箱]:
+  Total compared: 995
+  Increased: 15 items (Avg increase: +21.67元)
+  Decreased: 13 items (Avg decrease: -60.46元)
+  Unchanged: 967 items
+  => Overall Trend: INCREASE (涨价为主)
+
+[显示器]:
+  Total compared: 1575
+  Increased: 25 items (Avg increase: +47.60元)
+  Decreased: 75 items (Avg decrease: -124.00元)
+  Unchanged: 1475 items
+  => Overall Trend: DECREASE (降价为主)
+
+[散热]:
+  Total compared: 680
+  Increased: 8 items (Avg increase: +29.12元)
+  Decreased: 22 items (Avg decrease: -31.36元)
+  Unchanged: 650 items
+  => Overall Trend: DECREASE (降价为主)
+
+[外设]:
+  Total compared: 511
+  Increased: 4 items (Avg increase: +18.25元)
+  Decreased: 2 items (Avg decrease: -35.00元)
+  Unchanged: 505 items
+  => Overall Trend: INCREASE (涨价为主)

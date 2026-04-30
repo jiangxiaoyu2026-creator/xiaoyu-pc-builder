@@ -269,6 +269,70 @@ async def register_email(data: dict, session: Session = Depends(get_session)):
     session.commit()
     return {"message": "用户注册成功", "userId": new_user.id}
 
+import httpx
+
+@router.post("/wechat-login")
+async def wechat_login(data: dict, session: Session = Depends(get_session)):
+    code = data.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="缺少微信登录code")
+        
+    import os
+    app_id = os.getenv("WECHAT_APP_ID", "")
+    app_secret = os.getenv("WECHAT_APP_SECRET", "")
+    
+    if not app_id or not app_secret:
+        # Mock for development if not configured
+        openid = f"mock_openid_{code}"
+    else:
+        url = f"https://api.weixin.qq.com/sns/jscode2session?appid={app_id}&secret={app_secret}&js_code={code}&grant_type=authorization_code"
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url)
+            result = resp.json()
+            if "openid" not in result:
+                raise HTTPException(status_code=400, detail=f"微信登录失败: {result.get('errmsg', '未知错误')}")
+            openid = result["openid"]
+
+    user = session.exec(select(User).where(User.wechatOpenId == openid)).first()
+    if not user:
+        # Auto-register
+        import random, string
+        username = f"wx_{''.join(random.choices(string.ascii_lowercase + string.digits, k=8))}"
+        new_user = User(
+            id=str(uuid.uuid4()),
+            username=username,
+            wechatOpenId=openid,
+            password=get_password_hash(str(uuid.uuid4())), # random password
+            role="user",
+            status="active"
+        )
+        session.add(new_user)
+        session.commit()
+        session.refresh(new_user)
+        user = new_user
+
+    # Update last login
+    user.lastLogin = datetime.utcnow().isoformat()
+    session.add(user)
+    session.commit()
+    
+    access_token = create_access_token(data={"sub": user.username})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "role": user.role,
+            "wechatOpenId": user.wechatOpenId,
+            "inviteCode": user.inviteCode,
+            "vipExpireAt": user.vipExpireAt,
+            "streamerExpireAt": user.streamerExpireAt,
+            "inviteCount": user.inviteCount,
+            "inviteVipDays": user.inviteVipDays
+        }
+    }
+
 @router.post("/login")
 async def login(
     login_data: LoginRequest,

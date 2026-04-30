@@ -14,7 +14,7 @@ with open(local_zip, "rb") as f:
     file_bytes = f.read()
 
 total_length = len(file_bytes)
-CHUNK_SIZE = 15000  # 15KB per chunk - within ECS command limits
+CHUNK_SIZE = 5000  # 5KB per chunk - within ECS command limits
 total_chunks = (total_length + CHUNK_SIZE - 1) // CHUNK_SIZE
 
 print(f"File size: {total_length} bytes. Total chunks: {total_chunks}")

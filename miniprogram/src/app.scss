@@ -1,155 +1,123 @@
 /* ============================================
    小鱼装机小程序 — 全局样式
-   极简·高质感·微发光科技风 (极简亮色为主，配合科技蓝)
+   Apple Pro Dark Mode (专业级暗黑风)
    ============================================ */
 
 page {
-  --color-bg-primary: #f4f7f9;
-  --color-bg-secondary: #ffffff;
-  --color-bg-card: #ffffff;
+  /* Apple Dark Mode 背景体系 */
+  --color-bg-primary: #000000; /* OLED 纯黑底色 */
+  --color-bg-secondary: #1C1C1E; /* 一级卡片 (标准暗灰) */
+  --color-bg-tertiary: #2C2C2E; /* 二级浮层 / 按钮 */
   
-  /* 品牌色 */
-  --color-primary: #2563EB;
-  --color-primary-light: #eff6ff;
-  --color-accent: #06b6d4;
-  --color-accent-gradient: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+  /* 品牌点缀色 */
+  --color-primary: #0A84FF; /* Apple Blue */
+  --color-primary-light: rgba(10, 132, 255, 0.15);
+  --color-accent: #5E5CE6; /* Indigo */
   
-  /* 文本颜色 */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-muted: #94a3b8;
+  /* Apple 标准文本色 (带透明度) */
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: rgba(235, 235, 245, 0.6);
+  --color-text-muted: rgba(235, 235, 245, 0.3);
   
-  /* 辅助状态色 */
-  --color-border: #e2e8f0;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-price: #ef4444; /* 价格通常用醒目的红色或品牌蓝 */
+  /* 数据辅助色 */
+  --color-border: rgba(84, 84, 88, 0.65); /* 标准分隔线 */
+  --color-success: #32D74B; /* Apple Green */
+  --color-warning: #FF9F0A; /* Apple Orange */
+  --color-danger: #FF453A; /* Apple Red */
+  --color-price: #FFFFFF;
 
-  --radius-sm: 12px;
-  --radius-md: 20px;
-  --radius-lg: 32px;
-  --radius-full: 999px;
+  /* Apple 标准圆角 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 
-  --shadow-card: 0 8px 30px rgba(15, 23, 42, 0.04);
-  --shadow-glow: 0 10px 40px rgba(37, 99, 235, 0.15);
+  /* 阴影与微光效 (Apple 极简风格尽量少用发光，多用弥散阴影) */
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.5);
 
-  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Helvetica Neue", Helvetica, sans-serif;
   font-size: 28px;
   color: var(--color-text-primary);
-  background-color: var(--color-bg-primary);
+  background: var(--color-bg-primary) !important;
+  background-color: var(--color-bg-primary) !important;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Base Classes */
-view, text, image {
+view, text, image, scroll-view {
   box-sizing: border-box;
 }
 
-/* Flex */
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.flex-row { flex-direction: row; }
-.items-center { align-items: center; }
-.justify-center { justify-content: center; }
-.justify-between { justify-content: space-between; }
-.flex-1 { flex: 1; }
+/* 金融/数据等宽字体 */
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
 
-/* Buttons */
-.btn-primary {
+/* 苹果级极简玻璃层 (导航/底栏使用) */
+.glass-panel {
+  background: rgba(28, 28, 30, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.15);
+}
+
+/* 去除所有滚动条 */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  color: transparent;
+  display: none;
+}
+
+/* ================= 通用 SVG 图标 ================= */
+.icon-svg {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+/* ⭐ 星星 (精选配置) */
+.icon-star {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD60A'%3E%3Cpath d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/%3E%3C/svg%3E");
+}
+
+/* 🌐 地球 (网友分享) */
+.icon-globe {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230A84FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3Cpath d='M2 12h20'/%3E%3C/svg%3E");
+}
+
+/* 🚀 火箭 (载入配置) */
+.icon-rocket {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2l.5-.5a2.5 2.5 0 0 0 0-3.53l-3.53-3.53a2.5 2.5 0 0 0-3.53 0l-.5.5z'/%3E%3Cpath d='m12 15 3.53 3.53a2.46 2.46 0 0 0 3.47 0l1.5-1.5c1-1 1-3.5 1-3.5s-2.5 0-3.5 1l-1.5 1.5a2.46 2.46 0 0 0 0 3.47z'/%3E%3Cpath d='m15.5 15.5-2.5-2.5'/%3E%3Cpath d='m9 10 2.5 2.5'/%3E%3Cpath d='M17 12V6a2 2 0 0 0-2-2H9'/%3E%3C/svg%3E");
+  width: 44px;
+  height: 44px;
+  margin-right: 8px;
+}
+
+/* 🔌 闪电/功耗 */
+.icon-power {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2332D74B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 2L3 14h9l-1 8 10-12h-9l1-8z'/%3E%3C/svg%3E");
+}
+
+/* ✅ 勾号/盾牌/兼容性 */
+.icon-check {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230A84FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3Cpath d='M9 12l2 2 4-4'/%3E%3C/svg%3E");
+}
+
+/* 🎮 手柄/游戏 */
+.icon-game {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23BF5AF2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='6' width='20' height='12' rx='4'/%3E%3Cpath d='M6 12h4'/%3E%3Cpath d='M8 10v4'/%3E%3Cpath d='M15 11h.01'/%3E%3Cpath d='M18 13h.01'/%3E%3C/svg%3E");
+}
+
+.tab-icon-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-accent-gradient);
-  color: #ffffff;
-  border-radius: var(--radius-full);
-  padding: 24px 48px;
-  font-size: 32px;
-  font-weight: 600;
-  border: none;
-  line-height: 1;
-  box-shadow: var(--shadow-glow);
-  transition: opacity 0.2s;
-}
-
-.btn-primary:active {
-  opacity: 0.8;
-}
-
-.btn-secondary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  border-radius: var(--radius-full);
-  padding: 24px 48px;
-  font-size: 32px;
-  font-weight: 600;
-  line-height: 1;
-}
-
-/* Typography */
-.text-bold { font-weight: 700; }
-.text-price { color: var(--color-price); font-weight: 800; font-family: DIN, sans-serif; }
-.text-primary { color: var(--color-text-primary); }
-.text-secondary { color: var(--color-text-secondary); }
-
-/* Badges */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 16px;
-  border-radius: 8px;
-  font-size: 20px;
-  font-weight: 600;
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-}
-
-.badge-success { background: #d1fae5; color: #047857; }
-.badge-warning { background: #fef3c7; color: #b45309; }
-
-/* Section & Layout */
-.section {
-  padding: 32px 24px;
-}
-
-.section-title {
-  font-size: 36px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  margin-bottom: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  letter-spacing: 0.5px;
-}
-
-.section-more {
-  font-size: 26px;
-  color: var(--color-text-muted);
-  font-weight: 500;
-}
-
-.page-container {
-  min-height: 100vh;
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* Empty State */
-.loading-container, .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 0;
-}
-.loading-text, .empty-text {
-  color: var(--color-text-muted);
-  font-size: 26px;
-  margin-top: 24px;
-}
-.empty-icon {
-  font-size: 80px;
-  opacity: 0.8;
+  gap: 8px;
 }

@@ -1,0 +1,117 @@
+.page-container {
+  min-height: 100vh;
+  background: var(--color-bg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.header-glass {
+  padding: 40px 32px 24px;
+  background: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand-title {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.brand-slogan {
+  font-size: 24px;
+  color: var(--color-text-secondary);
+  margin-top: 8px;
+}
+
+.list-scroll {
+  flex: 1;
+  padding: 24px 32px;
+}
+
+.config-card {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 0.5px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.config-card:active {
+  transform: scale(0.98);
+  background: var(--color-bg-tertiary);
+}
+
+.card-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: block;
+  margin-bottom: 12px;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tag {
+  font-size: 20px;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.05);
+  padding-top: 16px;
+}
+
+.card-price {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-price);
+  font-family: ui-monospace, monospace;
+}
+
+.price-symbol {
+  font-size: 24px;
+  margin-right: 4px;
+}
+
+.apply-btn {
+  font-size: 24px;
+  color: #fff;
+  background: var(--color-primary);
+  padding: 10px 24px;
+  border-radius: 100px;
+  font-weight: 600;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 0;
+}
+
+.empty-text {
+  font-size: 28px;
+  color: var(--color-text-muted);
+}

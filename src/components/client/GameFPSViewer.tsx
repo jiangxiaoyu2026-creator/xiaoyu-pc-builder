@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Gamepad2, Cpu, MonitorPlay, TrendingUp, GaugeCircle, Activity, ChevronDown, Search, Layers } from 'lucide-react';
+import { Gamepad2, Cpu, MonitorPlay, TrendingUp, GaugeCircle, Activity, ChevronDown, Search, Layers, Zap } from 'lucide-react';
 import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { gamesFpsData, gamesList, cpuList, gpuList, Resolution } from '../../data/gameFpsData';
 
@@ -108,11 +108,14 @@ export const GameFPSViewer: React.FC = () => {
     const [selectedGame, setSelectedGame] = useState<string>(initialGame);
     const [selectedRes, setSelectedRes] = useState<Resolution>('1080p');
     const [isMobileGamesOpen, setIsMobileGamesOpen] = useState(false);
+    const [activeMode, setActiveMode] = useState<'config' | 'cpu' | 'gpu'>('config');
     
     const initialCpus = Object.keys(gamesFpsData[initialGame]?.cpu || {}).sort();
     const initialGpus = Object.keys(gamesFpsData[initialGame]?.gpu || {}).sort();
     const [selectedCpu, setSelectedCpu] = useState<string>(initialCpus.length > 0 ? initialCpus[0] : cpuList[0]);
     const [selectedGpu, setSelectedGpu] = useState<string>(initialGpus.length > 0 ? initialGpus[0] : gpuList[0]);
+    const [selectedCpu2, setSelectedCpu2] = useState<string>(initialCpus.length > 1 ? initialCpus[1] : (initialCpus.length > 0 ? initialCpus[0] : cpuList[0]));
+    const [selectedGpu2, setSelectedGpu2] = useState<string>(initialGpus.length > 1 ? initialGpus[1] : (initialGpus.length > 0 ? initialGpus[0] : gpuList[0]));
 
     const availableCpus = useMemo(() => {
         if (!selectedGame) return [];
@@ -153,6 +156,12 @@ export const GameFPSViewer: React.FC = () => {
         
         if (cpus.length > 0) setSelectedCpu(cpus[0]);
         if (gpus.length > 0) setSelectedGpu(gpus[0]);
+        
+        if (cpus.length > 1) setSelectedCpu2(cpus[1]);
+        else if (cpus.length > 0) setSelectedCpu2(cpus[0]);
+        
+        if (gpus.length > 1) setSelectedGpu2(gpus[1]);
+        else if (gpus.length > 0) setSelectedGpu2(gpus[0]);
     };
 
     const stats = useMemo(() => {
@@ -215,6 +224,91 @@ export const GameFPSViewer: React.FC = () => {
 
     const scoreStyle = getPremiumScoreStyles(result.avg);
     const rating = getRating(result.avg);
+
+    const renderComparisonCard = (item1Name: string, item1Data: any, item2Name: string, item2Data: any, Icon: any) => {
+        const item1Avg = item1Data?.avg || 0;
+        const item2Avg = item2Data?.avg || 0;
+        const item1Low = item1Data?.low || 0;
+        const item2Low = item2Data?.low || 0;
+        
+        const diff = item1Avg - item2Avg;
+        const diffPercent = item2Avg > 0 ? Math.abs((diff / item2Avg) * 100).toFixed(1) : 0;
+        
+        const winner = diff > 0 ? 1 : diff < 0 ? 2 : 0;
+        
+        return (
+            <div className="flex flex-col gap-6 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <motion.div initial={{opacity:0, scale:0.97}} animate={{opacity:1, scale:1}} transition={{delay: 0.1, type: 'spring'}} className={`rounded-2xl bg-white dark:bg-[#121218] border ${winner === 1 ? 'border-indigo-400 dark:border-indigo-500 ring-1 ring-indigo-400/20 shadow-md shadow-indigo-500/10' : 'border-slate-200 dark:border-[#1E293B] shadow-sm'} relative flex flex-col p-5 sm:p-6 overflow-hidden group min-h-[180px] transition-all duration-300`}>
+                        {winner === 1 && <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">胜出</div>}
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className={`p-2.5 rounded-[12px] border ${winner === 1 ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-[#2D3748] text-slate-500 dark:text-slate-400'}`}>
+                                <Icon size={22} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="text-[13px] text-slate-500 mb-0.5">测试对象 A</div>
+                                <div className="text-[16px] font-bold text-slate-900 dark:text-white truncate" title={item1Name}>{item1Name}</div>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-auto">
+                            <div>
+                                <div className="text-[12px] text-slate-500 font-medium mb-1">平均帧数</div>
+                                <div className={`text-3xl font-display font-bold ${winner === 1 ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                    <BouncyNumber value={item1Avg} /> <span className="text-sm font-sans opacity-50">FPS</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-[12px] text-slate-500 font-medium mb-1">1% Low</div>
+                                <div className={`text-2xl font-display font-bold ${winner === 1 ? 'text-indigo-500/80 dark:text-indigo-400/80' : 'text-slate-600 dark:text-slate-400'}`}>
+                                    <BouncyNumber value={item1Low} /> <span className="text-sm font-sans opacity-50">FPS</span>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    <motion.div initial={{opacity:0, scale:0.97}} animate={{opacity:1, scale:1}} transition={{delay: 0.2, type: 'spring'}} className={`rounded-2xl bg-white dark:bg-[#121218] border ${winner === 2 ? 'border-emerald-400 dark:border-emerald-500 ring-1 ring-emerald-400/20 shadow-md shadow-emerald-500/10' : 'border-slate-200 dark:border-[#1E293B] shadow-sm'} relative flex flex-col p-5 sm:p-6 overflow-hidden group min-h-[180px] transition-all duration-300`}>
+                        {winner === 2 && <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">胜出</div>}
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className={`p-2.5 rounded-[12px] border ${winner === 2 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-[#2D3748] text-slate-500 dark:text-slate-400'}`}>
+                                <Icon size={22} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="text-[13px] text-slate-500 mb-0.5">测试对象 B</div>
+                                <div className="text-[16px] font-bold text-slate-900 dark:text-white truncate" title={item2Name}>{item2Name}</div>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-auto">
+                            <div>
+                                <div className="text-[12px] text-slate-500 font-medium mb-1">平均帧数</div>
+                                <div className={`text-3xl font-display font-bold ${winner === 2 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                    <BouncyNumber value={item2Avg} /> <span className="text-sm font-sans opacity-50">FPS</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-[12px] text-slate-500 font-medium mb-1">1% Low</div>
+                                <div className={`text-2xl font-display font-bold ${winner === 2 ? 'text-emerald-500/80 dark:text-emerald-400/80' : 'text-slate-600 dark:text-slate-400'}`}>
+                                    <BouncyNumber value={item2Low} /> <span className="text-sm font-sans opacity-50">FPS</span>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+
+                <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.3}} className="bg-slate-50 dark:bg-[#1A1A24] border border-slate-200 dark:border-[#1E293B] rounded-2xl p-5 flex items-center justify-center gap-3">
+                    <Zap size={20} className={winner === 1 ? 'text-indigo-500' : winner === 2 ? 'text-emerald-500' : 'text-slate-400'} />
+                    <span className="text-[14px] font-medium text-slate-700 dark:text-slate-300">
+                        {winner === 1 ? (
+                            <><strong className="text-indigo-600 dark:text-indigo-400">{item1Name}</strong> 在该画质下的平均帧数领先约 <strong className="text-indigo-600 dark:text-indigo-400">{diffPercent}%</strong> ({diff} FPS)。</>
+                        ) : winner === 2 ? (
+                            <><strong className="text-emerald-600 dark:text-emerald-400">{item2Name}</strong> 在该画质下的平均帧数领先约 <strong className="text-emerald-600 dark:text-emerald-400">{diffPercent}%</strong> ({Math.abs(diff)} FPS)。</>
+                        ) : (
+                            <>两者的平均帧数表现完全一致，属于同等性能水平。</>
+                        )}
+                    </span>
+                </motion.div>
+            </div>
+        );
+    };
 
     if (!gamesFpsData[selectedGame] && selectedGame !== '') {
         return (
@@ -320,26 +414,81 @@ export const GameFPSViewer: React.FC = () => {
                             </div>
                         </motion.div>
 
+                        {/* 导航切换区 */}
+                        <div className="flex p-1.5 bg-white dark:bg-[#121218] rounded-[20px] w-full sm:w-fit border border-slate-200 dark:border-[#1E293B] shadow-sm relative z-30 mb-2 overflow-x-auto custom-scrollbar">
+                            <button onClick={() => setActiveMode('config')} className={`flex-shrink-0 px-6 py-3 rounded-2xl font-bold text-[14px] transition-all flex items-center gap-2 ${activeMode === 'config' ? 'bg-slate-100 dark:bg-[#2D3748] text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'}`}>
+                                <Activity size={18} /> 整机瓶颈测算
+                            </button>
+                            <button onClick={() => setActiveMode('cpu')} className={`flex-shrink-0 px-6 py-3 rounded-2xl font-bold text-[14px] transition-all flex items-center gap-2 ${activeMode === 'cpu' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-500/30' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'}`}>
+                                <Cpu size={18} /> 处理器 (CPU) 对比
+                            </button>
+                            <button onClick={() => setActiveMode('gpu')} className={`flex-shrink-0 px-6 py-3 rounded-2xl font-bold text-[14px] transition-all flex items-center gap-2 ${activeMode === 'gpu' ? 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-100 dark:border-emerald-500/30' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'}`}>
+                                <MonitorPlay size={18} /> 独立显卡 (GPU) 对比
+                            </button>
+                        </div>
+
                         {/* 配置调节区 */}
                         <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.1}} className="relative z-30 bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-[24px] p-6 sm:p-8 shadow-sm transition-colors duration-300">
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6">
-                                <SearchableSelect 
-                                    options={availableCpus}
-                                    value={selectedCpu}
-                                    onChange={setSelectedCpu}
-                                    placeholder="输入或选择 CPU..."
-                                    icon={Cpu}
-                                    label="处理器 (CPU)"
-                                />
+                                {activeMode === 'config' ? (
+                                    <>
+                                        <SearchableSelect 
+                                            options={availableCpus}
+                                            value={selectedCpu}
+                                            onChange={setSelectedCpu}
+                                            placeholder="输入或选择 CPU..."
+                                            icon={Cpu}
+                                            label="处理器 (CPU)"
+                                        />
 
-                                <SearchableSelect 
-                                    options={availableGpus}
-                                    value={selectedGpu}
-                                    onChange={setSelectedGpu}
-                                    placeholder="输入或选择 显卡..."
-                                    icon={MonitorPlay}
-                                    label="独立显卡 (GPU)"
-                                />
+                                        <SearchableSelect 
+                                            options={availableGpus}
+                                            value={selectedGpu}
+                                            onChange={setSelectedGpu}
+                                            placeholder="输入或选择 显卡..."
+                                            icon={MonitorPlay}
+                                            label="独立显卡 (GPU)"
+                                        />
+                                    </>
+                                ) : activeMode === 'cpu' ? (
+                                    <>
+                                        <SearchableSelect 
+                                            options={availableCpus}
+                                            value={selectedCpu}
+                                            onChange={setSelectedCpu}
+                                            placeholder="选择处理器 A..."
+                                            icon={Cpu}
+                                            label="处理器 (CPU) A"
+                                        />
+                                        <SearchableSelect 
+                                            options={availableCpus}
+                                            value={selectedCpu2}
+                                            onChange={setSelectedCpu2}
+                                            placeholder="选择处理器 B..."
+                                            icon={Cpu}
+                                            label="处理器 (CPU) B"
+                                        />
+                                    </>
+                                ) : (
+                                    <>
+                                        <SearchableSelect 
+                                            options={availableGpus}
+                                            value={selectedGpu}
+                                            onChange={setSelectedGpu}
+                                            placeholder="选择显卡 A..."
+                                            icon={MonitorPlay}
+                                            label="独立显卡 (GPU) A"
+                                        />
+                                        <SearchableSelect 
+                                            options={availableGpus}
+                                            value={selectedGpu2}
+                                            onChange={setSelectedGpu2}
+                                            placeholder="选择显卡 B..."
+                                            icon={MonitorPlay}
+                                            label="独立显卡 (GPU) B"
+                                        />
+                                    </>
+                                )}
 
                                 <div className="relative z-0">
                                     <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-2 ml-1 uppercase tracking-widest">画面分辨率</div>
@@ -370,8 +519,10 @@ export const GameFPSViewer: React.FC = () => {
                             </div>
                         </motion.div>
 
-                        {/* 数据输出展板 */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {activeMode === 'config' ? (
+                            <>
+                                {/* 数据输出展板 */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             
                             {/* 核心指标：平均帧率 */}
                             <motion.div initial={{opacity:0, scale:0.97}} animate={{opacity:1, scale:1}} transition={{delay: 0.2, type: 'spring'}} className="rounded-2xl bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] relative flex flex-col p-5 sm:p-6 shadow-sm overflow-hidden group min-h-[160px] transition-colors duration-300">
@@ -491,6 +642,12 @@ export const GameFPSViewer: React.FC = () => {
                                 </p>
                             </div>
                         </motion.div>
+                            </>
+                        ) : activeMode === 'cpu' ? (
+                            renderComparisonCard(selectedCpu, gamesFpsData[selectedGame]?.cpu[selectedCpu]?.[selectedRes], selectedCpu2, gamesFpsData[selectedGame]?.cpu[selectedCpu2]?.[selectedRes], Cpu)
+                        ) : (
+                            renderComparisonCard(selectedGpu, gamesFpsData[selectedGame]?.gpu[selectedGpu]?.[selectedRes], selectedGpu2, gamesFpsData[selectedGame]?.gpu[selectedGpu2]?.[selectedRes], MonitorPlay)
+                        )}
                     </div>
                 </div>
             </div>
