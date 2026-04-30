@@ -319,7 +319,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-semibold text-[14px] tracking-wide placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-semibold text-base tracking-wide placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
                 {entry.item && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
                         {entry.item.isRecommended && <span className="bg-orange-50 dark:bg-orange-500/20 text-orange-500 dark:text-orange-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 dark:border-orange-500/30 flex items-center gap-0.5 whitespace-nowrap"><Sparkles size={10} /> 推荐</span>}
@@ -1086,7 +1086,7 @@ function StreamerWorkbench({
                     <div className="flex-1 min-w-0 max-w-[1550px]">
                         <div className="overflow-x-auto">
                             <div className="min-w-[600px]">
-                                <div className={`grid grid-cols-[75px_1fr_45px_50px_20px] gap-2 px-4 py-1 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-[10px] font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
+                                <div className={`grid grid-cols-[75px_1fr_45px_50px_20px] gap-2 px-4 py-1 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
@@ -1313,11 +1313,11 @@ function StreamerWorkbench({
                                     fpsData.map((item, idx) => (
                                         <div key={idx} className="group/item">
                                             <div className="flex justify-between items-end text-[11px] mb-1.5">
-                                                <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5">
-                                                    <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                                    {item.name}
+                                                <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
+                                                    <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                                    <span className="truncate">{item.name}</span>
                                                 </span>
-                                                <div className="flex items-baseline gap-2 justify-end min-w-[90px]">
+                                                <div className="flex items-baseline gap-2 justify-end shrink-0">
                                                     {item.lowFps ? (
                                                         <span className="flex items-baseline gap-0.5 text-slate-400 w-10 justify-end">
                                                             <span className="text-[9px] uppercase font-bold tracking-wider opacity-80">Low</span>
