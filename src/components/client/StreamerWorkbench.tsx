@@ -614,7 +614,7 @@ function StreamerWorkbench({
         }
 
         setTimeout(() => {
-            setFpsData(results);
+            setFpsData(results.slice(0, 8));
             setLoadingFps(false);
         }, 300);
     }, [buildList, sidebarResolution]);
