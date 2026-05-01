@@ -1,0 +1,497 @@
+{
+  "cpu": {
+    "changedItemCount": 207,
+    "items": [
+      {
+        "name": "AMD 9800X3D盒",
+        "oldPrice": 3030.0,
+        "newPrice": 2900.0,
+        "changeAmount": -130.0,
+        "changePercent": -4.29,
+        "time": "2026-04-11T09:26:20.713449"
+      },
+      {
+        "name": "AMD 9950X3D盒",
+        "oldPrice": 4480.0,
+        "newPrice": 4360.0,
+        "changeAmount": -120.0,
+        "changePercent": -2.68,
+        "time": "2026-04-27T16:22:29.738634"
+      },
+      {
+        "name": "AMD 9950X3D散",
+        "oldPrice": 4180.0,
+        "newPrice": 4080.0,
+        "changeAmount": -100.0,
+        "changePercent": -2.39,
+        "time": "2026-04-27T16:22:22.014255"
+      },
+      {
+        "name": "AMD R7-9700X盒",
+        "oldPrice": 1650.0,
+        "newPrice": 1560.0,
+        "changeAmount": -90.0,
+        "changePercent": -5.45,
+        "time": "2026-04-27T16:23:55.991770"
+      },
+      {
+        "name": "AMD R9-9950X盒",
+        "oldPrice": 3350.0,
+        "newPrice": 3280.0,
+        "changeAmount": -70.0,
+        "changePercent": -2.09,
+        "time": "2026-04-27T16:22:42.715390"
+      },
+      {
+        "name": "intel Ultra 5 245KF",
+        "oldPrice": 1190.0,
+        "newPrice": 1130.0,
+        "changeAmount": -60.0,
+        "changePercent": -5.04,
+        "time": "2026-04-14T13:51:44.899232"
+      },
+      {
+        "name": "intel Ultra 7 265KF盒",
+        "oldPrice": 1640.0,
+        "newPrice": 1580.0,
+        "changeAmount": -60.0,
+        "changePercent": -3.66,
+        "time": "2026-04-21T14:12:50.449580"
+      },
+      {
+        "name": "AMD 9850X3D盒",
+        "oldPrice": 3340.0,
+        "newPrice": 3280.0,
+        "changeAmount": -60.0,
+        "changePercent": -1.8,
+        "time": "2026-04-27T16:23:19.718715"
+      },
+      {
+        "name": "intel Ultra 9 285K 盒",
+        "oldPrice": 4450.0,
+        "newPrice": 4400.0,
+        "changeAmount": -50.0,
+        "changePercent": -1.12,
+        "time": "2026-04-14T13:51:38.545114"
+      },
+      {
+        "name": "intel i9-14900KF散片",
+        "oldPrice": 2850.0,
+        "newPrice": 2800.0,
+        "changeAmount": -50.0,
+        "changePercent": -1.75,
+        "time": "2026-04-24T14:01:32.290367"
+      },
+      {
+        "name": "AMD R7-9700X散",
+        "oldPrice": 1500.0,
+        "newPrice": 1460.0,
+        "changeAmount": -40.0,
+        "changePercent": -2.67,
+        "time": "2026-04-16T14:09:18.758392"
+      },
+      {
+        "name": "AMD R5-9600X盒包",
+        "oldPrice": 1170.0,
+        "newPrice": 1130.0,
+        "changeAmount": -40.0,
+        "changePercent": -3.42,
+        "time": "2026-04-16T14:09:50.781781"
+      },
+      {
+        "name": "intel 270K PLUS",
+        "oldPrice": 2190.0,
+        "newPrice": 2150.0,
+        "changeAmount": -40.0,
+        "changePercent": -1.83,
+        "time": "2026-04-20T14:03:28.800010"
+      },
+      {
+        "name": "AMD 9800X3D散片",
+        "oldPrice": 2720.0,
+        "newPrice": 2680.0,
+        "changeAmount": -40.0,
+        "changePercent": -1.47,
+        "time": "2026-04-21T14:13:49.187451"
+      },
+      {
+        "name": "AMD 9850X3D散片",
+        "oldPrice": 3120.0,
+        "newPrice": 3080.0,
+        "changeAmount": -40.0,
+        "changePercent": -1.28,
+        "time": "2026-04-25T15:02:48.300759"
+      },
+      {
+        "name": "AMD 9800X3D盒",
+        "oldPrice": 2900.0,
+        "newPrice": 2860.0,
+        "changeAmount": -40.0,
+        "changePercent": -1.38,
+        "time": "2026-04-27T16:23:44.474542"
+      },
+      {
+        "name": "intel i7-13700F散片",
+        "oldPrice": 1860.0,
+        "newPrice": 1820.0,
+        "changeAmount": -40.0,
+        "changePercent": -2.15,
+        "time": "2026-04-29T14:15:32.342050"
+      },
+      {
+        "name": "intel 250K PLUS",
+        "oldPrice": 1530.0,
+        "newPrice": 1500.0,
+        "changeAmount": -30.0,
+        "changePercent": -1.96,
+        "time": "2026-04-14T13:51:55.769536"
+      },
+      {
+        "name": "intel 270K PLUS",
+        "oldPrice": 2220.0,
+        "newPrice": 2190.0,
+        "changeAmount": -30.0,
+        "changePercent": -1.35,
+        "time": "2026-04-14T13:52:13.405782"
+      },
+      {
+        "name": "intel i7-13700F散片",
+        "oldPrice": 1890.0,
+        "newPrice": 1860.0,
+        "changeAmount": -30.0,
+        "changePercent": -1.59,
+        "time": "2026-04-15T14:15:13.536787"
+      }
+    ]
+  },
+  "gpu": {
+    "changedItemCount": 307,
+    "items": [
+      {
+        "name": "华硕 ROG RTX5090D O24G GAMING夜神",
+        "oldPrice": 27500.0,
+        "newPrice": 23700.0,
+        "changeAmount": -3800.0,
+        "changePercent": -13.82,
+        "time": "2026-04-20T13:55:20.228037"
+      },
+      {
+        "name": "技嘉 RTX5090 GAMING OC24G魔鹰",
+        "oldPrice": 18600.0,
+        "newPrice": 17100.0,
+        "changeAmount": -1500.0,
+        "changePercent": -8.06,
+        "time": "2026-04-11T14:58:31.109588"
+      },
+      {
+        "name": "技嘉 RTX5090 AORUS 24G超级雕白",
+        "oldPrice": 20600.0,
+        "newPrice": 19600.0,
+        "changeAmount": -1000.0,
+        "changePercent": -4.85,
+        "time": "2026-04-11T14:58:41.416387"
+      },
+      {
+        "name": "技嘉 RTX5090 AORUS 24G超级雕",
+        "oldPrice": 20100.0,
+        "newPrice": 19200.0,
+        "changeAmount": -900.0,
+        "changePercent": -4.48,
+        "time": "2026-04-11T14:58:38.096029"
+      },
+      {
+        "name": "技嘉 RTX5080 AORUS 16G超级雕",
+        "oldPrice": 11400.0,
+        "newPrice": 10600.0,
+        "changeAmount": -800.0,
+        "changePercent": -7.02,
+        "time": "2026-04-11T14:58:12.097056"
+      },
+      {
+        "name": "技嘉 RTX5080 AORUS 16G超级雕白",
+        "oldPrice": 11600.0,
+        "newPrice": 10800.0,
+        "changeAmount": -800.0,
+        "changePercent": -6.9,
+        "time": "2026-04-11T14:58:22.123702"
+      },
+      {
+        "name": "技嘉 RTX5070TI AORUS 16G超级雕",
+        "oldPrice": 8850.0,
+        "newPrice": 8150.0,
+        "changeAmount": -700.0,
+        "changePercent": -7.91,
+        "time": "2026-04-11T14:57:22.151429"
+      },
+      {
+        "name": "技嘉 RTX5080 GAMING OC16G魔鹰",
+        "oldPrice": 10050.0,
+        "newPrice": 9500.0,
+        "changeAmount": -550.0,
+        "changePercent": -5.47,
+        "time": "2026-04-11T14:57:55.998592"
+      },
+      {
+        "name": "技嘉 RTX5070TI EAGLE OC16G猎鹰",
+        "oldPrice": 7350.0,
+        "newPrice": 6950.0,
+        "changeAmount": -400.0,
+        "changePercent": -5.44,
+        "time": "2026-04-11T14:56:56.265060"
+      },
+      {
+        "name": "技嘉 RTX5070TI EAGLE ICE16G冰猎鹰",
+        "oldPrice": 7450.0,
+        "newPrice": 7050.0,
+        "changeAmount": -400.0,
+        "changePercent": -5.37,
+        "time": "2026-04-11T14:57:03.185431"
+      },
+      {
+        "name": "技嘉 RTX5080I WF3 OC16G风魔",
+        "oldPrice": 9350.0,
+        "newPrice": 8950.0,
+        "changeAmount": -400.0,
+        "changePercent": -4.28,
+        "time": "2026-04-11T14:57:37.206601"
+      },
+      {
+        "name": "技嘉 RTX5080 AERO OC16G雪鹰",
+        "oldPrice": 9550.0,
+        "newPrice": 9150.0,
+        "changeAmount": -400.0,
+        "changePercent": -4.19,
+        "time": "2026-04-11T14:58:05.406406"
+      },
+      {
+        "name": "技嘉 RTX5060TIEAGLE ICE16G冰猎鹰",
+        "oldPrice": 4150.0,
+        "newPrice": 3800.0,
+        "changeAmount": -350.0,
+        "changePercent": -8.43,
+        "time": "2026-04-11T14:54:54.919410"
+      },
+      {
+        "name": "技嘉 RTX5060TI EAGLEMAX OC16G猎鹰MAX",
+        "oldPrice": 4200.0,
+        "newPrice": 3900.0,
+        "changeAmount": -300.0,
+        "changePercent": -7.14,
+        "time": "2026-04-11T14:54:59.744595"
+      },
+      {
+        "name": "技嘉 RTX5070 GAMING OC12G魔鹰",
+        "oldPrice": 5350.0,
+        "newPrice": 5050.0,
+        "changeAmount": -300.0,
+        "changePercent": -5.61,
+        "time": "2026-04-11T14:56:17.318520"
+      },
+      {
+        "name": "技嘉 RTX5070 AERO OC12G雪鹰",
+        "oldPrice": 5450.0,
+        "newPrice": 5150.0,
+        "changeAmount": -300.0,
+        "changePercent": -5.5,
+        "time": "2026-04-11T14:56:23.557472"
+      },
+      {
+        "name": "技嘉 RTX5070 AORUS 12G超级雕",
+        "oldPrice": 5950.0,
+        "newPrice": 5650.0,
+        "changeAmount": -300.0,
+        "changePercent": -5.04,
+        "time": "2026-04-11T14:56:39.864439"
+      },
+      {
+        "name": "技嘉 RTX5060TI WF2MAX OC16G风魔MAX",
+        "oldPrice": 4050.0,
+        "newPrice": 3800.0,
+        "changeAmount": -250.0,
+        "changePercent": -6.17,
+        "time": "2026-04-11T14:54:40.420496"
+      },
+      {
+        "name": "技嘉 RTX5070 EAGLE ICE12G冰猎鹰",
+        "oldPrice": 5250.0,
+        "newPrice": 5000.0,
+        "changeAmount": -250.0,
+        "changePercent": -4.76,
+        "time": "2026-04-11T14:56:11.558061"
+      },
+      {
+        "name": "华硕 TUF RTX5060 O8G GAMING",
+        "oldPrice": 2980.0,
+        "newPrice": 2750.0,
+        "changeAmount": -230.0,
+        "changePercent": -7.72,
+        "time": "2026-04-07T11:41:03.756417"
+      }
+    ]
+  },
+  "ram": {
+    "changedItemCount": 469,
+    "items": [
+      {
+        "name": "金百达 黑爵16G3200",
+        "oldPrice": 5650.0,
+        "newPrice": 555.0,
+        "changeAmount": -5095.0,
+        "changePercent": -90.18,
+        "time": "2026-04-27T15:25:14.106118"
+      },
+      {
+        "name": "芝奇 皇家戟6000 64G(32G*2套条) C26",
+        "oldPrice": 8000.0,
+        "newPrice": 6600.0,
+        "changeAmount": -1400.0,
+        "changePercent": -17.5,
+        "time": "2026-04-24T14:03:35.035301"
+      },
+      {
+        "name": "芝奇 皇家戟6400 96G(48G*2套条) ",
+        "oldPrice": 8800.0,
+        "newPrice": 8000.0,
+        "changeAmount": -800.0,
+        "changePercent": -9.09,
+        "time": "2026-04-17T14:31:48.797952"
+      },
+      {
+        "name": "芝奇 幻锋戟7200 32G(16G*2套条)黑/银",
+        "oldPrice": 3700.0,
+        "newPrice": 2950.0,
+        "changeAmount": -750.0,
+        "changePercent": -20.27,
+        "time": "2026-04-24T14:03:00.433712"
+      },
+      {
+        "name": "芝奇 幻锋戟6800 32G(16G*2套条)黑/银",
+        "oldPrice": 3600.0,
+        "newPrice": 2900.0,
+        "changeAmount": -700.0,
+        "changePercent": -19.44,
+        "time": "2026-04-24T14:02:32.443770"
+      },
+      {
+        "name": "芝奇 皇家戟6000 64G(32G*2套条) C36",
+        "oldPrice": 8600.0,
+        "newPrice": 8000.0,
+        "changeAmount": -600.0,
+        "changePercent": -6.98,
+        "time": "2026-04-17T14:31:19.815059"
+      },
+      {
+        "name": "阿斯加特 女武神二代6000 48G(24*2) C28 RGB灯条 黑/白",
+        "oldPrice": 3680.0,
+        "newPrice": 3100.0,
+        "changeAmount": -580.0,
+        "changePercent": -15.76,
+        "time": "2026-04-15T14:48:32.232739"
+      },
+      {
+        "name": "芝奇 幻锋戟6800 64G(32G*2套条)黑/银",
+        "oldPrice": 7300.0,
+        "newPrice": 6800.0,
+        "changeAmount": -500.0,
+        "changePercent": -6.85,
+        "time": "2026-04-17T14:30:37.087665"
+      },
+      {
+        "name": "阿斯加特 女武神二代6000 32G(16*2) C28 RGB灯条 黑/白",
+        "oldPrice": 3690.0,
+        "newPrice": 3220.0,
+        "changeAmount": -470.0,
+        "changePercent": -12.74,
+        "time": "2026-04-02T15:59:22.284123"
+      },
+      {
+        "name": "芝奇 皇家戟6000 32G(16G*2套条) C26 EXPO版",
+        "oldPrice": 4450.0,
+        "newPrice": 4000.0,
+        "changeAmount": -450.0,
+        "changePercent": -10.11,
+        "time": "2026-04-17T14:30:56.550070"
+      },
+      {
+        "name": "芝奇 皇家戟6000 32G(16G*2套条) C28 EXPO版",
+        "oldPrice": 4050.0,
+        "newPrice": 3600.0,
+        "changeAmount": -450.0,
+        "changePercent": -11.11,
+        "time": "2026-04-17T14:31:01.798384"
+      },
+      {
+        "name": "芝奇 皇家戟6400 32G(16G*2套条) C30 EXPO版",
+        "oldPrice": 3850.0,
+        "newPrice": 3400.0,
+        "changeAmount": -450.0,
+        "changePercent": -11.69,
+        "time": "2026-04-17T14:31:09.932288"
+      },
+      {
+        "name": "芝奇 皇家戟6400 32G(16G*2套条) XPM",
+        "oldPrice": 3650.0,
+        "newPrice": 3200.0,
+        "changeAmount": -450.0,
+        "changePercent": -12.33,
+        "time": "2026-04-17T14:31:38.719765"
+      },
+      {
+        "name": "芝奇 皇家戟6800 32G(16G*2套条)",
+        "oldPrice": 3950.0,
+        "newPrice": 3500.0,
+        "changeAmount": -450.0,
+        "changePercent": -11.39,
+        "time": "2026-04-17T14:31:44.569877"
+      },
+      {
+        "name": "金士顿 超级野兽6000 64G(32G*2)EXPO",
+        "oldPrice": 5650.0,
+        "newPrice": 5200.0,
+        "changeAmount": -450.0,
+        "changePercent": -7.96,
+        "time": "2026-04-17T14:32:43.450774"
+      },
+      {
+        "name": "芝奇 幻锋戟6400 32G(16G*2套条)黑/银",
+        "oldPrice": 3300.0,
+        "newPrice": 2850.0,
+        "changeAmount": -450.0,
+        "changePercent": -13.64,
+        "time": "2026-04-24T14:02:25.595108"
+      },
+      {
+        "name": "金百达 银爵64G（32G*2）3200/C16",
+        "oldPrice": 3000.0,
+        "newPrice": 2600.0,
+        "changeAmount": -400.0,
+        "changePercent": -13.33,
+        "time": "2026-04-29T14:56:45.961898"
+      },
+      {
+        "name": "佰维 DW100 6000 C26 16*2灯条",
+        "oldPrice": 3220.0,
+        "newPrice": 2850.0,
+        "changeAmount": -370.0,
+        "changePercent": -11.49,
+        "time": "2026-04-07T15:18:56.285895"
+      },
+      {
+        "name": "金士顿 超级野兽6000 32G(16G*2) C36",
+        "oldPrice": 2850.0,
+        "newPrice": 2550.0,
+        "changeAmount": -300.0,
+        "changePercent": -10.53,
+        "time": "2026-03-31T14:28:05.814317"
+      },
+      {
+        "name": "阿斯加特 女武神二代6800 48G(24*2) C34 RGB灯条 黑/白",
+        "oldPrice": 3900.0,
+        "newPrice": 3600.0,
+        "changeAmount": -300.0,
+        "changePercent": -7.69,
+        "time": "2026-04-02T16:02:08.641065"
+      }
+    ]
+  }
+}

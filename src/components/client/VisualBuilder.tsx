@@ -258,7 +258,7 @@ function VisualBuilder({
         }
 
         setTimeout(() => {
-            setFpsData(results);
+            setFpsData(results.slice(0, 8));
             setLoadingFps(false);
         }, 300);
     }, [buildList, resolution]);
@@ -1001,7 +1001,7 @@ function VisualBuilder({
                                 <div className="text-xs font-black tracking-widest uppercase opacity-80">测算帧率数据中...</div>
                             </div>
                         ) : fpsData.length > 0 ? (
-                            fpsData.map((item, idx) => (
+                            fpsData.slice(0, 8).map((item, idx) => (
                                     <div key={idx} className="group/item">
                                         <div className="flex justify-between items-end text-[11px] mb-2">
                                             <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5">

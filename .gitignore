@@ -61,3 +61,7 @@ temp_skill/
 *.bak
 Gaming FPS_1/
 
+server_py/venv/
+server_py_clean.zip
+*.csv
+order-*-keys.txt
