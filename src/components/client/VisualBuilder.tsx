@@ -1004,9 +1004,9 @@ function VisualBuilder({
                             fpsData.slice(0, 8).map((item, idx) => (
                                     <div key={idx} className="group/item">
                                         <div className="flex justify-between items-end text-[11px] mb-2">
-                                            <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5">
-                                                <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                                {item.name}
+                                            <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
+                                                <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                                <span className="truncate">{item.name}</span>
                                             </span>
                                             <div className="flex items-baseline gap-1.5">
                                                 {item.lowFps && (
