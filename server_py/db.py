@@ -55,6 +55,8 @@ def _migrate_extra_columns():
             cursor.execute("ALTER TABLE users ADD COLUMN mobile TEXT")
         if 'email' not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN email TEXT")
+        if 'wechatOpenId' not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN wechatOpenId TEXT UNIQUE")
         if 'streamerExpireAt' not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN streamerExpireAt INTEGER")
             

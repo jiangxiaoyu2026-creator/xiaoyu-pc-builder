@@ -26,7 +26,7 @@ export const BASE_BG = {
     cardBg: 'bg-white dark:bg-slate-900',
     headerBg: 'bg-slate-50/50 dark:bg-slate-900/50',
     tableHeaderBg: 'bg-slate-50 dark:bg-slate-800',
-    divider: 'divide-slate-100 dark:divide-slate-800',
+    divider: 'divide-slate-200 dark:divide-slate-700',
     footerBg: 'bg-white/90 dark:bg-slate-900/90',
     borderColor: 'border-slate-200/60 dark:border-slate-800/60',
     textTitle: 'text-slate-800 dark:text-white',

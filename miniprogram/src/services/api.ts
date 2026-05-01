@@ -58,6 +58,37 @@ export function getConfigDetail(id: string) {
   return api.get(`/configs/${id}`)
 }
 
+/** 创建/保存配置单 */
+export function createConfig(data: {
+  title: string
+  items: Record<string, string>
+  totalPrice?: number
+  tags?: string[]
+  description?: string
+}) {
+  return api.post('/configs', data)
+}
+
+/** 更新配置单 */
+export function updateConfig(id: string, data: any) {
+  return api.put(`/configs/${id}`, data)
+}
+
+/** 切换点赞 */
+export function toggleConfigLike(id: string) {
+  return api.post(`/configs/${id}/like`)
+}
+
+/** 获取评论列表 */
+export function getConfigComments(id: string) {
+  return api.get(`/configs/${id}/comments`)
+}
+
+/** 提交评论 */
+export function addConfigComment(id: string, content: string) {
+  return api.post(`/configs/${id}/comments`, { content })
+}
+
 /* ============================================
    回收报价 相关
    ============================================ */
@@ -73,6 +104,16 @@ export function getRecyclingEstimate(params: {
   category?: string
 }) {
   return api.get('/recycling-prices/estimate', params)
+}
+
+/** 获取二手现货商城列表 */
+export function getUsedItems(params?: {
+  status?: string
+  page?: number
+  page_size?: number
+  search?: string
+}) {
+  return api.get('/used', params)
 }
 
 /* ============================================
@@ -113,7 +154,7 @@ export function wxLogin(data: {
   code: string
   userInfo?: any
 }) {
-  return api.post('/auth/wx-login', data)
+  return api.post('/auth/wechat-login', data)
 }
 
 /** 获取当前用户信息 */
@@ -131,4 +172,13 @@ export function getMarketStats(params?: {
   days?: number
 }) {
   return api.get('/stats/market-overview', params)
+}
+
+/* ============================================
+   全局配置 相关
+   ============================================ */
+
+/** 获取全局配置 (包括定价策略) */
+export function getSettings() {
+  return api.get('/settings')
 }

@@ -345,3 +345,92 @@ async def audit_showcase(
     session.refresh(config)
     return _parse_config(config, admin, session)
 
+from ..models import Comment, ConfigLike
+
+@router.get("/{config_id}/comments", response_model=List[dict])
+async def get_comments(
+    config_id: str,
+    session: Session = Depends(get_session)
+):
+    """获取配置的评论列表"""
+    comments = session.exec(
+        select(Comment).where(Comment.configId == config_id).order_by(Comment.createdAt.desc())
+    ).all()
+    return [c.model_dump() for c in comments]
+
+@router.post("/{config_id}/comments", response_model=dict)
+async def add_comment(
+    config_id: str,
+    data: dict,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user) # Require login
+):
+    """添加评论 (需要登录)"""
+    config = session.get(Config, config_id)
+    if not config:
+        raise HTTPException(status_code=404, detail="配置未找到")
+        
+    content = data.get("content", "").strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="评论内容不能为空")
+
+    new_comment = Comment(
+        id=str(uuid.uuid4()),
+        configId=config_id,
+        userId=user.id,
+        userName=user.username,
+        content=content
+    )
+    
+    session.add(new_comment)
+    session.commit()
+    session.refresh(new_comment)
+    return new_comment.model_dump()
+
+@router.post("/{config_id}/like", response_model=dict)
+async def toggle_like(
+    config_id: str,
+    session: Session = Depends(get_session),
+    user: Optional[User] = Depends(get_current_user_optional) # Optional login
+):
+    """切换点赞 (兼容游客与登录用户)"""
+    config = session.get(Config, config_id)
+    if not config:
+        raise HTTPException(status_code=404, detail="配置未找到")
+
+    liked = False
+    
+    if user:
+        # Check if already liked by this user
+        existing_like = session.exec(
+            select(ConfigLike).where(ConfigLike.configId == config_id, ConfigLike.userId == user.id)
+        ).first()
+        
+        if existing_like:
+            # Unlike
+            session.delete(existing_like)
+            config.likes = max(0, config.likes - 1)
+            liked = False
+        else:
+            # Like
+            new_like = ConfigLike(configId=config_id, userId=user.id)
+            session.add(new_like)
+            config.likes += 1
+            liked = True
+    else:
+        # Guest logic: We just increment like.
+        # Frontend handles the toggle locally, but backend will just blindly increment for guests 
+        # (or you could implement a more complex guest like-tracking, but for now we just +1)
+        config.likes += 1
+        liked = True
+        
+    session.add(config)
+    session.commit()
+    
+    return {
+        "success": True,
+        "likes": config.likes,
+        "liked": liked
+    }
+
+

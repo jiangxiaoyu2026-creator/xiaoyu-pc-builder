@@ -42,3 +42,42 @@ server_py/venv/
 # Python Cache
 __pycache__/
 *.pyc
+
+# AI & Agent Temporary Files
+.agent/
+.agents/
+.gemini/
+.claude/
+CLAUDE.md
+.cursorrules
+
+# Playwright & Testing
+.playwright/
+.playwright-cli/
+
+# Temporary Scripts & Backups
+scratch*.py
+temp_skill/
+*.bak
+Gaming FPS_1/
+
+server_py/venv/
+server_py_clean.zip
+*.csv
+order-*-keys.txt
+
+# Temporary test/deploy scripts (auto-generated)
+test_*.py
+check_*.py
+get_deploy_output.py
+upload_via_aliyun.py
+deploy_dist_lite.py
+deploy_file_chunked.py
+deploy_frontend_clever_lite.py
+
+# Binary split files & zip artifacts
+dist_part_*
+dist.zip
+dist_lite.zip
+server.zip
+*.xlsm

@@ -1,214 +1,141 @@
 import { useState, useEffect } from 'react'
-import { View, Text, Input, ScrollView, Image } from '@tarojs/components'
+import { View, Text, ScrollView, Button, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { getRecyclingEstimate, getRecyclingCategories } from '../../services/api'
+import { PixelIcons } from '../../utils/pixelIcons'
 import './index.scss'
 
-export default function RecyclePage() {
-  const [categories, setCategories] = useState<Record<string, string>>({})
-  const [activeCategory, setActiveCategory] = useState<string>('gpu')
-  
-  const [keyword, setKeyword] = useState('')
-  const [results, setResults] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
+// 现货商品类型定义
+interface SecondHandProduct {
+  id: string
+  name: string
+  desc: string
+  price: number
+  originalPrice?: number
+  condition: string
+  status: 'available' | 'sold'
+  soldAt?: string // ISO 标准时间戳，例如 "2026-04-20T10:00:00Z"
+}
 
-  // 每个品类的智能默认搜词
-  const defaultSearches: Record<string, string> = {
-    gpu: '4060',
-    cpu: 'i5',
-    ram: '16G',
-    disk: '1T',
-    motherboard: 'B760',
-    cooler: '360',
-    case: '海景房',
-    psu: '650W',
-    monitor: '2K',
-  }
+// 模拟你的现货数据库
+import { getUsedItems } from '../../services/api'
+
+export default function RecyclePage() {
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadCategories()
+    fetchRealInventory()
   }, [])
 
-  useEffect(() => {
-    const defaultKeyword = defaultSearches[activeCategory] || ''
-    setKeyword(defaultKeyword)
-    if (defaultKeyword) {
-      handleSearch(defaultKeyword)
-    } else {
-      setResults([])
-    }
-  }, [activeCategory])
-
-  const loadCategories = async () => {
-    try {
-      const res = await getRecyclingCategories()
-      if (res && typeof res === 'object') {
-        const sortedCategories = {
-          gpu: res.gpu || '显卡',
-          cpu: res.cpu || 'CPU',
-          ram: res.ram || '内存',
-          disk: res.disk || '硬盘',
-          motherboard: res.motherboard || '主板',
-          ...res
-        }
-        setCategories(sortedCategories)
-        const keys = Object.keys(sortedCategories)
-        if (keys.length > 0 && !sortedCategories[activeCategory]) {
-          setActiveCategory(keys[0])
-        }
-      }
-    } catch (e) {
-      console.error('Failed to load categories', e)
-    }
-  }
-
-  const handleSearch = async (forceKeyword?: string) => {
-    const searchKw = forceKeyword !== undefined ? forceKeyword : keyword
-    if (!searchKw.trim()) {
-      setResults([])
-      return
-    }
-
+  const fetchRealInventory = async () => {
     setLoading(true)
     try {
-      const res = await getRecyclingEstimate({ keyword: searchKw, category: activeCategory })
-      setResults(res || [])
-    } catch (error) {
-      console.error('搜索估价失败', error)
-      Taro.showToast({ title: '没有找到相关数据', icon: 'none' })
-      setResults([])
+      // 传递 status='all' 拿到所有审核通过和已售的现货
+      const res = await getUsedItems({ status: 'all', page: 1, page_size: 100 })
+      const rawItems = res?.items || []
+
+      const now = new Date().getTime()
+      const tenDaysInMs = 10 * 24 * 60 * 60 * 1000
+
+      // 1. 过滤：如果是已售出，且 soldAt 超过 10 天，则剔除
+      const filtered = rawItems.filter((item: any) => {
+        if (item.status === 'sold' && item.soldAt) {
+          // soldAt 可能是毫秒时间戳也可能是秒时间戳。
+          // 若 soldAt 比较小（< 100亿），说明是秒，需要乘1000。
+          const ts = typeof item.soldAt === 'string' ? Date.parse(item.soldAt) : item.soldAt
+          const finalTs = ts < 10000000000 ? ts * 1000 : ts
+          if (now - finalTs > tenDaysInMs) {
+            return false
+          }
+        }
+        // 如果是待审核 pending 或其他状态，则不显示（仅显示 published 和 sold）
+        if (item.status !== 'published' && item.status !== 'sold') {
+           return false
+        }
+        return true
+      })
+
+      // 2. 排序：在售(published) 排在前面，已售(sold) 排在后面
+      const sorted = filtered.sort((a: any, b: any) => {
+        if (a.status === 'published' && b.status === 'sold') return -1
+        if (a.status === 'sold' && b.status === 'published') return 1
+        return 0
+      })
+
+      setProducts(sorted)
+    } catch (e) {
+      console.error('获取二手现货失败', e)
     } finally {
       setLoading(false)
     }
   }
 
-  const contactRecycle = () => {
-    Taro.makePhoneCall({
-      phoneNumber: '15165066053',
-      fail: () => Taro.showToast({ title: '已取消', icon: 'none' })
-    })
-  }
-
-  // 计算差价空间
-  const renderPriceDifference = (recycle: number, resale: number) => {
-    if (!recycle || !resale || resale <= recycle) return null
-    return (
-      <View className='price-detail-item'>
-        <Text className='price-detail-label'>差价空间</Text>
-        <Text className='price-detail-value profit'>+¥{resale - recycle}</Text>
-      </View>
-    )
+  const handleContact = (product: SecondHandProduct) => {
+    if (product.status === 'sold') {
+      return Taro.showToast({ title: '该商品已经被抢走了~', icon: 'none' })
+    }
+    // 正常应该打开客服对话并带上商品信息，目前用默认 openType='contact' 按钮触发
   }
 
   return (
     <View className='page-container'>
-      <View className='bg-blobs'>
-        <View className='blob blob-1'></View>
-        <View className='blob blob-2'></View>
+      
+      {/* 顶部 Hero 区域 */}
+      <View className='hero-section'>
+        <Text className='hero-title'>严选二手现货</Text>
+        <Text className='hero-subtitle'>每一件都经过极限烤机测试，所见即所得。</Text>
       </View>
 
-      <View className='content-wrapper'>
-        {/* 顶部悬浮搜索栏 */}
-        <View className='search-bar'>
-          <View className='search-input-wrap'>
-            <Text className='search-icon'>🔎</Text>
-            <Input
-              className='search-input'
-              placeholder='输入型号，如: 4060, i5, 16G...'
-              value={keyword}
-              onInput={(e) => setKeyword(e.detail.value)}
-              onConfirm={() => handleSearch()}
-            />
-            {keyword && (
-              <Text 
-                className='search-clear' 
-                onClick={() => { setKeyword(''); setResults([]) }}
-              >
-                ✕
-              </Text>
-            )}
-          </View>
-        </View>
-
-        {/* 动态分类 Filter */}
-        <ScrollView scrollX className='category-scroll' showScrollbar={false}>
-          <View className='category-list'>
-            {Object.entries(categories).map(([key, name]) => (
-              <View
-                key={key}
-                className={`category-chip ${activeCategory === key ? 'active' : ''}`}
-                onClick={() => setActiveCategory(key)}
-              >
-                <Text className='category-label'>{name}</Text>
+      {/* 现货商品列表 */}
+      <ScrollView scrollY className='inventory-list'>
+        {products.length > 0 ? (
+          products.map(item => (
+            <View 
+              key={item.id} 
+              className={`product-card ${item.status}`}
+            >
+              <View className='card-header'>
+                <Text className='product-name'>{item.brand || ''} {item.model || ''}</Text>
+                <Text className='condition-badge'>{item.condition}</Text>
               </View>
-            ))}
-          </View>
-        </ScrollView>
-
-        <View className='recycle-notice'>
-          <Text className='notice-icon'>💡</Text>
-          <Text className='notice-text'>
-            平台回收全网比价，保证公平透明。寄件运费全免，收货测试无误后2小时极速打款。
-          </Text>
-        </View>
-
-        {/* 搜索结果 */}
-        <View className='price-section'>
-          {loading && <View className='loading-container'><Text>查询中...</Text></View>}
-          
-          {!loading && results.length > 0 && (
-            <View className='price-summary'>
-              <Text className='summary-text'>找到 {results.length} 条关于 "{keyword}" 的报价库记录</Text>
-            </View>
-          )}
-
-          {!loading && results.length > 0 && (
-            <View className='price-list'>
-              {results.map((item, idx) => (
-                <View key={idx} className='price-card'>
-                  <View className='price-card-left'>
-                    <View className='price-model-row'>
-                      <Text className='price-model'>{item.model}</Text>
-                      <Text className={`validity-tag ${item.isValid ? 'active' : 'expired'}`}>
-                        {item.isValid ? '生效中' : '已过期'}
-                      </Text>
-                    </View>
-                    
-                    <Text className='price-category'>分类: {categories[item.category] || item.category}</Text>
-
-                    <View className='price-detail-row'>
-                      <View className='price-detail-item'>
-                        <Text className='price-detail-label'>回收保底价</Text>
-                        <Text className='price-detail-value recycle'>¥{item.recyclePrice || '---'}</Text>
-                      </View>
-                      
-                      <View className='price-detail-item'>
-                        <Text className='price-detail-label'>市场参考价</Text>
-                        <Text className='price-detail-value resale'>¥{item.resalePrice || '---'}</Text>
-                      </View>
-
-                      {renderPriceDifference(item.recyclePrice, item.resalePrice)}
-                    </View>
-                  </View>
+              
+              <Text className='product-desc'>{item.description}</Text>
+              
+              <View className='card-footer'>
+                <View className='price-box'>
+                  <Text className='current-price'>
+                    <Text className='price-symbol'>¥</Text>
+                    {item.price}
+                  </Text>
+                  {item.originalPrice && (
+                    <Text className='original-price'>原价 ¥{item.originalPrice}</Text>
+                  )}
                 </View>
-              ))}
+                
+                {item.status === 'published' ? (
+                  <Button 
+                    className='action-btn btn-buy' 
+                    openType='contact'
+                    onClick={() => handleContact(item)}
+                  >
+                    联系购买
+                  </Button>
+                ) : (
+                  <Button className='action-btn btn-sold' onClick={() => handleContact(item)}>
+                    已售出
+                  </Button>
+                )}
+              </View>
             </View>
-          )}
-
-          {!loading && results.length === 0 && keyword && (
-            <View className='empty-state'>
-              <Text className='empty-text'>未查到报价记录</Text>
-            </View>
-          )}
-        </View>
-
-        {/* 底部功能栏 */}
-        <View className='recycle-footer'>
-          <View className='btn-primary' onClick={contactRecycle}>
-             联系官方客服一键估价
+          ))
+        ) : (
+          <View className='empty-state'>
+            <Image src={PixelIcons.empty.gray} className='empty-icon-img' />
+            <Text className='empty-text'>当前暂无现货，敬请期待</Text>
           </View>
-        </View>
-      </View>
+        )}
+      </ScrollView>
+
     </View>
   )
 }

@@ -9,7 +9,7 @@ import Pagination from '../common/Pagination';
 
 import { UserItem } from '../../types/adminTypes';
 
-function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { onLoadConfig: (cfg: ConfigTemplate) => void, showToast: (msg: string) => void, onToggleLike: (id: string) => void, currentUser: UserItem | null }) {
+function ConfigSquare({ settings, onLoadConfig, showToast, onToggleLike, currentUser }: { settings: import('../../types/adminTypes').PricingStrategy, onLoadConfig: (cfg: ConfigTemplate) => void, showToast: (msg: string) => void, onToggleLike: (id: string) => void, currentUser: UserItem | null }) {
     const [configs, setConfigs] = useState<ConfigTemplate[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
@@ -318,7 +318,7 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                     const specs = getCoreSpecs(cfg);
                     const theme = getTypeTheme(cfg.type);
 
-                    // Recalculate price for accuracy (sum of parts + 6% fee)
+                    // Recalculate price for accuracy (sum of parts + dynamic fee)
                     let base = 0;
                     Object.values(cfg.items).forEach((itemId: any) => {
                         if (!itemId) return;
@@ -335,7 +335,8 @@ function ConfigSquare({ onLoadConfig, showToast, onToggleLike, currentUser }: { 
                         const item = allProducts.find(p => p.id === itemId) || HARDWARE_DB.find(p => p.id === itemId);
                         if (item) base += (item as any).price || 0;
                     });
-                    const finalPrice = Math.floor(base * 1.06);
+                    const feeRate = settings?.serviceFeeRate ?? 0.06;
+                    const finalPrice = Math.floor(base * (1 + feeRate));
 
                     const hasShowcaseCover = cfg.showcaseStatus === 'approved' && cfg.showcaseImages && cfg.showcaseImages.length > 0;
                     const coverImageUrl = hasShowcaseCover ? cfg.showcaseImages![0] : null;

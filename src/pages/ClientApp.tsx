@@ -256,6 +256,7 @@ export default function ClientApp() {
             finalPrice,
             savedAmount,
             discountTiers: settings.discountTiers,
+            serviceFeeRate: settings.serviceFeeRate,
             discountRate,
             onDiscountChange: setDiscountRate
         };
@@ -885,6 +886,7 @@ export default function ClientApp() {
 
                     {viewMode === 'square' && (
                         <ConfigSquare
+                            settings={settings}
                             onLoadConfig={handleFork}
                             showToast={showToast}
                             onToggleLike={handleToggleLike}
@@ -1070,14 +1072,14 @@ export default function ClientApp() {
 
                         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block">
                             <span className="text-[10px] font-medium text-slate-400 bg-slate-50/80 px-3 py-1 rounded-full border border-slate-100 whitespace-nowrap">
-                                标准价格含 6% 装机售后服务费
+                                标准价格含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机售后服务费
                             </span>
                         </div>
 
                         {/* Mobile Service Fee Info */}
                         <div className="md:hidden flex-1 flex justify-center items-center px-1">
                             <span className="text-[8px] font-bold text-slate-400 whitespace-nowrap opacity-60">
-                                含 6% 装机服务费
+                                含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机服务费
                             </span>
                         </div>
 

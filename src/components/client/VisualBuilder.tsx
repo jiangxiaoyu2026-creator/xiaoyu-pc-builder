@@ -104,6 +104,7 @@ function VisualBuilder({
         warnings: string[];
     } | null>(null);
     const [fpsData, setFpsData] = useState<any[]>([]);
+    const [multiFpsData, setMultiFpsData] = useState<any[]>([]);
     const [resolution, setResolution] = useState<number>(1080);
     const [loadingFps, setLoadingFps] = useState(false);
 
@@ -241,11 +242,13 @@ function VisualBuilder({
         const gpuKey = findKey(gpuItem, 'gpu');
 
         const results: { name: string; fps: number; lowFps?: number }[] = [];
+        const multiResults: { name: string; fps1080: number; fps1440: number; fps2160: number }[] = [];
         const preferredGames = ["黑神话：悟空", "赛博朋克 2077", "荒野大镖客：救赎 2", "三角洲行动", "反恐精英 2", "无畏契约", "绝地求生", "Apex 英雄", "刀塔 2", "守望先锋 2"];
         
         for (const gameName of preferredGames) {
             const gd = gamesFpsData[gameName];
             if (!gd) continue;
+
             const cData = cpuKey ? gd.cpu[cpuKey]?.[resKey] : null;
             const gData = gpuKey ? gd.gpu[gpuKey]?.[resKey] : null;
             if (cData && gData) {
@@ -255,10 +258,27 @@ function VisualBuilder({
             } else if (cData) {
                 results.push({ name: gameName, fps: cData.avg, lowFps: cData.low });
             }
+
+            const getFps = (res: Resolution) => {
+                const c = cpuKey ? gd.cpu[cpuKey]?.[res] : null;
+                const g = gpuKey ? gd.gpu[gpuKey]?.[res] : null;
+                if (c && g) return Math.min(c.avg, g.avg);
+                if (g) return g.avg;
+                if (c) return c.avg;
+                return 0;
+            };
+
+            const fps1080 = getFps('1080p');
+            const fps1440 = getFps('1440p');
+            const fps2160 = getFps('4K');
+            if (fps1080 > 0 || fps1440 > 0 || fps2160 > 0) {
+                multiResults.push({ name: gameName, fps1080, fps1440, fps2160 });
+            }
         }
 
         setTimeout(() => {
-            setFpsData(results);
+            setFpsData(results.slice(0, 8));
+            setMultiFpsData(multiResults.slice(0, 3));
             setLoadingFps(false);
         }, 300);
     }, [buildList, resolution]);
@@ -529,7 +549,7 @@ function VisualBuilder({
                         <div className="flex flex-col gap-1 text-white/50 text-[10px] uppercase font-bold tracking-widest">
                             <p>Powered by</p>
                             <p className="text-white/80">小鱼装机平台智能引擎</p>
-                            <p className="text-white/40 text-[9px] mt-0.5 whitespace-nowrap tracking-wider">含 6% 装机售后服务费</p>
+                            <p className="text-white/40 text-[9px] mt-0.5 whitespace-nowrap tracking-wider">含 {((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}% 装机售后服务费</p>
                             <p className="mt-2 font-mono">{new Date().toLocaleDateString('zh-CN')} 生成</p>
                         </div>
                         <div className="text-right">
@@ -557,118 +577,134 @@ function VisualBuilder({
 
 
 
-            {/* Mobile Column View (Compact & Premium) */}
-            <div className="lg:hidden flex flex-col bg-[#FAFAFA] dark:bg-[#0B0B10] relative pb-28">
-                {/* Premium Mobile Header: Functional Buttons */}
-                <div className="sticky top-0 z-20 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-3xl border-b border-slate-200 dark:border-[#1E293B] p-2.5 pb-3 shadow-[0_4px_30px_rgba(0,0,0,0.03)] dark:shadow-none">
-                    <div className="flex gap-2.5 relative w-full items-center justify-between">
-                        {/* 智能装机 PRO AI Button */}
-                        <button
-                            onClick={() => { if (onAiCheck && !onAiCheck()) return; setShowAiModal(true); }}
-                            className="flex-[1.1] relative overflow-hidden bg-slate-900 border border-slate-800 text-white font-extrabold py-3.5 px-3 rounded-[20px] shadow-lg shadow-slate-900/15 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 text-[14px] tracking-wide group"
-                        >
-                            {/* Inner subtle glow */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 opacity-0 group-active:opacity-100 transition-opacity"></div>
-                            <Sparkles size={16} className="text-indigo-400 animate-pulse shrink-0" />
-                            <span className="flex items-center gap-1.5 whitespace-nowrap">智能装机 <span className="text-[10px] bg-white/15 px-1.5 py-0.5 rounded-lg flex items-center justify-center font-black">AI</span></span>
-                        </button>
-
-                        {/* Recommendation Button */}
-                        <button
-                            onClick={onOpenLibrary}
-                            className="flex-[0.9] bg-white hover:bg-slate-50 text-slate-700 font-extrabold py-3.5 px-3 rounded-[20px] border-[1.5px] border-slate-200/80 shadow-sm shadow-slate-200/50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 text-[14px] tracking-wide whitespace-nowrap"
-                        >
-                            <FileText size={16} className="text-slate-400" /> 推荐方案
-                        </button>
-                    </div>
-
-                </div>
-
-                {/* Elegant Mobile List Items */}
-                <div className="p-2 space-y-1">
-                    {buildList.map((entry) => (
-                        <div
-                            key={entry.id}
-                            ref={(el) => { if (el) rowRefs[entry.id] = el; }}
-                            onClick={() => openSelector(entry)}
-                            className={`relative group bg-white dark:bg-[#121218] rounded-xl border transition-all duration-300 active:scale-[0.98] flex items-center p-2 gap-2 ${entry.item || entry.customName
-                                ? 'border-indigo-100 dark:border-indigo-500/20 shadow-sm dark:shadow-none'
-                                : 'border-slate-200 dark:border-[#2D3748] border-dashed bg-slate-50/50 dark:bg-[#1A1A24]/50'
-                                }`}
-                        >
-                            {/* Category Icon & Text Column */}
-                            <div className="w-12 sm:w-14 shrink-0 flex flex-col items-center justify-center gap-1">
-                                <div 
-                                    className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-sm relative overflow-hidden transition-all ${entry.item ? 'bg-indigo-50 text-indigo-500 group-hover:bg-indigo-100' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'} ${entry.item?.image ? 'cursor-zoom-in active:scale-95 hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1' : ''}`}
-                                    onClick={(e) => {
-                                        if (entry.item?.image) {
-                                            e.stopPropagation();
-                                            setPreviewImage(entry.item.image);
-                                        }
-                                    }}
-                                >
-                                    {entry.item && <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>}
-                                    <div className="scale-[0.8]">
-                                        {getIconByCategory(entry.category)}
-                                    </div>
-                                </div>
-                                <span className="text-[10px] font-black tracking-tight text-slate-400 text-center w-full line-clamp-1 scale-90 sm:scale-100 origin-center">
+            {/* Mobile Column View (Tabular & Compact) */}
+            <div className="lg:hidden flex flex-col bg-white dark:bg-[#0B0B10] relative pb-28">
+                {/* Tabular List Items */}
+                <div className="flex flex-col border-b border-slate-200">
+                    {buildList.map((entry) => {
+                        const getCatColor = (cat: string) => {
+                            const map: Record<string, string> = {
+                                cpu: 'bg-blue-500 text-white',
+                                mainboard: 'bg-cyan-500 text-white',
+                                cooling: 'bg-sky-400 text-white',
+                                ram: 'bg-blue-400 text-white',
+                                disk: 'bg-sky-300 text-slate-800',
+                                gpu: 'bg-cyan-400 text-white',
+                                power: 'bg-teal-400 text-white',
+                                case: 'bg-blue-300 text-slate-800',
+                                monitor: 'bg-cyan-300 text-slate-800',
+                                fan: 'bg-sky-200 text-slate-800',
+                                accessory: 'bg-orange-400 text-white'
+                            };
+                            return map[cat] || 'bg-slate-200 text-slate-700';
+                        };
+                        return (
+                            <div
+                                key={entry.id}
+                                ref={(el) => { if (el) rowRefs[entry.id] = el; }}
+                                onClick={() => openSelector(entry)}
+                                className="flex items-stretch min-h-[32px] border-b border-white last:border-b-0 cursor-pointer bg-slate-50"
+                            >
+                                {/* Category Column */}
+                                <div className={`w-[50px] shrink-0 flex flex-col items-center justify-center font-bold text-[11px] tracking-widest ${getCatColor(entry.category)}`}>
                                     {CATEGORY_MAP[entry.category]}
-                                </span>
-                            </div>
+                                </div>
 
-                            {/* Content Column */}
-                            <div className="flex-1 min-w-0">
-                                {entry.category === 'accessory' ? (
-                                    <input
-                                        type="text"
-                                        className="w-full bg-transparent border-none p-0 text-[13px] text-slate-800 font-bold placeholder-slate-300 focus:ring-0 truncate"
-                                        placeholder={`配件名称...`}
-                                        value={entry.customName || ''}
-                                        onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                ) : entry.item ? (
-                                    <div className="text-[13px] font-bold text-slate-700 truncate leading-tight tracking-tight">
-                                        {entry.item.brand} {entry.item.model}
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-1 w-fit px-2 py-0.5 rounded-md bg-slate-100/80 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
-                                        <Plus size={12} strokeWidth={2.5} />
-                                        <span className="text-[11px] font-bold tracking-wider">去挑选</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Price & Actions Column */}
-                            <div className="flex items-center gap-2">
-                                {(entry.item || entry.customName) && (
-                                    <div className="text-[13px] font-black font-mono text-slate-900">
-                                        ¥{(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}
-                                    </div>
-                                )}
-
-                                <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
-                                    {entry.category === 'fan' && entry.item && (
-                                        <div className="flex items-center bg-slate-50 rounded-lg p-0.5 border border-slate-100 scale-90 origin-right">
-                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-4 h-4 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold transition-all text-[10px]">-</button>
-                                            <span className="w-4 text-center text-[10px] font-bold text-slate-600">{entry.quantity}</span>
-                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-4 h-4 flex items-center justify-center hover:bg-white rounded text-slate-400 font-bold transition-all text-[10px]">+</button>
+                                {/* Item Name Column */}
+                                <div className="flex-1 flex items-center px-2 min-w-0 bg-[#f8f9fa] border-r border-white">
+                                    {entry.category === 'accessory' ? (
+                                        <input
+                                            type="text"
+                                            className="w-full bg-transparent border-none p-0 text-[12px] text-slate-800 font-bold placeholder-slate-400 focus:ring-0 truncate"
+                                            placeholder="输入配件..."
+                                            value={entry.customName || ''}
+                                            onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                    ) : entry.item ? (
+                                        <div className="text-[12px] font-bold text-slate-800 truncate leading-tight">
+                                            {entry.item.brand}_{entry.item.model}
+                                        </div>
+                                    ) : (
+                                        <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                                            <Plus size={10} strokeWidth={3} /> 去挑选
                                         </div>
                                     )}
+                                </div>
+
+                                {/* Price Column */}
+                                <div className="w-[65px] shrink-0 flex flex-col items-end justify-center px-1 bg-white relative group">
+                                    {entry.category === 'fan' && entry.item && (
+                                        <div className="flex items-center gap-0.5 bg-slate-100 rounded px-1 mb-0.5" onClick={e => e.stopPropagation()}>
+                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-3 h-3 flex items-center justify-center text-slate-500 font-bold text-[9px]">-</button>
+                                            <span className="w-3 text-center text-[9px] font-bold text-slate-700">{entry.quantity}</span>
+                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-3 h-3 flex items-center justify-center text-slate-500 font-bold text-[9px]">+</button>
+                                        </div>
+                                    )}
+                                    <div className="text-[12px] font-bold font-mono text-slate-900 text-right w-full pr-1">
+                                        {(entry.item || entry.customName) ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : '¥0'}
+                                    </div>
                                     {(entry.item || entry.customName) && (
                                         <button
-                                            className="w-5 h-5 flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors"
-                                            onClick={() => onUpdate(entry.id, { item: null, customName: '', customPrice: undefined, quantity: 1 })}
+                                            className="absolute top-1 right-1 text-slate-200 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                            onClick={(e) => { e.stopPropagation(); onUpdate(entry.id, { item: null, customName: '', customPrice: undefined, quantity: 1 }); }}
                                         >
-                                            <X size={12} strokeWidth={3} />
+                                            <X size={10} strokeWidth={3} />
                                         </button>
                                     )}
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
+
+                {/* Total Row */}
+                <div className="bg-black text-white flex items-center justify-between px-2 py-1.5">
+                    <div className="text-[11px] font-bold text-white flex items-center gap-1 whitespace-nowrap">
+                        合计
+                        <span className="text-white/60 font-normal text-[9px] transform scale-90 origin-left truncate max-w-[150px]">含装机+走线+三年售后+显卡原封发货+利润{((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}%</span>
+                    </div>
+                    <div className="text-[16px] font-black font-mono">
+                        ¥<BouncyNumber value={Math.floor(pricing.finalPrice)} />
+                    </div>
+                </div>
+
+                {/* Mobile FPS Chart */}
+                {multiFpsData && multiFpsData.length > 0 && (
+                    <div className="mt-1 bg-white border border-slate-200">
+                        {/* Header */}
+                        <div className="flex text-[11px] font-bold text-slate-800 border-b border-slate-200 bg-slate-50">
+                            <div className="w-[65px] shrink-0 p-1 flex items-center justify-center border-r border-slate-200">
+                                <span className="text-[10px] text-slate-600">低画质</span>
+                            </div>
+                            <div className="flex-1 text-center py-1.5 border-r border-slate-200">1080P</div>
+                            <div className="flex-1 text-center py-1.5 border-r border-slate-200">1440P</div>
+                            <div className="flex-1 text-center py-1.5">2160P</div>
+                        </div>
+                        {/* Rows */}
+                        <div className="flex flex-col">
+                            {multiFpsData.map((game, idx) => (
+                                <div key={idx} className="flex border-b border-slate-100 last:border-b-0 h-[28px] items-stretch">
+                                    <div className="w-[65px] shrink-0 bg-slate-50 border-r border-slate-200 p-0.5 flex items-center justify-center">
+                                        <div className="text-[9px] font-bold text-slate-700 text-center leading-tight">{game.name.replace('：', '\n')}</div>
+                                    </div>
+                                    <div className="flex-1 border-r border-slate-100 p-0.5 flex items-center justify-center relative overflow-hidden bg-white">
+                                        <div className="absolute left-0 top-0 bottom-0 bg-[#40b8fb] z-0" style={{ width: `${Math.min(100, (game.fps1080 / 300) * 100)}%` }}></div>
+                                        <div className="z-10 text-[10px] font-bold text-slate-900 mix-blend-multiply">{game.fps1080 > 0 ? `${game.fps1080.toFixed(1)}FPS` : '-'}</div>
+                                    </div>
+                                    <div className="flex-1 border-r border-slate-100 p-0.5 flex items-center justify-center relative overflow-hidden bg-white">
+                                        <div className="absolute left-0 top-0 bottom-0 bg-[#40b8fb] z-0" style={{ width: `${Math.min(100, (game.fps1440 / 300) * 100)}%` }}></div>
+                                        <div className="z-10 text-[10px] font-bold text-slate-900 mix-blend-multiply">{game.fps1440 > 0 ? `${game.fps1440.toFixed(1)}FPS` : '-'}</div>
+                                    </div>
+                                    <div className="flex-1 p-0.5 flex items-center justify-center relative overflow-hidden bg-white">
+                                        <div className="absolute left-0 top-0 bottom-0 bg-[#40b8fb] z-0" style={{ width: `${Math.min(100, (game.fps2160 / 300) * 100)}%` }}></div>
+                                        <div className="z-10 text-[10px] font-bold text-slate-900 mix-blend-multiply">{game.fps2160 > 0 ? `${game.fps2160.toFixed(1)}FPS` : '-'}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Desktop List View (Hidden on mobile) */}
@@ -839,31 +875,7 @@ function VisualBuilder({
                         </div>
                     </div>
                 )}
-                {/* Mobile Action Bar (Fixed at bottom, above the global nav) */}
-                <div className="fixed bottom-[calc(56px+env(safe-area-inset-bottom))] left-0 right-0 z-[40] bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl border-t border-slate-200 dark:border-[#1E293B] p-3 px-4 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] dark:shadow-none flex items-center justify-between pointer-events-auto">
-                    <div className="flex flex-col">
-                        <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-slate-500 font-bold">预估总价</span>
-                            {(pricing.savedAmount || 0) > 0 && (
-                                <span className="bg-emerald-100 text-emerald-700 text-[8px] px-1 py-0.5 rounded-[4px] font-bold">省 ¥{pricing.savedAmount}</span>
-                            )}
-                        </div>
-                        <span className="text-xl font-black text-indigo-600 dark:text-indigo-400 font-display tracking-tight leading-none mt-0.5">
-                            ¥<BouncyNumber value={pricing.finalPrice || 0} />
-                        </span>
-                    </div>
-                    <div className="flex gap-2 h-10">
-                        <button onClick={onReset} className="w-10 h-full flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl active:scale-95 transition-all">
-                            <Trash2 size={16} />
-                        </button>
-                        <button onClick={onSave} className="px-4 h-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-sm transition-all active:scale-95">
-                            保存
-                        </button>
-                        <button onClick={handleShareClick} className="px-4 h-full flex items-center justify-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl text-sm shadow-lg shadow-slate-900/20 dark:shadow-none active:scale-95 gap-1.5">
-                            <Share2 size={14} /> 分享
-                        </button>
-                    </div>
-                </div>
+
             </div>
             {/* Merged Sidebar */}
             <div className="w-full lg:w-[320px] xl:w-[340px] shrink-0 flex flex-col gap-4 mt-2 lg:mt-0 mb-28 lg:mb-0 relative z-10">
@@ -1025,12 +1037,12 @@ function VisualBuilder({
                                 <div className="text-xs font-black tracking-widest uppercase opacity-80">测算帧率数据中...</div>
                             </div>
                         ) : fpsData.length > 0 ? (
-                            fpsData.map((item, idx) => (
+                            fpsData.slice(0, 8).map((item, idx) => (
                                     <div key={idx} className="group/item">
                                         <div className="flex justify-between items-end text-[11px] mb-2">
-                                            <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5">
-                                                <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                                {item.name}
+                                            <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
+                                                <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                                <span className="truncate">{item.name}</span>
                                             </span>
                                             <div className="flex items-baseline gap-1.5">
                                                 {item.lowFps && (

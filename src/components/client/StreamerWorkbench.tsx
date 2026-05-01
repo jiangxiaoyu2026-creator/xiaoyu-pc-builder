@@ -306,11 +306,11 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
 
     return (
-        <div className={`grid grid-cols-[85px_1fr_50px_56px_24px] gap-3 px-5 py-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
+        <div className={`grid grid-cols-[75px_1fr_45px_50px_20px] gap-2 px-4 py-2.5 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
 
             <div className={`flex items-center gap-3 font-bold text-sm transition-all ${theme.primary}`}>
                 <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? `bg-gradient-to-br ${theme.gradient} text-white shadow-md` : `${style.bg} ${style.text}`} ${!entry.item && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? `bg-gradient-to-br ${theme.gradient} text-white shadow-md` : `${style.bg} ${style.text}`} ${!entry.item && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
                     onClick={() => entry.item?.image && onPreview(entry.item.image)}
                 >
                     {getIconByCategory(entry.category)}
@@ -319,7 +319,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-semibold text-[16px] tracking-wide placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-semibold text-base tracking-wide placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
                 {entry.item && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
                         {entry.item.isRecommended && <span className="bg-orange-50 dark:bg-orange-500/20 text-orange-500 dark:text-orange-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 dark:border-orange-500/30 flex items-center gap-0.5 whitespace-nowrap"><Sparkles size={10} /> 推荐</span>}
@@ -591,7 +591,13 @@ function StreamerWorkbench({
         const gpuKey = findKey(gpuItem, 'gpu');
 
         const results: { name: string; fps: number; lowFps?: number }[] = [];
-        const preferredGames = ["黑神话：悟空", "赛博朋克 2077", "荒野大镖客：救赎 2", "三角洲行动", "反恐精英 2", "无畏契约", "绝地求生", "Apex 英雄", "刀塔 2", "守望先锋 2"];
+        const preferredGames = [
+            "黑神话：悟空", "赛博朋克 2077", "绝地求生", "无畏契约", "反恐精英 2", 
+            "英雄联盟", "Apex 英雄", "荒野大镖客：救赎 2", "三角洲行动", "刀塔 2", 
+            "侠盗猎车手 5", "艾尔登法环", "守望先锋 2", "使命召唤：战区 2.0", "我的世界", 
+            "魔兽世界", "逃离塔科夫", "彩虹六号：围攻", "堡垒之夜", "命运 2", 
+            "腐蚀", "火箭联盟"
+        ];
         
         for (const gameName of preferredGames) {
             const gd = gamesFpsData[gameName];
@@ -608,7 +614,7 @@ function StreamerWorkbench({
         }
 
         setTimeout(() => {
-            setFpsData(results);
+            setFpsData(results.slice(0, 8));
             setLoadingFps(false);
         }, 300);
     }, [buildList, sidebarResolution]);
@@ -830,7 +836,7 @@ function StreamerWorkbench({
                         <div className="flex flex-col gap-1 text-white/50 text-[10px] uppercase font-bold tracking-widest">
                             <p>Powered by</p>
                             <p className="text-white/80">小鱼装机平台智能引擎</p>
-                            <p className="text-white/40 text-[9px] mt-0.5 whitespace-nowrap tracking-wider">含 6% 装机售后服务费</p>
+                            <p className="text-white/40 text-[9px] mt-0.5 whitespace-nowrap tracking-wider">含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 装机售后服务费</p>
                             <p className="mt-2 font-mono">{new Date().toLocaleDateString('zh-CN')} 生成</p>
                         </div>
                         <div className="text-right">
@@ -1080,7 +1086,7 @@ function StreamerWorkbench({
                     <div className="flex-1 min-w-0 max-w-[1550px]">
                         <div className="overflow-x-auto">
                             <div className="min-w-[600px]">
-                                <div className={`grid grid-cols-[85px_1fr_50px_56px_24px] gap-3 px-5 py-1.5 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-[10px] font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
+                                <div className={`grid grid-cols-[75px_1fr_45px_50px_20px] gap-2 px-4 py-1 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
@@ -1237,41 +1243,44 @@ function StreamerWorkbench({
                     </div>
 
                     {/* === Right: Performance Sidebar === */}
-                    <div className="hidden xl:flex flex-col gap-4 w-[280px] shrink-0 border-l border-slate-200 dark:border-slate-700/80 p-4 bg-slate-50/50 dark:bg-slate-800/20">
+                    <div className="hidden xl:flex flex-col gap-4 w-[280px] shrink-0 border-l border-slate-200 dark:border-slate-700/80 p-4 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar">
 
                         {/* Module 1: 鲁大师跑分 */}
-                        <div className={`bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-5 relative overflow-hidden group hover:border-slate-300 dark:hover:border-slate-600 transition-colors`}>
+                        <div className={`bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-4 relative overflow-hidden group hover:border-slate-300 dark:hover:border-slate-600 transition-colors flex justify-between items-center`}>
                             <div className={`absolute right-0 top-0 w-32 h-32 ${theme.bgPrimary} opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 dark:group-hover:opacity-20 transition-all duration-500`}></div>
-                            <div className={`absolute -right-4 -bottom-4 opacity-5 ${theme.primary} group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75`}><Activity size={72} strokeWidth={1.5}/></div>
-                            <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Activity size={14} className={theme.primary}/> 综合性能跑分</h4>
-                            <div className={`text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r ${theme.gradient} font-display tracking-tighter mt-2 h-10 flex items-center`}>
-                                {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
+                            <div className={`absolute -right-4 -bottom-4 opacity-5 ${theme.primary} group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75`}><Activity size={48} strokeWidth={1.5}/></div>
+                            <div className="relative z-10">
+                                <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-0.5 flex items-center gap-1.5"><Activity size={14} className={theme.primary}/> 综合性能跑分</h4>
+                                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${theme.bgPrimary} inline-block animate-pulse`}></span>
+                                    基于鲁大师评测
+                                </div>
                             </div>
-                            <div className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-wider flex items-center gap-1">
-                                <span className={`w-1.5 h-1.5 rounded-full ${theme.bgPrimary} inline-block animate-pulse`}></span>
-                                基于鲁大师评测体系
+                            <div className={`text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${theme.gradient} font-display tracking-tighter relative z-10`}>
+                                {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
                             </div>
                         </div>
 
                         {/* Module 2: 整机功耗 */}
-                        <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-5 relative overflow-hidden group hover:border-amber-300 dark:hover:border-amber-500/50 transition-colors">
+                        <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-4 relative overflow-hidden group hover:border-amber-300 dark:hover:border-amber-500/50 transition-colors flex justify-between items-center">
                             <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2 group-hover:bg-amber-500/20 transition-all duration-500"></div>
-                            <div className="absolute -right-2 -bottom-2 opacity-5 text-amber-500 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75"><Zap size={72} strokeWidth={1.5}/></div>
-                            <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Zap size={14} className="text-amber-500"/> 系统峰值功耗</h4>
-                            <div className="text-3xl font-black text-slate-800 dark:text-slate-200 font-display tracking-tighter flex items-baseline mt-2 h-10">
-                                {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} /><span className="text-sm ml-1 text-slate-500 font-bold">W</span></> : '---'}
+                            <div className="absolute -right-2 -bottom-2 opacity-5 text-amber-500 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75"><Zap size={48} strokeWidth={1.5}/></div>
+                            <div className="relative z-10">
+                                <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-0.5 flex items-center gap-1.5"><Zap size={14} className="text-amber-500"/> 系统峰值功耗</h4>
+                                {simResult && simResult.totalPowerDraw > 0 ? (
+                                    <div className="text-[9px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                                        推荐电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+
+                                    </div>
+                                ) : (
+                                    <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 inline-block"></span>
+                                        完善配置后可见
+                                    </div>
+                                )}
                             </div>
-                            {simResult && simResult.totalPowerDraw > 0 ? (
-                                <div className="text-[10px] text-amber-700 dark:text-amber-400 font-bold mt-1 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 py-1 px-2.5 rounded-lg inline-flex items-center gap-1.5">
-                                    <Zap size={10} />
-                                    推荐电源额定 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+
-                                </div>
-                            ) : (
-                                <div className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-wider flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 inline-block"></span>
-                                    完善配置后可见
-                                </div>
-                            )}
+                            <div className="text-2xl font-black text-slate-800 dark:text-slate-200 font-display tracking-tighter flex items-baseline relative z-10">
+                                {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} /><span className="text-sm ml-0.5 text-slate-500 font-bold">W</span></> : '---'}
+                            </div>
                         </div>
 
                         {/* Module 3: 游戏帧率 */}
@@ -1301,21 +1310,21 @@ function StreamerWorkbench({
                                         <div className="text-[10px] font-black tracking-widest uppercase opacity-80">AI 性能分析中...</div>
                                     </div>
                                 ) : fpsData.length > 0 ? (
-                                    fpsData.map((item, idx) => (
+                                    fpsData.slice(0, 8).map((item, idx) => (
                                         <div key={idx} className="group/item">
                                             <div className="flex justify-between items-end text-[11px] mb-1.5">
-                                                <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5">
-                                                    <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                                    {item.name}
+                                                <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
+                                                    <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                                    <span className="truncate">{item.name}</span>
                                                 </span>
-                                                <div className="flex items-baseline gap-1.5">
-                                                    {item.lowFps && (
-                                                        <span className="flex items-baseline gap-0.5 text-slate-400">
-                                                            <span className="text-[10px] uppercase font-bold tracking-wider">Low</span>
+                                                <div className="flex items-baseline gap-2 justify-end shrink-0">
+                                                    {item.lowFps ? (
+                                                        <span className="flex items-baseline gap-0.5 text-slate-400 w-10 justify-end">
+                                                            <span className="text-[9px] uppercase font-bold tracking-wider opacity-80">Low</span>
                                                             <span className="font-mono text-xs font-bold">{item.lowFps}</span>
                                                         </span>
-                                                    )}
-                                                    <div className="flex items-baseline gap-0.5 ml-1">
+                                                    ) : <span className="w-10"></span>}
+                                                    <div className="flex items-baseline gap-0.5 ml-1 w-14 justify-end">
                                                         <span className={`font-display font-black text-sm ${
                                                             item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
                                                             item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 

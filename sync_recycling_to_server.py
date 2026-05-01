@@ -5,7 +5,10 @@ Sync recycling prices from Excel (4.7) to production server via API.
 """
 import openpyxl
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 import sys
+import time
 from datetime import datetime
 
 EXCEL_PATH = "/Users/mac/new/台式机核价专用免费版4.21xlsm.xlsm"
@@ -17,18 +20,26 @@ SHEET_MAP = {
     "机箱": "case", "显示器": "monitor", "散热": "cooler", "外设": "peripheral",
 }
 
-def login():
-    resp = requests.post("https://www.diyxx.com/api/auth/login", json={
+def create_session():
+    session = requests.Session()
+    retry = Retry(connect=5, read=5, backoff_factor=0.3, status_forcelist=[ 500, 502, 503, 504 ])
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
+
+def login(session):
+    resp = session.post("https://www.diyxx.com/api/auth/login", json={
         "username": "xiaoyu", "password": "jiangxiaoyu119"
     })
     return resp.json()["access_token"]
 
-def fetch_all_server_items(token, category):
+def fetch_all_server_items(session, token, category):
     """Fetch all items for a category from the server."""
     items = []
     page = 1
     while True:
-        resp = requests.get(f"{API_BASE}/admin", params={
+        resp = session.get(f"{API_BASE}/admin", params={
             "category": category, "page": page, "page_size": 200
         }, headers={"Authorization": f"Bearer {token}"})
         data = resp.json()
@@ -107,7 +118,7 @@ def parse_excel():
     return all_items
 
 def main():
-    print("=== Recycling Price Sync: Excel 4.7 -> Production ===\n")
+    print("=== Recycling Price Sync: Excel 4.21 -> Production ===\n")
     
     # 1. Parse Excel
     print("[1/4] Parsing Excel...")
@@ -116,7 +127,8 @@ def main():
     
     # 2. Login
     print("[2/4] Logging in to production API...")
-    token = login()
+    session = create_session()
+    token = login(session)
     headers = {"Authorization": f"Bearer {token}"}
     print("  Login OK.\n")
     
@@ -124,7 +136,7 @@ def main():
     print("[3/4] Fetching current server data...")
     server_lookup = {}  # (category, model) -> server_item
     for sheet_name, category in SHEET_MAP.items():
-        items = fetch_all_server_items(token, category)
+        items = fetch_all_server_items(session, token, category)
         for item in items:
             key = (item.get("category", category), item.get("model", ""))
             server_lookup[key] = item
@@ -155,13 +167,17 @@ def main():
                 "note": excel_item["note"],
                 "imageUrl": excel_item["imageUrl"],
             }
-            resp = requests.post(f"{API_BASE}/admin", json=payload, headers=headers)
-            if resp.status_code in (200, 201):
-                new_count += 1
-                if new_count <= 10:
-                    print(f"  + NEW: [{excel_item['sheet']}] {excel_item['model']} (回收:{excel_item['recyclePrice']} 闲鱼:{excel_item['resalePrice']})")
-            else:
-                errors.append(f"CREATE FAIL [{excel_item['model']}]: {resp.status_code} {resp.text[:100]}")
+            try:
+                resp = session.post(f"{API_BASE}/admin", json=payload, headers=headers)
+                time.sleep(0.02)
+                if resp.status_code in (200, 201):
+                    new_count += 1
+                    if new_count <= 10:
+                        print(f"  + NEW: [{excel_item['sheet']}] {excel_item['model']} (回收:{excel_item['recyclePrice']} 闲鱼:{excel_item['resalePrice']})")
+                else:
+                    errors.append(f"CREATE FAIL [{excel_item['model']}]: {resp.status_code} {resp.text[:100]}")
+            except Exception as e:
+                errors.append(f"CREATE EXCEPTION [{excel_item['model']}]: {str(e)}")
         else:
             # Check if prices changed
             s_recycle = float(server_item.get("recyclePrice", 0) or 0)
@@ -181,15 +197,19 @@ def main():
                     "newPrice": excel_item["newPrice"],
                     "validity": excel_item["validity"],
                 }
-                resp = requests.put(f"{API_BASE}/admin/{item_id}", json=payload, headers=headers)
-                if resp.status_code == 200:
-                    updated_count += 1
-                    if updated_count <= 10:
-                        print(f"  ~ UPDATE: [{excel_item['sheet']}] {excel_item['model']} "
-                              f"(回收: {s_recycle}->{excel_item['recyclePrice']}, "
-                              f"闲鱼: {s_resale}->{excel_item['resalePrice']})")
-                else:
-                    errors.append(f"UPDATE FAIL [{excel_item['model']}]: {resp.status_code} {resp.text[:100]}")
+                try:
+                    resp = session.put(f"{API_BASE}/admin/{item_id}", json=payload, headers=headers)
+                    time.sleep(0.02)
+                    if resp.status_code == 200:
+                        updated_count += 1
+                        if updated_count <= 10:
+                            print(f"  ~ UPDATE: [{excel_item['sheet']}] {excel_item['model']} "
+                                  f"(回收: {s_recycle}->{excel_item['recyclePrice']}, "
+                                  f"闲鱼: {s_resale}->{excel_item['resalePrice']})")
+                    else:
+                        errors.append(f"UPDATE FAIL [{excel_item['model']}]: {resp.status_code} {resp.text[:100]}")
+                except Exception as e:
+                    errors.append(f"UPDATE EXCEPTION [{excel_item['model']}]: {str(e)}")
             else:
                 skipped_count += 1
     

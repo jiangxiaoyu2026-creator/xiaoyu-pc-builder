@@ -16,12 +16,12 @@ load_dotenv()
 
 class AliyunECSManager:
     def __init__(self):
-        access_key_id = os.getenv('ALIYUN_ACCESS_KEY_ID')
-        access_key_secret = os.getenv('ALIYUN_ACCESS_KEY_SECRET')
+        access_key_id = os.getenv('ALIYUN_ECS_ACCESS_KEY_ID')
+        access_key_secret = os.getenv('ALIYUN_ECS_ACCESS_KEY_SECRET')
         region_id = 'cn-beijing'  # From screenshot
         
         if not access_key_id or not access_key_secret:
-            print("Error: ALIYUN_ACCESS_KEY_ID or ALIYUN_ACCESS_KEY_SECRET not found in .env")
+            print("Error: ALIYUN_ECS_ACCESS_KEY_ID or ALIYUN_ECS_ACCESS_KEY_SECRET not found in .env")
             sys.exit(1)
 
         config = open_api_models.Config(
@@ -125,7 +125,8 @@ class AliyunECSManager:
             instance_id=[self.instance_id],
             type='RunShellScript',
             command_content=command,
-            content_encoding='PlainText'
+            content_encoding='PlainText',
+            timeout=600
         )
         try:
             response = self.client.run_command(run_command_request)

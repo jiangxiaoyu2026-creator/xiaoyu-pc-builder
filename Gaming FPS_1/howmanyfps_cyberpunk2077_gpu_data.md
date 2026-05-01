@@ -91,3 +91,14 @@
 | Radeon RX 9700 XT | 2560x1440 (2K) | 37 FPS | 27 FPS |
 | Radeon RX 9800 XT | 1920x1080 (1K) | 58 FPS | 43 FPS |
 | Radeon RX 9800 XT | 2560x1440 (2K) | 37 FPS | 27 FPS |
+| GeForce RTX 3060 | 2560x1440 (2K) | 10 FPS | 10 |
+| GeForce RTX 3060 | 3840x2160 (4K) | 10 FPS | 10 |
+| GeForce RTX 3060 Ti GDDR6X | 2560x1440 (2K) | 10 FPS | 10 |
+| GeForce RTX 3060 Ti GDDR6X | 3840x2160 (4K) | 10 FPS | 10 |
+| GeForce RTX 4060 | 1920x1080 (1K) | 10 FPS | 10 |
+| GeForce RTX 4060 | 2560x1440 (2K) | 10 FPS | 10 |
+| GeForce RTX 4060 | 3840x2160 (4K) | 10 FPS | 10 |
+| Radeon RX 6700 | 2560x1440 (2K) | 10 FPS | 10 |
+| Radeon RX 6700 | 3840x2160 (4K) | 10 FPS | 10 |
+| Radeon RX 7600 | 3840x2160 (4K) | 10 FPS | 10 |
+| Radeon RX 9060 XT | 3840x2160 (4K) | 10 FPS | 10 |

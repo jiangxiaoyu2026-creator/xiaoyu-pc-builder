@@ -1,26 +1,28 @@
 export default defineAppConfig({
   pages: [
     'pages/index/index',
+    'pages/market/index',
     'pages/builder/index',
     'pages/recycle/index',
-    'pages/user/index'
+    'pages/user/index',
+    'pages/user/configs/index'
   ],
   window: {
-    backgroundTextStyle: 'dark',
-    navigationBarBackgroundColor: '#ffffff',
+    backgroundTextStyle: 'light',
+    navigationBarBackgroundColor: '#0B0B10',
     navigationBarTitleText: '小鱼装机',
-    navigationBarTextStyle: 'black',
-    backgroundColor: '#ffffff'
+    navigationBarTextStyle: 'white',
+    backgroundColor: '#0B0B10'
   },
   tabBar: {
-    color: '#AEAEC0',
-    selectedColor: '#1d1d1f',
-    backgroundColor: '#ffffff',
+    color: '#8E8E93',
+    selectedColor: '#0A84FF',
+    backgroundColor: '#000000',
     borderStyle: 'black',
     list: [
       {
         pagePath: 'pages/index/index',
-        text: '首页',
+        text: '广场',
         iconPath: 'assets/tabs/home.png',
         selectedIconPath: 'assets/tabs/home-active.png'
       },

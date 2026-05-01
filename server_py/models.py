@@ -11,6 +11,7 @@ class User(SQLModel, table=True):
     username: str = Field(unique=True, index=True)
     mobile: Optional[str] = Field(default=None, unique=True, index=True)
     email: Optional[str] = Field(default=None, unique=True, index=True) # Added email field
+    wechatOpenId: Optional[str] = Field(default=None, unique=True, index=True) # Added WeChat OpenID
     password: str
     role: str = Field(default="user")
     status: str = Field(default="active")
@@ -89,6 +90,23 @@ class Config(SQLModel, table=True):
     showcaseMessage: Optional[str] = None
     showcaseStatus: str = Field(default="none") # 'none', 'pending', 'approved', 'rejected'
     sortOrder: int = Field(default=0)
+
+class Comment(SQLModel, table=True):
+    __tablename__ = "comments"
+    id: str = Field(primary_key=True)
+    configId: str = Field(index=True)
+    userId: str
+    userName: str
+    content: str
+    createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    status: str = Field(default="active")
+
+class ConfigLike(SQLModel, table=True):
+    __tablename__ = "config_likes"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    configId: str = Field(index=True)
+    userId: str = Field(index=True)
+    createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
 class UsedItem(SQLModel, table=True):
     __tablename__ = "used_items"

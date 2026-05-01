@@ -10,7 +10,9 @@
   },
   "scripts": {
     "build:weapp": "taro build --type weapp",
-    "dev:weapp": "taro build --type weapp --watch"
+    "dev:weapp": "taro build --type weapp --watch",
+    "upload": "npm run build:weapp && node ci/upload.js",
+    "preview": "npm run build:weapp && node ci/upload.js --preview"
   },
   "browserslist": [
     "last 3 versions",
@@ -42,6 +44,7 @@
     "@types/react": "^18.3.0",
     "babel-loader": "^10.1.1",
     "babel-preset-taro": "^4.1.11",
+    "miniprogram-ci": "^2.1.31",
     "sass": "^1.77.0",
     "typescript": "^5.4.0",
     "webpack": "5.91.0"
