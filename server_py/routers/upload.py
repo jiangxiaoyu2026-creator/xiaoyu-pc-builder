@@ -52,7 +52,7 @@ class UrlUploadRequest(BaseModel):
     url: str
 
 @router.post("/url")
-async def upload_image_by_url(
+def upload_image_by_url(
     request: UrlUploadRequest,
     user: User = Depends(get_current_user)
 ):
@@ -71,7 +71,11 @@ async def upload_image_by_url(
             raise HTTPException(status_code=400, detail="无效的 URL")
             
         # Get IP address
-        ip = socket.gethostbyname(hostname)
+        try:
+            ip = socket.gethostbyname(hostname)
+        except socket.gaierror:
+            raise HTTPException(status_code=400, detail="无法解析的域名")
+            
         ip_obj = ipaddress.ip_address(ip)
         
         if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local:
@@ -79,6 +83,11 @@ async def upload_image_by_url(
             
         response = requests.get(request.url, timeout=10, stream=True)
         response.raise_for_status()
+        
+        # Check content length
+        content_length = response.headers.get('content-length')
+        if content_length and int(content_length) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="图片文件过大，限制在10MB以内")
         
         # Check content type
         content_type = response.headers.get('content-type', '')
@@ -96,10 +105,20 @@ async def upload_image_by_url(
         filename = f"{uuid.uuid4()}{ext}"
         file_path = os.path.join(UPLOAD_DIR, filename)
         
+        max_size = 10 * 1024 * 1024  # 10MB
+        downloaded_size = 0
+        
         with open(file_path, "wb") as f:
             for chunk in response.iter_content(chunk_size=8192):
+                downloaded_size += len(chunk)
+                if downloaded_size > max_size:
+                    f.close()
+                    os.remove(file_path)
+                    raise HTTPException(status_code=400, detail="图片文件过大，限制在10MB以内")
                 f.write(chunk)
                 
         return {"url": f"/uploads/{filename}", "filename": filename}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"抓取图片失败: {str(e)}")
