@@ -258,17 +258,29 @@ export const GameFPSViewer: React.FC = () => {
                                 <div className="text-[16px] font-bold text-slate-900 dark:text-white truncate" title={item1Name}>{item1Name}</div>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 mt-auto">
+                        <div className="flex flex-col gap-4 mt-auto">
+                            {/* 平均帧数 */}
                             <div>
-                                <div className="text-[12px] text-slate-500 font-medium mb-1">平均帧数</div>
-                                <div className={`text-3xl font-display font-bold ${winner === 1 ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'}`}>
-                                    <BouncyNumber value={item1Avg} /> <span className="text-sm font-sans opacity-50">FPS</span>
+                                <div className="flex justify-between items-end mb-1.5">
+                                    <div className="text-[12px] text-slate-500 font-medium">平均帧数</div>
+                                    <div className={`text-xl font-display font-bold ${winner === 1 ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                        <BouncyNumber value={item1Avg} /> <span className="text-[10px] font-sans opacity-50">FPS</span>
+                                    </div>
+                                </div>
+                                <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item1Avg / Math.max(item1Avg, item2Avg, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut"}} className={`h-full rounded-full ${winner === 1 ? 'bg-indigo-500' : 'bg-slate-400 dark:bg-slate-500'}`} />
                                 </div>
                             </div>
+                            {/* 1% Low */}
                             <div>
-                                <div className="text-[12px] text-slate-500 font-medium mb-1">1% Low</div>
-                                <div className={`text-2xl font-display font-bold ${winner === 1 ? 'text-indigo-500/80 dark:text-indigo-400/80' : 'text-slate-600 dark:text-slate-400'}`}>
-                                    <BouncyNumber value={item1Low} /> <span className="text-sm font-sans opacity-50">FPS</span>
+                                <div className="flex justify-between items-end mb-1.5">
+                                    <div className="text-[12px] text-slate-500 font-medium">1% Low</div>
+                                    <div className={`text-lg font-display font-bold ${winner === 1 ? 'text-indigo-500/80 dark:text-indigo-400/80' : 'text-slate-600 dark:text-slate-400'}`}>
+                                        <BouncyNumber value={item1Low} /> <span className="text-[10px] font-sans opacity-50">FPS</span>
+                                    </div>
+                                </div>
+                                <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item1Low / Math.max(item1Low, item2Low, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut", delay: 0.1}} className={`h-full rounded-full ${winner === 1 ? 'bg-indigo-400/70' : 'bg-slate-300 dark:bg-slate-600'}`} />
                                 </div>
                             </div>
                         </div>
@@ -285,17 +297,29 @@ export const GameFPSViewer: React.FC = () => {
                                 <div className="text-[16px] font-bold text-slate-900 dark:text-white truncate" title={item2Name}>{item2Name}</div>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 mt-auto">
+                        <div className="flex flex-col gap-4 mt-auto">
+                            {/* 平均帧数 */}
                             <div>
-                                <div className="text-[12px] text-slate-500 font-medium mb-1">平均帧数</div>
-                                <div className={`text-3xl font-display font-bold ${winner === 2 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}>
-                                    <BouncyNumber value={item2Avg} /> <span className="text-sm font-sans opacity-50">FPS</span>
+                                <div className="flex justify-between items-end mb-1.5">
+                                    <div className="text-[12px] text-slate-500 font-medium">平均帧数</div>
+                                    <div className={`text-xl font-display font-bold ${winner === 2 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                        <BouncyNumber value={item2Avg} /> <span className="text-[10px] font-sans opacity-50">FPS</span>
+                                    </div>
+                                </div>
+                                <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item2Avg / Math.max(item1Avg, item2Avg, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut"}} className={`h-full rounded-full ${winner === 2 ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-slate-500'}`} />
                                 </div>
                             </div>
+                            {/* 1% Low */}
                             <div>
-                                <div className="text-[12px] text-slate-500 font-medium mb-1">1% Low</div>
-                                <div className={`text-2xl font-display font-bold ${winner === 2 ? 'text-emerald-500/80 dark:text-emerald-400/80' : 'text-slate-600 dark:text-slate-400'}`}>
-                                    <BouncyNumber value={item2Low} /> <span className="text-sm font-sans opacity-50">FPS</span>
+                                <div className="flex justify-between items-end mb-1.5">
+                                    <div className="text-[12px] text-slate-500 font-medium">1% Low</div>
+                                    <div className={`text-lg font-display font-bold ${winner === 2 ? 'text-emerald-500/80 dark:text-emerald-400/80' : 'text-slate-600 dark:text-slate-400'}`}>
+                                        <BouncyNumber value={item2Low} /> <span className="text-[10px] font-sans opacity-50">FPS</span>
+                                    </div>
+                                </div>
+                                <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item2Low / Math.max(item1Low, item2Low, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut", delay: 0.1}} className={`h-full rounded-full ${winner === 2 ? 'bg-emerald-400/70' : 'bg-slate-300 dark:bg-slate-600'}`} />
                                 </div>
                             </div>
                         </div>
@@ -350,8 +374,9 @@ export const GameFPSViewer: React.FC = () => {
                     {/* === 左侧：战术控制台 === */}
                     <div className="lg:col-span-4 xl:col-span-4 flex flex-col gap-6 relative z-40">
                         {/* 1. 游戏选择器 */}
-                        <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-[24px] p-6 shadow-sm">
-                            <div className="flex items-center gap-3 mb-6">
+                        <div className="bg-white dark:bg-[#121218] border-2 border-indigo-500/30 dark:border-indigo-500/50 rounded-[24px] p-6 shadow-lg shadow-indigo-500/10 dark:shadow-[0_0_30px_rgba(99,102,241,0.15)] relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/10 to-transparent pointer-events-none rounded-bl-full" />
+                            <div className="flex items-center gap-3 mb-6 relative z-10">
                                 <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                                     <Gamepad2 size={22} />
                                 </div>
@@ -376,9 +401,9 @@ export const GameFPSViewer: React.FC = () => {
                         <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-[24px] p-6 shadow-sm flex flex-col gap-6">
                             {/* Mode Tabs */}
                             <div className="flex p-1.5 bg-slate-50 dark:bg-[#1A1A24] rounded-[14px] border border-slate-200 dark:border-[#2D3748]">
-                                <button onClick={() => setActiveMode('config')} className={`flex-1 py-2.5 rounded-[10px] font-bold text-[12px] transition-all flex items-center justify-center gap-1.5 ${activeMode === 'config' ? 'bg-white dark:bg-[#2D3748] text-slate-900 dark:text-white shadow-sm border border-slate-200/50 dark:border-transparent' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-transparent'}`}><Activity size={14}/> 整机诊断</button>
-                                <button onClick={() => setActiveMode('cpu')} className={`flex-1 py-2.5 rounded-[10px] font-bold text-[12px] transition-all flex items-center justify-center gap-1.5 ${activeMode === 'cpu' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100/50 dark:border-indigo-500/30' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-transparent'}`}><Cpu size={14}/> CPU对比</button>
-                                <button onClick={() => setActiveMode('gpu')} className={`flex-1 py-2.5 rounded-[10px] font-bold text-[12px] transition-all flex items-center justify-center gap-1.5 ${activeMode === 'gpu' ? 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-100/50 dark:border-emerald-500/30' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-transparent'}`}><MonitorPlay size={14}/> GPU对比</button>
+                                <button onClick={() => setActiveMode('config')} className={`flex-1 py-2.5 rounded-[10px] font-bold text-[12px] transition-all flex items-center justify-center gap-1.5 ${activeMode === 'config' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 border border-indigo-500' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-transparent'}`}><Activity size={14}/> 整机诊断</button>
+                                <button onClick={() => setActiveMode('cpu')} className={`flex-1 py-2.5 rounded-[10px] font-bold text-[12px] transition-all flex items-center justify-center gap-1.5 ${activeMode === 'cpu' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 border border-indigo-500' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-transparent'}`}><Cpu size={14}/> CPU对比</button>
+                                <button onClick={() => setActiveMode('gpu')} className={`flex-1 py-2.5 rounded-[10px] font-bold text-[12px] transition-all flex items-center justify-center gap-1.5 ${activeMode === 'gpu' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 border border-indigo-500' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 border border-transparent'}`}><MonitorPlay size={14}/> GPU对比</button>
                             </div>
 
                             {/* Selectors */}
@@ -409,7 +434,7 @@ export const GameFPSViewer: React.FC = () => {
                                                 onClick={() => setSelectedRes(res)}
                                                 className={`flex-1 rounded-[8px] font-medium text-[13px] transition-all ${
                                                     selectedRes === res 
-                                                    ? 'bg-white dark:bg-[#2D3748] text-indigo-600 dark:text-white shadow-sm border border-slate-200 dark:border-transparent' 
+                                                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 border border-indigo-500' 
                                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-white/5 border border-transparent'
                                                 }`}
                                             >
