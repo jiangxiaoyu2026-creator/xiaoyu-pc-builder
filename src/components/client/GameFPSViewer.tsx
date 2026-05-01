@@ -246,84 +246,69 @@ export const GameFPSViewer: React.FC = () => {
         
         return (
             <div className="flex flex-col gap-6 mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <motion.div initial={{opacity:0, scale:0.97}} animate={{opacity:1, scale:1}} transition={{delay: 0.1, type: 'spring'}} className={`rounded-2xl bg-white dark:bg-[#121218] border ${winner === 1 ? 'border-indigo-400 dark:border-indigo-500 ring-1 ring-indigo-400/20 shadow-md shadow-indigo-500/10' : 'border-slate-200 dark:border-[#1E293B] shadow-sm'} relative flex flex-col p-5 sm:p-6 overflow-hidden group min-h-[180px] transition-all duration-300`}>
-                        {winner === 1 && <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">胜出</div>}
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className={`p-2.5 rounded-[12px] border ${winner === 1 ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-[#2D3748] text-slate-500 dark:text-slate-400'}`}>
-                                <Icon size={22} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="text-[13px] text-slate-500 mb-0.5">测试对象 A</div>
-                                <div className="text-[16px] font-bold text-slate-900 dark:text-white truncate" title={item1Name}>{item1Name}</div>
+                <div className="rounded-2xl bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm relative flex flex-col p-6 sm:p-8">
+                    {/* Headers for A and B */}
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-3 w-1/2 pr-2">
+                            <div className="w-3 h-3 shrink-0 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                            <div className="min-w-0">
+                                <div className="text-[12px] text-slate-500 font-bold mb-0.5">测试对象 A</div>
+                                <div className="text-[15px] font-bold text-slate-900 dark:text-white truncate" title={item1Name}>{item1Name}</div>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-4 mt-auto">
-                            {/* 平均帧数 */}
-                            <div>
-                                <div className="flex justify-between items-end mb-1.5">
-                                    <div className="text-[12px] text-slate-500 font-medium">平均帧数</div>
-                                    <div className={`text-xl font-display font-bold ${winner === 1 ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'}`}>
-                                        <BouncyNumber value={item1Avg} /> <span className="text-[10px] font-sans opacity-50">FPS</span>
-                                    </div>
-                                </div>
-                                <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item1Avg / Math.max(item1Avg, item2Avg, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut"}} className={`h-full rounded-full ${winner === 1 ? 'bg-indigo-500' : 'bg-slate-400 dark:bg-slate-500'}`} />
-                                </div>
+                        <div className="flex items-center justify-end gap-3 w-1/2 pl-2 text-right">
+                            <div className="min-w-0">
+                                <div className="text-[12px] text-slate-500 font-bold mb-0.5">测试对象 B</div>
+                                <div className="text-[15px] font-bold text-slate-900 dark:text-white truncate" title={item2Name}>{item2Name}</div>
                             </div>
-                            {/* 1% Low */}
-                            <div>
-                                <div className="flex justify-between items-end mb-1.5">
-                                    <div className="text-[12px] text-slate-500 font-medium">1% Low</div>
-                                    <div className={`text-lg font-display font-bold ${winner === 1 ? 'text-indigo-500/80 dark:text-indigo-400/80' : 'text-slate-600 dark:text-slate-400'}`}>
-                                        <BouncyNumber value={item1Low} /> <span className="text-[10px] font-sans opacity-50">FPS</span>
-                                    </div>
-                                </div>
-                                <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item1Low / Math.max(item1Low, item2Low, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut", delay: 0.1}} className={`h-full rounded-full ${winner === 1 ? 'bg-indigo-400/70' : 'bg-slate-300 dark:bg-slate-600'}`} />
-                                </div>
-                            </div>
+                            <div className="w-3 h-3 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
                         </div>
-                    </motion.div>
+                    </div>
 
-                    <motion.div initial={{opacity:0, scale:0.97}} animate={{opacity:1, scale:1}} transition={{delay: 0.2, type: 'spring'}} className={`rounded-2xl bg-white dark:bg-[#121218] border ${winner === 2 ? 'border-emerald-400 dark:border-emerald-500 ring-1 ring-emerald-400/20 shadow-md shadow-emerald-500/10' : 'border-slate-200 dark:border-[#1E293B] shadow-sm'} relative flex flex-col p-5 sm:p-6 overflow-hidden group min-h-[180px] transition-all duration-300`}>
-                        {winner === 2 && <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">胜出</div>}
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className={`p-2.5 rounded-[12px] border ${winner === 2 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-[#2D3748] text-slate-500 dark:text-slate-400'}`}>
-                                <Icon size={22} />
+                    {/* Average FPS Bars */}
+                    <div className="mb-6">
+                        <div className="flex justify-between items-end mb-2.5">
+                            <div className="text-[13px] text-slate-500 font-bold flex items-center gap-2">
+                                平均帧数
+                                {winner !== 0 && (
+                                    <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400">差距 {diffPercent}%</span>
+                                )}
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="text-[13px] text-slate-500 mb-0.5">测试对象 B</div>
-                                <div className="text-[16px] font-bold text-slate-900 dark:text-white truncate" title={item2Name}>{item2Name}</div>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-4 mt-auto">
-                            {/* 平均帧数 */}
-                            <div>
-                                <div className="flex justify-between items-end mb-1.5">
-                                    <div className="text-[12px] text-slate-500 font-medium">平均帧数</div>
-                                    <div className={`text-xl font-display font-bold ${winner === 2 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}>
-                                        <BouncyNumber value={item2Avg} /> <span className="text-[10px] font-sans opacity-50">FPS</span>
-                                    </div>
-                                </div>
-                                <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item2Avg / Math.max(item1Avg, item2Avg, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut"}} className={`h-full rounded-full ${winner === 2 ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-slate-500'}`} />
-                                </div>
-                            </div>
-                            {/* 1% Low */}
-                            <div>
-                                <div className="flex justify-between items-end mb-1.5">
-                                    <div className="text-[12px] text-slate-500 font-medium">1% Low</div>
-                                    <div className={`text-lg font-display font-bold ${winner === 2 ? 'text-emerald-500/80 dark:text-emerald-400/80' : 'text-slate-600 dark:text-slate-400'}`}>
-                                        <BouncyNumber value={item2Low} /> <span className="text-[10px] font-sans opacity-50">FPS</span>
-                                    </div>
-                                </div>
-                                <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item2Low / Math.max(item1Low, item2Low, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut", delay: 0.1}} className={`h-full rounded-full ${winner === 2 ? 'bg-emerald-400/70' : 'bg-slate-300 dark:bg-slate-600'}`} />
-                                </div>
+                            <div className="flex gap-3 sm:gap-4 font-display font-bold items-center">
+                                <div className={`text-xl ${winner === 1 ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'}`}><BouncyNumber value={item1Avg} /> <span className="text-[10px] font-sans opacity-50">FPS</span></div>
+                                <div className="text-[11px] text-slate-300 dark:text-slate-600 uppercase tracking-widest font-sans">vs</div>
+                                <div className={`text-xl ${winner === 2 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200'}`}><BouncyNumber value={item2Avg} /> <span className="text-[10px] font-sans opacity-50">FPS</span></div>
                             </div>
                         </div>
-                    </motion.div>
+                        <div className="flex flex-col gap-2">
+                            <div className="h-3.5 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden">
+                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item1Avg / Math.max(item1Avg, item2Avg, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut"}} className="h-full rounded-full bg-indigo-500 shadow-[inset_-2px_0_4px_rgba(0,0,0,0.1)] relative" />
+                            </div>
+                            <div className="h-3.5 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden">
+                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item2Avg / Math.max(item1Avg, item2Avg, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut"}} className="h-full rounded-full bg-emerald-500 shadow-[inset_-2px_0_4px_rgba(0,0,0,0.1)] relative" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 1% Low Bars */}
+                    <div className="pt-4 border-t border-slate-100 dark:border-[#1E293B]">
+                        <div className="flex justify-between items-end mb-2.5">
+                            <div className="text-[12px] text-slate-500 font-bold">1% Low 最低帧</div>
+                            <div className="flex gap-3 sm:gap-4 font-display font-bold items-center">
+                                <div className={`text-lg ${winner === 1 ? 'text-indigo-500/80 dark:text-indigo-400/80' : 'text-slate-600 dark:text-slate-400'}`}><BouncyNumber value={item1Low} /> <span className="text-[10px] font-sans opacity-50">FPS</span></div>
+                                <div className="text-[10px] text-slate-300 dark:text-slate-600 uppercase tracking-widest font-sans">vs</div>
+                                <div className={`text-lg ${winner === 2 ? 'text-emerald-500/80 dark:text-emerald-400/80' : 'text-slate-600 dark:text-slate-400'}`}><BouncyNumber value={item2Low} /> <span className="text-[10px] font-sans opacity-50">FPS</span></div>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden">
+                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item1Low / Math.max(item1Low, item2Low, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut", delay: 0.1}} className="h-full rounded-full bg-indigo-400/70 relative" />
+                            </div>
+                            <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden">
+                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item2Low / Math.max(item1Low, item2Low, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut", delay: 0.1}} className="h-full rounded-full bg-emerald-400/70 relative" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.3}} className="bg-slate-50 dark:bg-[#1A1A24] border border-slate-200 dark:border-[#1E293B] rounded-2xl p-5 flex items-center justify-center gap-3">
@@ -372,11 +357,15 @@ export const GameFPSViewer: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
                     
                     {/* === 左侧：战术控制台 === */}
-                    <div className="lg:col-span-4 xl:col-span-4 flex flex-col gap-6 relative z-40">
+                    <div className="lg:col-span-4 xl:col-span-4 flex flex-col gap-6 relative z-50">
                         {/* 1. 游戏选择器 */}
-                        <div className="bg-white dark:bg-[#121218] border-2 border-indigo-500/30 dark:border-indigo-500/50 rounded-[24px] p-6 shadow-lg shadow-indigo-500/10 dark:shadow-[0_0_30px_rgba(99,102,241,0.15)] relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/10 to-transparent pointer-events-none rounded-bl-full" />
-                            <div className="flex items-center gap-3 mb-6 relative z-10">
+                        <div className="bg-white dark:bg-[#121218] border-2 border-indigo-500/30 dark:border-indigo-500/50 rounded-[24px] shadow-lg shadow-indigo-500/10 dark:shadow-[0_0_30px_rgba(99,102,241,0.15)] relative">
+                            {/* Inner gradient container with overflow hidden to not crop corners, while allowing dropdown to escape */}
+                            <div className="absolute inset-0 overflow-hidden rounded-[24px] pointer-events-none z-0">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/10 to-transparent rounded-bl-full" />
+                            </div>
+                            <div className="p-6 relative z-10">
+                                <div className="flex items-center gap-3 mb-6 relative z-10">
                                 <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                                     <Gamepad2 size={22} />
                                 </div>
@@ -395,6 +384,7 @@ export const GameFPSViewer: React.FC = () => {
                                 label="选择游戏"
                                 isGame={true}
                             />
+                            </div>
                         </div>
 
                         {/* 2. 硬件与模式控制 */}

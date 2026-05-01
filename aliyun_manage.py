@@ -125,7 +125,8 @@ class AliyunECSManager:
             instance_id=[self.instance_id],
             type='RunShellScript',
             command_content=command,
-            content_encoding='PlainText'
+            content_encoding='PlainText',
+            timeout=600
         )
         try:
             response = self.client.run_command(run_command_request)
