@@ -233,7 +233,7 @@ export const GameFPSViewer: React.FC = () => {
     const scoreStyle = getPremiumScoreStyles(result.avg);
     const rating = getRating(result.avg);
 
-    const renderComparisonCard = (item1Name: string, item1Data: any, item2Name: string, item2Data: any, Icon: any) => {
+    const renderComparisonCard = (item1Name: string, item1Data: any, item2Name: string, item2Data: any) => {
         const item1Avg = item1Data?.avg || 0;
         const item2Avg = item2Data?.avg || 0;
         const item1Low = item1Data?.low || 0;
@@ -582,11 +582,11 @@ export const GameFPSViewer: React.FC = () => {
                             </div>
                         ) : activeMode === 'cpu' ? (
                             <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-[24px] shadow-sm p-4 sm:p-6 lg:p-8">
-                                {renderComparisonCard(selectedCpu, gamesFpsData[selectedGame]?.cpu[selectedCpu]?.[selectedRes], selectedCpu2, gamesFpsData[selectedGame]?.cpu[selectedCpu2]?.[selectedRes], Cpu)}
+                                {renderComparisonCard(selectedCpu, gamesFpsData[selectedGame]?.cpu[selectedCpu]?.[selectedRes], selectedCpu2, gamesFpsData[selectedGame]?.cpu[selectedCpu2]?.[selectedRes])}
                             </div>
                         ) : (
                             <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-[24px] shadow-sm p-4 sm:p-6 lg:p-8">
-                                {renderComparisonCard(selectedGpu, gamesFpsData[selectedGame]?.gpu[selectedGpu]?.[selectedRes], selectedGpu2, gamesFpsData[selectedGame]?.gpu[selectedGpu2]?.[selectedRes], MonitorPlay)}
+                                {renderComparisonCard(selectedGpu, gamesFpsData[selectedGame]?.gpu[selectedGpu]?.[selectedRes], selectedGpu2, gamesFpsData[selectedGame]?.gpu[selectedGpu2]?.[selectedRes])}
                             </div>
                         )}
                     </div>

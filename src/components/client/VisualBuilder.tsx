@@ -579,22 +579,6 @@ function VisualBuilder({
 
             {/* Mobile Column View (Tabular & Compact) */}
             <div className="lg:hidden flex flex-col bg-white dark:bg-[#0B0B10] relative pb-28">
-                {/* Premium Mobile Header: Functional Buttons */}
-                <div className="sticky top-0 z-20 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-3xl border-b border-slate-200 dark:border-[#1E293B] p-2 pb-2.5 shadow-[0_2px_10px_rgba(0,0,0,0.03)] dark:shadow-none flex gap-2 w-full">
-                    <button
-                        onClick={() => { if (onAiCheck && !onAiCheck()) return; setShowAiModal(true); }}
-                        className="flex-1 bg-[#ffaa00] text-white font-extrabold py-2.5 rounded-sm shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 text-[14px]"
-                    >
-                        智能装机 AI
-                    </button>
-                    <button
-                        onClick={onOpenLibrary}
-                        className="flex-1 bg-[#ffaa00] text-white font-extrabold py-2.5 rounded-sm shadow-sm active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 text-[14px]"
-                    >
-                        推荐方案
-                    </button>
-                </div>
-
                 {/* Tabular List Items */}
                 <div className="flex flex-col border-b border-slate-200">
                     {buildList.map((entry) => {
@@ -619,10 +603,10 @@ function VisualBuilder({
                                 key={entry.id}
                                 ref={(el) => { if (el) rowRefs[entry.id] = el; }}
                                 onClick={() => openSelector(entry)}
-                                className="flex items-stretch min-h-[40px] border-b border-white last:border-b-0 cursor-pointer bg-slate-50"
+                                className="flex items-stretch min-h-[32px] border-b border-white last:border-b-0 cursor-pointer bg-slate-50"
                             >
                                 {/* Category Column */}
-                                <div className={`w-[60px] shrink-0 flex flex-col items-center justify-center font-bold text-[13px] tracking-widest ${getCatColor(entry.category)}`}>
+                                <div className={`w-[50px] shrink-0 flex flex-col items-center justify-center font-bold text-[11px] tracking-widest ${getCatColor(entry.category)}`}>
                                     {CATEGORY_MAP[entry.category]}
                                 </div>
 
@@ -631,34 +615,34 @@ function VisualBuilder({
                                     {entry.category === 'accessory' ? (
                                         <input
                                             type="text"
-                                            className="w-full bg-transparent border-none p-0 text-[13px] text-slate-800 font-bold placeholder-slate-400 focus:ring-0 truncate"
+                                            className="w-full bg-transparent border-none p-0 text-[12px] text-slate-800 font-bold placeholder-slate-400 focus:ring-0 truncate"
                                             placeholder="输入配件..."
                                             value={entry.customName || ''}
                                             onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
                                             onClick={(e) => e.stopPropagation()}
                                         />
                                     ) : entry.item ? (
-                                        <div className="text-[13px] font-bold text-slate-800 truncate leading-tight">
+                                        <div className="text-[12px] font-bold text-slate-800 truncate leading-tight">
                                             {entry.item.brand}_{entry.item.model}
                                         </div>
                                     ) : (
-                                        <div className="text-[12px] text-slate-400 flex items-center gap-1">
+                                        <div className="text-[11px] text-slate-400 flex items-center gap-1">
                                             <Plus size={10} strokeWidth={3} /> 去挑选
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Price Column */}
-                                <div className="w-[70px] shrink-0 flex flex-col items-end justify-center px-2 bg-white relative group">
+                                <div className="w-[65px] shrink-0 flex flex-col items-end justify-center px-1 bg-white relative group">
                                     {entry.category === 'fan' && entry.item && (
-                                        <div className="flex items-center gap-1 bg-slate-100 rounded px-1 py-0.5 mb-0.5" onClick={e => e.stopPropagation()}>
-                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-4 h-4 flex items-center justify-center text-slate-500 font-bold text-[10px]">-</button>
-                                            <span className="w-3 text-center text-[10px] font-bold text-slate-700">{entry.quantity}</span>
-                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-4 h-4 flex items-center justify-center text-slate-500 font-bold text-[10px]">+</button>
+                                        <div className="flex items-center gap-0.5 bg-slate-100 rounded px-1 mb-0.5" onClick={e => e.stopPropagation()}>
+                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-3 h-3 flex items-center justify-center text-slate-500 font-bold text-[9px]">-</button>
+                                            <span className="w-3 text-center text-[9px] font-bold text-slate-700">{entry.quantity}</span>
+                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-3 h-3 flex items-center justify-center text-slate-500 font-bold text-[9px]">+</button>
                                         </div>
                                     )}
-                                    <div className="text-[13px] font-bold font-mono text-slate-900">
-                                        {(entry.item || entry.customName) ? `¥ ${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : '¥ 0'}
+                                    <div className="text-[12px] font-bold font-mono text-slate-900 text-right w-full pr-1">
+                                        {(entry.item || entry.customName) ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : '¥0'}
                                     </div>
                                     {(entry.item || entry.customName) && (
                                         <button
@@ -675,12 +659,12 @@ function VisualBuilder({
                 </div>
 
                 {/* Total Row */}
-                <div className="bg-black text-white flex items-center justify-between px-3 py-2.5">
-                    <div className="text-[12px] font-bold text-white flex items-center gap-1.5 whitespace-nowrap">
+                <div className="bg-black text-white flex items-center justify-between px-2 py-1.5">
+                    <div className="text-[11px] font-bold text-white flex items-center gap-1 whitespace-nowrap">
                         合计
-                        <span className="text-white/60 font-normal text-[10px] transform scale-90 origin-left truncate max-w-[150px]">含装机+走线+三年售后+显卡原封发货+利润{((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}%</span>
+                        <span className="text-white/60 font-normal text-[9px] transform scale-90 origin-left truncate max-w-[150px]">含装机+走线+三年售后+显卡原封发货+利润{((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}%</span>
                     </div>
-                    <div className="text-[18px] font-black font-mono">
+                    <div className="text-[16px] font-black font-mono">
                         ¥<BouncyNumber value={Math.floor(pricing.finalPrice)} />
                     </div>
                 </div>
@@ -689,32 +673,32 @@ function VisualBuilder({
                 {multiFpsData && multiFpsData.length > 0 && (
                     <div className="mt-1 bg-white border border-slate-200">
                         {/* Header */}
-                        <div className="flex text-[12px] font-bold text-slate-800 border-b border-slate-200 bg-slate-50">
-                            <div className="w-[85px] shrink-0 p-2 flex items-center justify-center border-r border-slate-200">
-                                <span className="bg-slate-200 px-2 py-0.5 rounded-sm text-[11px] text-slate-600 border border-slate-300">低画质 ▼</span>
+                        <div className="flex text-[11px] font-bold text-slate-800 border-b border-slate-200 bg-slate-50">
+                            <div className="w-[65px] shrink-0 p-1 flex items-center justify-center border-r border-slate-200">
+                                <span className="text-[10px] text-slate-600">低画质</span>
                             </div>
-                            <div className="flex-1 text-center py-2 border-r border-slate-200">1080P</div>
-                            <div className="flex-1 text-center py-2 border-r border-slate-200">1440P</div>
-                            <div className="flex-1 text-center py-2">2160P</div>
+                            <div className="flex-1 text-center py-1.5 border-r border-slate-200">1080P</div>
+                            <div className="flex-1 text-center py-1.5 border-r border-slate-200">1440P</div>
+                            <div className="flex-1 text-center py-1.5">2160P</div>
                         </div>
                         {/* Rows */}
                         <div className="flex flex-col">
                             {multiFpsData.map((game, idx) => (
-                                <div key={idx} className="flex border-b border-slate-100 last:border-b-0 h-[40px] items-stretch">
-                                    <div className="w-[85px] shrink-0 bg-slate-50 border-r border-slate-200 p-1 flex items-center justify-center">
-                                        <div className="text-[10px] font-bold text-slate-700 text-center leading-tight">{game.name.replace('：', '\n')}</div>
+                                <div key={idx} className="flex border-b border-slate-100 last:border-b-0 h-[28px] items-stretch">
+                                    <div className="w-[65px] shrink-0 bg-slate-50 border-r border-slate-200 p-0.5 flex items-center justify-center">
+                                        <div className="text-[9px] font-bold text-slate-700 text-center leading-tight">{game.name.replace('：', '\n')}</div>
                                     </div>
-                                    <div className="flex-1 border-r border-slate-100 p-1 flex items-center justify-center relative overflow-hidden bg-white">
+                                    <div className="flex-1 border-r border-slate-100 p-0.5 flex items-center justify-center relative overflow-hidden bg-white">
                                         <div className="absolute left-0 top-0 bottom-0 bg-[#40b8fb] z-0" style={{ width: `${Math.min(100, (game.fps1080 / 300) * 100)}%` }}></div>
-                                        <div className="z-10 text-[12px] font-bold text-slate-900 mix-blend-multiply">{game.fps1080 > 0 ? `${game.fps1080.toFixed(1)}FPS` : '-'}</div>
+                                        <div className="z-10 text-[10px] font-bold text-slate-900 mix-blend-multiply">{game.fps1080 > 0 ? `${game.fps1080.toFixed(1)}FPS` : '-'}</div>
                                     </div>
-                                    <div className="flex-1 border-r border-slate-100 p-1 flex items-center justify-center relative overflow-hidden bg-white">
+                                    <div className="flex-1 border-r border-slate-100 p-0.5 flex items-center justify-center relative overflow-hidden bg-white">
                                         <div className="absolute left-0 top-0 bottom-0 bg-[#40b8fb] z-0" style={{ width: `${Math.min(100, (game.fps1440 / 300) * 100)}%` }}></div>
-                                        <div className="z-10 text-[12px] font-bold text-slate-900 mix-blend-multiply">{game.fps1440 > 0 ? `${game.fps1440.toFixed(1)}FPS` : '-'}</div>
+                                        <div className="z-10 text-[10px] font-bold text-slate-900 mix-blend-multiply">{game.fps1440 > 0 ? `${game.fps1440.toFixed(1)}FPS` : '-'}</div>
                                     </div>
-                                    <div className="flex-1 p-1 flex items-center justify-center relative overflow-hidden bg-white">
+                                    <div className="flex-1 p-0.5 flex items-center justify-center relative overflow-hidden bg-white">
                                         <div className="absolute left-0 top-0 bottom-0 bg-[#40b8fb] z-0" style={{ width: `${Math.min(100, (game.fps2160 / 300) * 100)}%` }}></div>
-                                        <div className="z-10 text-[12px] font-bold text-slate-900 mix-blend-multiply">{game.fps2160 > 0 ? `${game.fps2160.toFixed(1)}FPS` : '-'}</div>
+                                        <div className="z-10 text-[10px] font-bold text-slate-900 mix-blend-multiply">{game.fps2160 > 0 ? `${game.fps2160.toFixed(1)}FPS` : '-'}</div>
                                     </div>
                                 </div>
                             ))}
