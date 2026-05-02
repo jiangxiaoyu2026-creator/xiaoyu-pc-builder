@@ -91,17 +91,17 @@ const SearchableSelect = ({ options, value, onChange, placeholder, icon: Icon, l
                                         setIsOpen(false);
                                         setSearchTerm("");
                                     }}
-                                    className={`px-3 py-2.5 text-sm font-medium rounded-lg cursor-pointer transition-all flex items-center justify-between ${
+                                    className={`px-3 py-2.5 text-sm font-medium rounded-lg cursor-pointer transition-all flex items-center justify-between border-l-2 ${
                                         opt === value 
-                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300' 
-                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'
+                                        ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500 shadow-[-2px_0_10px_rgba(139,92,246,0.2)]' 
+                                        : 'border-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'
                                     }`}
                                 >
                                     <span className="truncate pr-4 flex items-center gap-2">
                                         {isGame && <img src={`/images/games/icons/${opt}.png`} alt="" className="w-5 h-5 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
                                         <span className="truncate">{opt}</span>
                                     </span>
-                                    {opt === value && <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.5)] shrink-0" />}
+                                    {opt === value && <div className="w-1.5 h-1.5 rounded-full bg-violet-500 dark:bg-violet-400 shadow-[0_0_8px_rgba(139,92,246,0.5)] shrink-0" />}
                                 </li>
                             ))}
                         </ul>
@@ -198,28 +198,32 @@ export const GameFPSViewer: React.FC = () => {
 
     const getPremiumScoreStyles = (fps: number) => {
         if (fps >= 240) return { 
-            gradient: 'from-violet-600 to-indigo-600 dark:from-[#C084FC] dark:to-[#818CF8]', 
-            text: 'text-violet-600 dark:text-[#C084FC]', 
-            bg: 'bg-violet-50 dark:bg-violet-500/10',
-            border: 'border-violet-200 dark:border-violet-500/20'
+            gradient: 'from-violet-500 to-fuchsia-600 dark:from-[#A78BFA] dark:to-[#E879F9]', 
+            text: 'text-fuchsia-600 dark:text-[#E879F9]', 
+            bg: 'bg-fuchsia-50/80 dark:bg-[#E879F9]/10',
+            border: 'border-fuchsia-200 dark:border-[#E879F9]/30',
+            shadow: 'shadow-[0_0_20px_rgba(232,121,249,0.3)]'
         };
         if (fps >= 144) return { 
-            gradient: 'from-sky-500 to-blue-600 dark:from-[#38BDF8] dark:to-[#3B82F6]', 
-            text: 'text-sky-600 dark:text-[#38BDF8]', 
-            bg: 'bg-sky-50 dark:bg-sky-500/10',
-            border: 'border-sky-200 dark:border-sky-500/20'
+            gradient: 'from-indigo-500 to-violet-600 dark:from-[#818CF8] dark:to-[#A78BFA]', 
+            text: 'text-violet-600 dark:text-[#A78BFA]', 
+            bg: 'bg-violet-50/80 dark:bg-[#A78BFA]/10',
+            border: 'border-violet-200 dark:border-[#A78BFA]/30',
+            shadow: 'shadow-[0_0_20px_rgba(167,139,250,0.3)]'
         };
         if (fps >= 60) return { 
-            gradient: 'from-emerald-500 to-teal-600 dark:from-[#34D399] dark:to-[#10B981]', 
-            text: 'text-emerald-600 dark:text-[#34D399]', 
-            bg: 'bg-emerald-50 dark:bg-emerald-500/10',
-            border: 'border-emerald-200 dark:border-emerald-500/20'
+            gradient: 'from-cyan-500 to-blue-600 dark:from-[#22D3EE] dark:to-[#3B82F6]', 
+            text: 'text-cyan-600 dark:text-[#22D3EE]', 
+            bg: 'bg-cyan-50/80 dark:bg-[#22D3EE]/10',
+            border: 'border-cyan-200 dark:border-[#22D3EE]/30',
+            shadow: 'shadow-[0_0_20px_rgba(34,211,238,0.3)]'
         };
         return { 
-            gradient: 'from-orange-500 to-red-500 dark:from-[#FB923C] dark:to-[#EF4444]', 
-            text: 'text-orange-600 dark:text-[#FB923C]', 
-            bg: 'bg-orange-50 dark:bg-orange-500/10',
-            border: 'border-orange-200 dark:border-orange-500/20'
+            gradient: 'from-rose-500 to-red-600 dark:from-[#FB7185] dark:to-[#E11D48]', 
+            text: 'text-rose-600 dark:text-[#FB7185]', 
+            bg: 'bg-rose-50/80 dark:bg-[#FB7185]/10',
+            border: 'border-rose-200 dark:border-[#FB7185]/30',
+            shadow: 'shadow-[0_0_20px_rgba(251,113,133,0.3)]'
         };
     };
 
@@ -359,7 +363,7 @@ export const GameFPSViewer: React.FC = () => {
                     {/* === 左侧：战术控制台 === */}
                     <div className="lg:col-span-4 xl:col-span-4 flex flex-col gap-6 relative z-50">
                         {/* 1. 游戏选择器 */}
-                        <div className="bg-white dark:bg-[#121218] border-2 border-indigo-500/30 dark:border-indigo-500/50 rounded-[24px] shadow-lg shadow-indigo-500/10 dark:shadow-[0_0_30px_rgba(99,102,241,0.15)] relative">
+                        <div className="bg-[#121218]/90 backdrop-blur-md border border-violet-500/30 dark:border-violet-500/50 rounded-[24px] shadow-[0_0_30px_rgba(139,92,246,0.1)] relative">
                             {/* Inner gradient container with overflow hidden to not crop corners, while allowing dropdown to escape */}
                             <div className="absolute inset-0 overflow-hidden rounded-[24px] pointer-events-none z-0">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/10 to-transparent rounded-bl-full" />
@@ -447,145 +451,137 @@ export const GameFPSViewer: React.FC = () => {
                     {/* === 右侧：数据看板 === */}
                     <div className="lg:col-span-8 xl:col-span-8 flex flex-col gap-6">
                         
-                        {/* 所选游戏展示横幅 */}
-                        <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} className="relative overflow-hidden rounded-[24px] bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] h-[160px] sm:h-[180px] flex items-center shadow-sm transition-colors duration-300">
-                            <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.15] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-600 via-transparent to-transparent"></div>
-                            
-                            {/* 游戏图片占位 */}
-                            <div 
-                                className="absolute right-0 top-0 bottom-0 w-2/3 md:w-1/2 opacity-30 dark:opacity-40 bg-cover bg-center bg-no-repeat pointer-events-none" 
-                                style={{ 
-                                    backgroundImage: `url('/images/games/covers/${selectedGame}.jpg')`,
-                                    maskImage: 'linear-gradient(to right, transparent, black)',
-                                    WebkitMaskImage: 'linear-gradient(to right, transparent, black)'
-                                }}
-                            ></div>
-
-                            <div className="relative z-10 p-8 sm:p-10 flex flex-col justify-center">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <h2 className="text-3xl sm:text-4xl font-display font-black text-slate-900 dark:text-white tracking-tight drop-shadow-sm">
-                                        {selectedGame}
-                                    </h2>
-                                </div>
-                                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-[12px] sm:text-[13px] font-bold tracking-widest uppercase bg-white/50 dark:bg-black/20 w-fit px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white/20 dark:border-white/5">
-                                    <Activity size={16} className="animate-pulse" /> 实时计算分析引擎激活
-                                </div>
-                            </div>
-                        </motion.div>
-
                         {/* 主数据区 */}
                         {activeMode === 'config' ? (
                             <div className="flex flex-col gap-6">
-                                {/* 核心指标与诊断容器 */}
-                                <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.2}} className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-[24px] shadow-sm p-6 sm:p-8 lg:p-10 relative overflow-hidden">
-                                    {/* 评级 */}
-                                    <div className="absolute top-6 right-6">
-                                        <div className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border flex items-center gap-2 shadow-sm ${scoreStyle.bg} ${scoreStyle.border}`}>
-                                            <div className={`w-2 h-2 rounded-full animate-pulse ${scoreStyle.text.replace('text-', 'bg-')}`} />
-                                            <span className={`text-[11px] sm:text-[12px] font-bold uppercase tracking-widest ${scoreStyle.text}`}>{rating.label}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* 帧数展示 */}
-                                    <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-start md:items-center mt-6 mb-12">
-                                        <div>
-                                            <div className="flex items-center gap-2 text-slate-500 mb-2">
+                                {/* Hero Metrics: 双卡片并列设计 */}
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                                    
+                                    {/* 左侧：平均帧数 (主卡) */}
+                                    <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.1}} className="md:col-span-6 bg-[#121218]/90 backdrop-blur-xl border border-violet-500/20 rounded-[24px] shadow-[0_0_40px_rgba(139,92,246,0.05)] p-6 sm:p-8 lg:p-10 relative overflow-hidden group hover:scale-[1.01] transition-all duration-300">
+                                        {/* 网格底纹 */}
+                                        <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-10 pointer-events-none mix-blend-overlay"></div>
+                                        
+                                        {/* 顶部标签与评级 */}
+                                        <div className="flex justify-between items-start mb-8 relative z-10">
+                                            <div className="flex items-center gap-2 text-violet-400">
                                                 <GaugeCircle size={18} />
-                                                <span className="text-[14px] font-bold">平均画面帧数</span>
+                                                <span className="text-[13px] font-bold tracking-widest uppercase">平均画面帧数 / AVG FPS</span>
                                             </div>
-                                            <div className="flex items-baseline gap-2">
-                                                <motion.div className={`text-[5rem] sm:text-[6rem] lg:text-[7rem] font-display leading-[0.8] font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-b ${scoreStyle.gradient}`}>
-                                                    <BouncyNumber value={result.avg} />
-                                                </motion.div>
-                                                <span className={`text-xl sm:text-2xl font-display font-bold ${scoreStyle.text} opacity-50`}>FPS</span>
+                                            
+                                            <div className={`px-4 py-1.5 rounded-full border flex items-center gap-2 backdrop-blur-md ${scoreStyle.bg} ${scoreStyle.border} ${scoreStyle.shadow}`}>
+                                                <div className={`w-2 h-2 rounded-full animate-pulse ${scoreStyle.text.replace('text-', 'bg-')}`} />
+                                                <span className={`text-[12px] font-bold uppercase tracking-widest ${scoreStyle.text}`}>{rating.label}</span>
                                             </div>
                                         </div>
+
+                                        {/* 巨大数值 */}
+                                        <div className="flex items-baseline gap-3 relative z-10">
+                                            <motion.div className={`text-[5rem] sm:text-[6rem] lg:text-[7rem] font-mono leading-[0.8] font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b ${scoreStyle.gradient} drop-shadow-lg`}>
+                                                <BouncyNumber value={result.avg} />
+                                            </motion.div>
+                                            <span className={`text-2xl font-mono font-bold ${scoreStyle.text} opacity-60 tracking-widest`}>FPS</span>
+                                        </div>
+                                    </motion.div>
+
+                                    {/* 右侧：1% Low (副卡) */}
+                                    <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.2}} className="md:col-span-6 bg-[#121218]/80 backdrop-blur-xl border border-cyan-500/20 rounded-[24px] shadow-[0_0_30px_rgba(34,211,238,0.05)] p-6 sm:p-8 lg:p-10 flex flex-col justify-between relative overflow-hidden group hover:scale-[1.01] transition-all duration-300">
+                                        <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-5 pointer-events-none mix-blend-overlay"></div>
                                         
-                                        <div className="hidden md:block w-px h-24 bg-slate-100 dark:bg-slate-800"></div>
-                                        
-                                        <div>
-                                            <div className="flex items-center gap-2 text-slate-500 mb-2">
-                                                <TrendingUp size={18} />
-                                                <span className="text-[14px] font-bold">1% Low 最低帧</span>
+                                        <div className="flex items-center gap-2 text-cyan-400 mb-6 relative z-10">
+                                            <TrendingUp size={18} />
+                                            <span className="text-[13px] font-bold tracking-widest uppercase">1% Low / 最低帧</span>
+                                        </div>
+
+                                        <div className="flex items-baseline gap-2 relative z-10 mt-auto">
+                                            <motion.div className={`text-[5rem] sm:text-[6rem] lg:text-[7rem] font-mono leading-[0.8] font-black tracking-tighter text-slate-100 drop-shadow-md`}>
+                                                <BouncyNumber value={result.low} />
+                                            </motion.div>
+                                            <span className={`text-xl font-mono font-bold text-slate-500 tracking-widest`}>FPS</span>
+                                        </div>
+                                    </motion.div>
+                                </div>
+
+                                {/* 木桶效应可视化 - 科技仪表盘风格 */}
+                                <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.3}} className="bg-[#121218] rounded-[24px] p-6 sm:p-8 lg:p-10 border border-slate-800 shadow-xl relative overflow-hidden">
+                                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent"></div>
+                                    
+                                    <div className="flex items-center gap-3 mb-8">
+                                        <div className="p-2 bg-violet-500/20 text-violet-400 rounded-lg border border-violet-500/30 shadow-[0_0_15px_rgba(139,92,246,0.2)]">
+                                            <Activity size={18} />
+                                        </div>
+                                        <h3 className="text-[16px] font-bold text-slate-100 tracking-wide">性能瓶颈分析引擎 <span className="text-violet-500 text-[12px] ml-2 animate-pulse">● ACTIVE</span></h3>
+                                    </div>
+
+                                    <div className="space-y-8">
+                                        {/* CPU Bar */}
+                                        <div className="relative">
+                                            <div className="flex justify-between items-end mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <Cpu size={16} className="text-slate-400" />
+                                                    <span className="text-[14px] font-mono font-bold text-slate-300">{selectedCpu}</span>
+                                                    {result.isCpuBottleneck && <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-[4px] ml-2 shadow-[0_0_10px_rgba(244,63,94,0.3)] uppercase tracking-wider">Bottleneck</span>}
+                                                </div>
+                                                <div className="text-[15px] font-mono font-bold text-white">{result.cAvg} <span className="text-[11px] font-sans text-slate-500 font-normal">MAX FPS</span></div>
                                             </div>
-                                            <div className="flex items-baseline gap-2">
-                                                <motion.div className={`text-[3rem] sm:text-[4rem] font-display leading-[0.8] font-black tracking-tight text-slate-700 dark:text-slate-300`}>
-                                                    <BouncyNumber value={result.low} />
-                                                </motion.div>
-                                                <span className={`text-lg font-display font-bold text-slate-500 opacity-50`}>FPS</span>
+                                            {/* 科技感刻度进度条 */}
+                                            <div className="h-4 w-full bg-[#0B0B10] rounded-[4px] overflow-hidden border border-slate-800 relative">
+                                                <div className="absolute inset-0 bg-[url('/images/scanlines.png')] opacity-30 mix-blend-overlay z-10 pointer-events-none"></div>
+                                                <motion.div 
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${Math.min(100, (result.cAvg / 300) * 100)}%` }}
+                                                    className={`h-full absolute left-0 top-0 transition-all duration-1000 ease-out z-0 border-r-2 ${result.isCpuBottleneck ? 'bg-gradient-to-r from-rose-900/50 to-rose-500 border-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.6)]' : 'bg-gradient-to-r from-violet-900/50 to-violet-600 border-violet-300 shadow-[0_0_15px_rgba(139,92,246,0.4)]'}`} 
+                                                />
+                                                {/* 刻度线遮罩 */}
+                                                <div className="absolute inset-0 w-full h-full z-20 flex justify-between px-1 pointer-events-none opacity-20">
+                                                    {[...Array(20)].map((_, i) => <div key={i} className="w-px h-full bg-white"></div>)}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* GPU Bar */}
+                                        <div className="relative">
+                                            <div className="flex justify-between items-end mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <MonitorPlay size={16} className="text-slate-400" />
+                                                    <span className="text-[14px] font-mono font-bold text-slate-300">{selectedGpu}</span>
+                                                    {!result.isCpuBottleneck && <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-[4px] ml-2 shadow-[0_0_10px_rgba(244,63,94,0.3)] uppercase tracking-wider">Bottleneck</span>}
+                                                </div>
+                                                <div className="text-[15px] font-mono font-bold text-white">{result.gAvg} <span className="text-[11px] font-sans text-slate-500 font-normal">MAX FPS</span></div>
+                                            </div>
+                                            <div className="h-4 w-full bg-[#0B0B10] rounded-[4px] overflow-hidden border border-slate-800 relative">
+                                                <div className="absolute inset-0 bg-[url('/images/scanlines.png')] opacity-30 mix-blend-overlay z-10 pointer-events-none"></div>
+                                                <motion.div 
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${Math.min(100, (result.gAvg / 300) * 100)}%` }}
+                                                    className={`h-full absolute left-0 top-0 transition-all duration-1000 ease-out z-0 border-r-2 ${!result.isCpuBottleneck ? 'bg-gradient-to-r from-rose-900/50 to-rose-500 border-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.6)]' : 'bg-gradient-to-r from-cyan-900/50 to-cyan-600 border-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.4)]'}`} 
+                                                />
+                                                <div className="absolute inset-0 w-full h-full z-20 flex justify-between px-1 pointer-events-none opacity-20">
+                                                    {[...Array(20)].map((_, i) => <div key={i} className="w-px h-full bg-white"></div>)}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* 木桶效应可视化 */}
-                                    <div className="bg-slate-50 dark:bg-[#1A1A24] rounded-[20px] p-6 sm:p-8 border border-slate-100 dark:border-[#2D3748]">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="p-2 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-lg">
-                                                <Activity size={18} />
-                                            </div>
-                                            <h3 className="text-[16px] font-bold text-slate-900 dark:text-white">木桶效应诊断</h3>
-                                        </div>
-
-                                        <div className="space-y-6">
-                                            {/* CPU Bar */}
-                                            <div>
-                                                <div className="flex justify-between items-end mb-2.5">
-                                                    <div className="flex items-center gap-2">
-                                                        <Cpu size={16} className="text-slate-400" />
-                                                        <span className="text-[14px] font-bold text-slate-700 dark:text-slate-300">{selectedCpu}</span>
-                                                        {result.isCpuBottleneck && <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-500 text-white rounded-[6px] ml-2 shadow-sm shadow-rose-500/20">瓶颈</span>}
-                                                    </div>
-                                                    <div className="text-[15px] font-display font-bold text-slate-900 dark:text-white">{result.cAvg} <span className="text-[11px] font-sans text-slate-400 font-normal">极限 FPS</span></div>
-                                                </div>
-                                                <div className="h-3.5 w-full bg-slate-200/50 dark:bg-[#121218] rounded-full overflow-hidden border border-slate-200/50 dark:border-[#2D3748] relative">
-                                                    <motion.div 
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${Math.min(100, (result.cAvg / 300) * 100)}%` }}
-                                                        className={`h-full absolute left-0 top-0 rounded-full transition-all duration-1000 ease-out ${result.isCpuBottleneck ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]' : 'bg-slate-400 dark:bg-slate-500'}`} 
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* GPU Bar */}
-                                            <div>
-                                                <div className="flex justify-between items-end mb-2.5">
-                                                    <div className="flex items-center gap-2">
-                                                        <MonitorPlay size={16} className="text-slate-400" />
-                                                        <span className="text-[14px] font-bold text-slate-700 dark:text-slate-300">{selectedGpu}</span>
-                                                        {!result.isCpuBottleneck && <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-500 text-white rounded-[6px] ml-2 shadow-sm shadow-rose-500/20">瓶颈</span>}
-                                                    </div>
-                                                    <div className="text-[15px] font-display font-bold text-slate-900 dark:text-white">{result.gAvg} <span className="text-[11px] font-sans text-slate-400 font-normal">极限 FPS</span></div>
-                                                </div>
-                                                <div className="h-3.5 w-full bg-slate-200/50 dark:bg-[#121218] rounded-full overflow-hidden border border-slate-200/50 dark:border-[#2D3748] relative">
-                                                    <motion.div 
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${Math.min(100, (result.gAvg / 300) * 100)}%` }}
-                                                        className={`h-full absolute left-0 top-0 rounded-full transition-all duration-1000 ease-out ${!result.isCpuBottleneck ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]' : 'bg-slate-400 dark:bg-slate-500'}`} 
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="mt-7 pt-5 border-t border-slate-200/50 dark:border-slate-700/50">
-                                            <p className="text-[14px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                                                {result.diff < 10 ? (
-                                                    "当前配置极为均衡，CPU与GPU性能几乎在同一水平线上，无明显瓶颈。"
-                                                ) : result.isCpuBottleneck ? (
-                                                    <><strong className="text-rose-500 font-bold">CPU 处理能力触达极限。</strong> 显卡性能仍有巨大富余，建议升级处理器或进一步拉高画质以榨干显卡性能。</>
-                                                ) : (
-                                                    <><strong className="text-rose-500 font-bold">GPU 满载成为帧率瓶颈。</strong> 处理器游刃有余但显卡已无余力，建议适当调低游戏画质或升级显卡。</>
-                                                )}
-                                            </p>
-                                        </div>
+                                    
+                                    <div className="mt-8 pt-5 border-t border-slate-800/80">
+                                        <p className="text-[14px] text-slate-400 leading-relaxed font-medium">
+                                            {result.diff < 10 ? (
+                                                "SYS_STATUS: 最佳均衡状态。CPU与GPU负载均等，算力分配完美。"
+                                            ) : result.isCpuBottleneck ? (
+                                                <><strong className="text-rose-400 font-bold">WARN: CPU 算力已达极限。</strong> 显卡仍有巨大性能冗余。建议提升画面分辨率/画质以榨干GPU，或升级处理器。</>
+                                            ) : (
+                                                <><strong className="text-rose-400 font-bold">WARN: GPU 满载导致帧率受限。</strong> 处理器算力过剩。建议适当降低特效质量或开启DLSS/FSR，亦可考虑升级显卡。</>
+                                            )}
+                                        </p>
                                     </div>
                                 </motion.div>
                             </div>
                         ) : activeMode === 'cpu' ? (
-                            <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-[24px] shadow-sm p-4 sm:p-6 lg:p-8">
+                            <div className="w-full">
                                 {renderComparisonCard(selectedCpu, gamesFpsData[selectedGame]?.cpu[selectedCpu]?.[selectedRes], selectedCpu2, gamesFpsData[selectedGame]?.cpu[selectedCpu2]?.[selectedRes])}
                             </div>
                         ) : (
-                            <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-[24px] shadow-sm p-4 sm:p-6 lg:p-8">
+                            <div className="w-full">
                                 {renderComparisonCard(selectedGpu, gamesFpsData[selectedGame]?.gpu[selectedGpu]?.[selectedRes], selectedGpu2, gamesFpsData[selectedGame]?.gpu[selectedGpu2]?.[selectedRes])}
                             </div>
                         )}
