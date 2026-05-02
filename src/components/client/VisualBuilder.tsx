@@ -482,7 +482,7 @@ function VisualBuilder({
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     const renderGameFpsSection = () => (
-        <div className="bg-[#F6F6FD] dark:bg-[#121218] rounded-[20px] p-4 relative overflow-hidden">
+        <div className="bg-[#F6F6FD] dark:bg-[#121218] lg:rounded-[20px] p-4 relative overflow-hidden">
             <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
             
             <div className="flex items-center justify-between mb-5 relative z-10">
@@ -748,7 +748,7 @@ function VisualBuilder({
                 </div>
 
                 {/* Mobile Game FPS Viewer */}
-                <div className="p-2.5">
+                <div>
                     {renderGameFpsSection()}
                 </div>
             </div>
