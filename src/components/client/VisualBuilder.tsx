@@ -498,20 +498,20 @@ function VisualBuilder({
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     const renderGameFpsSection = () => (
-        <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-2xl p-5 shadow-sm dark:shadow-none relative overflow-hidden">
-            <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
+        <div className="bg-[#F6F6FD] dark:bg-[#121218] rounded-[20px] p-4 relative overflow-hidden">
+            <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
             
             <div className="flex items-center justify-between mb-5 relative z-10">
-                <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] flex items-center gap-2 tracking-wide">
-                    <Gamepad2 size={16} className="text-indigo-400" />
+                <h3 className="font-extrabold text-slate-900 dark:text-white text-[14px] flex items-center gap-1.5 tracking-wide">
+                    <Gamepad2 size={16} className="text-indigo-500" />
                     游戏试玩体验
                 </h3>
-                <div className="flex gap-1 bg-slate-50 dark:bg-[#1A1A24] p-1 rounded-xl border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none">
+                <div className="flex gap-1 bg-white dark:bg-[#1A1A24] p-0.5 rounded-[12px] shadow-sm">
                     {[1080, 1440, 2160].map(res => (
                         <button
                             key={res}
                             onClick={() => setResolution(res)}
-                            className={`text-[9px] font-black px-3 py-1 rounded-[8px] transition-all uppercase tracking-wider ${resolution === res ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'}`}
+                            className={`text-[9px] font-black px-3 py-1.5 rounded-[10px] transition-all uppercase tracking-wider ${resolution === res ? 'bg-[#5B5CE6] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'}`}
                         >
                             {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
                         </button>
@@ -551,7 +551,7 @@ function VisualBuilder({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="w-full bg-slate-100 dark:bg-[#1A1A24] rounded-full h-2 overflow-hidden border border-slate-200 dark:border-[#2D3748] relative">
+                                <div className="w-full bg-slate-200/60 dark:bg-[#1A1A24] rounded-full h-[6px] overflow-hidden relative">
                                     <div 
                                         className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
                                             item.fps === 0 ? 'bg-slate-300 dark:bg-slate-600' :
@@ -658,30 +658,30 @@ function VisualBuilder({
             {/* Mobile Column View (Tabular & Compact) */}
             <div className="lg:hidden flex flex-col bg-white dark:bg-[#0B0B10] relative pb-28">
                 {/* Tabular List Items */}
-                <div className="flex flex-col border-b border-slate-200">
+                <div className="flex flex-col border-b border-slate-100">
                     {buildList.map((entry) => {
                         const getCatColor = (cat: string) => {
                             const map: Record<string, string> = {
-                                cpu: 'bg-blue-500 text-white',
-                                mainboard: 'bg-cyan-500 text-white',
-                                cooling: 'bg-sky-400 text-white',
-                                ram: 'bg-blue-400 text-white',
-                                disk: 'bg-sky-300 text-slate-800',
-                                gpu: 'bg-cyan-400 text-white',
-                                power: 'bg-teal-400 text-white',
-                                case: 'bg-blue-300 text-slate-800',
-                                monitor: 'bg-cyan-300 text-slate-800',
-                                fan: 'bg-sky-200 text-slate-800',
-                                accessory: 'bg-orange-400 text-white'
+                                cpu: 'bg-[#3B82F6] text-white',
+                                mainboard: 'bg-[#60A5FA] text-white',
+                                cooling: 'bg-[#94A3B8] text-white',
+                                ram: 'bg-[#818CF8] text-white',
+                                disk: 'bg-[#2DD4BF] text-white',
+                                gpu: 'bg-[#CBD5E1] text-white',
+                                power: 'bg-[#34D399] text-white',
+                                case: 'bg-[#6EE7B7] text-white',
+                                monitor: 'bg-[#E2E8F0] text-slate-800',
+                                fan: 'bg-[#A7F3D0] text-slate-800',
+                                accessory: 'bg-[#F1F5F9] text-slate-800'
                             };
-                            return map[cat] || 'bg-slate-200 text-slate-700';
+                            return map[cat] || 'bg-slate-100 text-slate-700';
                         };
                         return (
                             <div
                                 key={entry.id}
                                 ref={(el) => { if (el) rowRefs[entry.id] = el; }}
                                 onClick={() => openSelector(entry)}
-                                className="flex items-stretch min-h-[26px] border-b border-white last:border-b-0 cursor-pointer bg-slate-50"
+                                className="flex items-stretch min-h-[34px] border-b border-slate-50 last:border-b-0 cursor-pointer bg-white"
                             >
                                 {/* Category Column */}
                                 <div className={`w-[45px] shrink-0 flex flex-col items-center justify-center font-bold text-[10px] tracking-widest ${getCatColor(entry.category)}`}>
@@ -689,7 +689,7 @@ function VisualBuilder({
                                 </div>
 
                                 {/* Item Name Column */}
-                                <div className="flex-1 flex items-center px-1.5 min-w-0 bg-[#f8f9fa] border-r border-white">
+                                <div className="flex-1 flex items-center px-2 min-w-0 bg-white dark:bg-[#1A1A24]">
                                     {entry.category === 'accessory' ? (
                                         <input
                                             type="text"
@@ -737,10 +737,10 @@ function VisualBuilder({
                 </div>
 
                 {/* Total Row */}
-                <div className="bg-black text-white flex items-center justify-between px-2 py-1.5">
-                    <div className="text-[11px] font-bold text-white flex items-center gap-1 whitespace-nowrap">
+                <div className="bg-black text-white flex items-center justify-between px-3 py-2">
+                    <div className="text-[12px] font-bold text-white flex items-center gap-1.5 whitespace-nowrap">
                         合计
-                        <span className="text-white/60 font-normal text-[9px] transform scale-90 origin-left truncate max-w-[150px]">含装机+走线+三年售后+显卡原封发货+利润{((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}%</span>
+                        <span className="text-white/50 font-normal text-[10px] transform origin-left truncate max-w-[200px]">含装机+走线+三年售后+显卡原封发...</span>
                     </div>
                     <div className="text-[16px] font-black font-mono">
                         ¥<BouncyNumber value={Math.floor(pricing.finalPrice)} />
@@ -1052,7 +1052,7 @@ function VisualBuilder({
                 </div>
 
                 {/* Box 3: 鲁大师跑分与功耗 Grid */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="hidden lg:grid grid-cols-2 gap-4">
                     <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none rounded-2xl p-5 relative overflow-hidden group">
                                 <div className="absolute -right-4 -bottom-4 opacity-5 text-indigo-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Activity size={72}/></div>
                                 <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Activity size={14} className="text-indigo-500"/> 鲁大师跑分</h4>
@@ -1072,7 +1072,9 @@ function VisualBuilder({
                 </div>
 
                 {/* Box 4: 游戏帧率体验测算 */}
-                {renderGameFpsSection()}
+                <div className="hidden lg:block">
+                    {renderGameFpsSection()}
+                </div>
             </div>
 
             {/* Premium Modal Category Selector */}
