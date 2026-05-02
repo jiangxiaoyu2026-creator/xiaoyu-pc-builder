@@ -257,14 +257,6 @@ function VisualBuilder({
                 results.push({ name: gameName, fps: cData.avg, lowFps: cData.low });
             }
 
-            const getFps = (res: Resolution) => {
-                const c = cpuKey ? gd.cpu[cpuKey]?.[res] : null;
-                const g = gpuKey ? gd.gpu[gpuKey]?.[res] : null;
-                if (c && g) return Math.min(c.avg, g.avg);
-                if (g) return g.avg;
-                if (c) return c.avg;
-                return 0;
-            };
         }
 
         setTimeout(() => {
