@@ -104,7 +104,6 @@ function VisualBuilder({
         warnings: string[];
     } | null>(null);
     const [fpsData, setFpsData] = useState<any[]>([]);
-    const [multiFpsData, setMultiFpsData] = useState<any[]>([]);
     const [resolution, setResolution] = useState<number>(1080);
     const [loadingFps, setLoadingFps] = useState(false);
 
@@ -242,7 +241,6 @@ function VisualBuilder({
         const gpuKey = findKey(gpuItem, 'gpu');
 
         const results: { name: string; fps: number; lowFps?: number }[] = [];
-        const multiResults: { name: string; fps1080: number; fps1440: number; fps2160: number }[] = [];
         const preferredGames = ["黑神话：悟空", "赛博朋克 2077", "荒野大镖客：救赎 2", "三角洲行动", "反恐精英 2", "无畏契约", "绝地求生", "Apex 英雄", "刀塔 2", "守望先锋 2"];
         
         for (const gameName of preferredGames) {
@@ -267,16 +265,10 @@ function VisualBuilder({
                 if (c) return c.avg;
                 return 0;
             };
-
-            const fps1080 = getFps('1080p');
-            const fps1440 = getFps('1440p');
-            const fps2160 = getFps('4K');
-            multiResults.push({ name: gameName, fps1080, fps1440, fps2160 });
         }
 
         setTimeout(() => {
             setFpsData(results.slice(0, 8));
-            setMultiFpsData(multiResults.slice(0, 4));
             setLoadingFps(false);
         }, 300);
     }, [buildList, resolution]);
