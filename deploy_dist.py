@@ -15,7 +15,7 @@ def wait_for_output(manager, invoke_id, timeout=60):
         time.sleep(2)
     return "Timeout"
 
-token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc3NzQ0MDU4M30.JeaFVRy4_eN2dO_TDyH_Z4THhTHcRsKKkqXrtrdrQMM"
+token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc3ODMwNjM0MX0.uy-3x0JDHn4TJ-goKXQn5j8ZDWMKjcvCYdQHta5FRYI"
 
 print("Uploading Frontend Dist via /api/upload/image...")
 headers = {"Authorization": f"Bearer {token}"}

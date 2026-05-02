@@ -271,14 +271,12 @@ function VisualBuilder({
             const fps1080 = getFps('1080p');
             const fps1440 = getFps('1440p');
             const fps2160 = getFps('4K');
-            if (fps1080 > 0 || fps1440 > 0 || fps2160 > 0) {
-                multiResults.push({ name: gameName, fps1080, fps1440, fps2160 });
-            }
+            multiResults.push({ name: gameName, fps1080, fps1440, fps2160 });
         }
 
         setTimeout(() => {
             setFpsData(results.slice(0, 8));
-            setMultiFpsData(multiResults.slice(0, 3));
+            setMultiFpsData(multiResults.slice(0, 4));
             setLoadingFps(false);
         }, 300);
     }, [buildList, resolution]);
@@ -499,6 +497,86 @@ function VisualBuilder({
 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+    const renderGameFpsSection = () => (
+        <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-2xl p-5 shadow-sm dark:shadow-none relative overflow-hidden">
+            <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
+            
+            <div className="flex items-center justify-between mb-5 relative z-10">
+                <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] flex items-center gap-2 tracking-wide">
+                    <Gamepad2 size={16} className="text-indigo-400" />
+                    游戏试玩体验
+                </h3>
+                <div className="flex gap-1 bg-slate-50 dark:bg-[#1A1A24] p-1 rounded-xl border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none">
+                    {[1080, 1440, 2160].map(res => (
+                        <button
+                            key={res}
+                            onClick={() => setResolution(res)}
+                            className={`text-[9px] font-black px-3 py-1 rounded-[8px] transition-all uppercase tracking-wider ${resolution === res ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'}`}
+                        >
+                            {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
+                        </button>
+                    ))}
+                </div>
+            </div>
+            <div className="space-y-3.5 relative z-10 min-h-[140px]">
+                {loadingFps ? (
+                    <div className="py-12 flex flex-col items-center justify-center text-indigo-400 gap-3">
+                        <RefreshCw size={24} className="animate-spin opacity-80" />
+                        <div className="text-xs font-black tracking-widest uppercase opacity-80">测算帧率数据中...</div>
+                    </div>
+                ) : fpsData.length > 0 ? (
+                    fpsData.slice(0, 8).map((item, idx) => (
+                            <div key={idx} className="group/item">
+                                <div className="flex justify-between items-end text-[11px] mb-2">
+                                    <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
+                                        <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                        <span className="truncate">{item.name}</span>
+                                    </span>
+                                    <div className="flex items-baseline gap-1.5">
+                                        {item.lowFps && (
+                                            <span className="flex items-baseline gap-0.5 text-slate-400">
+                                                <span className="text-[10px] uppercase font-bold tracking-wider">Low</span>
+                                                <span className="font-mono text-xs font-bold">{item.lowFps}</span>
+                                            </span>
+                                        )}
+                                        <div className="flex items-baseline gap-0.5 ml-1">
+                                            <span className={`font-display font-black text-sm ${
+                                                item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
+                                                item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
+                                                item.fps >= 100 ? 'text-blue-500 dark:text-blue-400' :
+                                                item.fps >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                                                'text-red-500 dark:text-red-400'
+                                            }`}>{item.fps}</span>
+                                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">FPS</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="w-full bg-slate-100 dark:bg-[#1A1A24] rounded-full h-2 overflow-hidden border border-slate-200 dark:border-[#2D3748] relative">
+                                    <div 
+                                        className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
+                                            item.fps === 0 ? 'bg-slate-300 dark:bg-slate-600' :
+                                            item.fps >= 200 ? 'bg-emerald-500' : 
+                                            item.fps >= 100 ? 'bg-blue-500' :
+                                            item.fps >= 60 ? 'bg-yellow-500' :
+                                            'bg-red-500'
+                                        }`}
+                                        style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}
+                                    >
+                                        {item.fps > 0 && <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 animate-[shimmer_2s_infinite]"></div>}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="py-12 flex flex-col items-center justify-center text-slate-500 gap-3 opacity-60">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-[#1A1A24] flex items-center justify-center border border-slate-200 dark:border-[#2D3748]"><Gamepad2 size={24} className="text-slate-400" /></div>
+                            <div className="text-xs font-black text-slate-400 mt-2">添加 CPU/显卡 后展示帧率</div>
+                        </div>
+                    )}
+                </div>
+        </div>
+    );
+
     return (
         <div className="flex flex-col lg:flex-row gap-5 relative">
 
@@ -603,37 +681,37 @@ function VisualBuilder({
                                 key={entry.id}
                                 ref={(el) => { if (el) rowRefs[entry.id] = el; }}
                                 onClick={() => openSelector(entry)}
-                                className="flex items-stretch min-h-[32px] border-b border-white last:border-b-0 cursor-pointer bg-slate-50"
+                                className="flex items-stretch min-h-[26px] border-b border-white last:border-b-0 cursor-pointer bg-slate-50"
                             >
                                 {/* Category Column */}
-                                <div className={`w-[50px] shrink-0 flex flex-col items-center justify-center font-bold text-[11px] tracking-widest ${getCatColor(entry.category)}`}>
+                                <div className={`w-[45px] shrink-0 flex flex-col items-center justify-center font-bold text-[10px] tracking-widest ${getCatColor(entry.category)}`}>
                                     {CATEGORY_MAP[entry.category]}
                                 </div>
 
                                 {/* Item Name Column */}
-                                <div className="flex-1 flex items-center px-2 min-w-0 bg-[#f8f9fa] border-r border-white">
+                                <div className="flex-1 flex items-center px-1.5 min-w-0 bg-[#f8f9fa] border-r border-white">
                                     {entry.category === 'accessory' ? (
                                         <input
                                             type="text"
-                                            className="w-full bg-transparent border-none p-0 text-[12px] text-slate-800 font-bold placeholder-slate-400 focus:ring-0 truncate"
+                                            className="w-full bg-transparent border-none p-0 text-[11px] text-slate-800 font-bold placeholder-slate-400 focus:ring-0 truncate"
                                             placeholder="输入配件..."
                                             value={entry.customName || ''}
                                             onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
                                             onClick={(e) => e.stopPropagation()}
                                         />
                                     ) : entry.item ? (
-                                        <div className="text-[12px] font-bold text-slate-800 truncate leading-tight">
+                                        <div className="text-[11px] font-bold text-slate-800 truncate leading-tight">
                                             {entry.item.brand}_{entry.item.model}
                                         </div>
                                     ) : (
-                                        <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                                            <Plus size={10} strokeWidth={3} /> 去挑选
+                                        <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                                            <Plus size={8} strokeWidth={3} /> 去挑选
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Price Column */}
-                                <div className="w-[65px] shrink-0 flex flex-col items-end justify-center px-1 bg-white relative group">
+                                <div className="w-[60px] shrink-0 flex flex-col items-end justify-center px-1 bg-white relative group">
                                     {entry.category === 'fan' && entry.item && (
                                         <div className="flex items-center gap-0.5 bg-slate-100 rounded px-1 mb-0.5" onClick={e => e.stopPropagation()}>
                                             <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-3 h-3 flex items-center justify-center text-slate-500 font-bold text-[9px]">-</button>
@@ -641,7 +719,7 @@ function VisualBuilder({
                                             <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-3 h-3 flex items-center justify-center text-slate-500 font-bold text-[9px]">+</button>
                                         </div>
                                     )}
-                                    <div className="text-[12px] font-bold font-mono text-slate-900 text-right w-full pr-1">
+                                    <div className="text-[11px] font-bold font-mono text-slate-900 text-right w-full pr-1">
                                         {(entry.item || entry.customName) ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : '¥0'}
                                     </div>
                                     {(entry.item || entry.customName) && (
@@ -669,42 +747,26 @@ function VisualBuilder({
                     </div>
                 </div>
 
-                {/* Mobile FPS Chart */}
-                {multiFpsData && multiFpsData.length > 0 && (
-                    <div className="mt-1 bg-white border border-slate-200">
-                        {/* Header */}
-                        <div className="flex text-[11px] font-bold text-slate-800 border-b border-slate-200 bg-slate-50">
-                            <div className="w-[65px] shrink-0 p-1 flex items-center justify-center border-r border-slate-200">
-                                <span className="text-[10px] text-slate-600">低画质</span>
-                            </div>
-                            <div className="flex-1 text-center py-1.5 border-r border-slate-200">1080P</div>
-                            <div className="flex-1 text-center py-1.5 border-r border-slate-200">1440P</div>
-                            <div className="flex-1 text-center py-1.5">2160P</div>
-                        </div>
-                        {/* Rows */}
-                        <div className="flex flex-col">
-                            {multiFpsData.map((game, idx) => (
-                                <div key={idx} className="flex border-b border-slate-100 last:border-b-0 h-[28px] items-stretch">
-                                    <div className="w-[65px] shrink-0 bg-slate-50 border-r border-slate-200 p-0.5 flex items-center justify-center">
-                                        <div className="text-[9px] font-bold text-slate-700 text-center leading-tight">{game.name.replace('：', '\n')}</div>
-                                    </div>
-                                    <div className="flex-1 border-r border-slate-100 p-0.5 flex items-center justify-center relative overflow-hidden bg-white">
-                                        <div className="absolute left-0 top-0 bottom-0 bg-[#40b8fb] z-0" style={{ width: `${Math.min(100, (game.fps1080 / 300) * 100)}%` }}></div>
-                                        <div className="z-10 text-[10px] font-bold text-slate-900 mix-blend-multiply">{game.fps1080 > 0 ? `${game.fps1080.toFixed(1)}FPS` : '-'}</div>
-                                    </div>
-                                    <div className="flex-1 border-r border-slate-100 p-0.5 flex items-center justify-center relative overflow-hidden bg-white">
-                                        <div className="absolute left-0 top-0 bottom-0 bg-[#40b8fb] z-0" style={{ width: `${Math.min(100, (game.fps1440 / 300) * 100)}%` }}></div>
-                                        <div className="z-10 text-[10px] font-bold text-slate-900 mix-blend-multiply">{game.fps1440 > 0 ? `${game.fps1440.toFixed(1)}FPS` : '-'}</div>
-                                    </div>
-                                    <div className="flex-1 p-0.5 flex items-center justify-center relative overflow-hidden bg-white">
-                                        <div className="absolute left-0 top-0 bottom-0 bg-[#40b8fb] z-0" style={{ width: `${Math.min(100, (game.fps2160 / 300) * 100)}%` }}></div>
-                                        <div className="z-10 text-[10px] font-bold text-slate-900 mix-blend-multiply">{game.fps2160 > 0 ? `${game.fps2160.toFixed(1)}FPS` : '-'}</div>
-                                    </div>
-                                </div>
-                            ))}
+                {/* Mobile LuDaShi & Power Row */}
+                <div className="flex bg-white h-[48px] border-b border-slate-200">
+                    <div className="flex-1 flex flex-col justify-center items-center border-r border-slate-200">
+                        <div className="text-[10px] font-bold text-slate-500 mb-0.5 flex items-center gap-1"><Activity size={10} className="text-indigo-500"/>鲁大师跑分</div>
+                        <div className="text-[14px] font-black text-indigo-600 tracking-tighter">
+                            {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
                         </div>
                     </div>
-                )}
+                    <div className="flex-1 flex flex-col justify-center items-center">
+                        <div className="text-[10px] font-bold text-slate-500 mb-0.5 flex items-center gap-1"><Zap size={10} className="text-amber-500"/>系统功耗</div>
+                        <div className="text-[14px] font-black text-slate-800 tracking-tighter flex items-center">
+                            {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} />W</> : '---'}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Mobile Game FPS Viewer */}
+                <div className="p-2.5">
+                    {renderGameFpsSection()}
+                </div>
             </div>
 
             {/* Desktop List View (Hidden on mobile) */}
@@ -1010,83 +1072,7 @@ function VisualBuilder({
                 </div>
 
                 {/* Box 4: 游戏帧率体验测算 */}
-                <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] rounded-2xl p-5 shadow-sm dark:shadow-none relative overflow-hidden">
-                    <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
-                    
-                    <div className="flex items-center justify-between mb-5 relative z-10">
-                        <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] flex items-center gap-2 tracking-wide">
-                            <Gamepad2 size={16} className="text-indigo-400" />
-                            游戏试玩体验
-                        </h3>
-                        <div className="flex gap-1 bg-slate-50 dark:bg-[#1A1A24] p-1 rounded-xl border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none">
-                            {[1080, 1440, 2160].map(res => (
-                                <button
-                                    key={res}
-                                    onClick={() => setResolution(res)}
-                                    className={`text-[9px] font-black px-3 py-1 rounded-[8px] transition-all uppercase tracking-wider ${resolution === res ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'}`}
-                                >
-                                    {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="space-y-3.5 relative z-10 min-h-[140px]">
-                        {loadingFps ? (
-                            <div className="py-12 flex flex-col items-center justify-center text-indigo-400 gap-3">
-                                <RefreshCw size={24} className="animate-spin opacity-80" />
-                                <div className="text-xs font-black tracking-widest uppercase opacity-80">测算帧率数据中...</div>
-                            </div>
-                        ) : fpsData.length > 0 ? (
-                            fpsData.slice(0, 8).map((item, idx) => (
-                                    <div key={idx} className="group/item">
-                                        <div className="flex justify-between items-end text-[11px] mb-2">
-                                            <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
-                                                <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                                <span className="truncate">{item.name}</span>
-                                            </span>
-                                            <div className="flex items-baseline gap-1.5">
-                                                {item.lowFps && (
-                                                    <span className="flex items-baseline gap-0.5 text-slate-400">
-                                                        <span className="text-[10px] uppercase font-bold tracking-wider">Low</span>
-                                                        <span className="font-mono text-xs font-bold">{item.lowFps}</span>
-                                                    </span>
-                                                )}
-                                                <div className="flex items-baseline gap-0.5 ml-1">
-                                                    <span className={`font-display font-black text-sm ${
-                                                        item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
-                                                        item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
-                                                        item.fps >= 100 ? 'text-blue-500 dark:text-blue-400' :
-                                                        item.fps >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
-                                                        'text-red-500 dark:text-red-400'
-                                                    }`}>{item.fps}</span>
-                                                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">FPS</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="w-full bg-slate-100 dark:bg-[#1A1A24] rounded-full h-2 overflow-hidden border border-slate-200 dark:border-[#2D3748] relative">
-                                            <div 
-                                                className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
-                                                    item.fps === 0 ? 'bg-slate-300 dark:bg-slate-600' :
-                                                    item.fps >= 200 ? 'bg-emerald-500' : 
-                                                    item.fps >= 100 ? 'bg-blue-500' :
-                                                    item.fps >= 60 ? 'bg-yellow-500' :
-                                                    'bg-red-500'
-                                                }`}
-                                                style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}
-                                            >
-                                                {item.fps > 0 && <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 animate-[shimmer_2s_infinite]"></div>}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="py-12 flex flex-col items-center justify-center text-slate-500 gap-3 opacity-60">
-                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-[#1A1A24] flex items-center justify-center border border-slate-200 dark:border-[#2D3748]"><Gamepad2 size={24} className="text-slate-400" /></div>
-                                    <div className="text-xs font-black text-slate-400 mt-2">添加 CPU/显卡 后展示帧率</div>
-                                </div>
-                            )}
-                        </div>
-                </div>
+                {renderGameFpsSection()}
             </div>
 
             {/* Premium Modal Category Selector */}
