@@ -306,7 +306,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
 
     return (
-        <div className={`grid grid-cols-[75px_1fr_45px_50px_20px] gap-2 px-4 py-2.5 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
+        <div className={`grid grid-cols-[75px_1fr_80px_80px_20px] gap-2 px-4 py-2.5 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
 
             <div className={`flex items-center gap-3 font-bold text-sm transition-all ${theme.primary}`}>
                 <div
@@ -348,9 +348,9 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
                 {entry.category === 'accessory' ? null : (
                     entry.isLockedQty ? <span className="text-slate-400 text-sm">× 1</span> : (
                         <div className="flex items-center bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>-</button>
+                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) }); }} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>-</button>
                             <span className="w-8 text-center text-sm dark:text-slate-200">{entry.quantity}</span>
-                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>+</button>
+                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: entry.quantity + 1 }); }} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>+</button>
                         </div>
                     )
                 )}
@@ -1086,7 +1086,7 @@ function StreamerWorkbench({
                     <div className="flex-1 min-w-0 max-w-[1550px]">
                         <div className="overflow-x-auto">
                             <div className="min-w-[600px]">
-                                <div className={`grid grid-cols-[75px_1fr_45px_50px_20px] gap-2 px-4 py-1 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
+                                <div className={`grid grid-cols-[75px_1fr_80px_80px_20px] gap-2 px-4 py-1 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
