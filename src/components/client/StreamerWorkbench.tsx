@@ -623,7 +623,7 @@ function StreamerWorkbench({
         }
 
         setTimeout(() => {
-            setFpsData(results.slice(0, 8));
+            setFpsData(results.slice(0, 12));
             setLoadingFps(false);
         }, 300);
     }, [buildList, sidebarResolution]);
@@ -1015,7 +1015,7 @@ function StreamerWorkbench({
                 {/* === Layout Container === */}
                 <div className="flex flex-col md:flex-row flex-1">
                     {/* === Sidebar Navigation === */}
-                    <div className="flex flex-row md:flex-col gap-2 p-3 md:p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 md:w-[130px] lg:w-[160px] shrink-0 overflow-x-auto hide-scrollbar">
+                    <div className="flex flex-row md:flex-col gap-2 p-3 md:p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 md:w-[180px] lg:w-[220px] shrink-0 overflow-x-auto hide-scrollbar">
                         {/* 专业装机 Tab */}
                         <button
                             onClick={() => setActiveTab('builder')}
@@ -1319,7 +1319,7 @@ function StreamerWorkbench({
                                         <div className="text-[10px] font-black tracking-widest uppercase opacity-80">AI 性能分析中...</div>
                                     </div>
                                 ) : fpsData.length > 0 ? (
-                                    fpsData.slice(0, 8).map((item, idx) => (
+                                    fpsData.slice(0, 12).map((item, idx) => (
                                         <div key={idx} className="group/item">
                                             <div className="flex justify-between items-end text-[11px] mb-1.5">
                                                 <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
