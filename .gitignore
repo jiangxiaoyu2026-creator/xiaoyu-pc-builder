@@ -81,3 +81,6 @@ dist.zip
 dist_lite.zip
 server.zip
 *.xlsm
+
+# Market Reports Data
+market_reports/
