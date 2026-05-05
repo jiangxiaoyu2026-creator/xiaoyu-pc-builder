@@ -346,10 +346,19 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
 
             <div className="flex justify-center">
                 {entry.category === 'accessory' ? null : (
-                    entry.isLockedQty ? <span className="text-slate-400 text-sm">× 1</span> : (
+                    entry.isLockedQty ? <span className="text-slate-400 text-sm">× {entry.quantity}</span> : (
                         <div className="flex items-center bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
                             <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) }); }} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>-</button>
-                            <span className="w-8 text-center text-sm dark:text-slate-200">{entry.quantity}</span>
+                            <input 
+                                type="number" 
+                                className="w-8 text-center text-sm dark:text-slate-200 bg-transparent border-none p-0 focus:ring-0 [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none" 
+                                value={entry.quantity || ''} 
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    if (!isNaN(val) && val > 0) onUpdate(entry.id, { quantity: val });
+                                    else if (e.target.value === '') onUpdate(entry.id, { quantity: 1 }); // Fallback
+                                }} 
+                            />
                             <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: entry.quantity + 1 }); }} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>+</button>
                         </div>
                     )

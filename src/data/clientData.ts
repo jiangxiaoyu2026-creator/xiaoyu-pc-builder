@@ -172,7 +172,7 @@ export const DEFAULT_BUILD_TEMPLATE: BuildEntry[] = [
     { id: 'row-monitor', category: 'monitor', item: null, quantity: 1, isLockedQty: true },
     { id: 'row-mouse', category: 'mouse', item: null, quantity: 1, isLockedQty: true },
     { id: 'row-keyboard', category: 'keyboard', item: null, quantity: 1, isLockedQty: true },
-    { id: 'row-accessory', category: 'accessory', item: null, quantity: 1, isLockedQty: false },
+    { id: 'row-accessory', category: 'accessory', item: null, quantity: 1, isLockedQty: true },
 ];
 
 export const PROFIT_MARGIN = 0.06;
