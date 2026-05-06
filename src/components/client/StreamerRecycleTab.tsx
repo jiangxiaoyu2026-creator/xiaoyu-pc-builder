@@ -285,6 +285,12 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
                     if (seenModels.has(norm)) return false;
                     seenModels.add(norm);
                     return true;
+                }).sort((a: any, b: any) => {
+                    const priceA = a.recyclePrice || 0;
+                    const priceB = b.recyclePrice || 0;
+                    if (priceA === 0 && priceB !== 0) return 1;
+                    if (priceB === 0 && priceA !== 0) return -1;
+                    return priceA - priceB;
                 });
                 setSuggestions(dedupedItems);
                 setHighlightIndex(0);

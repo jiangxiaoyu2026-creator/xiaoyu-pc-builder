@@ -341,6 +341,113 @@ export const GameFPSViewer: React.FC = () => {
         );
     };
 
+    const renderMultiGameTable = (type: 'cpu' | 'gpu', item1: string, item2: string) => {
+        const rows: { game: string; item1Avg: number; item1Low: number; item2Avg: number; item2Low: number }[] = [];
+
+        for (const game of gamesList) {
+            const gameData = gamesFpsData[game];
+            if (!gameData) continue;
+            const data1 = gameData[type][item1]?.[selectedRes];
+            const data2 = gameData[type][item2]?.[selectedRes];
+            if (data1 && data2) {
+                rows.push({ game, item1Avg: data1.avg, item1Low: data1.low, item2Avg: data2.avg, item2Low: data2.low });
+            }
+        }
+
+        if (rows.length === 0) return null;
+
+        const item1Wins = rows.filter(r => r.item1Avg > r.item2Avg).length;
+        const item2Wins = rows.filter(r => r.item2Avg > r.item1Avg).length;
+        const ties = rows.length - item1Wins - item2Wins;
+
+        return (
+            <motion.div initial={{opacity:0, y:15}} animate={{opacity:1, y:0}} transition={{delay: 0.35}} className="bg-[#121218] rounded-[24px] border border-slate-800 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent"></div>
+
+                {/* Header */}
+                <div className="px-6 pt-6 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-violet-500/20 text-violet-400 rounded-lg border border-violet-500/30">
+                            <Gamepad2 size={18} />
+                        </div>
+                        <div>
+                            <h3 className="text-[15px] font-bold text-slate-100 tracking-wide">全游戏横评对比</h3>
+                            <p className="text-[11px] text-slate-500 mt-0.5">覆盖 {rows.length} 款游戏 · {selectedRes} 画质</p>
+                        </div>
+                    </div>
+                    {/* Win summary pills */}
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/30">
+                            <div className="w-1.5 h-1.5 rounded-full bg-violet-500"></div>
+                            <span className="text-[11px] font-bold text-violet-400">A 胜 {item1Wins}</span>
+                        </div>
+                        {ties > 0 && <div className="px-2 py-1.5 rounded-full bg-slate-800 border border-slate-700">
+                            <span className="text-[11px] font-bold text-slate-500">平 {ties}</span>
+                        </div>}
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500"></div>
+                            <span className="text-[11px] font-bold text-cyan-400">B 胜 {item2Wins}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Column labels */}
+                <div className="grid grid-cols-[1fr_90px_90px_90px_90px] gap-1 px-6 py-2 border-y border-slate-800/80 bg-slate-900/50 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    <div>游戏</div>
+                    <div className="text-right">A 平均</div>
+                    <div className="text-right">A 最低</div>
+                    <div className="text-right">B 平均</div>
+                    <div className="text-right">B 最低</div>
+                </div>
+
+                {/* Rows */}
+                <div className="max-h-[520px] overflow-y-auto custom-scrollbar">
+                    {rows.map((r, idx) => {
+                        const winner = r.item1Avg > r.item2Avg ? 1 : r.item2Avg > r.item1Avg ? 2 : 0;
+                        const diff = Math.abs(r.item1Avg - r.item2Avg);
+                        const diffPct = Math.max(r.item1Avg, r.item2Avg) > 0 ? ((diff / Math.max(r.item1Avg, r.item2Avg)) * 100).toFixed(0) : '0';
+                        return (
+                            <div key={r.game} className={`grid grid-cols-[1fr_90px_90px_90px_90px] gap-1 px-6 py-2.5 items-center border-b border-slate-800/40 transition-colors hover:bg-slate-800/30 ${selectedGame === r.game ? 'bg-violet-500/5 border-l-2 border-l-violet-500' : 'border-l-2 border-l-transparent'}`}>
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <img src={`/images/games/icons/${r.game}.png`} alt="" className="w-5 h-5 rounded-[4px] object-cover bg-slate-800 shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                    <span className="text-[13px] font-medium text-slate-300 truncate">{r.game}</span>
+                                    {parseInt(diffPct) >= 15 && <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${winner === 1 ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'}`}>+{diffPct}%</span>}
+                                </div>
+                                <div className={`text-right font-mono text-[13px] font-bold ${winner === 1 ? 'text-violet-400' : 'text-slate-400'}`}>{r.item1Avg}</div>
+                                <div className={`text-right font-mono text-[12px] ${winner === 1 ? 'text-violet-400/60' : 'text-slate-500'}`}>{r.item1Low}</div>
+                                <div className={`text-right font-mono text-[13px] font-bold ${winner === 2 ? 'text-cyan-400' : 'text-slate-400'}`}>{r.item2Avg}</div>
+                                <div className={`text-right font-mono text-[12px] ${winner === 2 ? 'text-cyan-400/60' : 'text-slate-500'}`}>{r.item2Low}</div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Footer summary */}
+                <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                        <Zap size={16} className={item1Wins > item2Wins ? 'text-violet-500' : item2Wins > item1Wins ? 'text-cyan-500' : 'text-slate-500'} />
+                        <span className="text-[13px] font-medium text-slate-400">
+                            {item1Wins > item2Wins ? (
+                                <><strong className="text-violet-400">{item1}</strong> 在 <strong className="text-white">{rows.length}</strong> 款游戏中赢得 <strong className="text-violet-400">{item1Wins}</strong> 款，综合表现更优。</>
+                            ) : item2Wins > item1Wins ? (
+                                <><strong className="text-cyan-400">{item2}</strong> 在 <strong className="text-white">{rows.length}</strong> 款游戏中赢得 <strong className="text-cyan-400">{item2Wins}</strong> 款，综合表现更优。</>
+                            ) : (
+                                <>两者在 <strong className="text-white">{rows.length}</strong> 款游戏中势均力敌，综合实力相当。</>
+                            )}
+                        </span>
+                    </div>
+                    {/* Average FPS across all games */}
+                    <div className="flex items-center gap-4 text-[11px] font-bold">
+                        <span className="text-slate-500">全局均值:</span>
+                        <span className="text-violet-400 font-mono">{Math.round(rows.reduce((s, r) => s + r.item1Avg, 0) / rows.length)} FPS</span>
+                        <span className="text-slate-600">vs</span>
+                        <span className="text-cyan-400 font-mono">{Math.round(rows.reduce((s, r) => s + r.item2Avg, 0) / rows.length)} FPS</span>
+                    </div>
+                </div>
+            </motion.div>
+        );
+    };
+
     if (!gamesFpsData[selectedGame] && selectedGame !== '') {
         return (
             <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-500 dark:text-slate-400 bg-[#FAFAFA] dark:bg-[#0B0B10] transition-colors duration-500">
@@ -587,12 +694,14 @@ export const GameFPSViewer: React.FC = () => {
                                 </motion.div>
                             </div>
                         ) : activeMode === 'cpu' ? (
-                            <div className="w-full">
+                            <div className="w-full flex flex-col gap-6">
                                 {renderComparisonCard(selectedCpu, gamesFpsData[selectedGame]?.cpu[selectedCpu]?.[selectedRes], selectedCpu2, gamesFpsData[selectedGame]?.cpu[selectedCpu2]?.[selectedRes])}
+                                {renderMultiGameTable('cpu', selectedCpu, selectedCpu2)}
                             </div>
                         ) : (
-                            <div className="w-full">
+                            <div className="w-full flex flex-col gap-6">
                                 {renderComparisonCard(selectedGpu, gamesFpsData[selectedGame]?.gpu[selectedGpu]?.[selectedRes], selectedGpu2, gamesFpsData[selectedGame]?.gpu[selectedGpu2]?.[selectedRes])}
+                                {renderMultiGameTable('gpu', selectedGpu, selectedGpu2)}
                             </div>
                         )}
                     </div>
