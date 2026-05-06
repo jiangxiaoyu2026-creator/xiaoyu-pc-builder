@@ -695,23 +695,25 @@ function VisualBuilder({
                                 </div>
 
                                 {/* Price Column */}
-                                <div className="w-[60px] shrink-0 flex flex-col items-end justify-center px-1 bg-white relative group">
+                                <div className="w-[85px] shrink-0 flex flex-col items-end justify-center px-2 bg-white relative group">
                                     {entry.category === 'fan' && entry.item && (
-                                        <div className="flex items-center gap-0.5 bg-slate-100 rounded px-1 mb-0.5" onClick={e => e.stopPropagation()}>
-                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-3 h-3 flex items-center justify-center text-slate-500 font-bold text-[9px]">-</button>
-                                            <span className="w-3 text-center text-[9px] font-bold text-slate-700">{entry.quantity}</span>
-                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-3 h-3 flex items-center justify-center text-slate-500 font-bold text-[9px]">+</button>
+                                        <div className="flex items-center gap-1.5 bg-slate-100 rounded-lg px-1.5 py-0.5 mb-1 shadow-sm" onClick={e => e.stopPropagation()}>
+                                            <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-indigo-600 bg-white rounded-[4px] shadow-sm font-bold text-[14px] active:scale-95 transition-transform">-</button>
+                                            <span className="w-4 text-center text-[12px] font-bold text-slate-700">{entry.quantity}</span>
+                                            <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-indigo-600 bg-white rounded-[4px] shadow-sm font-bold text-[14px] active:scale-95 transition-transform">+</button>
                                         </div>
                                     )}
-                                    <div className="text-[11px] font-bold font-mono text-slate-900 text-right w-full pr-1">
+                                    <div className="text-[12px] font-bold font-mono text-slate-900 text-right w-full pr-1">
                                         {(entry.item || entry.customName) ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : '¥0'}
                                     </div>
                                     {(entry.item || entry.customName) && (
                                         <button
-                                            className="absolute top-1 right-1 text-slate-200 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                            className="absolute top-0 right-0 p-1.5 text-slate-300 hover:text-red-500 active:text-red-500 transition-colors lg:opacity-0 lg:group-hover:opacity-100 opacity-100 z-10"
                                             onClick={(e) => { e.stopPropagation(); onUpdate(entry.id, { item: null, customName: '', customPrice: undefined, quantity: 1 }); }}
                                         >
-                                            <X size={10} strokeWidth={3} />
+                                            <div className="bg-slate-50 border border-slate-100 rounded-full p-0.5 shadow-sm">
+                                                <X size={12} strokeWidth={3} />
+                                            </div>
                                         </button>
                                     )}
                                 </div>

@@ -179,7 +179,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
 
     return (
         <div
-            className="fixed inset-0 z-[80] flex items-end md:items-center justify-center md:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in cursor-pointer"
+            className="fixed inset-0 z-[200] flex items-end md:items-center justify-center md:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in cursor-pointer"
             onClick={onClose}
         >
             {/* Lightbox Overlay */}
@@ -304,7 +304,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                     </div>
 
                     {/* Mobile Action Bar */}
-                    <div className="md:hidden flex items-center gap-3 p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0">
+                    <div className="md:hidden flex items-center gap-3 p-4 pb-8 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0">
                         <button
                             onClick={() => onToggleLike(config.id)}
                             className={`p-3 rounded-xl border transition-all ${config.isLiked
