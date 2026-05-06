@@ -90,6 +90,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [highlightIndex, setHighlightIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
+    const qtyRef = useRef<HTMLInputElement>(null);
     const priceRef = useRef<HTMLInputElement>(null);
 
     const [hardwareList, setHardwareList] = useState<HardwareItem[]>([]);
@@ -198,14 +199,24 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             }
         } else if (e.key === 'Tab') {
             e.preventDefault();
-            priceRef.current?.focus();
-            priceRef.current?.select();
+            if (qtyRef.current && !entry.isLockedQty) {
+                qtyRef.current.focus();
+                qtyRef.current.select();
+            } else {
+                priceRef.current?.focus();
+                priceRef.current?.select();
+            }
         } else if (e.key === 'ArrowRight') {
             const target = e.target as HTMLInputElement;
             if (target.selectionStart === target.value.length && target.selectionEnd === target.value.length) {
                 e.preventDefault();
-                priceRef.current?.focus();
-                priceRef.current?.select();
+                if (qtyRef.current && !entry.isLockedQty) {
+                    qtyRef.current.focus();
+                    qtyRef.current.select();
+                } else {
+                    priceRef.current?.focus();
+                    priceRef.current?.select();
+                }
             }
         }
     };
@@ -215,6 +226,44 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             e.preventDefault();
             // From price field, move to next row
             onEnter();
+        } else if (e.key === 'ArrowLeft') {
+            const target = e.target as HTMLInputElement;
+            if (target.selectionStart === 0 && target.selectionEnd === 0) {
+                e.preventDefault();
+                if (qtyRef.current && !entry.isLockedQty) {
+                    qtyRef.current.focus();
+                    qtyRef.current.select();
+                } else {
+                    inputRef.current?.focus();
+                    setTimeout(() => {
+                        if (inputRef.current) {
+                            const len = inputRef.current.value.length;
+                            inputRef.current.setSelectionRange(len, len);
+                        }
+                    }, 0);
+                }
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            onPrev();
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            onEnter();
+        }
+    };
+
+    const handleQtyKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+            priceRef.current?.focus();
+            priceRef.current?.select();
+        } else if (e.key === 'ArrowRight') {
+            const target = e.target as HTMLInputElement;
+            if (target.selectionStart === target.value.length && target.selectionEnd === target.value.length) {
+                e.preventDefault();
+                priceRef.current?.focus();
+                priceRef.current?.select();
+            }
         } else if (e.key === 'ArrowLeft') {
             const target = e.target as HTMLInputElement;
             if (target.selectionStart === 0 && target.selectionEnd === 0) {
@@ -350,14 +399,16 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
                         <div className="flex items-center bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
                             <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) }); }} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>-</button>
                             <input 
+                                ref={qtyRef}
                                 type="number" 
-                                className="w-8 text-center text-sm dark:text-slate-200 bg-transparent border-none p-0 focus:ring-0 [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none" 
+                                className="w-8 text-center text-sm dark:text-slate-200 bg-transparent border-none p-0 focus:ring-0 [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none focus:bg-slate-100 dark:focus:bg-slate-700/50 rounded" 
                                 value={entry.quantity || ''} 
                                 onChange={(e) => {
                                     const val = parseInt(e.target.value);
                                     if (!isNaN(val) && val > 0) onUpdate(entry.id, { quantity: val });
                                     else if (e.target.value === '') onUpdate(entry.id, { quantity: 1 }); // Fallback
                                 }} 
+                                onKeyDown={handleQtyKeyDown}
                             />
                             <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: entry.quantity + 1 }); }} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>+</button>
                         </div>
@@ -510,7 +561,7 @@ function StreamerWorkbench({
         const gpuItem = buildList.find(b => b.category === 'gpu')?.item;
         
         if (!cpuItem && !gpuItem) { 
-            setFpsData(gamesList.slice(0, 8).map((gameName: string) => ({ name: gameName, fps: 0 })));
+            setFpsData(gamesList.slice(0, 15).map((gameName: string) => ({ name: gameName, fps: 0 })));
             setLoadingFps(false);
             return; 
         }
@@ -623,7 +674,7 @@ function StreamerWorkbench({
         }
 
         setTimeout(() => {
-            setFpsData(results.slice(0, 12));
+            setFpsData(results.slice(0, 15));
             setLoadingFps(false);
         }, 300);
     }, [buildList, sidebarResolution]);
@@ -1319,7 +1370,7 @@ function StreamerWorkbench({
                                         <div className="text-[10px] font-black tracking-widest uppercase opacity-80">AI 性能分析中...</div>
                                     </div>
                                 ) : fpsData.length > 0 ? (
-                                    fpsData.slice(0, 12).map((item, idx) => (
+                                    fpsData.slice(0, 15).map((item, idx) => (
                                         <div key={idx} className="group/item">
                                             <div className="flex justify-between items-end text-[11px] mb-1.5">
                                                 <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
