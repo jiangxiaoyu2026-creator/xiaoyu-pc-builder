@@ -561,7 +561,7 @@ function StreamerWorkbench({
         const gpuItem = buildList.find(b => b.category === 'gpu')?.item;
         
         if (!cpuItem && !gpuItem) { 
-            setFpsData(gamesList.slice(0, 15).map((gameName: string) => ({ name: gameName, fps: 0 })));
+            setFpsData(gamesList.slice(0, 12).map((gameName: string) => ({ name: gameName, fps: 0 })));
             setLoadingFps(false);
             return; 
         }
@@ -674,7 +674,7 @@ function StreamerWorkbench({
         }
 
         setTimeout(() => {
-            setFpsData(results.slice(0, 15));
+            setFpsData(results.slice(0, 12));
             setLoadingFps(false);
         }, 300);
     }, [buildList, sidebarResolution]);
@@ -1370,7 +1370,7 @@ function StreamerWorkbench({
                                         <div className="text-[10px] font-black tracking-widest uppercase opacity-80">AI 性能分析中...</div>
                                     </div>
                                 ) : fpsData.length > 0 ? (
-                                    fpsData.slice(0, 15).map((item, idx) => (
+                                    fpsData.slice(0, 12).map((item, idx) => (
                                         <div key={idx} className="group/item">
                                             <div className="flex justify-between items-end text-[11px] mb-1.5">
                                                 <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
