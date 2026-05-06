@@ -250,6 +250,30 @@ export const GameFPSViewer: React.FC = () => {
         
         return (
             <div className="flex flex-col gap-6 w-full">
+                
+                {/* 顶部高亮结论 Banner */}
+                {winner !== 0 && (
+                    <motion.div initial={{opacity:0, y:-10}} animate={{opacity:1, y:0}} transition={{delay: 0.1}} className={`relative overflow-hidden rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 shadow-[0_0_30px_rgba(0,0,0,0.5)] border ${winner === 1 ? 'bg-gradient-to-r from-violet-900/40 via-violet-800/20 to-[#121218] border-violet-500/50' : 'bg-gradient-to-r from-[#121218] via-cyan-800/20 to-cyan-900/40 border-cyan-500/50'}`}>
+                        <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-10 pointer-events-none mix-blend-overlay"></div>
+                        <div className={`p-2 rounded-full ${winner === 1 ? 'bg-violet-500/20 text-violet-400 shadow-[0_0_15px_rgba(139,92,246,0.4)]' : 'bg-cyan-500/20 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.4)]'}`}>
+                            <Zap size={24} />
+                        </div>
+                        <span className="text-[15px] sm:text-[16px] font-medium text-slate-100 text-center sm:text-left z-10">
+                            {winner === 1 ? (
+                                <><strong className="text-violet-300 font-bold text-[18px] drop-shadow-md">{item1Name}</strong> 在该画质下平均帧数领先约 <strong className="text-white font-black bg-violet-500/40 border border-violet-400/50 px-2 py-0.5 rounded text-[16px] shadow-[0_0_10px_rgba(139,92,246,0.3)]">{diffPercent}%</strong> ({diff} FPS)。</>
+                            ) : (
+                                <><strong className="text-cyan-300 font-bold text-[18px] drop-shadow-md">{item2Name}</strong> 在该画质下平均帧数领先约 <strong className="text-white font-black bg-cyan-500/40 border border-cyan-400/50 px-2 py-0.5 rounded text-[16px] shadow-[0_0_10px_rgba(34,211,238,0.3)]">{diffPercent}%</strong> ({Math.abs(diff)} FPS)。</>
+                            )}
+                        </span>
+                    </motion.div>
+                )}
+                {winner === 0 && (
+                    <motion.div initial={{opacity:0, y:-10}} animate={{opacity:1, y:0}} transition={{delay: 0.1}} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 flex items-center justify-center gap-3 shadow-md">
+                        <Zap size={20} className="text-slate-400" />
+                        <span className="text-[15px] font-medium text-slate-300">两者的平均帧数表现完全一致，属于同等性能水平。</span>
+                    </motion.div>
+                )}
+
                 <div className="bg-[#121218]/90 backdrop-blur-xl border border-slate-800/80 rounded-[24px] shadow-[0_0_40px_rgba(0,0,0,0.5)] p-6 sm:p-8 relative overflow-hidden group hover:scale-[1.01] transition-all duration-300">
                     {/* 网格底纹 */}
                     <div className="absolute inset-0 bg-[url('/images/grid-pattern.svg')] opacity-5 pointer-events-none mix-blend-overlay"></div>
@@ -286,20 +310,26 @@ export const GameFPSViewer: React.FC = () => {
                                     <span className="text-[10px] bg-white/10 border border-white/20 px-2 py-0.5 rounded text-white font-bold shadow-sm">差距 {diffPercent}%</span>
                                 )}
                             </div>
-                            <div className="flex gap-3 sm:gap-5 font-display font-bold items-center">
-                                <div className={`text-xl ${winner === 1 ? 'text-violet-400 drop-shadow-[0_0_12px_rgba(139,92,246,0.6)] scale-110 transition-transform' : 'text-slate-300'}`}><BouncyNumber value={item1Avg} /> <span className="text-[10px] font-sans opacity-60">FPS</span></div>
-                                <div className="text-[11px] text-slate-500 uppercase tracking-widest font-sans">vs</div>
-                                <div className={`text-xl ${winner === 2 ? 'text-cyan-400 drop-shadow-[0_0_12px_rgba(34,211,238,0.6)] scale-110 transition-transform' : 'text-slate-300'}`}><BouncyNumber value={item2Avg} /> <span className="text-[10px] font-sans opacity-60">FPS</span></div>
+                            <div className="flex gap-4 sm:gap-6 font-display font-bold items-baseline">
+                                <div className={`flex items-baseline gap-1 ${winner === 1 ? 'text-violet-400 drop-shadow-[0_0_15px_rgba(139,92,246,0.8)] scale-110 origin-right transition-transform' : 'text-slate-300'}`}>
+                                    <span className={winner === 1 ? 'text-4xl sm:text-5xl font-black tracking-tighter' : 'text-2xl sm:text-3xl'}><BouncyNumber value={item1Avg} /></span>
+                                    <span className="text-[11px] font-sans opacity-60">FPS</span>
+                                </div>
+                                <div className="text-[11px] text-slate-500 uppercase tracking-widest font-sans self-center px-2">vs</div>
+                                <div className={`flex items-baseline gap-1 ${winner === 2 ? 'text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)] scale-110 origin-left transition-transform' : 'text-slate-300'}`}>
+                                    <span className={winner === 2 ? 'text-4xl sm:text-5xl font-black tracking-tighter' : 'text-2xl sm:text-3xl'}><BouncyNumber value={item2Avg} /></span>
+                                    <span className="text-[11px] font-sans opacity-60">FPS</span>
+                                </div>
                             </div>
                         </div>
                         <div className="flex flex-col gap-2.5">
-                            <div className="h-4 w-full bg-[#0B0B10] border border-slate-800 rounded-full overflow-hidden relative">
+                            <div className="h-5 w-full bg-[#0B0B10] border border-slate-800 rounded-full overflow-hidden relative shadow-inner">
                                 <div className="absolute inset-0 bg-[url('/images/scanlines.png')] opacity-30 mix-blend-overlay z-10 pointer-events-none"></div>
-                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item1Avg / Math.max(item1Avg, item2Avg, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut"}} className="h-full rounded-full bg-gradient-to-r from-violet-900/50 to-violet-500 border-r border-violet-300 shadow-[0_0_15px_rgba(139,92,246,0.4)] relative z-0" />
+                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item1Avg / Math.max(item1Avg, item2Avg, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut"}} className="h-full rounded-full bg-gradient-to-r from-violet-900/50 to-violet-500 border-r border-violet-300 shadow-[0_0_20px_rgba(139,92,246,0.5)] relative z-0" />
                             </div>
-                            <div className="h-4 w-full bg-[#0B0B10] border border-slate-800 rounded-full overflow-hidden relative">
+                            <div className="h-5 w-full bg-[#0B0B10] border border-slate-800 rounded-full overflow-hidden relative shadow-inner">
                                 <div className="absolute inset-0 bg-[url('/images/scanlines.png')] opacity-30 mix-blend-overlay z-10 pointer-events-none"></div>
-                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item2Avg / Math.max(item1Avg, item2Avg, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut"}} className="h-full rounded-full bg-gradient-to-r from-cyan-900/50 to-cyan-500 border-r border-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.4)] relative z-0" />
+                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item2Avg / Math.max(item1Avg, item2Avg, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut"}} className="h-full rounded-full bg-gradient-to-r from-cyan-900/50 to-cyan-500 border-r border-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.5)] relative z-0" />
                             </div>
                         </div>
                     </div>
@@ -308,35 +338,29 @@ export const GameFPSViewer: React.FC = () => {
                     <div className="pt-5 border-t border-slate-800/80 relative z-10">
                         <div className="flex justify-between items-end mb-3">
                             <div className="text-[12px] text-slate-300 font-bold">1% Low 最低帧</div>
-                            <div className="flex gap-3 sm:gap-5 font-display font-bold items-center">
-                                <div className={`text-lg ${winner === 1 ? 'text-violet-300 drop-shadow-[0_0_8px_rgba(139,92,246,0.4)]' : 'text-slate-400'}`}><BouncyNumber value={item1Low} /> <span className="text-[10px] font-sans opacity-60">FPS</span></div>
-                                <div className="text-[10px] text-slate-500 uppercase tracking-widest font-sans">vs</div>
-                                <div className={`text-lg ${winner === 2 ? 'text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]' : 'text-slate-400'}`}><BouncyNumber value={item2Low} /> <span className="text-[10px] font-sans opacity-60">FPS</span></div>
+                            <div className="flex gap-4 sm:gap-6 font-display font-bold items-baseline">
+                                <div className={`flex items-baseline gap-1 ${winner === 1 ? 'text-violet-300 drop-shadow-[0_0_10px_rgba(139,92,246,0.5)] scale-105 origin-right transition-transform' : 'text-slate-400'}`}>
+                                    <span className={winner === 1 ? 'text-2xl sm:text-3xl font-black' : 'text-lg sm:text-xl'}><BouncyNumber value={item1Low} /></span>
+                                    <span className="text-[10px] font-sans opacity-60">FPS</span>
+                                </div>
+                                <div className="text-[10px] text-slate-500 uppercase tracking-widest font-sans self-center px-2">vs</div>
+                                <div className={`flex items-baseline gap-1 ${winner === 2 ? 'text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)] scale-105 origin-left transition-transform' : 'text-slate-400'}`}>
+                                    <span className={winner === 2 ? 'text-2xl sm:text-3xl font-black' : 'text-lg sm:text-xl'}><BouncyNumber value={item2Low} /></span>
+                                    <span className="text-[10px] font-sans opacity-60">FPS</span>
+                                </div>
                             </div>
                         </div>
                         <div className="flex flex-col gap-2">
-                            <div className="h-2 w-full bg-[#0B0B10] border border-slate-800/80 rounded-full overflow-hidden relative">
-                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item1Low / Math.max(item1Low, item2Low, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut", delay: 0.1}} className="h-full rounded-full bg-violet-500/70 relative z-0" />
+                            <div className="h-3 w-full bg-[#0B0B10] border border-slate-800/80 rounded-full overflow-hidden relative shadow-inner">
+                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item1Low / Math.max(item1Low, item2Low, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut", delay: 0.1}} className="h-full rounded-full bg-violet-500/80 shadow-[0_0_10px_rgba(139,92,246,0.3)] relative z-0" />
                             </div>
-                            <div className="h-2 w-full bg-[#0B0B10] border border-slate-800/80 rounded-full overflow-hidden relative">
-                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item2Low / Math.max(item1Low, item2Low, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut", delay: 0.1}} className="h-full rounded-full bg-cyan-500/70 relative z-0" />
+                            <div className="h-3 w-full bg-[#0B0B10] border border-slate-800/80 rounded-full overflow-hidden relative shadow-inner">
+                                <motion.div initial={{width:0}} animate={{width: `${Math.min(100, (item2Low / Math.max(item1Low, item2Low, 1)) * 100)}%`}} transition={{duration: 0.8, ease: "easeOut", delay: 0.1}} className="h-full rounded-full bg-cyan-500/80 shadow-[0_0_10px_rgba(34,211,238,0.3)] relative z-0" />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.3}} className="bg-[#121218]/90 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(0,0,0,0.3)]">
-                    <Zap size={20} className={winner === 1 ? 'text-violet-500' : winner === 2 ? 'text-cyan-500' : 'text-slate-500'} />
-                    <span className="text-[14px] font-medium text-slate-200">
-                        {winner === 1 ? (
-                            <><strong className="text-violet-400">{item1Name}</strong> 在该画质下的平均帧数领先约 <strong className="text-violet-300 bg-violet-500/20 px-1.5 py-0.5 rounded">{diffPercent}%</strong> ({diff} FPS)。</>
-                        ) : winner === 2 ? (
-                            <><strong className="text-cyan-400">{item2Name}</strong> 在该画质下的平均帧数领先约 <strong className="text-cyan-300 bg-cyan-500/20 px-1.5 py-0.5 rounded">{diffPercent}%</strong> ({Math.abs(diff)} FPS)。</>
-                        ) : (
-                            <>两者的平均帧数表现完全一致，属于同等性能水平。</>
-                        )}
-                    </span>
-                </motion.div>
             </div>
         );
     };
