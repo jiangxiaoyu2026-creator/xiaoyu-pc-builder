@@ -150,7 +150,7 @@ export function SavePreviewModal({ buildList, pricing, onClose, onCopy, onSave }
         const finalPrice = pricing.finalPrice;
         const savedAmount = pricing.savedAmount;
         const priceLine = savedAmount > 0
-            ? `💰 总价：¥${standardPrice}，优惠后 ¥${finalPrice}（省 ¥${savedAmount}）`
+            ? `💰 总价：¥${standardPrice}，优惠后 ¥${finalPrice}`
             : `💰 总价：¥${finalPrice}`;
         return `📋 小鱼装机单（${today}）\n━━━━━━━━━━━━━━━━━━━━\n${itemsText}\n━━━━━━━━━━━━━━━━━━━━\n✅ 装机 + 系统 + 调试 + 整机三年质保\n📦 含 ${((pricing.serviceFeeRate || 0.06) * 100).toFixed(0)}% 装机售后服务费，不含运费\n${priceLine}`;
     };
