@@ -144,9 +144,15 @@ export function SavePreviewModal({ buildList, pricing, onClose, onCopy, onSave }
         const itemsText = validItems.map(e => {
             const name = e.item ? `${e.item.brand} ${e.item.model}` : e.customName;
             const price = e.customPrice ?? e.item?.price ?? 0;
-            return `[${CATEGORY_MAP[e.category]}] ${name} x${e.quantity} (¥${price})`;
+            return `【${CATEGORY_MAP[e.category]}】${name} x${e.quantity}（¥${price}）`;
         }).join('\n');
-        return `📋 小鱼装机单 (${today})\n--------------------------\n${itemsText}\n--------------------------\n💰 总价：¥${pricing.finalPrice}`;
+        const standardPrice = Math.floor(pricing.standardPrice);
+        const finalPrice = pricing.finalPrice;
+        const savedAmount = pricing.savedAmount;
+        const priceLine = savedAmount > 0
+            ? `💰 总价：¥${standardPrice}，优惠后 ¥${finalPrice}（省 ¥${savedAmount}）`
+            : `💰 总价：¥${finalPrice}`;
+        return `📋 小鱼装机单（${today}）\n━━━━━━━━━━━━━━━━━━━━\n${itemsText}\n━━━━━━━━━━━━━━━━━━━━\n${priceLine}\n\n✅ 含装机 + 系统 + 调试 + 整机三年质保\n📦 含 ${((pricing.serviceFeeRate || 0.06) * 100).toFixed(0)}% 装机售后服务费，不含运费（默认顺丰到付）`;
     };
     return (
         <div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md">
