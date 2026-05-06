@@ -257,20 +257,20 @@ export const GameFPSViewer: React.FC = () => {
                     {/* Headers for A and B */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 relative z-10">
                         <div className="flex flex-col gap-1.5 w-full md:w-5/12">
-                            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]"></div>
+                            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.6)]"></div>
                                 测试对象 A
                             </div>
                             <div className="text-[16px] sm:text-[20px] font-display font-bold text-slate-100 leading-tight truncate" title={item1Name}>{item1Name}</div>
                         </div>
                         
-                        <div className="hidden md:flex w-2/12 justify-center items-center">
-                            <div className="px-3 py-1 rounded-full bg-slate-700/80 border border-slate-600 text-[10px] text-slate-200 font-bold tracking-widest uppercase shadow-inner">VS</div>
+                        <div className="flex w-full md:w-2/12 justify-center items-center py-2 md:py-0">
+                            <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-600/30 to-cyan-600/30 border border-slate-500 text-[11px] text-white font-black tracking-widest uppercase shadow-[0_0_15px_rgba(139,92,246,0.15)]">VS</div>
                         </div>
 
                         <div className="flex flex-col gap-1.5 w-full md:w-5/12 md:items-end md:text-right">
-                            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 md:flex-row-reverse">
-                                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.5)]"></div>
+                            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 md:flex-row-reverse">
+                                <div className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.6)]"></div>
                                 测试对象 B
                             </div>
                             <div className="text-[16px] sm:text-[20px] font-display font-bold text-slate-100 leading-tight truncate" title={item2Name}>{item2Name}</div>
@@ -391,8 +391,10 @@ export const GameFPSViewer: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Column labels */}
-                <div className="grid grid-cols-[1fr_90px_90px_90px_90px] gap-1 px-6 py-2.5 border-y border-slate-700/80 bg-slate-800/80 text-[11px] font-bold text-slate-300 uppercase tracking-widest shadow-sm">
+                {/* Column labels + Rows - horizontal scroll on mobile */}
+                <div className="overflow-x-auto">
+                <div className="min-w-[580px]">
+                <div className="grid grid-cols-[1fr_80px_80px_80px_80px] sm:grid-cols-[1fr_90px_90px_90px_90px] gap-1 px-6 py-2.5 border-y border-slate-700/80 bg-slate-800/80 text-[11px] font-bold text-slate-300 uppercase tracking-widest shadow-sm">
                     <div>游戏</div>
                     <div className="text-right">A 平均</div>
                     <div className="text-right">A 最低</div>
@@ -407,7 +409,7 @@ export const GameFPSViewer: React.FC = () => {
                         const diff = Math.abs(r.item1Avg - r.item2Avg);
                         const diffPct = Math.max(r.item1Avg, r.item2Avg) > 0 ? ((diff / Math.max(r.item1Avg, r.item2Avg)) * 100).toFixed(0) : '0';
                         return (
-                            <div key={r.game} className={`grid grid-cols-[1fr_90px_90px_90px_90px] gap-1 px-6 py-2.5 items-center border-b border-slate-800/40 transition-colors hover:bg-slate-800/30 ${selectedGame === r.game ? 'bg-violet-500/5 border-l-2 border-l-violet-500' : 'border-l-2 border-l-transparent'}`}>
+                            <div key={r.game} className={`grid grid-cols-[1fr_80px_80px_80px_80px] sm:grid-cols-[1fr_90px_90px_90px_90px] gap-1 px-6 py-2.5 items-center border-b border-slate-800/40 transition-colors hover:bg-slate-800/30 ${selectedGame === r.game ? 'bg-violet-500/5 border-l-2 border-l-violet-500' : 'border-l-2 border-l-transparent'}`}>
                                 <div className="flex items-center gap-2.5 min-w-0">
                                     <img src={`/images/games/icons/${r.game}.png`} alt="" className="w-5 h-5 rounded-[4px] object-cover bg-slate-800 shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                     <span className="text-[14px] font-bold text-slate-200 truncate drop-shadow-sm">{r.game}</span>
@@ -421,27 +423,29 @@ export const GameFPSViewer: React.FC = () => {
                         );
                     })}
                 </div>
+                </div>
+                </div>
 
                 {/* Footer summary */}
-                <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                        <Zap size={16} className={item1Wins > item2Wins ? 'text-violet-500' : item2Wins > item1Wins ? 'text-cyan-500' : 'text-slate-500'} />
-                        <span className="text-[13px] font-medium text-slate-400">
+                <div className="px-6 py-5 border-t border-slate-700 bg-gradient-to-r from-slate-900/80 via-slate-800/50 to-slate-900/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-2.5">
+                        <Zap size={18} className={item1Wins > item2Wins ? 'text-violet-400' : item2Wins > item1Wins ? 'text-cyan-400' : 'text-slate-400'} />
+                        <span className="text-[14px] font-medium text-slate-200">
                             {item1Wins > item2Wins ? (
-                                <><strong className="text-violet-400">{item1}</strong> 在 <strong className="text-white">{rows.length}</strong> 款游戏中赢得 <strong className="text-violet-400">{item1Wins}</strong> 款，综合表现更优。</>
+                                <><strong className="text-violet-300">{item1}</strong> 在 <strong className="text-white">{rows.length}</strong> 款游戏中赢得 <strong className="text-violet-300 bg-violet-500/20 px-1 rounded">{item1Wins}</strong> 款，综合表现更优。</>
                             ) : item2Wins > item1Wins ? (
-                                <><strong className="text-cyan-400">{item2}</strong> 在 <strong className="text-white">{rows.length}</strong> 款游戏中赢得 <strong className="text-cyan-400">{item2Wins}</strong> 款，综合表现更优。</>
+                                <><strong className="text-cyan-300">{item2}</strong> 在 <strong className="text-white">{rows.length}</strong> 款游戏中赢得 <strong className="text-cyan-300 bg-cyan-500/20 px-1 rounded">{item2Wins}</strong> 款，综合表现更优。</>
                             ) : (
                                 <>两者在 <strong className="text-white">{rows.length}</strong> 款游戏中势均力敌，综合实力相当。</>
                             )}
                         </span>
                     </div>
                     {/* Average FPS across all games */}
-                    <div className="flex items-center gap-4 text-[11px] font-bold">
-                        <span className="text-slate-500">全局均值:</span>
-                        <span className="text-violet-400 font-mono">{Math.round(rows.reduce((s, r) => s + r.item1Avg, 0) / rows.length)} FPS</span>
-                        <span className="text-slate-600">vs</span>
-                        <span className="text-cyan-400 font-mono">{Math.round(rows.reduce((s, r) => s + r.item2Avg, 0) / rows.length)} FPS</span>
+                    <div className="flex items-center gap-4 text-[12px] font-bold shrink-0">
+                        <span className="text-slate-400">全局均值:</span>
+                        <span className="text-violet-300 font-mono text-[13px]">{Math.round(rows.reduce((s, r) => s + r.item1Avg, 0) / rows.length)} FPS</span>
+                        <span className="text-slate-500">vs</span>
+                        <span className="text-cyan-300 font-mono text-[13px]">{Math.round(rows.reduce((s, r) => s + r.item2Avg, 0) / rows.length)} FPS</span>
                     </div>
                 </div>
             </motion.div>
@@ -478,7 +482,7 @@ export const GameFPSViewer: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
                     
                     {/* === 左侧：战术控制台 === */}
-                    <div className="lg:col-span-4 xl:col-span-4 flex flex-col gap-6 relative z-50">
+                    <div className="lg:col-span-4 xl:col-span-4 flex flex-col gap-6 relative z-50 lg:sticky lg:top-6 lg:self-start">
                         {/* 1. 游戏选择器 */}
                         <div className="bg-white dark:bg-[#121218]/90 border border-slate-200 dark:border-violet-500/50 rounded-[24px] shadow-sm dark:shadow-[0_0_30px_rgba(139,92,246,0.1)] relative">
                             {/* Inner gradient container with overflow hidden to not crop corners, while allowing dropdown to escape */}
@@ -635,8 +639,8 @@ export const GameFPSViewer: React.FC = () => {
                                         <div className="relative">
                                             <div className="flex justify-between items-end mb-3">
                                                 <div className="flex items-center gap-2">
-                                                    <Cpu size={16} className="text-slate-400" />
-                                                    <span className="text-[14px] font-mono font-bold text-slate-300">{selectedCpu}</span>
+                                                    <Cpu size={16} className="text-slate-300" />
+                                                    <span className="text-[14px] font-mono font-bold text-white">{selectedCpu}</span>
                                                     {result.isCpuBottleneck && <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-[4px] ml-2 shadow-[0_0_10px_rgba(244,63,94,0.3)] uppercase tracking-wider">Bottleneck</span>}
                                                 </div>
                                                 <div className="text-[15px] font-mono font-bold text-white">{result.cAvg} <span className="text-[11px] font-sans text-slate-500 font-normal">MAX FPS</span></div>
@@ -660,8 +664,8 @@ export const GameFPSViewer: React.FC = () => {
                                         <div className="relative">
                                             <div className="flex justify-between items-end mb-3">
                                                 <div className="flex items-center gap-2">
-                                                    <MonitorPlay size={16} className="text-slate-400" />
-                                                    <span className="text-[14px] font-mono font-bold text-slate-300">{selectedGpu}</span>
+                                                    <MonitorPlay size={16} className="text-slate-300" />
+                                                    <span className="text-[14px] font-mono font-bold text-white">{selectedGpu}</span>
                                                     {!result.isCpuBottleneck && <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/50 rounded-[4px] ml-2 shadow-[0_0_10px_rgba(244,63,94,0.3)] uppercase tracking-wider">Bottleneck</span>}
                                                 </div>
                                                 <div className="text-[15px] font-mono font-bold text-white">{result.gAvg} <span className="text-[11px] font-sans text-slate-500 font-normal">MAX FPS</span></div>
@@ -681,7 +685,7 @@ export const GameFPSViewer: React.FC = () => {
                                     </div>
                                     
                                     <div className="mt-8 pt-5 border-t border-slate-800/80">
-                                        <p className="text-[14px] text-slate-400 leading-relaxed font-medium">
+                                        <p className="text-[14px] text-slate-300 leading-relaxed font-medium">
                                             {result.diff < 10 ? (
                                                 "SYS_STATUS: 最佳均衡状态。CPU与GPU负载均等，算力分配完美。"
                                             ) : result.isCpuBottleneck ? (
