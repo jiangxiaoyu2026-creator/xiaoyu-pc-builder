@@ -402,7 +402,7 @@ export const GameFPSViewer: React.FC = () => {
 
                 {/* Rows */}
                 <div className="max-h-[520px] overflow-y-auto custom-scrollbar">
-                    {rows.map((r, idx) => {
+                    {rows.map((r) => {
                         const winner = r.item1Avg > r.item2Avg ? 1 : r.item2Avg > r.item1Avg ? 2 : 0;
                         const diff = Math.abs(r.item1Avg - r.item2Avg);
                         const diffPct = Math.max(r.item1Avg, r.item2Avg) > 0 ? ((diff / Math.max(r.item1Avg, r.item2Avg)) * 100).toFixed(0) : '0';
