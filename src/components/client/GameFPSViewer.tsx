@@ -265,7 +265,7 @@ export const GameFPSViewer: React.FC = () => {
                         </div>
                         
                         <div className="hidden md:flex w-2/12 justify-center items-center">
-                            <div className="px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 text-[10px] text-slate-400 font-bold tracking-widest uppercase">VS</div>
+                            <div className="px-3 py-1 rounded-full bg-slate-700/80 border border-slate-600 text-[10px] text-slate-200 font-bold tracking-widest uppercase shadow-inner">VS</div>
                         </div>
 
                         <div className="flex flex-col gap-1.5 w-full md:w-5/12 md:items-end md:text-right">
@@ -280,16 +280,16 @@ export const GameFPSViewer: React.FC = () => {
                     {/* Average FPS Bars */}
                     <div className="mb-6 relative z-10">
                         <div className="flex justify-between items-end mb-3">
-                            <div className="text-[13px] text-slate-400 font-bold flex items-center gap-2">
+                            <div className="text-[13px] text-slate-200 font-bold flex items-center gap-2">
                                 平均帧数
                                 {winner !== 0 && (
-                                    <span className="text-[10px] bg-slate-800/80 border border-slate-700/80 px-2 py-0.5 rounded text-slate-300">差距 {diffPercent}%</span>
+                                    <span className="text-[10px] bg-white/10 border border-white/20 px-2 py-0.5 rounded text-white font-bold shadow-sm">差距 {diffPercent}%</span>
                                 )}
                             </div>
                             <div className="flex gap-3 sm:gap-5 font-display font-bold items-center">
-                                <div className={`text-xl ${winner === 1 ? 'text-violet-400 drop-shadow-[0_0_8px_rgba(139,92,246,0.3)]' : 'text-slate-400'}`}><BouncyNumber value={item1Avg} /> <span className="text-[10px] font-sans opacity-50">FPS</span></div>
-                                <div className="text-[11px] text-slate-600 uppercase tracking-widest font-sans">vs</div>
-                                <div className={`text-xl ${winner === 2 ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.3)]' : 'text-slate-400'}`}><BouncyNumber value={item2Avg} /> <span className="text-[10px] font-sans opacity-50">FPS</span></div>
+                                <div className={`text-xl ${winner === 1 ? 'text-violet-400 drop-shadow-[0_0_12px_rgba(139,92,246,0.6)] scale-110 transition-transform' : 'text-slate-300'}`}><BouncyNumber value={item1Avg} /> <span className="text-[10px] font-sans opacity-60">FPS</span></div>
+                                <div className="text-[11px] text-slate-500 uppercase tracking-widest font-sans">vs</div>
+                                <div className={`text-xl ${winner === 2 ? 'text-cyan-400 drop-shadow-[0_0_12px_rgba(34,211,238,0.6)] scale-110 transition-transform' : 'text-slate-300'}`}><BouncyNumber value={item2Avg} /> <span className="text-[10px] font-sans opacity-60">FPS</span></div>
                             </div>
                         </div>
                         <div className="flex flex-col gap-2.5">
@@ -307,11 +307,11 @@ export const GameFPSViewer: React.FC = () => {
                     {/* 1% Low Bars */}
                     <div className="pt-5 border-t border-slate-800/80 relative z-10">
                         <div className="flex justify-between items-end mb-3">
-                            <div className="text-[12px] text-slate-500 font-bold">1% Low 最低帧</div>
+                            <div className="text-[12px] text-slate-300 font-bold">1% Low 最低帧</div>
                             <div className="flex gap-3 sm:gap-5 font-display font-bold items-center">
-                                <div className={`text-lg ${winner === 1 ? 'text-violet-400/80' : 'text-slate-500'}`}><BouncyNumber value={item1Low} /> <span className="text-[10px] font-sans opacity-50">FPS</span></div>
-                                <div className="text-[10px] text-slate-600 uppercase tracking-widest font-sans">vs</div>
-                                <div className={`text-lg ${winner === 2 ? 'text-cyan-400/80' : 'text-slate-500'}`}><BouncyNumber value={item2Low} /> <span className="text-[10px] font-sans opacity-50">FPS</span></div>
+                                <div className={`text-lg ${winner === 1 ? 'text-violet-300 drop-shadow-[0_0_8px_rgba(139,92,246,0.4)]' : 'text-slate-400'}`}><BouncyNumber value={item1Low} /> <span className="text-[10px] font-sans opacity-60">FPS</span></div>
+                                <div className="text-[10px] text-slate-500 uppercase tracking-widest font-sans">vs</div>
+                                <div className={`text-lg ${winner === 2 ? 'text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]' : 'text-slate-400'}`}><BouncyNumber value={item2Low} /> <span className="text-[10px] font-sans opacity-60">FPS</span></div>
                             </div>
                         </div>
                         <div className="flex flex-col gap-2">
@@ -327,11 +327,11 @@ export const GameFPSViewer: React.FC = () => {
 
                 <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.3}} className="bg-[#121218]/90 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-5 flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(0,0,0,0.3)]">
                     <Zap size={20} className={winner === 1 ? 'text-violet-500' : winner === 2 ? 'text-cyan-500' : 'text-slate-500'} />
-                    <span className="text-[14px] font-medium text-slate-300">
+                    <span className="text-[14px] font-medium text-slate-200">
                         {winner === 1 ? (
-                            <><strong className="text-violet-400">{item1Name}</strong> 在该画质下的平均帧数领先约 <strong className="text-violet-400">{diffPercent}%</strong> ({diff} FPS)。</>
+                            <><strong className="text-violet-400">{item1Name}</strong> 在该画质下的平均帧数领先约 <strong className="text-violet-300 bg-violet-500/20 px-1.5 py-0.5 rounded">{diffPercent}%</strong> ({diff} FPS)。</>
                         ) : winner === 2 ? (
-                            <><strong className="text-cyan-400">{item2Name}</strong> 在该画质下的平均帧数领先约 <strong className="text-cyan-400">{diffPercent}%</strong> ({Math.abs(diff)} FPS)。</>
+                            <><strong className="text-cyan-400">{item2Name}</strong> 在该画质下的平均帧数领先约 <strong className="text-cyan-300 bg-cyan-500/20 px-1.5 py-0.5 rounded">{diffPercent}%</strong> ({Math.abs(diff)} FPS)。</>
                         ) : (
                             <>两者的平均帧数表现完全一致，属于同等性能水平。</>
                         )}
@@ -377,22 +377,22 @@ export const GameFPSViewer: React.FC = () => {
                     </div>
                     {/* Win summary pills */}
                     <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/30">
-                            <div className="w-1.5 h-1.5 rounded-full bg-violet-500"></div>
-                            <span className="text-[11px] font-bold text-violet-400">A 胜 {item1Wins}</span>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/30 border border-violet-500/50 shadow-[0_0_10px_rgba(139,92,246,0.2)]">
+                            <div className="w-1.5 h-1.5 rounded-full bg-violet-300 shadow-[0_0_5px_rgba(255,255,255,0.8)]"></div>
+                            <span className="text-[11px] font-bold text-violet-200 drop-shadow-md">A 胜 {item1Wins}</span>
                         </div>
-                        {ties > 0 && <div className="px-2 py-1.5 rounded-full bg-slate-800 border border-slate-700">
-                            <span className="text-[11px] font-bold text-slate-500">平 {ties}</span>
+                        {ties > 0 && <div className="px-2 py-1.5 rounded-full bg-slate-700 border border-slate-600 shadow-sm">
+                            <span className="text-[11px] font-bold text-slate-300">平 {ties}</span>
                         </div>}
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30">
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500"></div>
-                            <span className="text-[11px] font-bold text-cyan-400">B 胜 {item2Wins}</span>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/30 border border-cyan-500/50 shadow-[0_0_10px_rgba(34,211,238,0.2)]">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-[0_0_5px_rgba(255,255,255,0.8)]"></div>
+                            <span className="text-[11px] font-bold text-cyan-200 drop-shadow-md">B 胜 {item2Wins}</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Column labels */}
-                <div className="grid grid-cols-[1fr_90px_90px_90px_90px] gap-1 px-6 py-2 border-y border-slate-800/80 bg-slate-900/50 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                <div className="grid grid-cols-[1fr_90px_90px_90px_90px] gap-1 px-6 py-2.5 border-y border-slate-700/80 bg-slate-800/80 text-[11px] font-bold text-slate-300 uppercase tracking-widest shadow-sm">
                     <div>游戏</div>
                     <div className="text-right">A 平均</div>
                     <div className="text-right">A 最低</div>
@@ -410,13 +410,13 @@ export const GameFPSViewer: React.FC = () => {
                             <div key={r.game} className={`grid grid-cols-[1fr_90px_90px_90px_90px] gap-1 px-6 py-2.5 items-center border-b border-slate-800/40 transition-colors hover:bg-slate-800/30 ${selectedGame === r.game ? 'bg-violet-500/5 border-l-2 border-l-violet-500' : 'border-l-2 border-l-transparent'}`}>
                                 <div className="flex items-center gap-2.5 min-w-0">
                                     <img src={`/images/games/icons/${r.game}.png`} alt="" className="w-5 h-5 rounded-[4px] object-cover bg-slate-800 shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                    <span className="text-[13px] font-medium text-slate-300 truncate">{r.game}</span>
-                                    {parseInt(diffPct) >= 15 && <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${winner === 1 ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30' : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'}`}>+{diffPct}%</span>}
+                                    <span className="text-[14px] font-bold text-slate-200 truncate drop-shadow-sm">{r.game}</span>
+                                    {parseInt(diffPct) >= 15 && <span className={`text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm ${winner === 1 ? 'bg-violet-500/30 text-violet-300 border border-violet-500/50' : 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/50'}`}>+{diffPct}%</span>}
                                 </div>
-                                <div className={`text-right font-mono text-[13px] font-bold ${winner === 1 ? 'text-violet-400' : 'text-slate-400'}`}>{r.item1Avg}</div>
-                                <div className={`text-right font-mono text-[12px] ${winner === 1 ? 'text-violet-400/60' : 'text-slate-500'}`}>{r.item1Low}</div>
-                                <div className={`text-right font-mono text-[13px] font-bold ${winner === 2 ? 'text-cyan-400' : 'text-slate-400'}`}>{r.item2Avg}</div>
-                                <div className={`text-right font-mono text-[12px] ${winner === 2 ? 'text-cyan-400/60' : 'text-slate-500'}`}>{r.item2Low}</div>
+                                <div className={`text-right font-mono text-[14px] font-black ${winner === 1 ? 'text-violet-400 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]' : 'text-slate-300'}`}>{r.item1Avg}</div>
+                                <div className={`text-right font-mono text-[12px] font-medium ${winner === 1 ? 'text-violet-300/80' : 'text-slate-400'}`}>{r.item1Low}</div>
+                                <div className={`text-right font-mono text-[14px] font-black ${winner === 2 ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]' : 'text-slate-300'}`}>{r.item2Avg}</div>
+                                <div className={`text-right font-mono text-[12px] font-medium ${winner === 2 ? 'text-cyan-300/80' : 'text-slate-400'}`}>{r.item2Low}</div>
                             </div>
                         );
                     })}
