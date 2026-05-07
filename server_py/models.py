@@ -53,12 +53,12 @@ class PriceHistory(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     hardwareId: str = Field(index=True)
     hardwareName: str  # brand + model for easy display
-    category: str
+    category: str = Field(index=True)
     oldPrice: float
     newPrice: float
     changeAmount: float  # newPrice - oldPrice
     changePercent: float  # (newPrice - oldPrice) / oldPrice * 100
-    changedAt: str = Field(default_factory=lambda: (datetime.utcnow() + timedelta(hours=8)).isoformat())
+    changedAt: str = Field(default_factory=lambda: (datetime.utcnow() + timedelta(hours=8)).isoformat(), index=True)
 
 class Config(SQLModel, table=True):
     __tablename__ = "configs"

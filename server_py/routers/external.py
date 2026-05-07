@@ -4,6 +4,7 @@ from fastapi.security.api_key import APIKeyHeader
 from sqlmodel import Session, select, func
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
+from collections import defaultdict
 
 from ..db import get_session
 from ..models import PriceHistory, Hardware
@@ -143,3 +144,154 @@ async def get_market_report_data(
         "status": "success",
         "data": report_data
     }
+
+
+@router.get("/date-range-comparison")
+async def get_date_range_comparison(
+    start_date: str,  # 格式: 2026-04-01
+    end_date: str,    # 格式: 2026-04-30
+    categories: Optional[str] = None,  # 可选，逗号分隔: cpu,gpu,ram,disk
+    session: Session = Depends(get_session),
+    api_key: str = Depends(verify_api_key)
+):
+    """
+    自定义日期范围的价格对比接口。
+    核心算法：对每个产品，取该时段内第一条变动记录的 oldPrice 作为月初价，
+    最后一条变动记录的 newPrice 作为月末价，计算净涨跌。
+    """
+    # 参数校验
+    try:
+        start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+        end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="日期格式错误，请使用 YYYY-MM-DD 格式")
+    
+    if start_dt >= end_dt:
+        raise HTTPException(status_code=400, detail="start_date 必须早于 end_date")
+
+    # 构建查询：获取时间范围内的所有 PriceHistory 记录
+    start_str = start_date + "T00:00:00"
+    end_str = end_date + "T23:59:59"
+    
+    query = select(PriceHistory).where(
+        PriceHistory.changedAt >= start_str,
+        PriceHistory.changedAt <= end_str
+    )
+    
+    # 如果指定了品类过滤
+    if categories:
+        cat_list = [c.strip() for c in categories.split(",") if c.strip()]
+        if cat_list:
+            query = query.where(PriceHistory.category.in_(cat_list))
+    
+    query = query.order_by(PriceHistory.changedAt.asc())
+    all_changes = session.exec(query).all()
+    
+    if not all_changes:
+        now_cst = datetime.utcnow() + timedelta(hours=8)
+        return {
+            "status": "success",
+            "data": {
+                "meta": {
+                    "startDate": start_date,
+                    "endDate": end_date,
+                    "generatedAt": now_cst.strftime("%Y-%m-%d %H:%M:%S")
+                },
+                "summary": {
+                    "totalChanged": 0, "totalUp": 0, "totalDown": 0,
+                    "avgDropAmount": 0, "avgDropPercent": 0,
+                    "avgRiseAmount": 0, "avgRisePercent": 0
+                },
+                "categories": {}
+            }
+        }
+    
+    # 按产品 ID 分组
+    product_changes = defaultdict(list)
+    for change in all_changes:
+        product_changes[change.hardwareId].append(change)
+    
+    # 对每个产品执行价格重建算法
+    product_results = []
+    for hw_id, changes in product_changes.items():
+        # changes 已按时间升序排列（查询时 ORDER BY changedAt ASC）
+        first_change = changes[0]
+        last_change = changes[-1]
+        
+        start_price = first_change.oldPrice   # 月初价 = 第一条记录变动前的价格
+        end_price = last_change.newPrice      # 月末价 = 最后一条记录变动后的价格
+        
+        # 数据清洗：剔除 price=0（下架产品）和净变动为 0 的产品
+        if start_price <= 0 or end_price <= 0:
+            continue
+        
+        net_change = round(end_price - start_price, 2)
+        if net_change == 0:
+            continue
+        
+        net_percent = round((net_change / start_price) * 100, 2) if start_price > 0 else 0
+        
+        product_results.append({
+            "hardwareId": hw_id,
+            "name": first_change.hardwareName,
+            "category": first_change.category,
+            "startPrice": start_price,
+            "endPrice": end_price,
+            "changeAmount": net_change,
+            "changePercent": net_percent,
+            "changeCount": len(changes)  # 期间内调价次数
+        })
+    
+    # 统计汇总
+    drops = [p for p in product_results if p["changeAmount"] < 0]
+    rises = [p for p in product_results if p["changeAmount"] > 0]
+    
+    now_cst = datetime.utcnow() + timedelta(hours=8)
+    
+    summary = {
+        "totalChanged": len(product_results),
+        "totalUp": len(rises),
+        "totalDown": len(drops),
+        "avgDropAmount": round(sum(d["changeAmount"] for d in drops) / len(drops), 2) if drops else 0,
+        "avgDropPercent": round(sum(d["changePercent"] for d in drops) / len(drops), 2) if drops else 0,
+        "avgRiseAmount": round(sum(r["changeAmount"] for r in rises) / len(rises), 2) if rises else 0,
+        "avgRisePercent": round(sum(r["changePercent"] for r in rises) / len(rises), 2) if rises else 0,
+    }
+    
+    # 按品类分组
+    categories_data = defaultdict(lambda: {"totalChanged": 0, "upCount": 0, "downCount": 0, "items": []})
+    
+    for p in product_results:
+        cat = p["category"] if p["category"] else "other"
+        categories_data[cat]["totalChanged"] += 1
+        if p["changeAmount"] > 0:
+            categories_data[cat]["upCount"] += 1
+        else:
+            categories_data[cat]["downCount"] += 1
+        categories_data[cat]["items"].append({
+            "hardwareId": p["hardwareId"],
+            "name": p["name"],
+            "startPrice": p["startPrice"],
+            "endPrice": p["endPrice"],
+            "changeAmount": p["changeAmount"],
+            "changePercent": p["changePercent"],
+            "changeCount": p["changeCount"]
+        })
+    
+    # 每个品类的 items 按涨跌额排序（降幅最大在前）
+    for cat in categories_data:
+        categories_data[cat]["items"].sort(key=lambda x: x["changeAmount"])
+    
+    return {
+        "status": "success",
+        "data": {
+            "meta": {
+                "startDate": start_date,
+                "endDate": end_date,
+                "generatedAt": now_cst.strftime("%Y-%m-%d %H:%M:%S")
+            },
+            "summary": summary,
+            "categories": dict(categories_data)
+        }
+    }
+

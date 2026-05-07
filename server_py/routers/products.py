@@ -225,6 +225,7 @@ def autofill_images(
             p.image = url
             # 标记为 AI 建议，方便用户审核
             p.imageSource = "ai_suggested"
+            p.updatedAt = datetime.utcnow().isoformat()
             session.add(p)
             count += 1
             updated_ids.append(p.id)
@@ -272,6 +273,7 @@ def autofill_specs(
         if suggested_specs:
             product.specs = suggested_specs
             product.specsSource = 'ai_suggested'
+            product.updatedAt = datetime.utcnow().isoformat()
             session.add(product)
             filled_count += 1
             
@@ -362,9 +364,6 @@ def _log_price_change(session: Session, product: Hardware, old_price: float, new
     if old_price == new_price or old_price is None:
         return
         
-    # 如果价格是 0（例如新建未定价、或者暂未明确售价），不进行价格变动统计
-    if old_price == 0 or new_price == 0:
-        return
     
     product.previousPrice = old_price
     change_pct = ((new_price - old_price) / old_price * 100) if old_price > 0 else 0
@@ -377,7 +376,7 @@ def _log_price_change(session: Session, product: Hardware, old_price: float, new
         .limit(1)
     ).first()
     
-    merge_window = timedelta(hours=2)
+    merge_window = timedelta(minutes=15)
     
     if recent:
         try:
@@ -427,6 +426,7 @@ async def create_product(
                 value = _serialize_specs(value)
             if hasattr(existing, key):
                 setattr(existing, key, value)
+        existing.updatedAt = datetime.utcnow().isoformat()
         new_price = existing.price
         # 如果更新了成本或利润，且本次没有显式提供售价，则联动计算
         if any(k in product_data for k in ["costPrice", "profitType", "profitValue"]):
@@ -436,7 +436,9 @@ async def create_product(
                 elif existing.profitType == "percent":
                     existing.price = existing.costPrice * (1 + existing.profitValue / 100)
                 new_price = existing.price
-        # 智能记录价格变动（2小时合并）
+        if existing.price == 0:
+            existing.status = "archived"
+        # 智能记录价格变动（15分钟合并）
         _log_price_change(session, existing, old_price, new_price)
         session.add(existing)
         session.commit()
@@ -458,8 +460,12 @@ async def create_product(
         image=product_data.get("image"),
         isDiscount=product_data.get("isDiscount", False),
         isRecommended=product_data.get("isRecommended", False),
-        isNew=product_data.get("isNew", False)
+        isNew=product_data.get("isNew", False),
+        updatedAt=datetime.utcnow().isoformat()
     )
+
+    if new_product.price == 0:
+        new_product.status = "archived"
 
     # 自动计算逻辑：如果提供了 costPrice 且 price 为 0 或 None，则尝试计算
     if (new_product.price == 0 or new_product.price is None) and new_product.costPrice > 0:
@@ -489,6 +495,8 @@ async def update_product(
             value = _serialize_specs(value)
         if hasattr(product, key):
             setattr(product, key, value)
+            
+    product.updatedAt = datetime.utcnow().isoformat()
 
     # 如果更新了成本或利润，且没有显式更新售价（或者售价为0），则重新计算售价
     # 注意：这里我们假设如果用户在 UI 上手动改了售价，则以售价为准；如果改的是成本/利润，则联动。
@@ -502,7 +510,10 @@ async def update_product(
                 product.price = product.costPrice * (1 + product.profitValue / 100)
 
     new_price = product.price
-    # 智能记录价格变动（2小时合并）
+    if product.price == 0:
+        product.status = "archived"
+        
+    # 智能记录价格变动（15分钟合并）
     _log_price_change(session, product, old_price, new_price)
 
     session.add(product)
@@ -558,6 +569,7 @@ async def bind_jd_link(
         specs["jd_sku_id"] = result.get("jd_sku_id", "")
         specs["jd_page_url"] = result.get("jd_page_url", "")
         product.specs = specs
+        product.updatedAt = datetime.utcnow().isoformat()
         session.add(product)
         session.commit()
         session.refresh(product)
@@ -609,6 +621,7 @@ async def batch_bind_jd_links(
             specs["jd_sku_id"] = result.get("jd_sku_id", "")
             specs["jd_page_url"] = result.get("jd_page_url", "")
             product.specs = specs
+            product.updatedAt = datetime.utcnow().isoformat()
             session.add(product)
             results["success"] += 1
             results["details"].append({
