@@ -278,10 +278,10 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
             }
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            onPrev();
+            onUpdate(entry.id, { quantity: entry.quantity + 1 });
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
-            onEnter();
+            onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) });
         }
     };
 
@@ -355,7 +355,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
 
     return (
-        <div className={`grid grid-cols-[75px_1fr_80px_80px_20px] gap-2 px-4 py-2.5 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
+        <div className={`grid grid-cols-[75px_1fr_65px_70px_20px] gap-2 px-4 py-2.5 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
 
             <div className={`flex items-center gap-3 font-bold text-sm transition-all ${theme.primary}`}>
                 <div
@@ -400,13 +400,18 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
                             <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) }); }} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>-</button>
                             <input 
                                 ref={qtyRef}
-                                type="number" 
-                                className="w-8 text-center text-sm dark:text-slate-200 bg-transparent border-none p-0 focus:ring-0 [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none focus:bg-slate-100 dark:focus:bg-slate-700/50 rounded" 
+                                type="text"
+                                inputMode="numeric"
+                                className="w-6 text-center text-sm dark:text-slate-200 bg-transparent border-none p-0 focus:ring-0 [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none focus:bg-slate-100 dark:focus:bg-slate-700/50 rounded" 
                                 value={entry.quantity || ''} 
                                 onChange={(e) => {
-                                    const val = parseInt(e.target.value);
+                                    const valStr = e.target.value.replace(/\D/g, '');
+                                    if (valStr === '') {
+                                        onUpdate(entry.id, { quantity: 1 });
+                                        return;
+                                    }
+                                    const val = parseInt(valStr);
                                     if (!isNaN(val) && val > 0) onUpdate(entry.id, { quantity: val });
-                                    else if (e.target.value === '') onUpdate(entry.id, { quantity: 1 }); // Fallback
                                 }} 
                                 onKeyDown={handleQtyKeyDown}
                             />
@@ -418,7 +423,7 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
 
             <div className="flex items-center gap-1 justify-end">
                 <span className="text-slate-300 dark:text-slate-600 text-sm">¥</span>
-                <input ref={priceRef} type="text" className={`w-16 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300'}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
+                <input ref={priceRef} type="text" className={`w-14 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300'}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
             </div>
 
             <div className="flex justify-end">
@@ -1146,7 +1151,7 @@ function StreamerWorkbench({
                     <div className="flex-1 min-w-0 max-w-[1550px]">
                         <div className="overflow-x-auto">
                             <div className="min-w-[600px]">
-                                <div className={`grid grid-cols-[75px_1fr_80px_80px_20px] gap-2 px-4 py-1 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
+                                <div className={`grid grid-cols-[75px_1fr_65px_70px_20px] gap-2 px-4 py-1 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 (智能搜索 / 自定义)</div>
                             <div className="text-center">数量</div>
