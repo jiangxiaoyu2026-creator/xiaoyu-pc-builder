@@ -40,6 +40,7 @@ class Hardware(SQLModel, table=True):
     imageSource: str = Field(default="user") # 'user', 'ai_suggested'
     specsSource: str = Field(default="user") # 'user', 'ai_suggested'
     createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    updatedAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     isDiscount: bool = Field(default=False)
     isRecommended: bool = Field(default=False)
     isNew: bool = Field(default=False)
