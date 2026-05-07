@@ -84,3 +84,25 @@ server.zip
 
 # Market Reports Data
 market_reports/
+月报/
+
+# Exported Data Dumps
+exports/
+
+# Additional Zip Archives
+*.zip
+
+# Temporary/Test JSON Data
+products.json
+online_products_data.json
+online_configs_data.json
+file_io_out.json
+
+# Test Images
+*_test.png
+
+# Extra Logs & Output Texts
+log_*.txt
+output.txt
+ts_errors.txt
+price_trends_all.txt

@@ -182,12 +182,26 @@ const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, ind
         const dropdownOpen = showSuggestions && query.trim().length > 0 && suggestions.length > 0;
         if (e.key === 'ArrowDown') {
             e.preventDefault();
-            if (dropdownOpen) { setHighlightIndex(prev => Math.min(prev + 1, suggestions.length - 1)); }
+            if (dropdownOpen) {
+                if (highlightIndex < suggestions.length - 1) {
+                    setHighlightIndex(prev => prev + 1);
+                } else {
+                    setShowSuggestions(false);
+                    onEnter();
+                }
+            }
             else { onEnter(); } // Move to next row
         }
         else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            if (dropdownOpen) { setHighlightIndex(prev => Math.max(prev - 1, 0)); }
+            if (dropdownOpen) {
+                if (highlightIndex > 0) {
+                    setHighlightIndex(prev => prev - 1);
+                } else {
+                    setShowSuggestions(false);
+                    onPrev();
+                }
+            }
             else { onPrev(); } // Move to prev row
         }
         else if (e.key === 'Enter') {
@@ -561,10 +575,10 @@ function StreamerWorkbench({
     }, [buildList]);
 
     // Simulator: FPS estimation using gamesFpsData (same source as Game FPS page)
+    const cpuItem = buildList.find(b => b.category === 'cpu')?.item;
+    const gpuItem = buildList.find(b => b.category === 'gpu')?.item;
+
     useEffect(() => {
-        const cpuItem = buildList.find(b => b.category === 'cpu')?.item;
-        const gpuItem = buildList.find(b => b.category === 'gpu')?.item;
-        
         if (!cpuItem && !gpuItem) { 
             setFpsData(gamesList.slice(0, 12).map((gameName: string) => ({ name: gameName, fps: 0 })));
             setLoadingFps(false);
@@ -682,7 +696,7 @@ function StreamerWorkbench({
             setFpsData(results.slice(0, 12));
             setLoadingFps(false);
         }, 300);
-    }, [buildList, sidebarResolution]);
+    }, [cpuItem, gpuItem, sidebarResolution]);
 
     const [showAiModal, setShowAiModal] = useState(false);
     const [showChatSettings, setShowChatSettings] = useState(false);
