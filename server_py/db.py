@@ -87,6 +87,8 @@ def _migrate_extra_columns():
             cursor.execute("ALTER TABLE hardware ADD COLUMN profitType TEXT NOT NULL DEFAULT 'fixed'")
         if 'profitValue' not in hw_cols:
             cursor.execute("ALTER TABLE hardware ADD COLUMN profitValue REAL NOT NULL DEFAULT 0.0")
+        if 'updatedAt' not in hw_cols:
+            cursor.execute("ALTER TABLE hardware ADD COLUMN updatedAt TEXT")
             
         # Add Indexes for performance optimization
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_configs_userId ON configs(userId)")
@@ -98,6 +100,10 @@ def _migrate_extra_columns():
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_hardware_status ON hardware(status)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_userId ON orders(userId)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)")
+        
+        # PriceHistory 索引优化（提升日期范围查询性能）
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_price_history_changedAt ON price_history(changedAt)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_price_history_category ON price_history(category)")
             
         # Deduplicate recycling prices keeping the most recently added for each category+model pair
         cursor.execute("""
