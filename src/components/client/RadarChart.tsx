@@ -1,7 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 
+export interface RadarDimension {
+    name: string;
+    max: number;
+    inverse?: boolean;
+}
+
 interface RadarData {
-    labels: string[];
+    dimensions: RadarDimension[];
     dataA: number[];
     dataB: number[];
     colorA: string;
@@ -31,7 +37,7 @@ export const RadarChart: React.FC<{ data: RadarData, size?: number }> = ({ data,
 
         const center = size / 2;
         const radius = (size / 2) * 0.75;
-        const numPoints = data.labels.length;
+        const numPoints = data.dimensions.length;
         const angleStep = (Math.PI * 2) / numPoints;
 
         // Draw background grid
@@ -75,18 +81,28 @@ export const RadarChart: React.FC<{ data: RadarData, size?: number }> = ({ data,
         ctx.textBaseline = 'middle';
         for (let i = 0; i < numPoints; i++) {
             const angle = i * angleStep - Math.PI / 2;
-            const labelRadius = radius + 15;
+            const labelRadius = radius + 20;
             const x = center + Math.cos(angle) * labelRadius;
             const y = center + Math.sin(angle) * labelRadius;
-            ctx.fillText(data.labels[i], x, y);
+            ctx.fillText(data.dimensions[i].name, x, y);
         }
 
         const drawPolygon = (dataPoints: number[], strokeColor: string, fillColor: string) => {
             ctx.beginPath();
             for (let i = 0; i < numPoints; i++) {
                 const angle = i * angleStep - Math.PI / 2;
-                // Normalize data point to [0, 1] range. Assuming max value is 100 for simplicity of this radar
-                const normalizedVal = Math.max(0.1, Math.min(1, dataPoints[i] / 100));
+                const dim = data.dimensions[i];
+                const val = dataPoints[i];
+                let normalizedVal = 0.1;
+                
+                if (val > 0) {
+                    if (dim.inverse) {
+                        normalizedVal = Math.max(0.1, 1 - (val / dim.max));
+                    } else {
+                        normalizedVal = Math.max(0.1, Math.min(1, val / dim.max));
+                    }
+                }
+
                 const pointRadius = radius * normalizedVal;
                 const x = center + Math.cos(angle) * pointRadius;
                 const y = center + Math.sin(angle) * pointRadius;
@@ -106,7 +122,18 @@ export const RadarChart: React.FC<{ data: RadarData, size?: number }> = ({ data,
             // Draw data points
             for (let i = 0; i < numPoints; i++) {
                 const angle = i * angleStep - Math.PI / 2;
-                const normalizedVal = Math.max(0.1, Math.min(1, dataPoints[i] / 100));
+                const dim = data.dimensions[i];
+                const val = dataPoints[i];
+                let normalizedVal = 0.1;
+                
+                if (val > 0) {
+                    if (dim.inverse) {
+                        normalizedVal = Math.max(0.1, 1 - (val / dim.max));
+                    } else {
+                        normalizedVal = Math.max(0.1, Math.min(1, val / dim.max));
+                    }
+                }
+
                 const pointRadius = radius * normalizedVal;
                 const x = center + Math.cos(angle) * pointRadius;
                 const y = center + Math.sin(angle) * pointRadius;

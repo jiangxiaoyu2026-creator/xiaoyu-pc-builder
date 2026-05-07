@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Gamepad2, Cpu, MonitorPlay, TrendingUp, GaugeCircle, Activity, ChevronDown, Search, Zap } from 'lucide-react';
 import { motion, useMotionValue, animate, useTransform } from 'framer-motion';
 import { gamesFpsData, gamesList, cpuList, gpuList, Resolution } from '../../data/gameFpsData';
+import { cpuSpecs } from '../../data/cpuSpecsData';
+import { gpuSpecs } from '../../data/gpuSpecsData';
 import { ComparisonCard } from './ComparisonCard';
 
 // 动态数字增长效果
@@ -591,6 +593,8 @@ export const GameFPSViewer: React.FC = () => {
                                     item1Data={gamesFpsData[selectedGame]?.cpu[selectedCpu]?.[selectedRes]}
                                     item2Name={selectedCpu2}
                                     item2Data={gamesFpsData[selectedGame]?.cpu[selectedCpu2]?.[selectedRes]}
+                                    item1Specs={cpuSpecs[selectedCpu]}
+                                    item2Specs={cpuSpecs[selectedCpu2]}
                                 />
                                 {renderMultiGameTable('cpu', selectedCpu, selectedCpu2)}
                             </div>
@@ -601,6 +605,8 @@ export const GameFPSViewer: React.FC = () => {
                                     item1Data={gamesFpsData[selectedGame]?.gpu[selectedGpu]?.[selectedRes]}
                                     item2Name={selectedGpu2}
                                     item2Data={gamesFpsData[selectedGame]?.gpu[selectedGpu2]?.[selectedRes]}
+                                    item1Specs={gpuSpecs[selectedGpu]}
+                                    item2Specs={gpuSpecs[selectedGpu2]}
                                 />
                                 {renderMultiGameTable('gpu', selectedGpu, selectedGpu2)}
                             </div>
