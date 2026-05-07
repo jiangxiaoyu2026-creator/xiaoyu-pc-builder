@@ -3,14 +3,21 @@ import { Crown, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { RadarChart } from './RadarChart';
 
+interface HardwareSpecs {
+    power?: number;
+    ludashi?: number;
+}
+
 interface ComparisonCardProps {
     item1Name: string;
     item1Data: any;
     item2Name: string;
     item2Data: any;
+    item1Specs?: HardwareSpecs;
+    item2Specs?: HardwareSpecs;
 }
 
-export const ComparisonCard: React.FC<ComparisonCardProps> = ({ item1Name, item1Data, item2Name, item2Data }) => {
+export const ComparisonCard: React.FC<ComparisonCardProps> = ({ item1Name, item1Data, item2Name, item2Data, item1Specs, item2Specs }) => {
     const item1Avg = item1Data?.avg || 0;
     const item2Avg = item2Data?.avg || 0;
     const item1Low = item1Data?.low || 0;
@@ -27,27 +34,32 @@ export const ComparisonCard: React.FC<ComparisonCardProps> = ({ item1Name, item1
     const bgA = 'rgba(91, 92, 230, 0.2)';
     const bgB = 'rgba(249, 115, 22, 0.2)';
 
-    // Radar Data Mocking based on relative performance
-    // Normally this would come from real benchmark data dimensions
+    // Radar Data based on real dimensions
+    const item1Power = item1Specs?.power || 0;
+    const item2Power = item2Specs?.power || 0;
+    const item1Ludashi = item1Specs?.ludashi || 0;
+    const item2Ludashi = item2Specs?.ludashi || 0;
+
     const maxAvg = Math.max(item1Avg, item2Avg, 1);
     const maxLow = Math.max(item1Low, item2Low, 1);
+    const maxPower = Math.max(item1Power, item2Power, 100);
+    const maxLudashi = Math.max(item1Ludashi, item2Ludashi, 100000);
     
+    // Stability calculation (0 to 100)
+    const item1Stability = item1Avg > 0 ? (item1Low / item1Avg) * 100 : 0;
+    const item2Stability = item2Avg > 0 ? (item2Low / item2Avg) * 100 : 0;
+    const maxStability = 100;
+
     const radarData = {
-        labels: ['平均帧数', '1% Low', '稳定性', '团战帧数', '响应延迟'],
-        dataA: [
-            (item1Avg / maxAvg) * 100,
-            (item1Low / maxLow) * 100,
-            (item1Low / item1Avg) * 100, // Stability proxy
-            (item1Avg / maxAvg) * 90 + 10,
-            90 // mock
+        dimensions: [
+            { name: '平均帧率', max: maxAvg },
+            { name: '1% Low', max: maxLow },
+            { name: '稳定性', max: maxStability },
+            { name: '跑分 (预估)', max: maxLudashi },
+            { name: '功耗', max: maxPower, inverse: true }
         ],
-        dataB: [
-            (item2Avg / maxAvg) * 100,
-            (item2Low / maxLow) * 100,
-            (item2Low / item2Avg) * 100, // Stability proxy
-            (item2Avg / maxAvg) * 90 + 10,
-            85 // mock
-        ],
+        dataA: [item1Avg, item1Low, item1Stability, item1Ludashi, item1Power],
+        dataB: [item2Avg, item2Low, item2Stability, item2Ludashi, item2Power],
         colorA, colorB, fillA: bgA, fillB: bgB
     };
 
@@ -181,25 +193,34 @@ export const ComparisonCard: React.FC<ComparisonCardProps> = ({ item1Name, item1
                     </div>
 
                     <div className="w-full pt-4 border-t border-slate-100 flex flex-col gap-2">
-                        <h4 className="text-[13px] font-bold text-slate-800 mb-1">胜利总结</h4>
+                        <h4 className="text-[13px] font-bold text-slate-800 mb-1">多维胜出总结</h4>
                         <div className="flex flex-wrap gap-2">
-                            {item1Avg >= item2Avg ? (
-                                <div className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5">
-                                    <CheckCircle2 size={14} /> 平均帧数: {item1Name} 胜
-                                </div>
-                            ) : (
-                                <div className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5">
-                                    <CheckCircle2 size={14} /> 平均帧数: {item2Name} 胜
+                            {/* Avg */}
+                            <div className={`px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5 ${item1Avg >= item2Avg ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
+                                <CheckCircle2 size={14} /> 平均帧率: {item1Avg >= item2Avg ? item1Name : item2Name} 胜
+                            </div>
+                            
+                            {/* Low */}
+                            <div className={`px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5 ${item1Low >= item2Low ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
+                                <CheckCircle2 size={14} /> 1% Low: {item1Low >= item2Low ? item1Name : item2Name} 胜
+                            </div>
+
+                            {/* Stability */}
+                            <div className={`px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5 ${item1Stability >= item2Stability ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
+                                <CheckCircle2 size={14} /> 稳定性: {item1Stability >= item2Stability ? item1Name : item2Name} 胜 ({Math.max(item1Stability, item2Stability).toFixed(1)}%)
+                            </div>
+
+                            {/* LuDaShi */}
+                            {(item1Ludashi > 0 || item2Ludashi > 0) && (
+                                <div className={`px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5 ${item1Ludashi >= item2Ludashi ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
+                                    <CheckCircle2 size={14} /> 鲁大师跑分: {item1Ludashi >= item2Ludashi ? item1Name : item2Name} 胜
                                 </div>
                             )}
-                            
-                            {item1Low >= item2Low ? (
-                                <div className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5">
-                                    <CheckCircle2 size={14} /> 1% Low: {item1Name} 胜
-                                </div>
-                            ) : (
-                                <div className="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5">
-                                    <CheckCircle2 size={14} /> 1% Low: {item2Name} 胜
+
+                            {/* Power (inverse, lower is better) */}
+                            {(item1Power > 0 || item2Power > 0) && (
+                                <div className={`px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-1.5 ${item1Power <= item2Power ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
+                                    <CheckCircle2 size={14} /> 功耗表现: {item1Power <= item2Power ? item1Name : item2Name} 胜 ({Math.min(item1Power || Infinity, item2Power || Infinity)}W)
                                 </div>
                             )}
                         </div>
