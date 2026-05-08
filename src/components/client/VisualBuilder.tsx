@@ -317,8 +317,12 @@ function VisualBuilder({
                     setAiActiveCategory(entry.category);
                     await new Promise(r => setTimeout(r, 200));
 
-                    // 填入配置
-                    onUpdate(entry.id, { item: targetItem, customPrice: undefined, customName: undefined });
+                    // 填入配置 - fan items with count need quantity update
+                    const updateData: any = { item: targetItem, customPrice: undefined, customName: undefined };
+                    if (cat === 'fan' && (targetItem as any).count) {
+                        updateData.quantity = (targetItem as any).count;
+                    }
+                    onUpdate(entry.id, updateData);
                     await new Promise(r => setTimeout(r, 150));
                 }
             }

@@ -46,15 +46,31 @@ export const aiBuilder = {
         let appearance: AIBuildRequest['appearance'] = 'black';
         let includeMonitor = false;
 
-        // 1. Extract Budget
-        const budgetMatch = prompt.match(/(\d{1,6})/);
-        if (budgetMatch) {
-            budget = parseInt(budgetMatch[0]);
-        } else {
-            if (prompt.includes('一万')) budget = 10000;
-            if (prompt.includes('两万')) budget = 20000;
-            if (prompt.includes('三万')) budget = 30000;
-            if (prompt.includes('五千')) budget = 5000;
+        // 1. Extract Budget - prefer numbers near budget keywords over hardware model numbers
+        let budgetFound = false;
+        // First: look for explicit budget patterns like "预算8000" / "8000元" / "8000块"
+        const explicitMatch = prompt.match(/(?:预算|budget|花|出|控制在)\s*(\d{3,6})/i) 
+            || prompt.match(/(\d{4,6})\s*(?:元|块|左右|以内|上下|的预算)/);
+        if (explicitMatch) {
+            budget = parseInt(explicitMatch[1]);
+            budgetFound = true;
+        }
+        // Second: Chinese number keywords
+        if (!budgetFound) {
+            if (prompt.includes('一万')) { budget = 10000; budgetFound = true; }
+            else if (prompt.includes('两万')) { budget = 20000; budgetFound = true; }
+            else if (prompt.includes('三万')) { budget = 30000; budgetFound = true; }
+            else if (prompt.includes('五千')) { budget = 5000; budgetFound = true; }
+        }
+        // Third: fallback to 4+ digit numbers (likely budget, not model numbers)
+        if (!budgetFound) {
+            const allNumbers = [...prompt.matchAll(/(\d{4,6})/g)].map(m => parseInt(m[1]));
+            // Filter out obvious model numbers (like 14600, 5060, 7800 etc.)
+            const budgetCandidates = allNumbers.filter(n => n >= 2000 && n <= 100000);
+            if (budgetCandidates.length > 0) {
+                // Pick the last one (usually budget comes after hardware specs)
+                budget = budgetCandidates[budgetCandidates.length - 1];
+            }
         }
 
         // 2. Extract Usage
@@ -125,8 +141,22 @@ export const aiBuilder = {
                 throw new Error(response.error);
             }
 
+            // Validate: check if any actual hardware was returned
+            const items = response.items || {};
+            const hasAnyItem = Object.values(items).some((v: any) => v && typeof v === 'object' && v.id);
+            if (!hasAnyItem) {
+                return {
+                    items: {},
+                    totalPrice: 0,
+                    description: '⚠️ AI 未能在当前库存中找到匹配的硬件。请尝试调整预算或简化需求描述后重试。',
+                    logs: [
+                        { type: 'analysis' as const, step: '库存匹配', detail: '[WARN] 当前库存中没有找到满足您需求的配件组合。' }
+                    ]
+                };
+            }
+
             return {
-                items: response.items || {},
+                items,
                 totalPrice: response.totalPrice || 0,
                 description: response.description || "AI 未返回描述。",
                 evaluation: response.evaluation || undefined,

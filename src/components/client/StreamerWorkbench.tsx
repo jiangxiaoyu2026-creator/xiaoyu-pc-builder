@@ -842,7 +842,12 @@ function StreamerWorkbench({
                         setGhostStatus('已锁定');
                         row.simulateType(`${(targetItem as any).brand} ${(targetItem as any).model}`);
                         await new Promise(r => setTimeout(r, 150));
-                        onUpdate(entry.id, { item: targetItem as any });
+                        // For fan items with count, update quantity too
+                        const updateData: any = { item: targetItem as any };
+                        if (cat === 'fan' && (targetItem as any).count) {
+                            updateData.quantity = (targetItem as any).count;
+                        }
+                        onUpdate(entry.id, updateData);
 
                         // row.simulateEnter(); 
                         await new Promise(r => setTimeout(r, 150));

@@ -470,21 +470,31 @@ class AiService:
                 else:
                     resolved_items[cat] = None
 
-            # 2. 兼容性校验与自动替换 (X870 + DDR4 终结者)
+            # 2. 兼容性校验与自动替换
             cpu = resolved_items.get('cpu')
             mb = resolved_items.get('mainboard')
             ram = resolved_items.get('ram')
             
-            # 检查插槽
-            if cpu and mb and cpu['specs'].get('socket') != mb['specs'].get('socket'):
-                # 尝试寻找兼容当前主板的备选 CPU
-                alt_cpu = self._find_compatible_hardware('cpu', {'socket': mb['specs'].get('socket')}, budget*0.3)
-                if alt_cpu: 
-                    resolved_items['cpu'] = alt_cpu
-                    raw_result['description'] += " (注意：原选 CPU 接口不匹配，已自动更换为兼容型号)"
+            # 检查插槽 - 优先换主板适配CPU（用户通常更关心CPU的选择）
+            if cpu and mb and cpu['specs'].get('socket') and mb['specs'].get('socket') and cpu['specs'].get('socket') != mb['specs'].get('socket'):
+                target_socket = cpu['specs'].get('socket')
+                # 先尝试换主板来适配CPU
+                alt_mb = self._find_compatible_hardware('mainboard', {'socket': target_socket}, mb['price'] * 1.3)
+                if alt_mb:
+                    resolved_items['mainboard'] = alt_mb
+                    mb = alt_mb  # 更新引用
+                    raw_result['description'] += f" (注意：原选主板接口不匹配 {target_socket}，已自动更换为兼容主板)"
+                else:
+                    # 找不到匹配主板才换CPU
+                    alt_cpu = self._find_compatible_hardware('cpu', {'socket': mb['specs'].get('socket')}, budget*0.3)
+                    if alt_cpu: 
+                        resolved_items['cpu'] = alt_cpu
+                        cpu = alt_cpu
+                        raw_result['description'] += " (注意：原选 CPU 接口不匹配，已自动更换为兼容型号)"
 
-            # 检查内存 (用户主要痛点)
-            if ram and mb and ram['specs'].get('memoryType') != mb['specs'].get('memoryType'):
+            # 检查内存 (用户主要痛点) - 先刷新mb引用
+            mb = resolved_items.get('mainboard')
+            if ram and mb and ram['specs'].get('memoryType') and mb['specs'].get('memoryType') and ram['specs'].get('memoryType') != mb['specs'].get('memoryType'):
                 # 尝试寻找兼容当前主板的备选内存
                 target_type = mb['specs'].get('memoryType')
                 alt_ram = self._find_compatible_hardware('ram', {'memoryType': target_type}, budget*0.1)
