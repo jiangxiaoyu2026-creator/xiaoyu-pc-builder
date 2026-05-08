@@ -106,3 +106,7 @@ log_*.txt
 output.txt
 ts_errors.txt
 price_trends_all.txt
+
+# Script output files
+compare_output.txt
+sync_output.txt

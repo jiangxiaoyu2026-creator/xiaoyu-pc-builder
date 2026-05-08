@@ -11,7 +11,7 @@ import sys
 import time
 from datetime import datetime
 
-EXCEL_PATH = "/Users/mac/new/台式机核价专用免费版4.21xlsm.xlsm"
+EXCEL_PATH = "/Users/mac/new/Diyxx/台式机核价专用免费版5.07.xlsm"
 API_BASE = "https://www.diyxx.com/api/recycling-prices"
 
 SHEET_MAP = {
