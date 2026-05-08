@@ -695,7 +695,7 @@ function VisualBuilder({
                                 </div>
 
                                 {/* Price Column */}
-                                <div className="w-[85px] shrink-0 flex flex-col items-end justify-center px-2 bg-white relative group">
+                                <div className="w-[90px] shrink-0 flex flex-col items-end justify-center px-2 bg-white relative group">
                                     {entry.category === 'fan' && entry.item && (
                                         <div className="flex items-center gap-1.5 bg-slate-100 rounded-lg px-1.5 py-0.5 mb-1 shadow-sm" onClick={e => e.stopPropagation()}>
                                             <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-indigo-600 bg-white rounded-[4px] shadow-sm font-bold text-[14px] active:scale-95 transition-transform">-</button>
@@ -703,16 +703,16 @@ function VisualBuilder({
                                             <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-indigo-600 bg-white rounded-[4px] shadow-sm font-bold text-[14px] active:scale-95 transition-transform">+</button>
                                         </div>
                                     )}
-                                    <div className="text-[12px] font-bold font-mono text-slate-900 text-right w-full pr-1">
+                                    <div className="text-[12px] font-bold font-mono text-slate-900 text-right w-full">
                                         {(entry.item || entry.customName) ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : '¥0'}
                                     </div>
                                     {(entry.item || entry.customName) && (
                                         <button
-                                            className="absolute top-0 right-0 p-1.5 text-slate-300 hover:text-red-500 active:text-red-500 transition-colors lg:opacity-0 lg:group-hover:opacity-100 opacity-100 z-10"
+                                            className="absolute -top-1.5 -right-1 p-0.5 text-slate-300 hover:text-red-500 active:text-red-500 transition-colors z-10"
                                             onClick={(e) => { e.stopPropagation(); onUpdate(entry.id, { item: null, customName: '', customPrice: undefined, quantity: 1 }); }}
                                         >
                                             <div className="bg-slate-50 border border-slate-100 rounded-full p-0.5 shadow-sm">
-                                                <X size={12} strokeWidth={3} />
+                                                <X size={10} strokeWidth={3} />
                                             </div>
                                         </button>
                                     )}

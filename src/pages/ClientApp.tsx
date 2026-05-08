@@ -1046,54 +1046,79 @@ export default function ClientApp() {
 
             {viewMode === 'visual' && (
                 <footer className="fixed bottom-[60px] md:bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl border-t border-slate-200 dark:border-[#1E293B] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-none">
-                    <div className="max-w-7xl mx-auto px-3 md:px-4 h-14 flex items-center justify-between gap-2">
-                        {/* Price Info */}
-                        <div className="flex items-center gap-2 md:gap-4">
-                            <div className="flex items-center gap-1.5 md:gap-2">
-                                <span className="text-[10px] md:text-xs text-slate-400 line-through hidden md:inline">¥{Math.floor(pricing.standardPrice)}</span>
-                                <span className="bg-emerald-100 text-emerald-700 text-[9px] md:text-[10px] px-1 md:px-1.5 py-0.5 rounded-full font-bold">省¥{pricing.savedAmount}</span>
+                    <div className="max-w-7xl mx-auto px-3 md:px-4">
+                        {/* Mobile: Two-row layout */}
+                        <div className="flex md:hidden flex-col gap-1 py-2">
+                            {/* Row 1: Price info */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2" onClick={() => setShowDiscountSheet(true)}>
+                                    <div className="flex items-baseline gap-0.5">
+                                        <span className="text-sm font-bold text-slate-900">¥</span>
+                                        <span className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-600 font-mono">{pricing.finalPrice}</span>
+                                        <ChevronDown size={14} className="text-slate-400 ml-0.5 translate-y-0.5" />
+                                    </div>
+                                    <span className="bg-emerald-100 text-emerald-700 text-[9px] px-1.5 py-0.5 rounded-full font-bold">省¥{pricing.savedAmount}</span>
+                                </div>
+                                <span className="text-[8px] font-bold text-slate-400 whitespace-nowrap">
+                                    含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机服务费
+                                </span>
                             </div>
-                            <div className="flex items-baseline gap-0.5 relative cursor-pointer md:cursor-default active:opacity-70 transition-opacity" onClick={() => window.innerWidth < 768 && setShowDiscountSheet(true)}>
-                                <span className="text-sm md:text-lg font-bold text-slate-900">¥</span>
-                                <span className="text-lg md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-600 font-mono">{pricing.finalPrice}</span>
-                                <ChevronDown size={14} className="md:hidden text-slate-400 ml-0.5 translate-y-0.5" />
-                            </div>
-                            {/* Discount selector - hidden on mobile */}
-                            <div className="relative group hidden md:block">
-                                <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="appearance-none bg-slate-100 border border-slate-200 hover:border-indigo-300 text-slate-700 text-[10px] font-medium py-1 pl-2 pr-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer">
-                                    {settings.discountTiers.map(opt => (
-                                        <option key={opt.id} value={opt.multiplier}>
-                                            {opt.name.replace(/\s*\(.*?\)/g, '')}
-                                        </option>
-                                    ))}
-                                </select>
+                            {/* Row 2: Action buttons */}
+                            <div className="flex items-center gap-2">
+                                <button onClick={clearBuild} className="flex items-center justify-center w-9 h-9 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                    <Trash2 size={16} />
+                                </button>
+                                <button onClick={handleSave} className="flex items-center justify-center w-9 h-9 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg shadow-sm transition-all">
+                                    <Save size={16} />
+                                </button>
+                                <button onClick={handleShareTrigger} disabled={isSharing} className="flex-1 flex items-center justify-center gap-1.5 h-9 bg-slate-900 hover:bg-black disabled:bg-slate-700 text-white text-xs font-bold rounded-lg shadow-md transition-all">
+                                    {isSharing ? <RefreshCw size={14} className="animate-spin" /> : <Share2 size={14} />}<span>{isSharing ? '分享中...' : '✦ 分享配置'}</span>
+                                </button>
                             </div>
                         </div>
 
-                        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block">
-                            <span className="text-[10px] font-medium text-slate-400 bg-slate-50/80 px-3 py-1 rounded-full border border-slate-100 whitespace-nowrap">
-                                标准价格含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机售后服务费
-                            </span>
-                        </div>
+                        {/* Desktop: Single-row layout */}
+                        <div className="hidden md:flex h-14 items-center justify-between gap-2">
+                            {/* Price Info */}
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-400 line-through">¥{Math.floor(pricing.standardPrice)}</span>
+                                    <span className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold">省¥{pricing.savedAmount}</span>
+                                </div>
+                                <div className="flex items-baseline gap-0.5">
+                                    <span className="text-lg font-bold text-slate-900">¥</span>
+                                    <span className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-600 font-mono">{pricing.finalPrice}</span>
+                                </div>
+                                {/* Discount selector */}
+                                <div className="relative group">
+                                    <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="appearance-none bg-slate-100 border border-slate-200 hover:border-indigo-300 text-slate-700 text-[10px] font-medium py-1 pl-2 pr-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer">
+                                        {settings.discountTiers.map(opt => (
+                                            <option key={opt.id} value={opt.multiplier}>
+                                                {opt.name.replace(/\s*\(.*?\)/g, '')}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
 
-                        {/* Mobile Service Fee Info */}
-                        <div className="md:hidden flex-1 flex justify-center items-center px-1">
-                            <span className="text-[8px] font-bold text-slate-400 whitespace-nowrap opacity-60">
-                                含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机服务费
-                            </span>
-                        </div>
+                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                                <span className="text-[10px] font-medium text-slate-400 bg-slate-50/80 px-3 py-1 rounded-full border border-slate-100 whitespace-nowrap">
+                                    标准价格含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机售后服务费
+                                </span>
+                            </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex items-center gap-1.5 md:gap-2">
-                            <button onClick={clearBuild} className="flex items-center gap-1 px-2 md:px-3 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all text-xs font-bold">
-                                <Trash2 size={14} /><span className="hidden md:inline">清空</span>
-                            </button>
-                            <button onClick={handleSave} className="flex items-center gap-1 px-2 md:px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg shadow-sm transition-all">
-                                <Save size={14} /><span className="hidden md:inline">保存</span>
-                            </button>
-                            <button onClick={handleShareTrigger} disabled={isSharing} className="flex items-center gap-1 px-2.5 md:px-3 py-1.5 bg-slate-900 hover:bg-black disabled:bg-slate-700 text-white text-xs font-bold rounded-lg shadow-md transition-all min-w-[60px] md:min-w-[100px] justify-center">
-                                {isSharing ? <RefreshCw size={14} className="animate-spin" /> : <Share2 size={14} />}<span>{isSharing ? '...' : '分享'}</span>
-                            </button>
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-2">
+                                <button onClick={clearBuild} className="flex items-center gap-1 px-3 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all text-xs font-bold">
+                                    <Trash2 size={14} /><span>清空</span>
+                                </button>
+                                <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg shadow-sm transition-all">
+                                    <Save size={14} /><span>保存</span>
+                                </button>
+                                <button onClick={handleShareTrigger} disabled={isSharing} className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 hover:bg-black disabled:bg-slate-700 text-white text-xs font-bold rounded-lg shadow-md transition-all min-w-[100px] justify-center">
+                                    {isSharing ? <RefreshCw size={14} className="animate-spin" /> : <Share2 size={14} />}<span>{isSharing ? '...' : '分享'}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </footer>
