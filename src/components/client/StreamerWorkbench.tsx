@@ -1110,11 +1110,21 @@ function StreamerWorkbench({
                                 ? `bg-white dark:bg-slate-800 border-teal-200 dark:border-teal-600/50 text-teal-600 dark:text-teal-400 shadow-md ring-4 ring-teal-100 dark:ring-teal-900/20`
                                 : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
                         >
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'recycle' ? 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-teal-50 dark:group-hover:bg-teal-500/10                         {/* 行情分析 Tab */}
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'recycle' ? 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-teal-50 dark:group-hover:bg-teal-500/10 group-hover:text-teal-500'}`}>
+                                <Recycle size={20} />
+                            </div>
+                            <div className="text-left md:text-center shrink-0">
+                                <div className={`text-sm md:text-sm font-black tracking-tight ${activeTab === 'recycle' ? '' : 'text-slate-600 dark:text-slate-300'}`}>二手回收</div>
+                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden lg:block ${activeTab === 'recycle' ? 'text-teal-500/80 dark:text-teal-400/80' : 'text-slate-400 dark:text-slate-500'}`}>快速估价系统</div>
+                            </div>
+                            {activeTab === 'recycle' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-teal-500 rounded-r-md"></div>}
+                        </button>
+
+                        {/* 行情分析 Tab */}
                         <button
                             onClick={() => setActiveTab('trends')}
                             className={`group relative flex md:flex-col items-center gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 shrink-0 ${activeTab === 'trends'
-                                ? \`bg-white dark:bg-slate-800 border-purple-200 dark:border-purple-600/50 text-purple-600 dark:text-purple-400 shadow-md ring-4 ring-purple-100 dark:ring-purple-900/20\`
+                                ? `bg-white dark:bg-slate-800 border-purple-200 dark:border-purple-600/50 text-purple-600 dark:text-purple-400 shadow-md ring-4 ring-purple-100 dark:ring-purple-900/20`
                                 : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
                         >
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'trends' ? 'bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-purple-50 dark:group-hover:bg-purple-500/10 group-hover:text-purple-500'}`}>
