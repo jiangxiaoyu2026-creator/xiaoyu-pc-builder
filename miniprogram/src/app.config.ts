@@ -4,6 +4,7 @@ export default defineAppConfig({
     'pages/market/index',
     'pages/builder/index',
     'pages/recycle/index',
+    'pages/fps/index',
     'pages/user/index',
     'pages/user/configs/index'
   ],
