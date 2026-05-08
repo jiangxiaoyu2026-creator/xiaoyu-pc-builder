@@ -673,6 +673,7 @@ class StorageService {
 
     // --- User Likes ---
     async getUserLikes(userId: string): Promise<string[]> {
+        // Try localStorage first as cache, but this will be supplemented by server state
         try {
             const data = localStorage.getItem(`xiaoyu_likes_${userId}`);
             return data ? JSON.parse(data) : [];
@@ -684,20 +685,37 @@ class StorageService {
     }
 
     async toggleUserLike(userId: string, configId: string): Promise<boolean> {
-        const likes = await this.getUserLikes(userId);
-        const idx = likes.indexOf(configId);
-        let isLiked = false;
+        try {
+            // Call backend API to toggle like
+            const result = await ApiService.post(`/configs/${configId}/like`, {});
+            const isLiked = result.liked;
 
-        if (idx >= 0) {
-            likes.splice(idx, 1); // Unlike
-            isLiked = false;
-        } else {
-            likes.push(configId); // Like
-            isLiked = true;
+            // Update local cache
+            const likes = await this.getUserLikes(userId);
+            const idx = likes.indexOf(configId);
+            if (isLiked && idx < 0) {
+                likes.push(configId);
+            } else if (!isLiked && idx >= 0) {
+                likes.splice(idx, 1);
+            }
+            await this.saveUserLikes(userId, likes);
+
+            return isLiked;
+        } catch (e) {
+            console.error('Failed to toggle like via API, falling back to local:', e);
+            // Fallback to local-only behavior
+            const likes = await this.getUserLikes(userId);
+            const idx = likes.indexOf(configId);
+            let isLiked = false;
+            if (idx >= 0) {
+                likes.splice(idx, 1);
+            } else {
+                likes.push(configId);
+                isLiked = true;
+            }
+            await this.saveUserLikes(userId, likes);
+            return isLiked;
         }
-
-        await this.saveUserLikes(userId, likes);
-        return isLiked;
     }
 
     // --- Auth ---
@@ -748,43 +766,63 @@ class StorageService {
         window.location.reload();
     }
 
-    // --- Comments ---
+    // --- Comments (API-backed) ---
     async getComments(configId?: string): Promise<import('../types/adminTypes').CommentItem[]> {
+        if (!configId) {
+            // Admin: get all comments - fallback to localStorage for now
+            try {
+                const data = localStorage.getItem('xiaoyu_comments');
+                return data ? JSON.parse(data) : [];
+            } catch (e) { return []; }
+        }
         try {
-            const data = localStorage.getItem('xiaoyu_comments');
-            const allComments: import('../types/adminTypes').CommentItem[] = data ? JSON.parse(data) : [];
-            if (configId) {
-                return allComments.filter(c => c.configId === configId && c.status === 'active');
-            }
-            return allComments;
+            const comments = await ApiService.get(`/configs/${configId}/comments`);
+            return Array.isArray(comments) ? comments : [];
         } catch (e) {
+            console.error('Failed to fetch comments from API:', e);
             return [];
         }
     }
 
     async saveComment(comment: import('../types/adminTypes').CommentItem) {
-        let all: import('../types/adminTypes').CommentItem[] = [];
         try {
-            const data = localStorage.getItem('xiaoyu_comments');
-            all = data ? JSON.parse(data) : [];
-        } catch (e) { }
-
-        const idx = all.findIndex(c => c.id === comment.id);
-        if (idx >= 0) all[idx] = comment;
-        else all.unshift(comment);
-
-        localStorage.setItem('xiaoyu_comments', JSON.stringify(all));
-        window.dispatchEvent(new Event('xiaoyu-comment-update'));
+            // Post to backend API
+            const result = await ApiService.post(`/configs/${comment.configId}/comments`, {
+                content: comment.content
+            });
+            window.dispatchEvent(new Event('xiaoyu-comment-update'));
+            return result;
+        } catch (e) {
+            console.error('Failed to save comment via API:', e);
+            // Fallback to localStorage
+            let all: import('../types/adminTypes').CommentItem[] = [];
+            try {
+                const data = localStorage.getItem('xiaoyu_comments');
+                all = data ? JSON.parse(data) : [];
+            } catch (err) { }
+            const idx = all.findIndex(c => c.id === comment.id);
+            if (idx >= 0) all[idx] = comment;
+            else all.unshift(comment);
+            localStorage.setItem('xiaoyu_comments', JSON.stringify(all));
+            window.dispatchEvent(new Event('xiaoyu-comment-update'));
+        }
     }
 
     async deleteComment(id: string) {
         try {
-            const data = localStorage.getItem('xiaoyu_comments');
-            let all: import('../types/adminTypes').CommentItem[] = data ? JSON.parse(data) : [];
-            all = all.filter(c => c.id !== id);
-            localStorage.setItem('xiaoyu_comments', JSON.stringify(all));
+            await ApiService.delete(`/configs/comments/${id}`);
             window.dispatchEvent(new Event('xiaoyu-comment-update'));
-        } catch (e) { }
+        } catch (e) {
+            console.error('Failed to delete comment via API, falling back to local:', e);
+            // Fallback to localStorage
+            try {
+                const data = localStorage.getItem('xiaoyu_comments');
+                let all: import('../types/adminTypes').CommentItem[] = data ? JSON.parse(data) : [];
+                all = all.filter(c => c.id !== id);
+                localStorage.setItem('xiaoyu_comments', JSON.stringify(all));
+                window.dispatchEvent(new Event('xiaoyu-comment-update'));
+            } catch (err) { }
+        }
     }
 
     // --- SMS Rate Limiting ---

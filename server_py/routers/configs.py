@@ -433,4 +433,20 @@ async def toggle_like(
         "liked": liked
     }
 
-
+@router.delete("/comments/{comment_id}")
+async def delete_comment(
+    comment_id: str,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user)
+):
+    """Delete a comment (author or admin only)"""
+    comment = session.get(Comment, comment_id)
+    if not comment:
+        raise HTTPException(status_code=404, detail="评论未找到")
+    
+    if comment.userId != user.id and user.role != "admin":
+        raise HTTPException(status_code=403, detail="无权删除该评论")
+    
+    session.delete(comment)
+    session.commit()
+    return {"message": "评论已删除"}

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from .db import init_db
 import logging
 
@@ -23,6 +24,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# GZip compression for all responses > 500 bytes
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 @app.on_event("startup")
 def on_startup():
@@ -77,6 +81,11 @@ if os.path.exists(DIST_DIR):
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
+    # Serve other static files from dist root (images, etc.)
+    images_dir = os.path.join(DIST_DIR, "images")
+    if os.path.exists(images_dir):
+        app.mount("/images", StaticFiles(directory=images_dir), name="images")
+
 # 挂载上传文件目录
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
 if not os.path.exists(UPLOAD_DIR):
@@ -115,7 +124,11 @@ async def serve_frontend(full_path: str):
     if os.path.exists(DIST_DIR):
         file_path = os.path.join(DIST_DIR, full_path)
         if os.path.isfile(file_path):
-            return FileResponse(file_path)
+            # Add long cache for hashed assets (JS/CSS with content hash in filename)
+            cache_headers = {}
+            if full_path.startswith("assets/") and any(full_path.endswith(ext) for ext in [".js", ".css", ".woff2", ".woff"]):
+                cache_headers["Cache-Control"] = "public, max-age=31536000, immutable"
+            return FileResponse(file_path, headers=cache_headers if cache_headers else None)
         # SPA fallback - 返回 index.html
         index_path = os.path.join(DIST_DIR, "index.html")
         if os.path.exists(index_path):

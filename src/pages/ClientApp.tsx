@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon, Gamepad2 } from 'lucide-react';
 import { BuildEntry, ConfigTemplate, Category, UserItem } from '../types/clientTypes';
@@ -6,25 +6,25 @@ import { DEFAULT_BUILD_TEMPLATE, HARDWARE_DB } from '../data/clientData';
 import { storage } from '../services/storage';
 import LoginModal from '../components/common/LoginModal';
 import { TabButton } from '../components/client/Shared';
-import StreamerWorkbench from '../components/client/StreamerWorkbench';
-import VisualBuilder from '../components/client/VisualBuilder';
-import ConfigSquare from '../components/client/ConfigSquare';
-import AboutUs from '../components/client/AboutUs';
 import ChatWidget from '../components/common/ChatWidget';
 import { ShareFormModal, SavePreviewModal, ConfigLibraryModal } from '../components/client/Modals';
-import { UserCenterModal } from '../components/client/UserCenterModal';
-
-
-import { PaymentModal } from '../components/client/UiComponents/PaymentModal';
-import UsedMarket from '../components/client/UsedMarket';
-import SellModal from '../components/client/SellModal';
-import RecycleEstimator from '../components/client/RecycleEstimator';
-import UsedItemDetail from '../components/client/UsedItemDetail';
 import { UsedItem } from '../types/adminTypes';
 import DailyPopup from '../components/client/DailyPopup';
 // Removed ArticleList
 // Removed StreamerPriceTrend
-import { GameFPSViewer } from '../components/client/GameFPSViewer';
+
+// Lazy-loaded heavy components (code splitting for faster initial load)
+const StreamerWorkbench = lazy(() => import('../components/client/StreamerWorkbench'));
+const VisualBuilder = lazy(() => import('../components/client/VisualBuilder'));
+const ConfigSquare = lazy(() => import('../components/client/ConfigSquare'));
+const AboutUs = lazy(() => import('../components/client/AboutUs'));
+const UsedMarket = lazy(() => import('../components/client/UsedMarket'));
+const GameFPSViewer = lazy(() => import('../components/client/GameFPSViewer').then(m => ({ default: m.GameFPSViewer })));
+const UserCenterModal = lazy(() => import('../components/client/UserCenterModal').then(m => ({ default: m.UserCenterModal })));
+const PaymentModal = lazy(() => import('../components/client/UiComponents/PaymentModal').then(m => ({ default: m.PaymentModal })));
+const SellModal = lazy(() => import('../components/client/SellModal'));
+const RecycleEstimator = lazy(() => import('../components/client/RecycleEstimator'));
+const UsedItemDetail = lazy(() => import('../components/client/UsedItemDetail'));
 
 // ...
 import { useTheme } from '../hooks/useTheme';
@@ -843,6 +843,7 @@ export default function ClientApp() {
                     className="flex-1 min-h-0 w-full max-w-7xl mx-auto overflow-hidden pb-[calc(56px+env(safe-area-inset-bottom)+10px)] md:pb-0"
                 >
                     <div className="h-full overflow-y-auto custom-scrollbar pb-0" id="main-scroll-container">
+                    <Suspense fallback={<div className="flex items-center justify-center h-64"><RefreshCw size={24} className="animate-spin text-indigo-500" /></div>}>
                     {viewMode === 'streamer' && (
                         <StreamerWorkbench
                             buildList={buildList}
@@ -906,11 +907,13 @@ export default function ClientApp() {
 
                     {viewMode === 'gamefps' && <GameFPSViewer />}
                     {viewMode === 'about' && <AboutUs />}
+                    </Suspense>
                 </div>
                 </motion.main>
             </AnimatePresence>
 
             {showPaymentModal && currentUser && (
+                <Suspense fallback={null}>
                 <PaymentModal
                     user={currentUser}
                     onClose={() => setShowPaymentModal(false)}
@@ -921,6 +924,7 @@ export default function ClientApp() {
                     }}
                     onGoToInvite={() => setShowUserCenter(true)}
                 />
+                </Suspense>
             )}
             {showShareModal && (
                 <ShareFormModal
@@ -970,6 +974,7 @@ export default function ClientApp() {
                 />
             )}
             {showUserCenter && currentUser && (
+                <Suspense fallback={null}>
                 <UserCenterModal
                     user={currentUser}
                     onClose={() => setShowUserCenter(false)}
@@ -978,6 +983,7 @@ export default function ClientApp() {
                     showToast={showToast}
                     onToggleLike={handleToggleLike}
                 />
+                </Suspense>
             )}
             {showLibraryModal && (
                 <ConfigLibraryModal
@@ -999,6 +1005,7 @@ export default function ClientApp() {
 
             {/* Used Market Modals */}
             {showSellModal && currentUser && (
+                <Suspense fallback={null}>
                 <SellModal
                     onClose={() => setShowSellModal(false)}
                     onSuccess={() => {
@@ -1007,18 +1014,22 @@ export default function ClientApp() {
                     currentUser={currentUser}
                     showToast={showToast}
                 />
+                </Suspense>
             )}
 
             {showRecycleModal && currentUser && (
+                <Suspense fallback={null}>
                 <RecycleEstimator
                     onClose={() => setShowRecycleModal(false)}
                     onSuccess={() => { }}
                     currentUser={currentUser}
                     showToast={showToast}
                 />
+                </Suspense>
             )}
 
             {selectedUsedItem && (
+                <Suspense fallback={null}>
                 <UsedItemDetail
                     item={selectedUsedItem}
                     onClose={() => setSelectedUsedItem(null)}
@@ -1034,6 +1045,7 @@ export default function ClientApp() {
                         setIsChatOpen(true);
                     }}
                 />
+                </Suspense>
             )}
 
             {toast.show && (

@@ -27,6 +27,8 @@ export default defineConfig({
                 manualChunks: {
                     vendor: ['react', 'react-dom', 'react-router-dom'],
                     icons: ['lucide-react'],
+                    motion: ['framer-motion'],
+                    'game-fps-data': ['./src/data/gameFpsData'],
                 },
             },
         },
