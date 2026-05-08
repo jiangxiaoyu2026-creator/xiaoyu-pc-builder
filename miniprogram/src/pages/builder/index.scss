@@ -38,8 +38,7 @@ page {
 /* ===== 主内容区 ===== */
 .main-scroll {
   flex: 1;
-  height: 0;
-  min-height: 0;
+  /* height 由 JS 动态计算 (Taro.getSystemInfoSync)，不再使用 height: 0 */
 }
 
 /* ===== 微信暗黑风格紧凑列表 ===== */

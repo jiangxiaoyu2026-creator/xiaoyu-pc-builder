@@ -293,11 +293,15 @@ export default function IndexPage() {
           </View>
 
           {/* 游戏帧数大卡片 */}
-          <View className='data-card data-fps'>
+          <View className='data-card data-fps' onClick={() => Taro.navigateTo({ url: '/pages/fps/index' })}>
             <View className='data-header'>
               <Text className='data-title'>游戏帧数预测</Text>
+              <View className='data-link-pill'>
+                <Text>进入对比中心</Text>
+                <View className='link-chevron-new'></View>
+              </View>
             </View>
-            <View className='fps-content'>
+            <View className='fps-content' onClick={(e) => e.stopPropagation()}>
               
               <View className='fps-res-tabs'>
                 {['1080p', '1440p', '4K'].map((res) => (

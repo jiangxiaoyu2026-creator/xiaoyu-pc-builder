@@ -265,6 +265,19 @@ export default function BuilderPage() {
   const [isSharing, setIsSharing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
+  // 动态计算 ScrollView 可用高度（修复小程序 scroll-view height:0 黑屏问题）
+  const [scrollHeight, setScrollHeight] = useState(0)
+  useEffect(() => {
+    setTimeout(() => {
+      const sys = Taro.getSystemInfoSync()
+      const query = Taro.createSelectorQuery()
+      query.select('.top-header-bar').boundingClientRect((rect: any) => {
+        const headerH = rect ? rect.height : 90
+        setScrollHeight(sys.windowHeight - headerH)
+      }).exec()
+    }, 150)
+  }, [])
+
   useShareAppMessage(() => ({
     title: '小鱼高级辅助装机系统',
     path: '/pages/builder/index'
@@ -1272,7 +1285,7 @@ export default function BuilderPage() {
         </View>
       </View>
 
-      <ScrollView scrollY className='main-scroll' scrollWithAnimation>
+      <ScrollView scrollY className='main-scroll' scrollWithAnimation style={scrollHeight ? { height: `${scrollHeight}px` } : {}}>
         
         {/* ================= 模式一：微信暗黑风紧凑列表 ================= */}
         {mode === 'diy' && (
