@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon, Gamepad2 } from 'lucide-react';
 import { BuildEntry, ConfigTemplate, Category, UserItem } from '../types/clientTypes';
@@ -196,6 +196,7 @@ export default function ClientApp() {
     }, [settings.discountTiers]);
 
     const [isSharing] = useState(false);
+    const isPublishingRef = useRef(false); // Concurrency guard to prevent duplicate publishes
     const [showShareModal, setShowShareModal] = useState(false);
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [showLibraryModal, setShowLibraryModal] = useState(false);
@@ -450,6 +451,12 @@ export default function ClientApp() {
     };
 
     const handlePublishToSquare = async (data: { title: string, tags: string[], desc: string, status?: 'published' | 'draft', showcaseImages?: string[] }) => {
+        // Prevent duplicate submissions from double-clicks or rapid calls
+        if (isPublishingRef.current) {
+            showToast('⏳ 正在发布中，请稍候...');
+            return;
+        }
+        isPublishingRef.current = true;
         try {
             const saveStatus = data.status || 'published';
             // Create Client Template (for local optimistic UI)
@@ -574,6 +581,8 @@ export default function ClientApp() {
         } catch (error) {
             console.error("Publish failed:", error);
             showToast("❌ 发布失败，请重试");
+        } finally {
+            isPublishingRef.current = false;
         }
     };
 

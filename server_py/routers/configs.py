@@ -192,13 +192,39 @@ async def create_config(
     session: Session = Depends(get_session),
     user: Optional[User] = Depends(get_current_user_optional)
 ):
+    user_id = user.id if user else "guest"
+    user_name = user.username if user else (config_data.get("userName") or "游客")
+    title = config_data.get("title", "未命名配置")
+
+    # --- Dedup Guard: prevent identical configs within 5 minutes ---
+    items_raw = config_data.get("items", {})
+    items_str = json.dumps(items_raw, sort_keys=True) if isinstance(items_raw, dict) else str(items_raw)
+    from datetime import timedelta
+    dedup_window = datetime.utcnow() - timedelta(minutes=5)
+    existing = session.exec(
+        select(Config).where(
+            Config.userId == user_id,
+            Config.title == title,
+            Config.createdAt >= dedup_window.isoformat()
+        )
+    ).all()
+    for ex in existing:
+        # Compare items JSON to catch true duplicates
+        ex_items = ex.items
+        if isinstance(ex_items, str):
+            try: ex_items = json.loads(ex_items)
+            except: pass
+        ex_items_str = json.dumps(ex_items, sort_keys=True) if isinstance(ex_items, dict) else str(ex_items)
+        if ex_items_str == items_str:
+            result = _parse_config(ex, user, session)
+            result["deduplicated"] = True
+            return result
+    # --- End Dedup Guard ---
+
     # Generate serial number if not provided
     serial_number = config_data.get("serial_number")
     if not serial_number:
         serial_number = f"CFG-{datetime.utcnow().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
-
-    user_id = user.id if user else "guest"
-    user_name = user.username if user else (config_data.get("userName") or "游客")
 
     # Handle showcaseImages: convert list to JSON string for storage
     showcase_images_raw = config_data.get("showcaseImages", [])
@@ -220,7 +246,7 @@ async def create_config(
         coolId=config_data.get("coolId"),
         monId=config_data.get("monId"),
         totalPrice=config_data.get("totalPrice"),
-        title=config_data.get("title", "未命名配置"),
+        title=title,
         description=config_data.get("description", ""),
         status=config_data.get("status", "draft"),
         evaluation=config_data.get("evaluation", {}) if isinstance(config_data.get("evaluation"), dict) else {},
