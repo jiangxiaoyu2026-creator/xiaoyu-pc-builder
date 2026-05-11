@@ -17,7 +17,7 @@ export interface StreamerRowHandle {
 }
 
 export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPrev: () => void, onPreview: (img: string) => void }>(({ entry, index, onUpdate, onEnter, onPrev, onPreview }, ref) => {
-    const { theme } = React.useContext(ThemeContext);
+    const { theme, isLiveMode, liveStyleConfig } = React.useContext(ThemeContext);
     const [query, setQuery] = useState(entry.customName || entry.item?.model || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [highlightIndex, setHighlightIndex] = useState(0);
@@ -293,11 +293,10 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
 
     return (
-        <div className={`grid grid-cols-[75px_1fr_65px_70px_20px] gap-2 px-4 py-2.5 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
-
-            <div className={`flex items-center gap-3 font-bold text-sm transition-all ${theme.primary}`}>
+        <div className={`grid ${isLiveMode ? 'grid-cols-[100px_1fr_80px_150px]' : 'grid-cols-[75px_1fr_65px_70px_20px]'} gap-2 px-4 ${isLiveMode ? 'py-4' : 'py-2.5'} items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isLiveMode ? liveStyleConfig.rowBg + ' ' + liveStyleConfig.border + (index !== 0 ? ' border-t' : '') + ' mb-2 rounded-xl border border-white/5 shadow-md' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
+            <div className={`flex items-center gap-3 ${isLiveMode ? 'font-black text-lg' : 'font-bold text-sm'} transition-all ${isLiveMode ? liveStyleConfig.categoryText : theme.primary}`}>
                 <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? `bg-gradient-to-br ${theme.gradient} text-white shadow-md` : `${style.bg} ${style.text}`} ${!entry.item && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
+                    className={`${isLiveMode ? 'w-10 h-10 text-xl' : 'w-8 h-8'} rounded-lg flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? (isLiveMode ? liveStyleConfig.accentText + ' bg-slate-800/50' : `bg-gradient-to-br ${theme.gradient} text-white shadow-md`) : (isLiveMode ? liveStyleConfig.mutedText : `${style.bg} ${style.text}`)} ${!entry.item && !isLiveMode && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
                     onClick={() => entry.item?.image && onPreview(entry.item.image)}
                 >
                     {getIconByCategory(entry.category)}
@@ -306,34 +305,34 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-semibold text-base tracking-wide placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 focus:outline-none ${entry.item ? 'pr-14' : ''}`} placeholder={entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
-                {entry.item && (
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 ${isLiveMode ? liveStyleConfig.modelText + ' text-2xl tracking-tight' : 'text-slate-800 dark:text-slate-200 font-semibold text-base tracking-wide'} ${isLiveMode ? 'placeholder-gray-600' : 'placeholder-slate-300 dark:placeholder-slate-600'} focus:ring-0 focus:outline-none ${entry.item ? (isLiveMode ? 'pr-2' : 'pr-14') : ''}`} placeholder={isLiveMode ? `${CATEGORY_MAP[entry.category]}...` : (entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`)} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                {entry.item && !isLiveMode && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
                         {entry.item.isRecommended && <span className="bg-orange-50 dark:bg-orange-500/20 text-orange-500 dark:text-orange-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 dark:border-orange-500/30 flex items-center gap-0.5 whitespace-nowrap"><Sparkles size={10} /> 推荐</span>}
                         {entry.item.isDiscount && <span className="bg-rose-50 dark:bg-rose-500/20 text-rose-500 dark:text-rose-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 dark:border-rose-500/30 whitespace-nowrap">特惠</span>}
                     </div>
                 )}
                 {showSuggestions && query.trim().length > 0 && (
-                    <div ref={suggestionsRef} className={`absolute ${index >= 6 ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 right-0 bg-white dark:bg-slate-800 shadow-2xl rounded-xl border border-slate-100 dark:border-slate-700 z-[999] overflow-hidden max-h-[300px] overflow-y-auto`}>
-                        {isLoading && <div className="px-4 py-3 text-xs text-slate-400 text-center flex items-center justify-center gap-2"><RefreshCw size={12} className="animate-spin" /> 正在加载产品库...</div>}
+                    <div ref={suggestionsRef} className={`absolute ${index >= 6 ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 right-0 ${isLiveMode ? 'bg-gray-900 border-gray-700 shadow-black/50' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'} shadow-2xl rounded-xl border z-[999] overflow-hidden max-h-[300px] overflow-y-auto`}>
+                        {isLoading && <div className={`px-4 py-3 text-xs ${isLiveMode ? 'text-gray-400' : 'text-slate-400'} text-center flex items-center justify-center gap-2`}><RefreshCw size={12} className="animate-spin" /> 正在加载产品库...</div>}
                         {!isLoading && suggestions.map((item, idx) => (
-                            <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? `${theme.bgLight} ${theme.primary} transition-colors` : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`} onMouseDown={() => selectItem(item)}>
+                            <div key={item.id} className={`px-4 py-2 text-sm flex justify-between cursor-pointer ${idx === highlightIndex ? (isLiveMode ? 'bg-gray-800 text-white' : `${theme.bgLight} ${theme.primary} transition-colors`) : (isLiveMode ? 'text-gray-300 hover:bg-gray-800' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50')}`} onMouseDown={() => selectItem(item)}>
                                 <span className="flex items-center">
                                     {item.brand} {item.model}
-                                    {item.isRecommended && <span className="ml-1.5 bg-orange-50 dark:bg-orange-500/20 text-orange-500 dark:text-orange-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 dark:border-orange-500/30 shrink-0 scale-90 origin-left flex items-center gap-0.5"><Sparkles size={10} /> 推荐</span>}
-                                    {item.isDiscount && <span className="ml-1.5 bg-rose-50 dark:bg-rose-500/20 text-rose-500 dark:text-rose-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-rose-100 dark:border-rose-500/30 shrink-0 scale-90 origin-left">特惠</span>}
+                                    {item.isRecommended && <span className={`ml-1.5 ${isLiveMode ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' : 'bg-orange-50 dark:bg-orange-500/20 text-orange-500 dark:text-orange-400 border-orange-100 dark:border-orange-500/30'} text-[9px] px-1 py-0.5 rounded-md font-bold border shrink-0 scale-90 origin-left flex items-center gap-0.5`}><Sparkles size={10} /> 推荐</span>}
+                                    {item.isDiscount && <span className={`ml-1.5 ${isLiveMode ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' : 'bg-rose-50 dark:bg-rose-500/20 text-rose-500 dark:text-rose-400 border-rose-100 dark:border-rose-500/30'} text-[9px] px-1 py-0.5 rounded-md font-bold border shrink-0 scale-90 origin-left`}>特惠</span>}
                                 </span>
-                                <span className="font-bold">¥{item.price}</span>
+                                <span className={`font-bold ${isLiveMode ? liveStyleConfig.priceText : ''}`}>¥{item.price}</span>
                             </div>
                         ))}
-                        {!isLoading && suggestions.length === 0 && <div className="px-4 py-3 text-xs text-slate-400 text-center">未找到匹配项</div>}
+                        {!isLoading && suggestions.length === 0 && <div className={`px-4 py-3 text-xs ${isLiveMode ? 'text-gray-500' : 'text-slate-400'} text-center`}>未找到匹配项</div>}
                     </div>
                 )}
             </div>
 
             <div className="flex justify-center">
                 {entry.category === 'accessory' ? null : (
-                    entry.isLockedQty ? <span className="text-slate-400 text-sm">× {entry.quantity}</span> : (
+                    entry.isLockedQty || isLiveMode ? <span className={`${isLiveMode ? liveStyleConfig.mutedText + ' text-xl font-bold' : 'text-slate-400 text-sm'}`}>× {entry.quantity}</span> : (
                         <div className="flex items-center bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
                             <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) }); }} className={`text-slate-400 dark:text-slate-500 hover:${theme.primary} transition-colors px-1`}>-</button>
                             <input 
@@ -360,15 +359,17 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
             </div>
 
             <div className="flex items-center gap-1 justify-end">
-                <span className="text-slate-300 dark:text-slate-600 text-sm">¥</span>
-                <input ref={priceRef} type="text" className={`w-14 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300'}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
+                <span className={`${isLiveMode ? liveStyleConfig.priceText : 'text-slate-300 dark:text-slate-600'} text-sm`}>¥</span>
+                <input ref={priceRef} type="text" className={`w-20 text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent focus:outline-none transition-colors ${isLiveMode ? liveStyleConfig.priceText + ' text-2xl font-black' : (entry.customPrice ? `text-amber-600 font-bold ${theme.ring}` : `text-slate-700 dark:text-slate-300 ${theme.ring}`)}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
             </div>
 
-            <div className="flex justify-end">
-                <button onClick={() => onUpdate(entry.id, { item: null, customPrice: undefined, customName: '' })} className="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                    <X size={16} />
-                </button>
-            </div>
+            {!isLiveMode && (
+                <div className="flex justify-end">
+                    <button onClick={() => onUpdate(entry.id, { item: null, customPrice: undefined, customName: '' })} className="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
         </div>
     );
 });
