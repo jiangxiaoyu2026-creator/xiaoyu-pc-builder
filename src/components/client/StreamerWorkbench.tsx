@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, TrendingUp, Recycle } from 'lucide-react';
+import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, TrendingUp, Recycle, Monitor } from 'lucide-react';
 import { BuildEntry } from '../../types/clientTypes';
 import { storage } from '../../services/storage';
 import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
@@ -10,7 +10,7 @@ import { ChatSettingsModal } from '../admin/ChatSettingsModal';
 import PriceTrendChart from '../admin/PriceTrendChart';
 import StreamerRecycleTab from './StreamerRecycleTab';
 import HardwareLeaderboard from './HardwareLeaderboard';
-import { ThemeColor, THEMES, ThemeContext } from './StreamerThemeContext';
+import { ThemeColor, THEMES, ThemeContext, LiveStyleKey, LIVE_STYLES } from './StreamerThemeContext';
 import { StreamerRow, StreamerRowHandle } from './StreamerRow';
 import { StreamerPerformanceSidebar } from './StreamerPerformanceSidebar';
 import { StreamerPosterTemplate } from './StreamerPosterTemplate';
@@ -24,11 +24,12 @@ import { StreamerPermissionWall } from './StreamerPermissionWall';
 
 function RollingPrice({ value }: { value: number }) {
     const [display, setDisplay] = useState(value);
+    const displayRef = useRef(value);
 
     useEffect(() => {
         let startTime: number;
-        const duration = 800; // 800ms animation
-        const startValue = display;
+        const duration = 800;
+        const startValue = displayRef.current;
         const endValue = value;
 
         if (startValue === endValue) return;
@@ -36,10 +37,7 @@ function RollingPrice({ value }: { value: number }) {
         const animate = (currentTime: number) => {
             if (!startTime) startTime = currentTime;
             const progress = Math.min((currentTime - startTime) / duration, 1);
-
-            // Easing function (easeOutQuart)
             const ease = 1 - Math.pow(1 - progress, 4);
-
             const current = Math.floor(startValue + (endValue - startValue) * ease);
             setDisplay(current);
 
@@ -47,10 +45,12 @@ function RollingPrice({ value }: { value: number }) {
                 requestAnimationFrame(animate);
             } else {
                 setDisplay(endValue);
+                displayRef.current = endValue;
             }
         };
 
         requestAnimationFrame(animate);
+        return () => { displayRef.current = value; };
     }, [value]);
 
     return <span>{display}</span>;
@@ -168,12 +168,11 @@ function StreamerWorkbench({
     const [aiResult, setAiResult] = useState<AIBuildResult | null>(null);
     const [ghostPos, setGhostPos] = useState({ x: 0, y: 0 });
     const [ghostStatus, setGhostStatus] = useState('');
-    const { theme, currentThemeKey, setTheme: setCurrentThemeKey } = React.useContext(ThemeContext);
+    const { theme, currentThemeKey, setTheme: setCurrentThemeKey, isLiveMode, setLiveMode, liveStyleConfig, liveStyle, setLiveStyle } = React.useContext(ThemeContext);
 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const rowInputRefs = useRef<(StreamerRowHandle | null)[]>([]);
 
-    // ... (keep existing methods: updateGhost, handleNextFocus, handleAiBuild)
 
     const updateGhost = (el: HTMLElement | null, status: string = '') => {
         if (el) {
@@ -330,31 +329,60 @@ function StreamerWorkbench({
                             <Zap className={theme.primary} size={18} />
                             {activeTab === 'builder' ? '专业装机控制台' : activeTab === 'recycle' ? '二手回收估价系统' : activeTab === 'trends' ? '全网行情雷达' : '硬件性价比天梯'}
                         </h2>
-                        <div className="hidden md:flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
-                            {(Object.keys(THEMES) as ThemeColor[]).map((tKey) => (
-                                <button
-                                    key={tKey}
-                                    onClick={() => setCurrentThemeKey(tKey)}
-                                    className={`w-3.5 h-3.5 rounded-full transition-all ${currentThemeKey === tKey ? 'scale-125 ring-2 ring-offset-1 ' + THEMES[tKey].bgLight.replace('bg-', 'ring-') : 'hover:scale-110 grayscale-[0.3] hover:grayscale-0'} ${THEMES[tKey].bgPrimary}`}
-                                    title={THEMES[tKey].name}
-                                />
-                            ))}
-                        </div>
+                        {!isLiveMode && (
+                            <div className="hidden md:flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
+                                {(Object.keys(THEMES) as ThemeColor[]).map((tKey) => (
+                                    <button
+                                        key={tKey}
+                                        onClick={() => setCurrentThemeKey(tKey)}
+                                        className={`w-3.5 h-3.5 rounded-full transition-all ${currentThemeKey === tKey ? 'scale-125 ring-2 ring-offset-1 ' + THEMES[tKey].bgLight.replace('bg-', 'ring-') : 'hover:scale-110 grayscale-[0.3] hover:grayscale-0'} ${THEMES[tKey].bgPrimary}`}
+                                        title={THEMES[tKey].name}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                        {/* Live Mode Style Switcher */}
+                        {isLiveMode && (
+                            <div className="flex items-center gap-2 bg-slate-900 px-2 py-1 rounded-full border border-slate-700">
+                                {(Object.keys(LIVE_STYLES) as LiveStyleKey[]).map(s => (
+                                    <button
+                                        key={s}
+                                        onClick={() => setLiveStyle(s)}
+                                        className={`text-xs px-2 py-0.5 rounded-full transition-all ${liveStyle === s ? 'bg-slate-700 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
+                                    >
+                                        {LIVE_STYLES[s].emoji} {LIVE_STYLES[s].name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
 
                     <div className="flex gap-2">
                         {activeTab === 'builder' && (
                             <>
-                                <button onClick={onOpenLibrary} className="flex items-center gap-1 px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-full transition-colors active:scale-95 border border-slate-200 dark:border-slate-700">
-                                    <Zap size={12} className="text-amber-500" /> 快速装机
+                                {/* Toggle Live Mode Button */}
+                                <button
+                                    onClick={() => setLiveMode(!isLiveMode)}
+                                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all shadow-sm border ${isLiveMode ? 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700 shadow-indigo-500/20' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'}`}
+                                >
+                                    <Monitor size={14} className={isLiveMode ? 'animate-pulse text-indigo-200' : ''} />
+                                    {isLiveMode ? '退出直播模式' : '直播大图模式'}
                                 </button>
-                                <button onClick={() => {
-                                    if (onAiCheck && !onAiCheck()) return;
-                                    setShowAiModal(true);
-                                }} className={`flex items-center gap-1 px-3 py-1 bg-gradient-to-r ${theme.gradient} text-white text-[11px] font-bold rounded-full shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0`}>
-                                    <Sparkles size={12} /> AI装机
-                                </button>
+
+                                {!isLiveMode && (
+                                    <>
+                                        <button onClick={onOpenLibrary} className="flex items-center gap-1 px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-full transition-colors active:scale-95 border border-slate-200 dark:border-slate-700">
+                                            <Zap size={12} className="text-amber-500" /> 快速装机
+                                        </button>
+                                        <button onClick={() => {
+                                            if (onAiCheck && !onAiCheck()) return;
+                                            setShowAiModal(true);
+                                        }} className={`flex items-center gap-1 px-3 py-1 bg-gradient-to-r ${theme.gradient} text-white text-[11px] font-bold rounded-full shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 active:translate-y-0`}>
+                                            <Sparkles size={12} /> AI装机
+                                        </button>
+                                    </>
+                                )}
                             </>
                         )}
                         {activeTab === 'trends' && (
@@ -366,10 +394,11 @@ function StreamerWorkbench({
                 </div>
 
                 {/* === Layout Container === */}
-                <div className="flex flex-col md:flex-row flex-1">
+                <div className={`flex flex-col md:flex-row flex-1 ${isLiveMode ? liveStyleConfig.wrapperBg : ''}`}>
                     {/* === Sidebar Navigation === */}
-                    <div className="flex flex-row md:flex-col gap-2 p-3 md:p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 md:w-[180px] lg:w-[220px] shrink-0 overflow-x-auto hide-scrollbar">
-                        {/* 专业装机 Tab */}
+                    {!isLiveMode && (
+                        <div className="flex flex-row md:flex-col gap-2 p-3 md:p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 md:w-[180px] lg:w-[220px] shrink-0 overflow-x-auto hide-scrollbar">
+                            {/* 专业装机 Tab */}
                         <button
                             onClick={() => setActiveTab('builder')}
                             className={`group relative flex md:flex-col items-center gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 shrink-0 ${activeTab === 'builder'
@@ -420,23 +449,24 @@ function StreamerWorkbench({
                             {activeTab === 'trends' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-purple-500 rounded-r-md"></div>}
                         </button>
                     </div>
+                    )}
 
                     {/* === Main Content Area === */}
-                    <div className="flex-1 min-w-0 bg-white dark:bg-slate-900/50 flex flex-col relative">
+                    <div className={`flex-1 min-w-0 flex flex-col relative ${isLiveMode ? liveStyleConfig.sectionBg : 'bg-white dark:bg-slate-900/50'}`}>
 
                 {activeTab === 'builder' ? (
                     <>
                     <div className="flex flex-col xl:flex-row">
                     {/* === Left: Config Table === */}
-                    <div className="flex-1 min-w-0 max-w-[1550px]">
+                    <div className={`flex-1 min-w-0 ${isLiveMode ? 'max-w-none' : 'max-w-[1550px]'}`}>
                         <div className="overflow-x-auto">
                             <div className="min-w-[600px]">
-                                <div className={`grid grid-cols-[75px_1fr_65px_70px_20px] gap-2 px-4 py-1 ${theme.tableHeaderBg} border-b ${theme.borderColor} text-xs font-bold ${theme.primary} uppercase tracking-widest transition-colors duration-300`}>
+                                <div className={`grid ${isLiveMode ? 'grid-cols-[100px_1fr_80px_150px]' : 'grid-cols-[75px_1fr_65px_70px_20px]'} gap-2 px-4 py-2 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
-                            <div>硬件型号 (智能搜索 / 自定义)</div>
+                            <div>硬件型号 {isLiveMode ? '' : '(智能搜索 / 自定义)'}</div>
                             <div className="text-center">数量</div>
                             <div className="text-right">价格</div>
-                            <div></div>
+                            {!isLiveMode && <div></div>}
                         </div>
 
                         <div className={`divide-y ${theme.divider} transition-colors duration-300`}>
@@ -458,49 +488,49 @@ function StreamerWorkbench({
                     </div>
                 </div>
 
-                <div className={`${theme.footerBg} border-t ${theme.borderColor} px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4 transition-colors duration-300`}>
-                    <div className="flex flex-col gap-0.5">
-                        <div className="flex items-baseline gap-2">
-                            <span className={`text-xl ${theme.textMuted} font-bold whitespace-nowrap line-through decoration-2`}>¥{Math.floor(pricing.standardPrice)}</span>
-                            <div className="flex items-baseline gap-0.5">
-                                <span className={`text-xl font-bold ${theme.textTitle}`}>¥</span>
-                                <span className={`text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r ${theme.gradient} font-mono tracking-tight`}>
-                                    <RollingPrice value={pricing.finalPrice} />
-                                </span>
+                        {!isLiveMode && (
+                            <div className={`${isLiveMode ? liveStyleConfig.headerBg : theme.footerBg + ' border-t ' + theme.borderColor} px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4 transition-colors duration-300`}>
+                                <div className="flex items-baseline gap-2 flex-wrap w-full md:w-auto">
+                                    <span className={`${isLiveMode ? 'text-2xl text-gray-500' : 'text-xl ' + theme.textMuted} font-bold whitespace-nowrap line-through decoration-2`}>¥{Math.floor(pricing.standardPrice)}</span>
+                                    <div className="flex items-baseline gap-0.5">
+                                        <span className={`${isLiveMode ? 'text-4xl' : 'text-xl'} font-bold ${isLiveMode ? liveStyleConfig.totalPriceText : theme.textTitle}`}>¥</span>
+                                        <span className={`${isLiveMode ? 'text-6xl font-black drop-shadow-lg' : 'text-4xl font-extrabold'} ${isLiveMode ? liveStyleConfig.totalPriceText : 'text-transparent bg-clip-text bg-gradient-to-r ' + theme.gradient} font-mono tracking-tight`}>
+                                            <RollingPrice value={pricing.finalPrice} />
+                                        </span>
+                                    </div>
+                                    <span className={`${isLiveMode ? liveStyleConfig.savedBadge + ' px-3 py-1 text-sm' : 'bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5'} rounded-full font-bold whitespace-nowrap self-start ${isLiveMode ? 'mt-2' : 'mt-1.5'}`}>
+                                        省 ¥{pricing.savedAmount}
+                                    </span>
+
+                                    <div className={`relative group w-[100px] ml-1 self-center`}>
+                                        <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className={`w-full appearance-none ${isLiveMode ? 'bg-white/10 border-white/20 text-white hover:border-white/40' : 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300'} border text-[10px] font-bold py-1 pl-2 pr-6 rounded-md focus:outline-none focus:ring-2 ${theme.ring}/20 transition-all cursor-pointer text-center`}>
+                                                {strategies.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                            </select>
+                                            <ChevronDown className={`absolute right-2 top-1.5 ${isLiveMode ? 'text-white/50' : 'text-slate-400 dark:text-slate-500'} pointer-events-none`} size={12} />
+                                        </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <div className={`${isLiveMode ? 'text-xs' : 'text-[10px]'} ${isLiveMode ? liveStyleConfig.mutedText : theme.textMuted} font-bold whitespace-nowrap`}>
+                                        标准价格包含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 装机售后服务费
+                                    </div>
+                                    <div className="flex items-center gap-2 h-10">
+                                        <button onClick={clearBuild} className={`h-full aspect-square flex items-center justify-center rounded-lg transition-all active:scale-95 border ${isLiveMode ? 'bg-white/5 hover:bg-white/10 text-rose-400 border-white/10' : 'bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-500/20'}`} title="清空配置">
+                                            <Trash2 size={18} />
+                                        </button>
+                                        <button onClick={handleSave} className={`h-full aspect-square flex items-center justify-center rounded-lg transition-all active:scale-95 border ${isLiveMode ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/10' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'}`} title="保存配置">
+                                            <Save size={18} />
+                                        </button>
+                                        <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className={`h-full aspect-square flex items-center justify-center rounded-lg transition-all active:scale-95 border ${isLiveMode ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/10' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'}`} title="生成海报">
+                                            {isGeneratingPoster ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
+                                        </button>
+                                        <button onClick={handleShareTrigger} disabled={isSharing} className={`h-full aspect-square flex items-center justify-center ${isLiveMode ? liveStyleConfig.glowBg : theme.bgPrimary} hover:opacity-90 disabled:opacity-50 text-white rounded-lg shadow-md transition-all active:scale-95`} title="分享配置">
+                                            {isSharing ? <RefreshCw size={18} className="animate-spin" /> : <Share2 size={18} />}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <span className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap self-start mt-1.5">省 ¥{pricing.savedAmount}</span>
-
-                            <div className="relative group w-[100px] ml-1 self-center">
-                                <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className={`w-full appearance-none bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300 text-[10px] font-bold py-1 pl-2 pr-6 rounded-md focus:outline-none focus:ring-2 ${theme.ring}/20 transition-all cursor-pointer text-center`}>
-                                    {strategies.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                                </select>
-                                <ChevronDown className="absolute right-2 top-1.5 text-slate-400 dark:text-slate-500 pointer-events-none" size={12} />
-                            </div>
-                        </div>
-                        <div className={`text-[10px] ${theme.textMuted} font-black pl-0.5 uppercase tracking-tight`}>
-                            标准价格包含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 装机售后服务费
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col items-center justify-center">
-                        {/* Discount Select Moved */}
-                    </div>
-
-                    <div className="flex items-center gap-2 h-10">
-                        <button onClick={clearBuild} className="h-full aspect-square flex items-center justify-center bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-lg transition-all active:scale-95 border border-rose-100 dark:border-rose-500/20" title="清空配置">
-                            <Trash2 size={18} />
-                        </button>
-                        <button onClick={handleSave} className="h-full aspect-square flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all active:scale-95 border border-slate-200 dark:border-slate-700" title="保存配置">
-                            <Save size={18} />
-                        </button>
-                        <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all active:scale-95 border border-slate-200 dark:border-slate-700" title="生成海报">
-                            {isGeneratingPoster ? <RefreshCw size={18} className="animate-spin" /> : <Download size={18} />}
-                        </button>
-                        <button onClick={handleShareTrigger} disabled={isSharing} className={`h-full aspect-square flex items-center justify-center ${theme.bgPrimary} hover:opacity-90 disabled:opacity-50 text-white rounded-lg shadow-md transition-all active:scale-95`} title="分享配置">
-                            {isSharing ? <RefreshCw size={18} className="animate-spin" /> : <Share2 size={18} />}
-                        </button>
-                    </div>
-                </div>
+                        )}
 
 
 
@@ -588,7 +618,7 @@ function StreamerWorkbench({
                     </div>
 
                     {/* === Right: Performance Sidebar === */}
-                    <StreamerPerformanceSidebar buildList={buildList} />
+                    <StreamerPerformanceSidebar buildList={buildList} pricingProps={{ pricing, discountRate, setDiscountRate, strategies, serviceFeeRate: pricingStrategy?.serviceFeeRate || 0, clearBuild, handleSave, handleGeneratePoster, isGeneratingPoster, handleShareTrigger, isSharing }} />
                     </div>
                 </>
                 ) : activeTab === 'trends' ? (
@@ -625,8 +655,19 @@ function StreamerWorkbench({
 
 export default function StreamerWorkbenchWrapper(props: any) {
     const [themeKey, setThemeKey] = useState<ThemeColor>('default');
+    const [isLiveMode, setLiveMode] = useState(false);
+    const [liveStyle, setLiveStyle] = useState<LiveStyleKey>('cyber');
     return (
-        <ThemeContext.Provider value={{ theme: THEMES[themeKey], currentThemeKey: themeKey, setTheme: setThemeKey }}>
+        <ThemeContext.Provider value={{
+            theme: THEMES[themeKey],
+            currentThemeKey: themeKey,
+            setTheme: setThemeKey,
+            isLiveMode,
+            setLiveMode,
+            liveStyle,
+            setLiveStyle,
+            liveStyleConfig: LIVE_STYLES[liveStyle],
+        }}>
             <StreamerWorkbench {...props} />
         </ThemeContext.Provider>
     );

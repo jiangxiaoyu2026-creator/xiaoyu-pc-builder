@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, Sparkles, X, RefreshCw, Activity, Zap, Command } from 'lucide-react';
+import { Bot, Sparkles, X, RefreshCw, Activity, Zap } from 'lucide-react';
 import { aiBuilder, AIBuildResult, AIBuildLog } from '../../services/aiBuilder';
 import { storage } from '../../services/storage';
 

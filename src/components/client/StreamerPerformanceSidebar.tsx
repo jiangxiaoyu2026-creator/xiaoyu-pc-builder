@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, animate as fmAnimate } from 'framer-motion';
-import { Activity, Zap, Gamepad2, RefreshCw } from 'lucide-react';
+import { Activity, Zap, Gamepad2, RefreshCw, Trash2, Save, Download, Share2, ChevronDown } from 'lucide-react';
 import { BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { ThemeContext } from './StreamerThemeContext';
 import { Resolution } from '../../data/gameFpsData';
@@ -23,8 +23,33 @@ export const BouncyNumber = ({ value, className }: { value: number; className?: 
     return <motion.span className={className}>{rounded}</motion.span>;
 };
 
-export function StreamerPerformanceSidebar({ buildList }: { buildList: BuildEntry[] }) {
-    const { theme } = React.useContext(ThemeContext);
+// Rolling price animation for sidebar
+function SidebarRollingPrice({ value }: { value: number }) {
+    const count = useMotionValue(0);
+    const rounded = useTransform(count, (latest) => Math.round(latest));
+    useEffect(() => {
+        const controls = fmAnimate(count, value, { type: 'spring', stiffness: 80, damping: 20, restDelta: 0.5 });
+        return controls.stop;
+    }, [value, count]);
+    return <motion.span>{rounded}</motion.span>;
+}
+
+export interface SidebarPricingProps {
+    pricing: { standardPrice: number; finalPrice: number; savedAmount: number };
+    discountRate: number;
+    setDiscountRate: (rate: number) => void;
+    strategies: { value: number; label: string }[];
+    serviceFeeRate: number;
+    clearBuild: () => void;
+    handleSave: () => void;
+    handleGeneratePoster: () => void;
+    isGeneratingPoster: boolean;
+    handleShareTrigger: () => void;
+    isSharing: boolean;
+}
+
+export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildList: BuildEntry[], pricingProps?: SidebarPricingProps }) {
+    const { theme, isLiveMode, liveStyleConfig } = React.useContext(ThemeContext);
     
     // === Performance Sidebar State ===
     const [simResult, setSimResult] = useState<{
@@ -193,124 +218,286 @@ export function StreamerPerformanceSidebar({ buildList }: { buildList: BuildEntr
         });
     }, [cpuItemId, gpuItemId, sidebarResolution]);
 
+    // Slice FPS data based on live mode without re-fetching
+    const displayFpsData = isLiveMode ? fpsData.slice(0, 8) : fpsData;
+
+    // Extract primary product image for the "stamp" view
+    // Priority: Mainboard > GPU > CPU
+    const primaryImageEntry = buildList.find(e => e.category === 'mainboard' && e.item?.image)
+        || buildList.find(e => e.category === 'gpu' && e.item?.image)
+        || buildList.find(e => e.category === 'cpu' && e.item?.image)
+        || buildList.find(e => e.item?.image);
+    const primaryImage = primaryImageEntry?.item?.image;
+
+    // Format current time
+    const now = new Date();
+    const timeString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     return (
-        <div className="hidden xl:flex flex-col gap-4 w-[280px] shrink-0 border-l border-slate-200 dark:border-slate-700/80 p-4 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar">
+        <div className={`hidden xl:flex flex-col gap-3 shrink-0 border-l p-4 ${isLiveMode ? `w-[320px] ${liveStyleConfig.sectionBg} border-transparent shadow-2xl overflow-y-auto max-h-screen custom-scrollbar` : 'w-[280px] border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
 
-            {/* Module 1: 鲁大师跑分 */}
-            <div className={`bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-4 relative overflow-hidden group hover:border-slate-300 dark:hover:border-slate-600 transition-colors flex justify-between items-center`}>
-                <div className={`absolute right-0 top-0 w-32 h-32 ${theme.bgPrimary} opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 dark:group-hover:opacity-20 transition-all duration-500`}></div>
-                <div className={`absolute -right-4 -bottom-4 opacity-5 ${theme.primary} group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75`}><Activity size={48} strokeWidth={1.5}/></div>
-                <div className="relative z-10">
-                    <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-0.5 flex items-center gap-1.5"><Activity size={14} className={theme.primary}/> 综合性能跑分</h4>
-                    <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                        <span className={`w-1.5 h-1.5 rounded-full ${theme.bgPrimary} inline-block animate-pulse`}></span>
-                        基于鲁大师评测
+            {/* In Live Mode: Special Layout Order */}
+            {isLiveMode ? (
+                <>
+                    {/* 1. Product Image Stamp */}
+                    <div className={`bg-white rounded-xl p-2 relative shadow-lg ${liveStyleConfig.stampBorder} border-4 overflow-hidden mb-1 flex items-center justify-center min-h-[220px]`}>
+                        {/* Stamp inner dashed border */}
+                        <div className={`absolute inset-1 border-2 border-dashed ${liveStyleConfig.border} pointer-events-none rounded-lg opacity-30`}></div>
+                        
+                        {primaryImage ? (
+                            <img src={primaryImage} alt="Hardware" className="w-full h-full max-h-[200px] object-contain relative z-10" />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center text-gray-300 opacity-50 relative z-10">
+                                <Activity size={48} strokeWidth={1} />
+                                <span className="text-sm font-bold mt-2 tracking-widest">DIYXX</span>
+                            </div>
+                        )}
+                        
+                        {/* Stamp corner cutouts effect (CSS trick) */}
+                        <div className={`absolute -top-3 -left-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
+                        <div className={`absolute -top-3 -right-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
+                        <div className={`absolute -bottom-3 -left-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
+                        <div className={`absolute -bottom-3 -right-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
                     </div>
-                </div>
-                <div className={`text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${theme.gradient} font-display tracking-tighter relative z-10`}>
-                    {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
-                </div>
-            </div>
 
-            {/* Module 2: 整机功耗 */}
-            <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-4 relative overflow-hidden group hover:border-amber-300 dark:hover:border-amber-500/50 transition-colors flex justify-between items-center">
-                <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2 group-hover:bg-amber-500/20 transition-all duration-500"></div>
-                <div className="absolute -right-2 -bottom-2 opacity-5 text-amber-500 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75"><Zap size={48} strokeWidth={1.5}/></div>
-                <div className="relative z-10">
-                    <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-0.5 flex items-center gap-1.5"><Zap size={14} className="text-amber-500"/> 系统峰值功耗</h4>
-                    {simResult && simResult.totalPowerDraw > 0 ? (
-                        <div className="text-[9px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                            推荐电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+
+                    {/* 2. Score & Power Cards Side-by-Side */}
+                    <div className="flex flex-row gap-3 shrink-0">
+                        {/* 鲁大师跑分 */}
+                        <div className={`flex-1 bg-transparent border ${liveStyleConfig.border} shadow-sm rounded-xl p-3 relative overflow-hidden group flex flex-col justify-center items-center h-24`}>
+                            <div className={`absolute right-0 top-0 w-32 h-32 ${liveStyleConfig.glowBg} opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2`}></div>
+                            <div className="flex items-center gap-1 mb-1 z-10">
+                                <Activity size={16} className={liveStyleConfig.accentText}/>
+                                <span className={`${liveStyleConfig.accentText} text-2xl font-black font-display tracking-tighter`}>
+                                    {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={Math.floor(simResult.totalLuScore/10000)} /> : '---'}
+                                </span>
+                                {simResult && simResult.totalLuScore > 0 && <span className={`text-xs ${liveStyleConfig.accentText} font-bold`}>W+</span>}
+                            </div>
+                            <span className={`text-[10px] font-bold ${liveStyleConfig.mutedText} z-10 tracking-widest`}>鲁大师跑分</span>
                         </div>
-                    ) : (
-                        <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 inline-block"></span>
-                            完善配置后可见
-                        </div>
-                    )}
-                </div>
-                <div className="text-2xl font-black text-slate-800 dark:text-slate-200 font-display tracking-tighter flex items-baseline relative z-10">
-                    {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} /><span className="text-sm ml-0.5 text-slate-500 font-bold">W</span></> : '---'}
-                </div>
-            </div>
 
-            {/* Module 3: 游戏帧率 */}
-            <div className={`bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 shadow-sm rounded-2xl p-5 relative overflow-hidden flex-1 flex flex-col group hover:border-slate-300 dark:hover:border-slate-600 transition-colors`}>
-                <div className={`absolute right-0 top-0 w-48 h-48 ${theme.bgPrimary} opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 dark:group-hover:opacity-20 transition-all duration-500`}></div>
-                <div className="flex items-center justify-between mb-4 relative z-10">
-                    <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] flex items-center gap-1.5 tracking-wide">
-                        <Gamepad2 size={16} className={theme.primary} />
-                        游戏FPS
-                    </h3>
-                    <div className="flex gap-0.5 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
-                        {[1080, 1440, 2160].map(res => (
-                            <button
-                                key={res}
-                                onClick={() => setSidebarResolution(res)}
-                                className={`text-[9px] font-black px-2.5 py-1 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${theme.bgPrimary} text-white shadow-sm scale-105` : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50'}`}
-                            >
-                                {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
-                            </button>
-                        ))}
+                        {/* 整机功耗 */}
+                        <div className={`flex-1 bg-transparent border ${liveStyleConfig.border} shadow-sm rounded-xl p-3 relative overflow-hidden group flex flex-col justify-center items-center h-24`}>
+                            <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2"></div>
+                            <div className="flex items-center gap-1 mb-1 z-10">
+                                <Zap size={16} className="text-white"/>
+                                <span className={`text-white text-2xl font-black font-display tracking-tighter`}>
+                                    {simResult && simResult.totalPowerDraw > 0 ? <BouncyNumber value={simResult.totalPowerDraw} /> : '---'}
+                                </span>
+                                {simResult && simResult.totalPowerDraw > 0 && <span className={`text-xs text-white font-bold`}>W</span>}
+                            </div>
+                            <span className={`text-[10px] font-bold ${liveStyleConfig.mutedText} z-10 tracking-widest`}>整机功耗约</span>
+                        </div>
                     </div>
-                </div>
-                <div className="space-y-3.5 relative z-10 flex-1 overflow-y-auto pr-1 custom-scrollbar">
-                    {loadingFps ? (
-                        <div className={`py-8 flex flex-col items-center justify-center ${theme.primary} gap-3 h-full`}>
-                            <RefreshCw size={24} className="animate-spin opacity-80" />
-                            <div className="text-[10px] font-black tracking-widest uppercase opacity-80">AI 性能分析中...</div>
+
+                    {/* 3. FPS single column */}
+                    <div className={`bg-transparent border ${liveStyleConfig.border} shadow-sm rounded-xl p-3 relative flex-1 flex flex-col min-h-[200px]`}>
+                        <div className="flex items-center justify-between mb-3 relative z-10">
+                            <div className={`flex gap-1 bg-white/5 border border-white/10 p-0.5 rounded-lg`}>
+                                {[1080, 1440, 2160].map(res => (
+                                    <button
+                                        key={res}
+                                        onClick={() => setSidebarResolution(res)}
+                                        className={`text-[10px] font-black px-3 py-1 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${liveStyleConfig.glowBg} text-gray-900 shadow-sm scale-105` : `text-gray-400 hover:text-white hover:bg-white/10`}`}
+                                    >
+                                        {res === 1080 ? '1K' : res === 1440 ? '2K' : '4K'}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                    ) : fpsData.length > 0 ? (
-                        fpsData.slice(0, 12).map((item, idx) => (
-                            <div key={idx} className="group/item">
-                                <div className="flex justify-between items-end text-[11px] mb-1.5">
-                                    <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
-                                        <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                        <span className="truncate">{item.name}</span>
-                                    </span>
-                                    <div className="flex items-baseline gap-2 justify-end shrink-0">
-                                        {item.lowFps ? (
-                                            <span className="flex items-baseline gap-0.5 text-slate-400 w-10 justify-end">
-                                                <span className="text-[9px] uppercase font-bold tracking-wider opacity-80">Low</span>
-                                                <span className="font-mono text-xs font-bold">{item.lowFps}</span>
-                                            </span>
-                                        ) : <span className="w-10"></span>}
-                                        <div className="flex items-baseline gap-0.5 ml-1 w-14 justify-end">
-                                            <span className={`font-display font-black text-sm ${
-                                                item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
-                                                item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
-                                                item.fps >= 100 ? 'text-blue-500 dark:text-blue-400' :
-                                                item.fps >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
-                                                'text-red-500 dark:text-red-400'
-                                            }`}>{item.fps}</span>
-                                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">FPS</span>
+                        <div className={`relative z-10 flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-3`}>
+                            {loadingFps ? (
+                                <div className={`py-8 flex flex-col items-center justify-center text-white/50 gap-3 h-full`}>
+                                    <RefreshCw size={24} className="animate-spin opacity-80" />
+                                </div>
+                            ) : fpsData.length > 0 ? (
+                                displayFpsData.map((item, idx) => (
+                                    <div key={idx} className="flex items-center gap-3">
+                                        <div className="relative shrink-0">
+                                            <img src={`/images/games/icons/${item.name}.png`} alt="" className={`w-10 h-10 rounded-full object-cover border-2 ${liveStyleConfig.border}`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ${liveStyleConfig.glowBg} border border-gray-900 flex items-center justify-center`}>
+                                                <Gamepad2 size={8} className="text-gray-900" />
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className={`text-[11px] font-bold ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
+                                            <div className={`w-full bg-white/5 rounded-full h-1.5 overflow-hidden relative`}>
+                                                <div className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${item.fps === 0 ? 'bg-white/10' : liveStyleConfig.fpsBarColor}`} style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}></div>
+                                            </div>
+                                        </div>
+                                        <div className={`font-display font-black text-lg ${item.fps === 0 ? liveStyleConfig.mutedText : 'text-white'} shrink-0 w-[60px] text-right`}>
+                                            {item.fps}<span className="text-[9px] ml-0.5">FPS</span>
                                         </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="py-8 flex flex-col items-center justify-center text-gray-600 gap-2 h-full">
+                                    <Gamepad2 size={24} />
+                                    <span className="text-[10px] font-bold">暂无帧率数据</span>
                                 </div>
-                                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50 relative">
-                                    <div
-                                        className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
-                                            item.fps === 0 ? 'bg-slate-300 dark:bg-slate-600' :
-                                            item.fps >= 200 ? 'bg-emerald-500' : 
-                                            item.fps >= 100 ? 'bg-blue-500' :
-                                            item.fps >= 60 ? 'bg-yellow-500' :
-                                            'bg-red-500'
-                                        }`}
-                                        style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}
-                                    >
-                                        {item.fps > 0 && <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 animate-[shimmer_2s_infinite]"></div>}
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 4. Pricing & Actions at bottom */}
+                    {pricingProps && (
+                        <div className={`border ${liveStyleConfig.border} rounded-xl p-3 relative mt-auto shrink-0 flex flex-col`}>
+                            {/* Action Buttons Top Row */}
+                            <div className="grid grid-cols-4 gap-2 mb-3">
+                                <button onClick={pricingProps.clearBuild} className={`h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 ${liveStyleConfig.mutedText} hover:text-rose-400 border border-white/5 transition-all`} title="清空配置">
+                                    <Trash2 size={14} />
+                                </button>
+                                <button onClick={pricingProps.handleSave} className={`h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 ${liveStyleConfig.mutedText} hover:text-white border border-white/5 transition-all`} title="保存配置">
+                                    <Save size={14} />
+                                </button>
+                                <button onClick={pricingProps.handleGeneratePoster} disabled={pricingProps.isGeneratingPoster} className={`h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 ${liveStyleConfig.mutedText} hover:text-white border border-white/5 transition-all`} title="生成海报">
+                                    {pricingProps.isGeneratingPoster ? <RefreshCw size={14} className="animate-spin" /> : <Download size={14} />}
+                                </button>
+                                <button onClick={pricingProps.handleShareTrigger} disabled={pricingProps.isSharing} className={`h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 ${liveStyleConfig.mutedText} hover:text-white border border-white/5 transition-all`} title="分享配置">
+                                    {pricingProps.isSharing ? <RefreshCw size={14} className="animate-spin" /> : <Share2 size={14} />}
+                                </button>
+                            </div>
+
+                            <div className="flex justify-between items-end">
+                                <div className="flex flex-col gap-1">
+                                    <div className="relative group w-[90px]">
+                                        <select 
+                                            value={pricingProps.discountRate} 
+                                            onChange={(e) => pricingProps.setDiscountRate(parseFloat(e.target.value))} 
+                                            className={`w-full appearance-none bg-white/10 border-white/20 text-white border text-[9px] font-bold py-1 pl-2 pr-5 rounded-md focus:outline-none focus:ring-1 focus:ring-white/20 transition-all cursor-pointer`}
+                                        >
+                                            {pricingProps.strategies.map(opt => <option key={opt.value} value={opt.value} className="bg-gray-800">{opt.label}</option>)}
+                                        </select>
+                                        <ChevronDown className="absolute right-2 top-1.5 text-white/50 pointer-events-none" size={10} />
+                                    </div>
+                                    <div className={`text-[8px] ${liveStyleConfig.mutedText} font-bold leading-tight mt-1 max-w-[130px]`}>
+                                        含装机走线售后利润{(pricingProps.serviceFeeRate * 100).toFixed(0)}%<br/>山东济南发货顺丰到付
+                                    </div>
+                                </div>
+                                
+                                <div className="flex flex-col items-end">
+                                    <div className="flex items-baseline gap-1">
+                                        <span className={`text-2xl font-bold ${liveStyleConfig.totalPriceText}`}>¥</span>
+                                        <span className={`text-4xl font-black drop-shadow-md ${liveStyleConfig.totalPriceText} font-mono tracking-tighter`}>
+                                            <SidebarRollingPrice value={pricingProps.pricing.finalPrice} />
+                                        </span>
+                                    </div>
+                                    <div className={`text-[9px] ${liveStyleConfig.accentText} opacity-80 tracking-widest`}>
+                                        {timeString}
                                     </div>
                                 </div>
                             </div>
-                        ))
-                    ) : (
-                        <div className="py-8 flex flex-col items-center justify-center text-slate-500 gap-3 opacity-60 h-full">
-                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700"><Gamepad2 size={24} className="text-slate-400" /></div>
-                            <div className="text-[10px] font-black text-slate-400 mt-1 tracking-wide">添加 CPU/显卡 后展示帧率</div>
                         </div>
                     )}
-                </div>
-            </div>
+                </>
+            ) : (
+                // === Normal Mode: Kept as original ===
+                <>
+                    <div className="flex gap-4">
+                        {/* Module 1: 鲁大师跑分 */}
+                        <div className={`flex-1 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm rounded-2xl p-4 relative overflow-hidden group transition-colors flex flex-col justify-between items-start`}>
+                            <div className={`absolute right-0 top-0 w-32 h-32 ${theme.bgPrimary} opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 dark:group-hover:opacity-20 transition-all duration-500`}></div>
+                            <div className={`absolute -right-4 -bottom-4 opacity-5 ${theme.primary} group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75`}><Activity size={48} strokeWidth={1.5}/></div>
+                            <div className="relative z-10 w-full flex justify-between items-center mb-2">
+                                <h4 className={`text-[12px] font-extrabold text-slate-500 dark:text-slate-400 flex items-center gap-1.5`}><Activity size={14} className={theme.primary}/> 性能</h4>
+                                <div className={`w-1.5 h-1.5 rounded-full ${theme.bgPrimary} inline-block animate-pulse`}></div>
+                            </div>
+                            <div className={`text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${theme.gradient} font-display tracking-tighter relative z-10 w-full`}>
+                                {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={Math.floor(simResult.totalLuScore/10000)} /> : '---'}
+                                {simResult && simResult.totalLuScore > 0 && <span className={`text-sm text-slate-400 ml-1`}>万</span>}
+                            </div>
+                        </div>
+
+                        {/* Module 2: 整机功耗 */}
+                        <div className={`flex-1 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 hover:border-amber-300 dark:hover:border-amber-500/50 shadow-sm rounded-2xl p-4 relative overflow-hidden group transition-colors flex flex-col justify-between items-start`}>
+                            <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2 group-hover:bg-amber-500/20 transition-all duration-500"></div>
+                            <div className="absolute -right-2 -bottom-2 opacity-5 text-amber-500 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75"><Zap size={48} strokeWidth={1.5}/></div>
+                            <div className="relative z-10 w-full flex justify-between items-center mb-2">
+                                <h4 className={`text-[12px] font-extrabold text-slate-500 dark:text-slate-400 flex items-center gap-1.5`}><Zap size={14} className={"text-amber-500"}/> 功耗</h4>
+                            </div>
+                            <div className={`text-2xl text-slate-800 dark:text-slate-200 font-black font-display tracking-tighter relative z-10 w-full`}>
+                                {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} /><span className="text-sm ml-0.5 text-slate-500 font-bold">W</span></> : '---'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Module 3: 游戏帧率 */}
+                    <div className={`bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm rounded-2xl p-5 relative overflow-hidden flex-1 flex flex-col group transition-colors`}>
+                        <div className={`absolute right-0 top-0 w-48 h-48 ${theme.bgPrimary} opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 dark:group-hover:opacity-20 transition-all duration-500`}></div>
+                        <div className="flex items-center justify-between mb-4 relative z-10">
+                            <h3 className={`font-extrabold text-slate-900 dark:text-white text-[13px] flex items-center gap-1.5 tracking-wide`}>
+                                <Gamepad2 size={16} className={theme.primary} />
+                                游戏FPS
+                            </h3>
+                            <div className={`flex gap-0.5 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 p-0.5 rounded-lg border`}>
+                                {[1080, 1440, 2160].map(res => (
+                                    <button
+                                        key={res}
+                                        onClick={() => setSidebarResolution(res)}
+                                        className={`text-[9px] font-black px-2.5 py-1 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${theme.bgPrimary} text-white shadow-sm scale-105` : `text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50`}`}
+                                    >
+                                        {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className={`relative z-10 flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-3.5`}>
+                            {loadingFps ? (
+                                <div className={`py-8 flex flex-col items-center justify-center ${theme.primary} gap-3 h-full`}>
+                                    <RefreshCw size={24} className="animate-spin opacity-80" />
+                                    <div className="text-[10px] font-black tracking-widest uppercase opacity-80">AI 性能分析中...</div>
+                                </div>
+                            ) : fpsData.length > 0 ? (
+                                displayFpsData.map((item, idx) => (
+                                    <div key={idx} className="group/item">
+                                        <div className="flex justify-between items-end text-[11px] mb-1.5">
+                                            <span className={`font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2`}>
+                                                <img src={`/images/games/icons/${item.name}.png`} alt="" className={`w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                                <span className="truncate">{item.name}</span>
+                                            </span>
+                                            <div className="flex items-baseline gap-2 justify-end shrink-0">
+                                                {item.lowFps ? (
+                                                    <span className="flex items-baseline gap-0.5 text-slate-400 w-10 justify-end">
+                                                        <span className="text-[9px] uppercase font-bold tracking-wider opacity-80">Low</span>
+                                                        <span className="font-mono text-xs font-bold">{item.lowFps}</span>
+                                                    </span>
+                                                ) : <span className="w-10"></span>}
+                                                <div className={`flex items-baseline gap-0.5 ml-1 w-14 justify-end`}>
+                                                    <span className={`font-display font-black text-sm ${
+                                                        item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
+                                                        item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
+                                                        item.fps >= 100 ? 'text-blue-500 dark:text-blue-400' :
+                                                        item.fps >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
+                                                        'text-red-500 dark:text-red-400'
+                                                    }`}>{item.fps}</span>
+                                                    <span className={`text-[8px] font-bold text-slate-400 uppercase tracking-widest`}>FPS</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className={`w-full bg-slate-100 dark:bg-slate-800 border-slate-200/50 dark:border-slate-700/50 rounded-full h-1.5 overflow-hidden border relative`}>
+                                            <div
+                                                className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
+                                                    item.fps === 0 ? 'bg-slate-300 dark:bg-slate-600' :
+                                                    item.fps >= 200 ? 'bg-emerald-500' : 
+                                                    item.fps >= 100 ? 'bg-blue-500' :
+                                                    item.fps >= 60 ? 'bg-yellow-500' :
+                                                    'bg-red-500'
+                                                }`}
+                                                style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}
+                                            >
+                                                {item.fps > 0 && <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 animate-[shimmer_2s_infinite]"></div>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="py-8 flex flex-col items-center justify-center text-slate-500 gap-3 opacity-60 h-full">
+                                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700"><Gamepad2 size={24} className="text-slate-400" /></div>
+                                    <div className="text-[10px] font-black text-slate-400 mt-1 tracking-wide">添加 CPU/显卡 后展示帧率</div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
 
         </div>
     );

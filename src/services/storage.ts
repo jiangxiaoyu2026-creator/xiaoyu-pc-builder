@@ -1494,14 +1494,7 @@ class StorageService {
         }
     }
 
-    async autofillImages(): Promise<{ count: number, message: string } | null> {
-        try {
-            return await ApiService.post('/products/admin/autofill-images', {});
-        } catch (e) {
-            console.error('Autofill images failed', e);
-            return null;
-        }
-    }
+
 
     async autofillSpecs(): Promise<{ count: number, message: string } | null> {
         try {

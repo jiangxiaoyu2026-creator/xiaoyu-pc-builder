@@ -91,8 +91,165 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
     }
 };
 
-export const ThemeContext = React.createContext<{ theme: ThemeConfig, currentThemeKey: ThemeColor, setTheme: (t: ThemeColor) => void }>({
+// === Live Mode Specific Styles ===
+export type LiveStyleKey = 'cyber' | 'mecha' | 'pure' | 'tactical' | 'gundam';
+
+export interface LiveStyleConfig {
+    name: string;
+    emoji: string;
+    // Wrapper bg
+    wrapperBg: string;
+    // Card/section bg
+    sectionBg: string;
+    // Category label style
+    categoryText: string;
+    // Model name text
+    modelText: string;
+    // Price text
+    priceText: string;
+    // Total price accent
+    totalPriceText: string;
+    // Divider
+    divider: string;
+    // Header bg
+    headerBg: string;
+    // Border
+    border: string;
+    // Score / power accent
+    accentText: string;
+    // FPS bar color
+    fpsBarColor: string;
+    // Saved badge
+    savedBadge: string;
+    // Muted text
+    mutedText: string;
+    // Background glow / button highlight (proper bg-xxx class)
+    glowBg: string;
+    // Row background for each config entry (live mode only)
+    rowBg: string;
+    // Stamp-style border for product images
+    stampBorder: string;
+}
+
+export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
+    cyber: {
+        name: '电竞霓虹',
+        emoji: '🎮',
+        wrapperBg: 'bg-gray-950',
+        sectionBg: 'bg-gray-900/90 border-cyan-500/20',
+        categoryText: 'text-cyan-400 font-black',
+        modelText: 'text-white font-black',
+        priceText: 'text-cyan-300 font-black',
+        totalPriceText: 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400',
+        divider: 'divide-cyan-500/10',
+        headerBg: 'bg-gradient-to-r from-gray-900 via-gray-950 to-gray-900 border-b border-cyan-500/20',
+        border: 'border-cyan-500/15',
+        accentText: 'text-cyan-400',
+        fpsBarColor: 'bg-gradient-to-r from-cyan-500 to-purple-500',
+        savedBadge: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
+        mutedText: 'text-gray-500',
+        glowBg: 'bg-cyan-500',
+        rowBg: 'bg-gray-800/60',
+        stampBorder: 'border-cyan-500/30',
+    },
+    tactical: {
+        name: '军绿战术',
+        emoji: '🎖️',
+        wrapperBg: 'bg-[#2d2f24]',
+        sectionBg: 'bg-[#353728]/90 border-lime-500/20',
+        categoryText: 'text-lime-400 font-black',
+        modelText: 'text-white font-black',
+        priceText: 'text-lime-400 font-black',
+        totalPriceText: 'text-lime-400',
+        divider: 'divide-lime-500/10',
+        headerBg: 'bg-gradient-to-r from-[#2d2f24] via-[#353728] to-[#2d2f24] border-b border-lime-500/20',
+        border: 'border-lime-500/15',
+        accentText: 'text-lime-400',
+        fpsBarColor: 'bg-gradient-to-r from-lime-500 to-yellow-500',
+        savedBadge: 'bg-lime-500/20 text-lime-300 border border-lime-500/30',
+        mutedText: 'text-[#7a7d60]',
+        glowBg: 'bg-lime-500',
+        rowBg: 'bg-[#3a3d2e]/80',
+        stampBorder: 'border-lime-500/40',
+    },
+    gundam: {
+        name: '高达',
+        emoji: '🤖',
+        wrapperBg: 'bg-[#1a1c2e]',
+        sectionBg: 'bg-[#1e2035]/90 border-blue-500/20',
+        categoryText: 'text-red-400 font-black',
+        modelText: 'text-white font-black',
+        priceText: 'text-yellow-400 font-black',
+        totalPriceText: 'text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-white to-blue-400',
+        divider: 'divide-blue-500/10',
+        headerBg: 'bg-gradient-to-r from-[#1a1c2e] via-[#1e2035] to-[#1a1c2e] border-b border-blue-500/20',
+        border: 'border-blue-500/15',
+        accentText: 'text-yellow-400',
+        fpsBarColor: 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500',
+        savedBadge: 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30',
+        mutedText: 'text-slate-500',
+        glowBg: 'bg-red-500',
+        rowBg: 'bg-[#232540]/70',
+        stampBorder: 'border-blue-400/40',
+    },
+    mecha: {
+        name: '机甲硬核',
+        emoji: '⚙️',
+        wrapperBg: 'bg-[#0f1115]',
+        sectionBg: 'bg-[#16181f]/90 border-orange-500/20',
+        categoryText: 'text-orange-400 font-black',
+        modelText: 'text-slate-100 font-black',
+        priceText: 'text-orange-300 font-black',
+        totalPriceText: 'text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-300',
+        divider: 'divide-orange-500/10',
+        headerBg: 'bg-gradient-to-r from-[#0f1115] via-[#16181f] to-[#0f1115] border-b border-orange-500/20',
+        border: 'border-orange-500/15',
+        accentText: 'text-orange-400',
+        fpsBarColor: 'bg-gradient-to-r from-orange-500 to-amber-500',
+        savedBadge: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
+        mutedText: 'text-slate-600',
+        glowBg: 'bg-orange-500',
+        rowBg: 'bg-[#1a1d24]/80',
+        stampBorder: 'border-orange-500/30',
+    },
+    pure: {
+        name: '极简高对比',
+        emoji: '⚡',
+        wrapperBg: 'bg-white',
+        sectionBg: 'bg-gray-50 border-gray-200',
+        categoryText: 'text-indigo-600 font-black',
+        modelText: 'text-gray-900 font-black',
+        priceText: 'text-rose-600 font-black',
+        totalPriceText: 'text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-orange-500',
+        divider: 'divide-gray-200',
+        headerBg: 'bg-white border-b border-gray-200',
+        border: 'border-gray-200',
+        accentText: 'text-indigo-600',
+        fpsBarColor: 'bg-gradient-to-r from-indigo-500 to-blue-500',
+        savedBadge: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+        mutedText: 'text-gray-400',
+        glowBg: 'bg-indigo-500',
+        rowBg: 'bg-gray-100/60',
+        stampBorder: 'border-gray-300',
+    },
+};
+
+export const ThemeContext = React.createContext<{
+    theme: ThemeConfig;
+    currentThemeKey: ThemeColor;
+    setTheme: (t: ThemeColor) => void;
+    isLiveMode: boolean;
+    setLiveMode: (v: boolean) => void;
+    liveStyle: LiveStyleKey;
+    setLiveStyle: (s: LiveStyleKey) => void;
+    liveStyleConfig: LiveStyleConfig;
+}>({
     theme: THEMES.default,
     currentThemeKey: 'default',
-    setTheme: () => { }
+    setTheme: () => { },
+    isLiveMode: false,
+    setLiveMode: () => { },
+    liveStyle: 'cyber',
+    setLiveStyle: () => { },
+    liveStyleConfig: LIVE_STYLES.cyber,
 });

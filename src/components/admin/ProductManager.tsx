@@ -82,7 +82,7 @@ export default function ProductManager() {
     const [page, setPage] = useState(1);
     const [pageSize] = useState(20);
     const [loading, setLoading] = useState(false);
-    const [isAutofilling, setIsAutofilling] = useState(false);
+
     const [isAutofillingSpecs, setIsAutofillingSpecs] = useState(false);
     const [search, setSearch] = useState('');
     const [filterCat, setFilterCat] = useState('all');
@@ -324,22 +324,6 @@ export default function ProductManager() {
         setIsDeleteModalOpen(true);
     };
 
-    const handleAutofill = async () => {
-        if (!confirm('此操作将为所有【没有图片】的商品自动从网上匹配图片建议，并标记为“AI建议”供您核对。是否继续？')) return;
-        
-        setIsAutofilling(true);
-        try {
-            const res = await storage.autofillImages();
-            if (res) {
-                showToast(res.message, 'success');
-                loadProducts();
-            }
-        } catch (e) {
-            showToast('自动补全失败', 'error');
-        } finally {
-            setIsAutofilling(false);
-        }
-    };
 
     const confirmAiImage = async (id: string) => {
         const p = products.find(x => String(x.id) === String(id));
@@ -450,17 +434,7 @@ export default function ProductManager() {
                     <button onClick={() => { setEditingProduct(null); setIsEditModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors shadow-lg">
                         <Plus size={16} /> 录入
                     </button>
-                    <button 
-                        onClick={handleAutofill}
-                        disabled={isAutofilling}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm whitespace-nowrap ${
-                            isAutofilling ? 'bg-slate-100 text-slate-400' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-                        }`}
-                        title="为没有图片的商品自动匹配建议图片"
-                    >
-                        {isAutofilling ? <span className="animate-spin text-lg">⏳</span> : <Sparkles size={16} />}
-                        <span>AI 补全图片</span>
-                    </button>
+
                     <button 
                         onClick={handleAutofillSpecs}
                         disabled={isAutofillingSpecs}
