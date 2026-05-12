@@ -16,7 +16,7 @@ export interface StreamerRowHandle {
     closeSuggestions: () => void;
 }
 
-export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPrev: () => void, onPreview: (img: string) => void }>(({ entry, index, onUpdate, onEnter, onPrev, onPreview }, ref) => {
+export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPrev: () => void, onPreview: (img: string) => void, serviceFeeRate: number }>(({ entry, index, onUpdate, onEnter, onPrev, onPreview, serviceFeeRate }, ref) => {
     const { theme, isLiveMode, liveStyleConfig } = React.useContext(ThemeContext);
     const [query, setQuery] = useState(entry.customName || entry.item?.model || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -272,6 +272,7 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
     };
 
     const displayPrice = entry.customPrice ?? entry.item?.price ?? 0;
+    const standardPrice = Math.floor(displayPrice * (1 + serviceFeeRate) * (entry.quantity || 1));
 
     const CATEGORY_STYLES: Record<string, { bg: string, text: string }> = {
         cpu: { bg: theme.bgLight, text: theme.primary },
@@ -359,9 +360,16 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
                 )}
             </div>
 
-            <div className="flex items-center gap-1 justify-end">
-                <span className={`${isLiveMode ? liveStyleConfig.priceText + ' opacity-60' : 'text-slate-300 dark:text-slate-600'} text-sm`}>¥</span>
-                <input ref={priceRef} type="text" className={`${isLiveMode ? 'w-20 text-[22px] font-black' : 'w-14'} text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${isLiveMode ? liveStyleConfig.priceText : (entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300')}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
+            <div className="flex flex-col items-end justify-center leading-none">
+                <div className="flex items-center gap-1 justify-end">
+                    <span className={`${isLiveMode ? liveStyleConfig.priceText + ' opacity-60' : 'text-slate-300 dark:text-slate-600'} text-sm`}>¥</span>
+                    <input ref={priceRef} type="text" className={`${isLiveMode ? 'w-20 text-[22px] font-black' : 'w-14'} text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${isLiveMode ? liveStyleConfig.priceText : (entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300')}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
+                </div>
+                {isLiveMode && displayPrice > 0 && (
+                    <div className={`mt-1 text-[16px] font-black ${liveStyleConfig.priceText} drop-shadow-sm`}>
+                        原价 ¥{standardPrice}
+                    </div>
+                )}
             </div>
 
             {!isLiveMode && (

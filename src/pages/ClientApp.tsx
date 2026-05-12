@@ -31,6 +31,11 @@ import { useTheme } from '../hooks/useTheme';
 
 export default function ClientApp() {
     const LIVE_SCENARIO_OPTIONS = ['实用', '颜值', '游戏', '直播', '生产力', '海景房'];
+    const DEFAULT_LIVE_META: StreamerLiveMeta = {
+        budget: '',
+        customerName: '',
+        scenarios: ['游戏']
+    };
     const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'gamefps'>(() => {
         const path = window.location.pathname.toLowerCase();
         if (path === '/vip' || path === '/vip/') return 'streamer';
@@ -71,11 +76,7 @@ export default function ClientApp() {
     const [showUserCenter, setShowUserCenter] = useState(false);
     const [showDiscountSheet, setShowDiscountSheet] = useState(false);
     const [triggerAiModal, setTriggerAiModal] = useState(false);
-    const [liveMeta, setLiveMeta] = useState<StreamerLiveMeta>({
-        budget: '3500',
-        customerName: '一只快乐的猴子',
-        scenarios: ['游戏']
-    });
+    const [liveMeta, setLiveMeta] = useState<StreamerLiveMeta>(DEFAULT_LIVE_META);
     
     // Theme
     const { theme, setTheme } = useTheme();
@@ -333,6 +334,12 @@ export default function ClientApp() {
         setBuildList(DEFAULT_BUILD_TEMPLATE.map(i => ({ ...i, item: null, customPrice: undefined, customName: undefined })));
     };
 
+    const clearStreamerBuild = () => {
+        setBuildList(DEFAULT_BUILD_TEMPLATE.map(i => ({ ...i, item: null, customPrice: undefined, customName: undefined, quantity: 1 })));
+        setLiveMeta(DEFAULT_LIVE_META);
+        setDiscountRate(1.0);
+    };
+
     const updateEntry = (id: string, updates: Partial<BuildEntry>) => setBuildList(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
 
 
@@ -351,7 +358,7 @@ export default function ClientApp() {
         return {
             title: `${customerName} ${budget}预算装机单`,
             tags: scenarios,
-            desc: `客户：${customerName}；预算：${budget}；用途：${scenarios.join('、')}；✅装机 ✅工整走线 ✅三年质保 ✅${serviceFeePercent}% 利润 ✅济南发货 ❌包邮`
+            desc: `客户：${customerName}；预算：${budget}；用途：${scenarios.join('、')}；电脑组装、工整走线、三年质保、${serviceFeePercent}% 利润、济南发货、不包邮`
         };
     };
 
@@ -916,9 +923,7 @@ export default function ClientApp() {
                             isSharing={isSharing}
                             handleShareTrigger={handleShareTrigger}
                             handleSave={handleSave}
-                            clearBuild={() => {
-                                setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
-                            }}
+                            clearBuild={clearStreamerBuild}
                             hasPermission={true}
                             liveMeta={liveMeta}
                             onLiveMetaChange={setLiveMeta}

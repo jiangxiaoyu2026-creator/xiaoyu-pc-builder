@@ -318,6 +318,14 @@ function StreamerWorkbench({
             : [...liveMeta.scenarios, label];
         updateLiveMeta({ scenarios });
     };
+    const serviceItems = [
+        { label: '电脑组装', positive: true },
+        { label: '工整走线', positive: true },
+        { label: '三年质保', positive: true },
+        { label: `${serviceFeePercent}% 利润`, positive: true },
+        { label: '济南发货', positive: true },
+        { label: '包邮', positive: false },
+    ];
 
     return (
         <div className={isLiveMode ? 'w-[1204px] max-w-full mx-auto' : 'w-full'}>
@@ -512,24 +520,6 @@ function StreamerWorkbench({
                                             <FolderOpen size={16} />
                                             载入配置
                                         </button>
-                                    <div className="grid gap-1.5 w-[210px]">
-                                        <label className={`h-8 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 text-[15px] font-black ${liveStyleConfig.modelText}`}>
-                                            <span className={liveStyleConfig.mutedText}>预算:</span>
-                                            <input
-                                                value={liveMeta.budget}
-                                                onChange={(e) => updateLiveMeta({ budget: e.target.value })}
-                                                className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[15px] font-black ${liveStyleConfig.modelText} focus:ring-0 focus:outline-none`}
-                                            />
-                                        </label>
-                                        <label className={`h-8 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 text-[15px] font-black ${liveStyleConfig.modelText}`}>
-                                            <span className={liveStyleConfig.mutedText}>姓名:</span>
-                                            <input
-                                                value={liveMeta.customerName}
-                                                onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
-                                                className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[15px] font-black ${liveStyleConfig.modelText} focus:ring-0 focus:outline-none`}
-                                            />
-                                        </label>
-                                    </div>
                                     </div>
                                 </div>
                             </div>
@@ -555,19 +545,21 @@ function StreamerWorkbench({
                                         exit={{ opacity: 0, x: -20 }}
                                         transition={{ duration: 0.3, delay: index * 0.03, type: "spring", stiffness: 300, damping: 25 }}
                                     >
-                                        <StreamerRow index={index} entry={entry} onUpdate={onUpdate} ref={(el) => (rowInputRefs.current[index] = el)} onEnter={() => handleNextFocus(index)} onPrev={() => handlePrevFocus(index)} onPreview={setPreviewImage} />
+                                        <StreamerRow index={index} entry={entry} onUpdate={onUpdate} ref={(el) => (rowInputRefs.current[index] = el)} onEnter={() => handleNextFocus(index)} onPrev={() => handlePrevFocus(index)} onPreview={setPreviewImage} serviceFeeRate={serviceFeeRate} />
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
                         </div>
                         {isLiveMode && (
                             <div className={`mt-auto px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.modelText} text-[16px] font-black tracking-wide flex flex-wrap items-center justify-start gap-x-4 gap-y-1`}>
-                                <span>✅装机</span>
-                                <span>✅工整走线</span>
-                                <span>✅三年质保</span>
-                                <span>✅{serviceFeePercent}% 利润</span>
-                                <span>✅济南发货</span>
-                                <span>❌包邮</span>
+                                {serviceItems.map(item => (
+                                    <span key={item.label} className="inline-flex items-center gap-1.5">
+                                        <span className={`w-4 h-4 rounded-[4px] flex items-center justify-center text-[12px] leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} text-gray-950` : `bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
+                                            {item.positive ? '✓' : '×'}
+                                        </span>
+                                        {item.label}
+                                    </span>
+                                ))}
                             </div>
                         )}
                     </div>
@@ -747,6 +739,18 @@ function StreamerWorkbench({
                             {LIVE_STYLES[s].name}
                         </button>
                     ))}
+                    <input
+                        value={liveMeta.budget}
+                        onChange={(e) => updateLiveMeta({ budget: e.target.value })}
+                        placeholder="预算"
+                        className="h-10 w-24 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    />
+                    <input
+                        value={liveMeta.customerName}
+                        onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
+                        placeholder="姓名"
+                        className="h-10 w-32 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    />
                 </div>
                 <div className="flex shrink-0 justify-end gap-2">
                     <button onClick={() => setLiveMode(false)} className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-200 dark:hover:border-indigo-500/40 transition-all text-sm font-bold shadow-sm">
