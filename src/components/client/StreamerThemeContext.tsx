@@ -92,7 +92,7 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
 };
 
 // === Live Mode Specific Styles ===
-export type LiveStyleKey = 'cyber' | 'mecha' | 'pure' | 'tactical' | 'gundam' | 'graphite' | 'aurora' | 'snow' | 'crimson' | 'pink' | 'orange';
+export type LiveStyleKey = 'cyber' | 'mecha' | 'pure' | 'tactical' | 'gundam' | 'graphite' | 'aurora' | 'snow' | 'crimson' | 'pink' | 'orange' | 'violet' | 'redline';
 
 export interface LiveStyleConfig {
     name: string;
@@ -101,6 +101,8 @@ export interface LiveStyleConfig {
     wrapperBg: string;
     // Card/section bg
     sectionBg: string;
+    // Right sidebar panel bg
+    panelBg: string;
     // Category label style
     categoryText: string;
     // Model name text
@@ -137,6 +139,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '🎮',
         wrapperBg: 'bg-gray-950',
         sectionBg: 'bg-gray-900/90 border-cyan-500/20',
+        panelBg: 'bg-white/[0.06]',
         categoryText: 'text-cyan-400 font-black',
         modelText: 'text-white font-black',
         priceText: 'text-cyan-300 font-black',
@@ -157,6 +160,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '🎖️',
         wrapperBg: 'bg-[#222619]',
         sectionBg: 'bg-[#2b301f]/78 border-lime-400/20',
+        panelBg: 'bg-white/[0.07]',
         categoryText: 'text-lime-400 font-black',
         modelText: 'text-white font-black',
         priceText: 'text-lime-400 font-black',
@@ -177,6 +181,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '🤖',
         wrapperBg: 'bg-[#1a1c2e]',
         sectionBg: 'bg-[#1e2035]/90 border-blue-500/20',
+        panelBg: 'bg-white/[0.07]',
         categoryText: 'text-red-400 font-black',
         modelText: 'text-white font-black',
         priceText: 'text-yellow-400 font-black',
@@ -197,6 +202,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '⚙️',
         wrapperBg: 'bg-[#0f1115]',
         sectionBg: 'bg-[#16181f]/90 border-orange-500/20',
+        panelBg: 'bg-white/[0.06]',
         categoryText: 'text-orange-400 font-black',
         modelText: 'text-slate-100 font-black',
         priceText: 'text-orange-300 font-black',
@@ -217,6 +223,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '⚡',
         wrapperBg: 'bg-white',
         sectionBg: 'bg-gray-50 border-gray-200',
+        panelBg: 'bg-white/85',
         categoryText: 'text-indigo-600 font-black',
         modelText: 'text-gray-900 font-black',
         priceText: 'text-rose-600 font-black',
@@ -237,6 +244,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '◼',
         wrapperBg: 'bg-[#111318]',
         sectionBg: 'bg-[#171a21]/90 border-slate-500/20',
+        panelBg: 'bg-white/[0.06]',
         categoryText: 'text-slate-300 font-black',
         modelText: 'text-white font-black',
         priceText: 'text-emerald-300 font-black',
@@ -257,6 +265,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '✦',
         wrapperBg: 'bg-[#061314]',
         sectionBg: 'bg-[#0a2424]/76 border-teal-300/20',
+        panelBg: 'bg-white/[0.08]',
         categoryText: 'text-teal-200 font-black',
         modelText: 'text-white font-black',
         priceText: 'text-lime-200 font-black',
@@ -277,6 +286,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '◇',
         wrapperBg: 'bg-slate-100',
         sectionBg: 'bg-white border-slate-200',
+        panelBg: 'bg-white/90',
         categoryText: 'text-slate-700 font-black',
         modelText: 'text-slate-950 font-black',
         priceText: 'text-blue-700 font-black',
@@ -297,6 +307,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '◆',
         wrapperBg: 'bg-[#190f12]',
         sectionBg: 'bg-[#211418]/90 border-red-400/20',
+        panelBg: 'bg-white/[0.07]',
         categoryText: 'text-red-300 font-black',
         modelText: 'text-white font-black',
         priceText: 'text-amber-200 font-black',
@@ -317,6 +328,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '◇',
         wrapperBg: 'bg-[#1b0d18]',
         sectionBg: 'bg-[#2b1430]/76 border-pink-300/20',
+        panelBg: 'bg-white/[0.08]',
         categoryText: 'text-pink-200 font-black',
         modelText: 'text-white font-black',
         priceText: 'text-fuchsia-200 font-black',
@@ -337,6 +349,7 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         emoji: '◆',
         wrapperBg: 'bg-[#1a1006]',
         sectionBg: 'bg-[#2c1a08]/76 border-orange-300/20',
+        panelBg: 'bg-white/[0.08]',
         categoryText: 'text-orange-200 font-black',
         modelText: 'text-white font-black',
         priceText: 'text-amber-200 font-black',
@@ -351,6 +364,48 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         glowBg: 'bg-orange-300',
         rowBg: 'bg-[#35200f]/70',
         stampBorder: 'border-orange-200/40',
+    },
+    violet: {
+        name: '紫黑机甲',
+        emoji: '◇',
+        wrapperBg: 'bg-slate-50',
+        sectionBg: 'bg-white border-violet-500/25',
+        panelBg: 'bg-white/90',
+        categoryText: 'text-violet-600 font-black',
+        modelText: 'text-slate-950 font-black',
+        priceText: 'text-fuchsia-600 font-black',
+        totalPriceText: 'text-transparent bg-clip-text bg-gradient-to-r from-violet-700 via-fuchsia-600 to-rose-500',
+        divider: 'divide-violet-500/20',
+        headerBg: 'bg-gradient-to-r from-white via-violet-50 to-white border-b border-violet-500/20',
+        border: 'border-violet-500/25',
+        accentText: 'text-violet-600',
+        fpsBarColor: 'bg-gradient-to-r from-violet-700 via-fuchsia-500 to-rose-500',
+        savedBadge: 'bg-violet-50 text-violet-700 border border-violet-100',
+        mutedText: 'text-slate-400',
+        glowBg: 'bg-violet-600',
+        rowBg: 'bg-white',
+        stampBorder: 'border-violet-600/55',
+    },
+    redline: {
+        name: '红黑机甲',
+        emoji: '◆',
+        wrapperBg: 'bg-slate-50',
+        sectionBg: 'bg-white border-red-500/25',
+        panelBg: 'bg-white/90',
+        categoryText: 'text-red-600 font-black',
+        modelText: 'text-slate-950 font-black',
+        priceText: 'text-rose-600 font-black',
+        totalPriceText: 'text-transparent bg-clip-text bg-gradient-to-r from-red-700 via-rose-600 to-orange-500',
+        divider: 'divide-red-500/20',
+        headerBg: 'bg-gradient-to-r from-white via-red-50 to-white border-b border-red-500/20',
+        border: 'border-red-500/25',
+        accentText: 'text-red-600',
+        fpsBarColor: 'bg-gradient-to-r from-red-700 via-rose-500 to-orange-500',
+        savedBadge: 'bg-red-50 text-red-700 border border-red-100',
+        mutedText: 'text-slate-400',
+        glowBg: 'bg-red-600',
+        rowBg: 'bg-white',
+        stampBorder: 'border-red-600/55',
     },
 };
 

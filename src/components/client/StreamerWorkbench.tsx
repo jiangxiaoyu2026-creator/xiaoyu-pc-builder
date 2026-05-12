@@ -487,16 +487,16 @@ function StreamerWorkbench({
                     <div className={`flex-1 min-w-0 ${isLiveMode ? `max-w-none flex flex-col h-full relative overflow-hidden rounded-[14px] border ${liveStyleConfig.stampBorder} shadow-[0_0_18px_rgba(0,0,0,0.22)]` : 'max-w-[1550px]'}`}>
                         {isLiveMode && (
                             <>
-                                <div className="pointer-events-none absolute inset-0 z-10 rounded-[14px] border-2 border-black/65"></div>
-                                <div className={`pointer-events-none absolute inset-[6px] z-10 rounded-[9px] border ${liveStyleConfig.stampBorder}`}></div>
-                                <div className={`pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-[9px] ${liveStyleConfig.glowBg} opacity-90`}></div>
-                                <div className="pointer-events-none absolute left-[9px] top-[18px] bottom-[18px] z-20 w-[3px] bg-black/75"></div>
-                                <div className="pointer-events-none absolute left-0 top-0 z-20 h-[46px] w-[68px] bg-black/80 [clip-path:polygon(0_0,100%_0,48px_12px,26px_12px,9px_30px,9px_100%,0_100%)]"></div>
-                                <div className={`pointer-events-none absolute left-[9px] top-0 z-30 h-[34px] w-[52px] ${liveStyleConfig.glowBg} opacity-90 [clip-path:polygon(0_0,44px_0,30px_10px,14px_10px,0_24px)]`}></div>
-                                <div className="pointer-events-none absolute left-0 bottom-0 z-20 h-[46px] w-[68px] bg-black/80 [clip-path:polygon(0_0,9px_0,9px_20px,26px_34px,48px_34px,100%_46px,0_46px)]"></div>
-                                <div className={`pointer-events-none absolute left-[9px] bottom-0 z-30 h-[34px] w-[52px] ${liveStyleConfig.glowBg} opacity-90 [clip-path:polygon(0_14px,14px_26px,34px_26px,48px_34px,0_34px)]`}></div>
-                                <div className="pointer-events-none absolute right-0 top-0 z-20 h-[38px] w-[50px] bg-black/65 [clip-path:polygon(0_0,100%_0,100%_100%,36px_100%)]"></div>
-                                <div className={`pointer-events-none absolute right-0 top-0 z-30 h-[26px] w-[38px] ${liveStyleConfig.glowBg} opacity-80 [clip-path:polygon(0_0,100%_0,100%_100%,24px_100%)]`}></div>
+                                <div className="pointer-events-none absolute inset-0 z-10 rounded-[14px] border border-black/55"></div>
+                                <div className={`pointer-events-none absolute inset-[5px] z-10 rounded-[9px] border ${liveStyleConfig.stampBorder}`}></div>
+                                <div className={`pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-[6px] ${liveStyleConfig.glowBg} opacity-90`}></div>
+                                <div className="pointer-events-none absolute left-[6px] top-[18px] bottom-[18px] z-20 w-[2px] bg-black/65"></div>
+                                <div className="pointer-events-none absolute left-0 top-0 z-20 h-[34px] w-[50px] bg-black/72 [clip-path:polygon(0_0,100%_0,35px_9px,20px_9px,6px_22px,6px_100%,0_100%)]"></div>
+                                <div className={`pointer-events-none absolute left-[6px] top-0 z-30 h-[24px] w-[38px] ${liveStyleConfig.glowBg} opacity-90 [clip-path:polygon(0_0,32px_0,22px_7px,10px_7px,0_18px)]`}></div>
+                                <div className="pointer-events-none absolute left-0 bottom-0 z-20 h-[34px] w-[50px] bg-black/72 [clip-path:polygon(0_0,6px_0,6px_14px,20px_25px,35px_25px,100%_34px,0_34px)]"></div>
+                                <div className={`pointer-events-none absolute left-[6px] bottom-0 z-30 h-[24px] w-[38px] ${liveStyleConfig.glowBg} opacity-90 [clip-path:polygon(0_10px,10px_18px,25px_18px,36px_24px,0_24px)]`}></div>
+                                <div className="pointer-events-none absolute right-0 top-0 z-20 h-[30px] w-[38px] bg-black/55 [clip-path:polygon(0_0,100%_0,100%_100%,28px_100%)]"></div>
+                                <div className={`pointer-events-none absolute right-0 top-0 z-30 h-[20px] w-[28px] ${liveStyleConfig.glowBg} opacity-75 [clip-path:polygon(0_0,100%_0,100%_100%,18px_100%)]`}></div>
                                 <div className={`pointer-events-none absolute inset-x-12 top-[6px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} opacity-80`}></div>
                                 <div className={`pointer-events-none absolute inset-x-12 bottom-[6px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} opacity-80`}></div>
                             </>
@@ -570,7 +570,7 @@ function StreamerWorkbench({
                             {!isLiveMode && <div></div>}
                         </div>
 
-                        <div className={`divide-y ${isLiveMode ? liveStyleConfig.divider : theme.divider} transition-colors duration-300 ${isLiveMode ? 'min-h-0' : ''}`}>
+                        <div className={`divide-y-[1.5px] ${isLiveMode ? liveStyleConfig.divider : theme.divider} transition-colors duration-300 ${isLiveMode ? 'min-h-0' : ''}`}>
                             <AnimatePresence mode="popLayout">
                                 {visibleBuildList.map((entry, index) => (
                                     <motion.div

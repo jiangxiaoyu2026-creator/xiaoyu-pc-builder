@@ -246,7 +246,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const now = new Date();
     const timeString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     return (
-        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isLiveMode ? `w-[282px] gap-2 p-2 ${liveStyleConfig.sectionBg} border-transparent shadow-2xl overflow-hidden max-h-[977px]` : 'w-[280px] gap-3 p-4 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
+        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isLiveMode ? `w-[282px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} border-l-2 shadow-2xl overflow-hidden max-h-[977px]` : 'w-[280px] gap-3 p-4 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
 
             {/* In Live Mode: Special Layout Order */}
             {isLiveMode ? (
@@ -295,7 +295,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     {/* 2. Score & Power Cards Side-by-Side */}
                     <div className="flex flex-row gap-2 shrink-0">
                         {/* 鲁大师跑分 */}
-                        <div className={`flex-1 bg-black/20 border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[82px]`}>
+                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[82px]`}>
                             <div className={`absolute right-0 top-0 w-32 h-32 ${liveStyleConfig.glowBg} opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2`}></div>
                             <div className={`absolute left-2 top-2 flex items-center gap-1 text-[11px] font-black ${liveStyleConfig.modelText}`}>
                                 <Activity size={13} className={liveStyleConfig.accentText}/>
@@ -310,7 +310,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         </div>
 
                         {/* 整机功耗 */}
-                        <div className={`flex-1 bg-black/20 border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[82px]`}>
+                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[82px]`}>
                             <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2"></div>
                             <div className={`absolute left-2 top-2 flex items-center gap-1 text-[11px] font-black ${liveStyleConfig.modelText}`}>
                                 <Zap size={13} className={liveStyleConfig.accentText}/>
@@ -326,7 +326,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     </div>
 
                     {/* 3. FPS single column */}
-                    <div className={`bg-black/20 border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative flex-1 flex flex-col min-h-[360px]`}>
+                    <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative flex-1 flex flex-col min-h-[360px]`}>
                         <div className="flex items-center justify-between mb-2 relative z-10">
                             <div className={`text-[12px] font-black tracking-widest ${liveStyleConfig.accentText}`}>游戏实测FPS</div>
                             <div className={`grid grid-cols-3 gap-1 w-[150px] bg-white/5 border border-white/10 p-0.5 rounded-lg`} title="切换分辨率">
@@ -374,7 +374,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
 
                     {/* 4. Pricing at bottom */}
                     {pricingProps && (
-                        <div className={`bg-black/20 border ${liveStyleConfig.border} rounded-lg p-3 relative mt-auto shrink-0 flex flex-col gap-2`}>
+                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} rounded-lg p-3 relative mt-auto shrink-0 flex flex-col gap-2`}>
                             <div className="flex items-center justify-between gap-2">
                                 <div className={`text-[13px] font-black ${liveStyleConfig.modelText}`}>优惠方案</div>
                                 <div className="relative group w-[142px]">
