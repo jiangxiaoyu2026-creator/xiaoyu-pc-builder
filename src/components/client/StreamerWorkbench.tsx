@@ -484,13 +484,39 @@ function StreamerWorkbench({
                     <>
                     <div className={`flex ${isLiveMode ? 'flex-row h-full' : 'flex-col xl:flex-row'}`}>
                     {/* === Left: Config Table === */}
-                    <div className={`flex-1 min-w-0 ${isLiveMode ? 'max-w-none flex flex-col h-full' : 'max-w-[1550px]'}`}>
+                    <div className={`flex-1 min-w-0 ${isLiveMode ? `max-w-none flex flex-col h-full relative overflow-hidden rounded-[18px] border-2 ${liveStyleConfig.stampBorder} shadow-[0_0_28px_rgba(0,0,0,0.28)]` : 'max-w-[1550px]'}`}>
+                        {isLiveMode && (
+                            <>
+                                <div className={`pointer-events-none absolute right-0 top-0 z-20 h-9 w-9 ${liveStyleConfig.glowBg} opacity-80 [clip-path:polygon(100%_0,0_0,100%_100%)]`}></div>
+                                <div className={`pointer-events-none absolute left-0 bottom-0 z-20 h-9 w-9 ${liveStyleConfig.glowBg} opacity-70 [clip-path:polygon(0_0,0_100%,100%_100%)]`}></div>
+                            </>
+                        )}
                         {isLiveMode && (
                             <div className={`px-4 py-2 ${liveStyleConfig.headerBg} border-b ${liveStyleConfig.border}`}>
                                 <div className="flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-3 min-w-0">
+                                    <div className="flex flex-wrap items-center gap-3 min-w-0 flex-1">
                                         <div className={`text-3xl font-black tracking-tight ${liveStyleConfig.modelText}`}>DIYXX</div>
                                         <div className={`h-10 w-px ${liveStyleConfig.glowBg} opacity-70 shrink-0`}></div>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <label className={`h-10 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 ${liveStyleConfig.modelText}`}>
+                                                <span className={`${liveStyleConfig.mutedText} text-[15px] font-black`}>预算</span>
+                                                <input
+                                                    value={liveMeta.budget}
+                                                    onChange={(e) => updateLiveMeta({ budget: e.target.value })}
+                                                    placeholder="填写"
+                                                    className={`w-20 bg-transparent border-0 p-0 text-[17px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
+                                                />
+                                            </label>
+                                            <label className={`h-10 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 ${liveStyleConfig.modelText}`}>
+                                                <span className={`${liveStyleConfig.mutedText} text-[15px] font-black`}>姓名</span>
+                                                <input
+                                                    value={liveMeta.customerName}
+                                                    onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
+                                                    placeholder="填写"
+                                                    className={`w-24 bg-transparent border-0 p-0 text-[17px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
+                                                />
+                                            </label>
+                                        </div>
                                         <div className="flex flex-wrap gap-x-3 gap-y-1.5">
                                             {LIVE_SCENARIO_OPTIONS.map((label) => {
                                                 const checked = liveMeta.scenarios.includes(label);
@@ -534,7 +560,7 @@ function StreamerWorkbench({
                             {!isLiveMode && <div></div>}
                         </div>
 
-                        <div className={`divide-y ${theme.divider} transition-colors duration-300 ${isLiveMode ? 'min-h-0' : ''}`}>
+                        <div className={`divide-y ${isLiveMode ? liveStyleConfig.divider : theme.divider} transition-colors duration-300 ${isLiveMode ? 'min-h-0' : ''}`}>
                             <AnimatePresence mode="popLayout">
                                 {visibleBuildList.map((entry, index) => (
                                     <motion.div
@@ -551,10 +577,23 @@ function StreamerWorkbench({
                             </AnimatePresence>
                         </div>
                         {isLiveMode && (
+                            <div className={`grid grid-cols-[76px_1fr_78px_96px] gap-2 px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg}`}>
+                                <div></div>
+                                <div></div>
+                                <div className={`text-right text-[14px] font-black ${liveStyleConfig.modelText}`}>合计</div>
+                                <div className={`text-right leading-tight`}>
+                                    <div className={`text-[10px] font-black ${liveStyleConfig.mutedText}`}>含{serviceFeePercent}%利润</div>
+                                    <div className={`text-[24px] font-black font-mono ${liveStyleConfig.priceText}`}>
+                                        ¥{Math.floor(pricing.standardPrice || 0)}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {isLiveMode && (
                             <div className={`mt-auto px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.modelText} text-[16px] font-black tracking-wide flex flex-wrap items-center justify-start gap-x-4 gap-y-1`}>
                                 {serviceItems.map(item => (
                                     <span key={item.label} className="inline-flex items-center gap-1.5">
-                                        <span className={`w-4 h-4 rounded-[4px] flex items-center justify-center text-[12px] leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} text-gray-950` : `bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
+                                        <span className={`w-5 h-5 rounded-[5px] flex items-center justify-center text-[17px] leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} text-gray-950` : `bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
                                             {item.positive ? '✓' : '×'}
                                         </span>
                                         {item.label}
@@ -739,18 +778,6 @@ function StreamerWorkbench({
                             {LIVE_STYLES[s].name}
                         </button>
                     ))}
-                    <input
-                        value={liveMeta.budget}
-                        onChange={(e) => updateLiveMeta({ budget: e.target.value })}
-                        placeholder="预算"
-                        className="h-10 w-24 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                    />
-                    <input
-                        value={liveMeta.customerName}
-                        onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
-                        placeholder="姓名"
-                        className="h-10 w-32 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                    />
                 </div>
                 <div className="flex shrink-0 justify-end gap-2">
                     <button onClick={() => setLiveMode(false)} className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-200 dark:hover:border-indigo-500/40 transition-all text-sm font-bold shadow-sm">
