@@ -324,7 +324,7 @@ function StreamerWorkbench({
         { label: '三年质保', positive: true },
         { label: `${serviceFeePercent}% 利润`, positive: true },
         { label: '济南发货', positive: true },
-        { label: '包邮', positive: false },
+        { label: '不包邮', positive: false },
     ];
 
     return (
@@ -487,6 +487,15 @@ function StreamerWorkbench({
                     <div className={`flex-1 min-w-0 ${isLiveMode ? `max-w-none flex flex-col h-full relative overflow-hidden rounded-[18px] border-2 ${liveStyleConfig.stampBorder} shadow-[0_0_28px_rgba(0,0,0,0.28)]` : 'max-w-[1550px]'}`}>
                         {isLiveMode && (
                             <>
+                                <div className={`pointer-events-none absolute inset-0 z-10 rounded-[18px] border border-white/10`}></div>
+                                <div className={`pointer-events-none absolute inset-x-10 top-0 z-20 h-[3px] ${liveStyleConfig.fpsBarColor}`}></div>
+                                <div className={`pointer-events-none absolute inset-x-10 bottom-0 z-20 h-[3px] ${liveStyleConfig.fpsBarColor}`}></div>
+                                <div className={`pointer-events-none absolute left-0 top-20 bottom-20 z-20 w-[8px] ${liveStyleConfig.accentText} opacity-25 bg-[repeating-linear-gradient(135deg,currentColor_0_2px,transparent_2px_8px)]`}></div>
+                                <div className={`pointer-events-none absolute right-0 top-20 bottom-20 z-20 w-[8px] ${liveStyleConfig.accentText} opacity-25 bg-[repeating-linear-gradient(45deg,currentColor_0_2px,transparent_2px_8px)]`}></div>
+                                <div className={`pointer-events-none absolute left-3 top-3 z-20 h-8 w-8 border-l-2 border-t-2 ${liveStyleConfig.stampBorder}`}></div>
+                                <div className={`pointer-events-none absolute right-3 top-3 z-20 h-8 w-8 border-r-2 border-t-2 ${liveStyleConfig.stampBorder}`}></div>
+                                <div className={`pointer-events-none absolute left-3 bottom-3 z-20 h-8 w-8 border-l-2 border-b-2 ${liveStyleConfig.stampBorder}`}></div>
+                                <div className={`pointer-events-none absolute right-3 bottom-3 z-20 h-8 w-8 border-r-2 border-b-2 ${liveStyleConfig.stampBorder}`}></div>
                                 <div className={`pointer-events-none absolute right-0 top-0 z-20 h-9 w-9 ${liveStyleConfig.glowBg} opacity-80 [clip-path:polygon(100%_0,0_0,100%_100%)]`}></div>
                                 <div className={`pointer-events-none absolute left-0 bottom-0 z-20 h-9 w-9 ${liveStyleConfig.glowBg} opacity-70 [clip-path:polygon(0_0,0_100%,100%_100%)]`}></div>
                             </>
@@ -497,26 +506,6 @@ function StreamerWorkbench({
                                     <div className="flex flex-wrap items-center gap-3 min-w-0 flex-1">
                                         <div className={`text-3xl font-black tracking-tight ${liveStyleConfig.modelText}`}>DIYXX</div>
                                         <div className={`h-10 w-px ${liveStyleConfig.glowBg} opacity-70 shrink-0`}></div>
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <label className={`h-10 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 ${liveStyleConfig.modelText}`}>
-                                                <span className={`${liveStyleConfig.mutedText} text-[15px] font-black`}>预算</span>
-                                                <input
-                                                    value={liveMeta.budget}
-                                                    onChange={(e) => updateLiveMeta({ budget: e.target.value })}
-                                                    placeholder="填写"
-                                                    className={`w-20 bg-transparent border-0 p-0 text-[17px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
-                                                />
-                                            </label>
-                                            <label className={`h-10 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 ${liveStyleConfig.modelText}`}>
-                                                <span className={`${liveStyleConfig.mutedText} text-[15px] font-black`}>姓名</span>
-                                                <input
-                                                    value={liveMeta.customerName}
-                                                    onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
-                                                    placeholder="填写"
-                                                    className={`w-24 bg-transparent border-0 p-0 text-[17px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
-                                                />
-                                            </label>
-                                        </div>
                                         <div className="flex flex-wrap gap-x-3 gap-y-1.5">
                                             {LIVE_SCENARIO_OPTIONS.map((label) => {
                                                 const checked = liveMeta.scenarios.includes(label);
@@ -538,6 +527,26 @@ function StreamerWorkbench({
                                     </div>
 
                                     <div className="flex items-stretch gap-2 shrink-0">
+                                        <div className="grid gap-1.5 w-[224px]">
+                                            <label className={`h-8 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 ${liveStyleConfig.modelText}`}>
+                                                <span className={`${liveStyleConfig.mutedText} text-[15px] font-black`}>预算</span>
+                                                <input
+                                                    value={liveMeta.budget}
+                                                    onChange={(e) => updateLiveMeta({ budget: e.target.value })}
+                                                    placeholder="填写"
+                                                    className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[16px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
+                                                />
+                                            </label>
+                                            <label className={`h-8 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 ${liveStyleConfig.modelText}`}>
+                                                <span className={`${liveStyleConfig.mutedText} text-[15px] font-black`}>姓名</span>
+                                                <input
+                                                    value={liveMeta.customerName}
+                                                    onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
+                                                    placeholder="填写"
+                                                    className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[16px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
+                                                />
+                                            </label>
+                                        </div>
                                         <button
                                             onClick={onOpenLibrary}
                                             className={`h-[62px] px-3 rounded-lg bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.modelText} hover:bg-white/15 transition-all text-[13px] font-black flex flex-col items-center justify-center gap-1`}
@@ -577,28 +586,22 @@ function StreamerWorkbench({
                             </AnimatePresence>
                         </div>
                         {isLiveMode && (
-                            <div className={`grid grid-cols-[76px_1fr_78px_96px] gap-2 px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg}`}>
-                                <div></div>
-                                <div></div>
-                                <div className={`text-right text-[14px] font-black ${liveStyleConfig.modelText}`}>合计</div>
-                                <div className={`text-right leading-tight`}>
-                                    <div className={`text-[10px] font-black ${liveStyleConfig.mutedText}`}>含{serviceFeePercent}%利润</div>
-                                    <div className={`text-[24px] font-black font-mono ${liveStyleConfig.priceText}`}>
-                                        ¥{Math.floor(pricing.standardPrice || 0)}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        {isLiveMode && (
-                            <div className={`mt-auto px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.modelText} text-[16px] font-black tracking-wide flex flex-wrap items-center justify-start gap-x-4 gap-y-1`}>
-                                {serviceItems.map(item => (
-                                    <span key={item.label} className="inline-flex items-center gap-1.5">
-                                        <span className={`w-5 h-5 rounded-[5px] flex items-center justify-center text-[17px] leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} text-gray-950` : `bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
-                                            {item.positive ? '✓' : '×'}
+                            <div className={`mt-auto px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg} ${liveStyleConfig.modelText} flex items-center justify-between gap-3`}>
+                                <div className="min-w-0 flex flex-wrap items-center justify-start gap-x-2.5 gap-y-1 text-[15px] font-black tracking-wide">
+                                    {serviceItems.map(item => (
+                                        <span key={item.label} className="inline-flex items-center gap-1.5">
+                                            <span className={`w-5 h-5 rounded-[5px] flex items-center justify-center text-[17px] leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} text-gray-950` : `bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
+                                                {item.positive ? '✓' : '×'}
+                                            </span>
+                                            {item.label}
                                         </span>
-                                        {item.label}
-                                    </span>
-                                ))}
+                                    ))}
+                                </div>
+                                <div className="shrink-0 text-right leading-tight pl-3">
+                                    <div className={`text-[13px] font-black ${liveStyleConfig.modelText}`}>合计</div>
+                                    <div className={`text-[10px] font-black ${liveStyleConfig.mutedText}`}>含{serviceFeePercent}%利润</div>
+                                    <div className={`text-[24px] font-black font-mono ${liveStyleConfig.priceText}`}>¥{Math.floor(pricing.standardPrice || 0)}</div>
+                                </div>
                             </div>
                         )}
                     </div>

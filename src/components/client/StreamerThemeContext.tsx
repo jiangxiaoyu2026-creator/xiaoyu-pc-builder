@@ -92,7 +92,7 @@ export const THEMES: Record<ThemeColor, ThemeConfig> = {
 };
 
 // === Live Mode Specific Styles ===
-export type LiveStyleKey = 'cyber' | 'mecha' | 'pure' | 'tactical' | 'gundam' | 'graphite' | 'aurora' | 'snow' | 'crimson';
+export type LiveStyleKey = 'cyber' | 'mecha' | 'pure' | 'tactical' | 'gundam' | 'graphite' | 'aurora' | 'snow' | 'crimson' | 'pink' | 'orange';
 
 export interface LiveStyleConfig {
     name: string;
@@ -311,6 +311,46 @@ export const LIVE_STYLES: Record<LiveStyleKey, LiveStyleConfig> = {
         glowBg: 'bg-red-400',
         rowBg: 'bg-[#2b171b]/75',
         stampBorder: 'border-red-300/35',
+    },
+    pink: {
+        name: '粉色甜酷',
+        emoji: '◇',
+        wrapperBg: 'bg-[#1f101c]',
+        sectionBg: 'bg-[#2a1626]/90 border-pink-400/20',
+        categoryText: 'text-pink-200 font-black',
+        modelText: 'text-white font-black',
+        priceText: 'text-fuchsia-200 font-black',
+        totalPriceText: 'text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-fuchsia-200 to-rose-300',
+        divider: 'divide-pink-300/10',
+        headerBg: 'bg-gradient-to-r from-[#1f101c] via-[#3a1731] to-[#1f101c] border-b border-pink-300/20',
+        border: 'border-pink-300/20',
+        accentText: 'text-pink-200',
+        fpsBarColor: 'bg-gradient-to-r from-pink-300 via-fuchsia-300 to-rose-300',
+        savedBadge: 'bg-pink-400/15 text-pink-100 border border-pink-200/25',
+        mutedText: 'text-pink-900',
+        glowBg: 'bg-pink-300',
+        rowBg: 'bg-[#36192f]/70',
+        stampBorder: 'border-pink-200/40',
+    },
+    orange: {
+        name: '橙色脉冲',
+        emoji: '◆',
+        wrapperBg: 'bg-[#1d1308]',
+        sectionBg: 'bg-[#2b1b0d]/90 border-orange-300/20',
+        categoryText: 'text-orange-200 font-black',
+        modelText: 'text-white font-black',
+        priceText: 'text-amber-200 font-black',
+        totalPriceText: 'text-transparent bg-clip-text bg-gradient-to-r from-orange-200 via-amber-200 to-yellow-300',
+        divider: 'divide-orange-300/10',
+        headerBg: 'bg-gradient-to-r from-[#1d1308] via-[#3a220d] to-[#1d1308] border-b border-orange-300/20',
+        border: 'border-orange-300/20',
+        accentText: 'text-orange-200',
+        fpsBarColor: 'bg-gradient-to-r from-orange-300 via-amber-300 to-yellow-300',
+        savedBadge: 'bg-orange-400/15 text-orange-100 border border-orange-200/25',
+        mutedText: 'text-orange-900',
+        glowBg: 'bg-orange-300',
+        rowBg: 'bg-[#35200f]/70',
+        stampBorder: 'border-orange-200/40',
     },
 };
 

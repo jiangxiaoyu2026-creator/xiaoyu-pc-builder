@@ -353,7 +353,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                             <img src={`/images/games/icons/${item.name}.png`} alt={item.name} className={`w-9 h-9 rounded-full object-cover border-2 ${liveStyleConfig.border}`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className={`text-[11px] font-black ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
+                                            <div className={`text-[12px] font-black ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
                                             <div className={`w-full bg-white/5 rounded-full h-1.5 overflow-hidden relative`}>
                                                 <div className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${item.fps === 0 ? 'bg-white/10' : liveStyleConfig.fpsBarColor}`} style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}></div>
                                             </div>
