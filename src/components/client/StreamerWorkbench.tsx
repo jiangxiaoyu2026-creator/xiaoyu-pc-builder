@@ -484,22 +484,21 @@ function StreamerWorkbench({
                     <>
                     <div className={`flex ${isLiveMode ? 'flex-row h-full' : 'flex-col xl:flex-row'}`}>
                     {/* === Left: Config Table === */}
-                    <div className={`flex-1 min-w-0 ${isLiveMode ? `max-w-none flex flex-col h-full relative overflow-hidden rounded-[18px] border-2 ${liveStyleConfig.stampBorder} shadow-[0_0_28px_rgba(0,0,0,0.28)]` : 'max-w-[1550px]'}`}>
+                    <div className={`flex-1 min-w-0 ${isLiveMode ? `max-w-none flex flex-col h-full relative overflow-hidden rounded-[14px] border ${liveStyleConfig.stampBorder} shadow-[0_0_18px_rgba(0,0,0,0.22)]` : 'max-w-[1550px]'}`}>
                         {isLiveMode && (
                             <>
-                                <div className="pointer-events-none absolute inset-0 z-10 rounded-[18px] border-[4px] border-black/80"></div>
-                                <div className={`pointer-events-none absolute inset-[9px] z-10 rounded-[12px] border-2 ${liveStyleConfig.stampBorder}`}></div>
-                                <div className={`pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-[18px] ${liveStyleConfig.glowBg}`}></div>
-                                <div className="pointer-events-none absolute left-[18px] top-[22px] bottom-[22px] z-20 w-[6px] bg-black/90"></div>
-                                <div className={`pointer-events-none absolute left-[24px] top-[28px] bottom-[28px] z-20 w-[3px] ${liveStyleConfig.glowBg} opacity-90`}></div>
-                                <div className="pointer-events-none absolute left-0 top-0 z-20 h-[72px] w-[96px] bg-black/90 [clip-path:polygon(0_0,100%_0,72px_18px,38px_18px,18px_38px,18px_100%,0_100%)]"></div>
-                                <div className={`pointer-events-none absolute left-[18px] top-0 z-30 h-[54px] w-[72px] ${liveStyleConfig.glowBg} [clip-path:polygon(0_0,58px_0,40px_14px,18px_14px,0_32px)]`}></div>
-                                <div className="pointer-events-none absolute left-0 bottom-0 z-20 h-[72px] w-[96px] bg-black/90 [clip-path:polygon(0_0,18px_0,18px_34px,38px_54px,72px_54px,100%_72px,0_72px)]"></div>
-                                <div className={`pointer-events-none absolute left-[18px] bottom-0 z-30 h-[54px] w-[72px] ${liveStyleConfig.glowBg} [clip-path:polygon(0_22px,18px_40px,46px_40px,64px_54px,0_54px)]`}></div>
-                                <div className="pointer-events-none absolute right-0 top-0 z-20 h-[54px] w-[70px] bg-black/80 [clip-path:polygon(0_0,100%_0,100%_100%,52px_100%)]"></div>
-                                <div className={`pointer-events-none absolute right-0 top-0 z-30 h-[38px] w-[54px] ${liveStyleConfig.glowBg} opacity-90 [clip-path:polygon(0_0,100%_0,100%_100%,34px_100%)]`}></div>
-                                <div className={`pointer-events-none absolute inset-x-16 top-[9px] z-20 h-[4px] ${liveStyleConfig.fpsBarColor}`}></div>
-                                <div className={`pointer-events-none absolute inset-x-16 bottom-[9px] z-20 h-[4px] ${liveStyleConfig.fpsBarColor}`}></div>
+                                <div className="pointer-events-none absolute inset-0 z-10 rounded-[14px] border-2 border-black/65"></div>
+                                <div className={`pointer-events-none absolute inset-[6px] z-10 rounded-[9px] border ${liveStyleConfig.stampBorder}`}></div>
+                                <div className={`pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-[9px] ${liveStyleConfig.glowBg} opacity-90`}></div>
+                                <div className="pointer-events-none absolute left-[9px] top-[18px] bottom-[18px] z-20 w-[3px] bg-black/75"></div>
+                                <div className="pointer-events-none absolute left-0 top-0 z-20 h-[46px] w-[68px] bg-black/80 [clip-path:polygon(0_0,100%_0,48px_12px,26px_12px,9px_30px,9px_100%,0_100%)]"></div>
+                                <div className={`pointer-events-none absolute left-[9px] top-0 z-30 h-[34px] w-[52px] ${liveStyleConfig.glowBg} opacity-90 [clip-path:polygon(0_0,44px_0,30px_10px,14px_10px,0_24px)]`}></div>
+                                <div className="pointer-events-none absolute left-0 bottom-0 z-20 h-[46px] w-[68px] bg-black/80 [clip-path:polygon(0_0,9px_0,9px_20px,26px_34px,48px_34px,100%_46px,0_46px)]"></div>
+                                <div className={`pointer-events-none absolute left-[9px] bottom-0 z-30 h-[34px] w-[52px] ${liveStyleConfig.glowBg} opacity-90 [clip-path:polygon(0_14px,14px_26px,34px_26px,48px_34px,0_34px)]`}></div>
+                                <div className="pointer-events-none absolute right-0 top-0 z-20 h-[38px] w-[50px] bg-black/65 [clip-path:polygon(0_0,100%_0,100%_100%,36px_100%)]"></div>
+                                <div className={`pointer-events-none absolute right-0 top-0 z-30 h-[26px] w-[38px] ${liveStyleConfig.glowBg} opacity-80 [clip-path:polygon(0_0,100%_0,100%_100%,24px_100%)]`}></div>
+                                <div className={`pointer-events-none absolute inset-x-12 top-[6px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} opacity-80`}></div>
+                                <div className={`pointer-events-none absolute inset-x-12 bottom-[6px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} opacity-80`}></div>
                             </>
                         )}
                         {isLiveMode && (
@@ -528,30 +527,30 @@ function StreamerWorkbench({
                                         </div>
                                     </div>
 
-                                    <div className="flex items-stretch gap-2 shrink-0">
-                                        <div className="grid gap-1.5 w-[224px]">
-                                            <label className={`h-8 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 ${liveStyleConfig.modelText}`}>
-                                                <span className={`${liveStyleConfig.mutedText} text-[15px] font-black`}>预算</span>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <div className="grid gap-1 w-[168px]">
+                                            <label className={`h-7 px-2 rounded-md bg-white/5 border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
+                                                <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>预算</span>
                                                 <input
                                                     value={liveMeta.budget}
                                                     onChange={(e) => updateLiveMeta({ budget: e.target.value })}
                                                     placeholder="填写"
-                                                    className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[16px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
+                                                    className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[13px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
                                                 />
                                             </label>
-                                            <label className={`h-8 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 ${liveStyleConfig.modelText}`}>
-                                                <span className={`${liveStyleConfig.mutedText} text-[15px] font-black`}>姓名</span>
+                                            <label className={`h-7 px-2 rounded-md bg-white/5 border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
+                                                <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>姓名</span>
                                                 <input
                                                     value={liveMeta.customerName}
                                                     onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
                                                     placeholder="填写"
-                                                    className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[16px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
+                                                    className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[13px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
                                                 />
                                             </label>
                                         </div>
                                         <button
                                             onClick={onOpenLibrary}
-                                            className={`h-[62px] px-3 rounded-lg bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.modelText} hover:bg-white/15 transition-all text-[13px] font-black flex flex-col items-center justify-center gap-1`}
+                                            className={`h-[58px] px-2.5 rounded-lg bg-white/5 border ${liveStyleConfig.border} ${liveStyleConfig.modelText} hover:bg-white/10 transition-all text-[12px] font-black flex flex-col items-center justify-center gap-0.5`}
                                             title="载入配置"
                                         >
                                             <FolderOpen size={16} />
@@ -582,7 +581,7 @@ function StreamerWorkbench({
                                         exit={{ opacity: 0, x: -20 }}
                                         transition={{ duration: 0.3, delay: index * 0.03, type: "spring", stiffness: 300, damping: 25 }}
                                     >
-                                        <StreamerRow index={index} entry={entry} onUpdate={onUpdate} ref={(el) => (rowInputRefs.current[index] = el)} onEnter={() => handleNextFocus(index)} onPrev={() => handlePrevFocus(index)} onPreview={setPreviewImage} serviceFeeRate={serviceFeeRate} />
+                                        <StreamerRow index={index} entry={entry} onUpdate={onUpdate} ref={(el) => (rowInputRefs.current[index] = el)} onEnter={() => handleNextFocus(index)} onPrev={() => handlePrevFocus(index)} onPreview={setPreviewImage} />
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
