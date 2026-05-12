@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon, Gamepad2 } from 'lucide-react';
-import { BuildEntry, ConfigTemplate, Category, UserItem } from '../types/clientTypes';
+import { BuildEntry, ConfigTemplate, Category, UserItem, StreamerLiveMeta } from '../types/clientTypes';
 import { DEFAULT_BUILD_TEMPLATE, HARDWARE_DB } from '../data/clientData';
 import { storage } from '../services/storage';
 import LoginModal from '../components/common/LoginModal';
@@ -30,6 +30,7 @@ const UsedItemDetail = lazy(() => import('../components/client/UsedItemDetail'))
 import { useTheme } from '../hooks/useTheme';
 
 export default function ClientApp() {
+    const LIVE_SCENARIO_OPTIONS = ['实用', '颜值', '游戏', '直播', '生产力', '海景房'];
     const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'gamefps'>(() => {
         const path = window.location.pathname.toLowerCase();
         if (path === '/vip' || path === '/vip/') return 'streamer';
@@ -70,6 +71,11 @@ export default function ClientApp() {
     const [showUserCenter, setShowUserCenter] = useState(false);
     const [showDiscountSheet, setShowDiscountSheet] = useState(false);
     const [triggerAiModal, setTriggerAiModal] = useState(false);
+    const [liveMeta, setLiveMeta] = useState<StreamerLiveMeta>({
+        budget: '3500',
+        customerName: '一只快乐的猴子',
+        scenarios: ['游戏']
+    });
     
     // Theme
     const { theme, setTheme } = useTheme();
@@ -336,6 +342,19 @@ export default function ClientApp() {
         setTimeout(() => setToast({ show: false, msg: '' }), 3000);
     };
 
+    const getStreamerShareData = () => {
+        const scenarios = liveMeta.scenarios.length > 0 ? liveMeta.scenarios : ['游戏'];
+        const customerName = liveMeta.customerName.trim() || '客户';
+        const budget = liveMeta.budget.trim() || String(pricing.finalPrice);
+        const serviceFeePercent = ((settings.serviceFeeRate ?? 0.06) * 100).toFixed(0);
+
+        return {
+            title: `${customerName} ${budget}预算装机单`,
+            tags: scenarios,
+            desc: `客户：${customerName}；预算：${budget}；用途：${scenarios.join('、')}；✅装机 ✅工整走线 ✅三年质保 ✅${serviceFeePercent}% 利润 ✅济南发货 ❌包邮`
+        };
+    };
+
     const handleSave = () => {
         if (!currentUser) {
             showToast("🔒 请先登录后再保存配置");
@@ -353,6 +372,10 @@ export default function ClientApp() {
         }
         if (pricing.finalPrice === 0) {
             showToast("❌ 配置单为空，无法分享");
+            return;
+        }
+        if (viewMode === 'streamer') {
+            handlePublishToSquare(getStreamerShareData());
             return;
         }
         setShowShareModal(true);
@@ -395,7 +418,8 @@ export default function ClientApp() {
     const handleFork = async (config: ConfigTemplate) => {
         try {
             // Extract all hardware IDs from the config
-            const productIds = Object.values(config.items).map((id: any) => {
+            const productIds = Object.entries(config.items).map(([key, id]: [string, any]) => {
+                if (key.startsWith('__')) return null;
                 if (typeof id === 'string') return id;
                 if (typeof id === 'object' && id && id.id && !id.isCustom) return id.id;
                 return null;
@@ -439,6 +463,25 @@ export default function ClientApp() {
                 return { ...entry, item: null, quantity: 1 };
             });
             setBuildList(newList);
+            const storedLiveMeta = config.items?.__liveMeta;
+            const configScenarioTags = config.tags
+                .map(tag => tag.label)
+                .filter(label => LIVE_SCENARIO_OPTIONS.includes(label));
+            if (storedLiveMeta) {
+                setLiveMeta({
+                    budget: String(storedLiveMeta.budget || config.price || ''),
+                    customerName: String(storedLiveMeta.customerName || config.author || ''),
+                    scenarios: Array.isArray(storedLiveMeta.scenarios) && storedLiveMeta.scenarios.length > 0
+                        ? storedLiveMeta.scenarios.filter(label => LIVE_SCENARIO_OPTIONS.includes(label))
+                        : (configScenarioTags.length > 0 ? configScenarioTags : ['游戏'])
+                });
+            } else {
+                setLiveMeta({
+                    budget: config.price ? String(config.price) : liveMeta.budget,
+                    customerName: config.author || liveMeta.customerName,
+                    scenarios: configScenarioTags.length > 0 ? configScenarioTags : liveMeta.scenarios
+                });
+            }
             if (viewMode !== 'streamer') {
                 setViewMode('visual');
             }
@@ -459,6 +502,32 @@ export default function ClientApp() {
         isPublishingRef.current = true;
         try {
             const saveStatus = data.status || 'published';
+            const buildItems = buildList.reduce((acc, curr) => {
+                if (curr.item) {
+                    if (curr.quantity && curr.quantity > 1) {
+                        acc[curr.category] = { id: curr.item.id, quantity: curr.quantity };
+                    } else {
+                        acc[curr.category] = curr.item.id;
+                    }
+                } else if (curr.customName) {
+                    acc[curr.category] = {
+                        isCustom: true,
+                        name: curr.customName,
+                        price: curr.customPrice || 0,
+                        quantity: curr.quantity || 1
+                    };
+                }
+                return acc;
+            }, {} as Record<Category, any>);
+            const templateItems = viewMode === 'streamer'
+                ? {
+                    ...buildItems,
+                    __liveMeta: {
+                        ...liveMeta,
+                        scenarios: liveMeta.scenarios.length > 0 ? liveMeta.scenarios : ['游戏']
+                    }
+                }
+                : buildItems;
             // Create Client Template (for local optimistic UI)
             const newTemplate: ConfigTemplate = {
                 id: `user - ${Date.now()} `,
@@ -472,23 +541,7 @@ export default function ClientApp() {
                     label: t
                 })),
                 price: pricing.finalPrice,
-                items: buildList.reduce((acc, curr) => {
-                    if (curr.item) {
-                        if (curr.quantity && curr.quantity > 1) {
-                            acc[curr.category] = { id: curr.item.id, quantity: curr.quantity };
-                        } else {
-                            acc[curr.category] = curr.item.id;
-                        }
-                    } else if (curr.customName) {
-                        acc[curr.category] = {
-                            isCustom: true,
-                            name: curr.customName,
-                            price: curr.customPrice || 0,
-                            quantity: curr.quantity || 1
-                        };
-                    }
-                    return acc;
-                }, {} as Record<Category, any>),
+                items: templateItems,
                 likes: 0,
                 views: 0,
                 comments: 0,
@@ -867,6 +920,8 @@ export default function ClientApp() {
                                 setBuildList(prev => prev.map(i => ({ ...i, item: null, quantity: 1 })));
                             }}
                             hasPermission={true}
+                            liveMeta={liveMeta}
+                            onLiveMetaChange={setLiveMeta}
                             currentUser={currentUser}
                             showToast={showToast}
                             onAiCheck={handleAiPermission}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, animate as fmAnimate } from 'framer-motion';
-import { Activity, Zap, Gamepad2, RefreshCw, Trash2, Save, Download, Share2, ChevronDown } from 'lucide-react';
+import { Activity, Zap, Gamepad2, RefreshCw, ChevronDown } from 'lucide-react';
 import { BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { ThemeContext } from './StreamerThemeContext';
 import { Resolution } from '../../data/gameFpsData';
@@ -99,7 +99,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     useEffect(() => {
         if (!cpuItem && !gpuItem) { 
             import('../../data/gameFpsData').then(({ gamesList }) => {
-                setFpsData(gamesList.slice(0, 12).map((gameName: string) => ({ name: gameName, fps: 0 })));
+                setFpsData(gamesList.map((gameName: string) => ({ name: gameName, fps: 0 })));
             });
             setLoadingFps(false);
             return; 
@@ -210,45 +210,79 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     results.push({ name: gameName, fps: gData.avg, lowFps: gData.low });
                 } else if (cData) {
                     results.push({ name: gameName, fps: cData.avg, lowFps: cData.low });
+                } else {
+                    results.push({ name: gameName, fps: 0 });
                 }
             }
 
-            setFpsData(results.slice(0, 12));
+            setFpsData(results);
             setLoadingFps(false);
         });
     }, [cpuItemId, gpuItemId, sidebarResolution]);
 
-    // Slice FPS data based on live mode without re-fetching
-    const displayFpsData = isLiveMode ? fpsData.slice(0, 8) : fpsData;
+    const displayFpsData = isLiveMode ? fpsData.slice(0, 12) : fpsData.slice(0, 12);
+    const totalGameCount = fpsData.length;
 
-    // Extract primary product image for the "stamp" view
-    // Priority: Mainboard > GPU > CPU
-    const primaryImageEntry = buildList.find(e => e.category === 'mainboard' && e.item?.image)
-        || buildList.find(e => e.category === 'gpu' && e.item?.image)
-        || buildList.find(e => e.category === 'cpu' && e.item?.image)
-        || buildList.find(e => e.item?.image);
-    const primaryImage = primaryImageEntry?.item?.image;
+    const productImages = buildList
+        .filter(e => e.item?.image)
+        .map(e => ({ src: e.item!.image!, label: e.item!.model }));
+    const productImagesKey = productImages.map(image => image.src).join('|');
+    const [productImageIndex, setProductImageIndex] = useState(0);
+
+    useEffect(() => {
+        setProductImageIndex(0);
+    }, [productImagesKey]);
+
+    useEffect(() => {
+        if (!isLiveMode || productImages.length <= 1) return;
+        const timer = window.setInterval(() => {
+            setProductImageIndex(index => (index + 1) % productImages.length);
+        }, 3200);
+        return () => window.clearInterval(timer);
+    }, [isLiveMode, productImages.length, productImagesKey]);
+
+    const activeProductImage = productImages[productImageIndex];
 
     // Format current time
     const now = new Date();
     const timeString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     return (
-        <div className={`hidden xl:flex flex-col gap-3 shrink-0 border-l p-4 ${isLiveMode ? `w-[320px] ${liveStyleConfig.sectionBg} border-transparent shadow-2xl overflow-y-auto max-h-screen custom-scrollbar` : 'w-[280px] border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
+        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isLiveMode ? `w-[282px] gap-2 p-2 ${liveStyleConfig.sectionBg} border-transparent shadow-2xl overflow-hidden max-h-[977px]` : 'w-[280px] gap-3 p-4 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
 
             {/* In Live Mode: Special Layout Order */}
             {isLiveMode ? (
                 <>
                     {/* 1. Product Image Stamp */}
-                    <div className={`bg-white rounded-xl p-2 relative shadow-lg ${liveStyleConfig.stampBorder} border-4 overflow-hidden mb-1 flex items-center justify-center min-h-[220px]`}>
+                    <div className={`bg-white rounded-lg p-2 relative shadow-lg ${liveStyleConfig.stampBorder} border-4 overflow-hidden mb-1 flex items-center justify-center min-h-[165px]`}>
                         {/* Stamp inner dashed border */}
                         <div className={`absolute inset-1 border-2 border-dashed ${liveStyleConfig.border} pointer-events-none rounded-lg opacity-30`}></div>
                         
-                        {primaryImage ? (
-                            <img src={primaryImage} alt="Hardware" className="w-full h-full max-h-[200px] object-contain relative z-10" />
+                        {activeProductImage ? (
+                            <motion.img
+                                key={activeProductImage.src}
+                                src={activeProductImage.src}
+                                alt={activeProductImage.label}
+                                className="w-full h-full max-h-[150px] object-contain relative z-10"
+                                initial={{ opacity: 0, x: 18 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.35 }}
+                            />
                         ) : (
                             <div className="flex flex-col items-center justify-center text-gray-300 opacity-50 relative z-10">
                                 <Activity size={48} strokeWidth={1} />
                                 <span className="text-sm font-bold mt-2 tracking-widest">DIYXX</span>
+                            </div>
+                        )}
+                        {productImages.length > 1 && (
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1">
+                                {productImages.map((image, index) => (
+                                    <button
+                                        key={image.src}
+                                        onClick={() => setProductImageIndex(index)}
+                                        className={`w-1.5 h-1.5 rounded-full transition-all ${index === productImageIndex ? 'bg-slate-900 w-4' : 'bg-slate-300 hover:bg-slate-500'}`}
+                                        title={image.label}
+                                    />
+                                ))}
                             </div>
                         )}
                         
@@ -260,70 +294,72 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     </div>
 
                     {/* 2. Score & Power Cards Side-by-Side */}
-                    <div className="flex flex-row gap-3 shrink-0">
+                    <div className="flex flex-row gap-2 shrink-0">
                         {/* 鲁大师跑分 */}
-                        <div className={`flex-1 bg-transparent border ${liveStyleConfig.border} shadow-sm rounded-xl p-3 relative overflow-hidden group flex flex-col justify-center items-center h-24`}>
+                        <div className={`flex-1 bg-transparent border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[82px]`}>
                             <div className={`absolute right-0 top-0 w-32 h-32 ${liveStyleConfig.glowBg} opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2`}></div>
+                            <div className={`absolute left-2 top-2 flex items-center gap-1 text-[11px] font-black ${liveStyleConfig.modelText}`}>
+                                <Activity size={13} className={liveStyleConfig.accentText}/>
+                                鲁大师跑分
+                            </div>
                             <div className="flex items-center gap-1 mb-1 z-10">
-                                <Activity size={16} className={liveStyleConfig.accentText}/>
                                 <span className={`${liveStyleConfig.accentText} text-2xl font-black font-display tracking-tighter`}>
                                     {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={Math.floor(simResult.totalLuScore/10000)} /> : '---'}
                                 </span>
                                 {simResult && simResult.totalLuScore > 0 && <span className={`text-xs ${liveStyleConfig.accentText} font-bold`}>W+</span>}
                             </div>
-                            <span className={`text-[10px] font-bold ${liveStyleConfig.mutedText} z-10 tracking-widest`}>鲁大师跑分</span>
                         </div>
 
                         {/* 整机功耗 */}
-                        <div className={`flex-1 bg-transparent border ${liveStyleConfig.border} shadow-sm rounded-xl p-3 relative overflow-hidden group flex flex-col justify-center items-center h-24`}>
+                        <div className={`flex-1 bg-transparent border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[82px]`}>
                             <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2"></div>
+                            <div className={`absolute left-2 top-2 flex items-center gap-1 text-[11px] font-black ${liveStyleConfig.modelText}`}>
+                                <Zap size={13} className="text-amber-300"/>
+                                整机功耗
+                            </div>
                             <div className="flex items-center gap-1 mb-1 z-10">
-                                <Zap size={16} className="text-white"/>
                                 <span className={`text-white text-2xl font-black font-display tracking-tighter`}>
                                     {simResult && simResult.totalPowerDraw > 0 ? <BouncyNumber value={simResult.totalPowerDraw} /> : '---'}
                                 </span>
                                 {simResult && simResult.totalPowerDraw > 0 && <span className={`text-xs text-white font-bold`}>W</span>}
                             </div>
-                            <span className={`text-[10px] font-bold ${liveStyleConfig.mutedText} z-10 tracking-widest`}>整机功耗约</span>
                         </div>
                     </div>
 
                     {/* 3. FPS single column */}
-                    <div className={`bg-transparent border ${liveStyleConfig.border} shadow-sm rounded-xl p-3 relative flex-1 flex flex-col min-h-[200px]`}>
-                        <div className="flex items-center justify-between mb-3 relative z-10">
-                            <div className={`flex gap-1 bg-white/5 border border-white/10 p-0.5 rounded-lg`}>
+                    <div className={`bg-transparent border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative flex-1 flex flex-col min-h-[360px]`}>
+                        <div className="flex items-center justify-between mb-2 relative z-10">
+                            <div className={`text-[11px] font-black tracking-widest ${liveStyleConfig.accentText}`}>游戏实测 FPS · {totalGameCount}款</div>
+                            <div className={`grid grid-cols-3 gap-1 w-[150px] bg-white/5 border border-white/10 p-0.5 rounded-lg`} title="切换分辨率">
                                 {[1080, 1440, 2160].map(res => (
                                     <button
                                         key={res}
                                         onClick={() => setSidebarResolution(res)}
-                                        className={`text-[10px] font-black px-3 py-1 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${liveStyleConfig.glowBg} text-gray-900 shadow-sm scale-105` : `text-gray-400 hover:text-white hover:bg-white/10`}`}
+                                        className={`text-[10px] font-black py-1 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${liveStyleConfig.glowBg} text-gray-900 shadow-sm scale-105` : `text-gray-400 hover:text-white hover:bg-white/10`}`}
                                     >
                                         {res === 1080 ? '1K' : res === 1440 ? '2K' : '4K'}
                                     </button>
                                 ))}
                             </div>
                         </div>
-                        <div className={`relative z-10 flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-3`}>
+                        <div className={`relative z-10 flex-1 overflow-hidden pr-1 space-y-2`}>
                             {loadingFps ? (
                                 <div className={`py-8 flex flex-col items-center justify-center text-white/50 gap-3 h-full`}>
                                     <RefreshCw size={24} className="animate-spin opacity-80" />
                                 </div>
                             ) : fpsData.length > 0 ? (
                                 displayFpsData.map((item, idx) => (
-                                    <div key={idx} className="flex items-center gap-3">
+                                    <div key={idx} className="flex items-center gap-2">
                                         <div className="relative shrink-0">
-                                            <img src={`/images/games/icons/${item.name}.png`} alt="" className={`w-10 h-10 rounded-full object-cover border-2 ${liveStyleConfig.border}`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ${liveStyleConfig.glowBg} border border-gray-900 flex items-center justify-center`}>
-                                                <Gamepad2 size={8} className="text-gray-900" />
-                                            </div>
+                                            <img src={`/images/games/icons/${item.name}.png`} alt={item.name} className={`w-9 h-9 rounded-full object-cover border-2 ${liveStyleConfig.border}`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className={`text-[11px] font-bold ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
+                                            <div className={`text-[10px] font-bold ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
                                             <div className={`w-full bg-white/5 rounded-full h-1.5 overflow-hidden relative`}>
                                                 <div className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${item.fps === 0 ? 'bg-white/10' : liveStyleConfig.fpsBarColor}`} style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}></div>
                                             </div>
                                         </div>
-                                        <div className={`font-display font-black text-lg ${item.fps === 0 ? liveStyleConfig.mutedText : 'text-white'} shrink-0 w-[60px] text-right`}>
+                                        <div className={`font-display font-black text-base ${item.fps === 0 ? liveStyleConfig.mutedText : 'text-white'} shrink-0 w-[52px] text-right`}>
                                             {item.fps}<span className="text-[9px] ml-0.5">FPS</span>
                                         </div>
                                     </div>
@@ -337,53 +373,45 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         </div>
                     </div>
 
-                    {/* 4. Pricing & Actions at bottom */}
+                    {/* 4. Pricing at bottom */}
                     {pricingProps && (
-                        <div className={`border ${liveStyleConfig.border} rounded-xl p-3 relative mt-auto shrink-0 flex flex-col`}>
-                            {/* Action Buttons Top Row */}
-                            <div className="grid grid-cols-4 gap-2 mb-3">
-                                <button onClick={pricingProps.clearBuild} className={`h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 ${liveStyleConfig.mutedText} hover:text-rose-400 border border-white/5 transition-all`} title="清空配置">
-                                    <Trash2 size={14} />
-                                </button>
-                                <button onClick={pricingProps.handleSave} className={`h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 ${liveStyleConfig.mutedText} hover:text-white border border-white/5 transition-all`} title="保存配置">
-                                    <Save size={14} />
-                                </button>
-                                <button onClick={pricingProps.handleGeneratePoster} disabled={pricingProps.isGeneratingPoster} className={`h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 ${liveStyleConfig.mutedText} hover:text-white border border-white/5 transition-all`} title="生成海报">
-                                    {pricingProps.isGeneratingPoster ? <RefreshCw size={14} className="animate-spin" /> : <Download size={14} />}
-                                </button>
-                                <button onClick={pricingProps.handleShareTrigger} disabled={pricingProps.isSharing} className={`h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 ${liveStyleConfig.mutedText} hover:text-white border border-white/5 transition-all`} title="分享配置">
-                                    {pricingProps.isSharing ? <RefreshCw size={14} className="animate-spin" /> : <Share2 size={14} />}
-                                </button>
+                        <div className={`border ${liveStyleConfig.border} rounded-lg p-3 relative mt-auto shrink-0 flex flex-col gap-2`}>
+                            <div className="flex items-center justify-between gap-2">
+                                <div className={`text-[13px] font-black ${liveStyleConfig.modelText}`}>优惠方案</div>
+                                <div className="relative group w-[142px]">
+                                    <select
+                                        value={pricingProps.discountRate}
+                                        onChange={(e) => pricingProps.setDiscountRate(parseFloat(e.target.value))}
+                                        className={`w-full appearance-none bg-white/10 border-white/20 text-white border text-[12px] font-black py-1.5 pl-2.5 pr-7 rounded-md focus:outline-none focus:ring-1 focus:ring-white/20 transition-all cursor-pointer`}
+                                    >
+                                        {pricingProps.strategies.map(opt => <option key={opt.value} value={opt.value} className="bg-gray-800">{opt.label}</option>)}
+                                    </select>
+                                    <ChevronDown className="absolute right-2 top-2 text-white/50 pointer-events-none" size={14} />
+                                </div>
                             </div>
 
-                            <div className="flex justify-between items-end">
+                            <div className="grid grid-cols-[76px_1fr] gap-2 items-end">
                                 <div className="flex flex-col gap-1">
-                                    <div className="relative group w-[90px]">
-                                        <select 
-                                            value={pricingProps.discountRate} 
-                                            onChange={(e) => pricingProps.setDiscountRate(parseFloat(e.target.value))} 
-                                            className={`w-full appearance-none bg-white/10 border-white/20 text-white border text-[9px] font-bold py-1 pl-2 pr-5 rounded-md focus:outline-none focus:ring-1 focus:ring-white/20 transition-all cursor-pointer`}
-                                        >
-                                            {pricingProps.strategies.map(opt => <option key={opt.value} value={opt.value} className="bg-gray-800">{opt.label}</option>)}
-                                        </select>
-                                        <ChevronDown className="absolute right-2 top-1.5 text-white/50 pointer-events-none" size={10} />
-                                    </div>
-                                    <div className={`text-[8px] ${liveStyleConfig.mutedText} font-bold leading-tight mt-1 max-w-[130px]`}>
-                                        含装机走线售后利润{(pricingProps.serviceFeeRate * 100).toFixed(0)}%<br/>山东济南发货顺丰到付
-                                    </div>
+                                    <span className={`text-[10px] font-black ${liveStyleConfig.mutedText}`}>原价</span>
+                                    <span className={`text-xl font-black line-through decoration-2 ${liveStyleConfig.mutedText}`}>¥{Math.floor(pricingProps.pricing.standardPrice)}</span>
                                 </div>
-                                
                                 <div className="flex flex-col items-end">
-                                    <div className="flex items-baseline gap-1">
+                                    <span className={`text-[10px] font-black ${liveStyleConfig.accentText}`}>优惠后</span>
+                                    <div className="flex items-baseline gap-1 leading-none">
                                         <span className={`text-2xl font-bold ${liveStyleConfig.totalPriceText}`}>¥</span>
-                                        <span className={`text-4xl font-black drop-shadow-md ${liveStyleConfig.totalPriceText} font-mono tracking-tighter`}>
+                                        <span className={`text-5xl font-black drop-shadow-md ${liveStyleConfig.totalPriceText} font-mono tracking-tighter`}>
                                             <SidebarRollingPrice value={pricingProps.pricing.finalPrice} />
                                         </span>
                                     </div>
-                                    <div className={`text-[9px] ${liveStyleConfig.accentText} opacity-80 tracking-widest`}>
-                                        {timeString}
-                                    </div>
                                 </div>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                                <span className={`${pricingProps.pricing.savedAmount > 0 ? liveStyleConfig.savedBadge : 'bg-white/10 text-white/60'} px-2 py-0.5 rounded-full text-[11px] font-black`}>
+                                    已省 ¥{pricingProps.pricing.savedAmount}
+                                </span>
+                                <span className={`text-[9px] ${liveStyleConfig.accentText} opacity-80 tracking-widest`}>
+                                    {timeString}
+                                </span>
                             </div>
                         </div>
                     )}

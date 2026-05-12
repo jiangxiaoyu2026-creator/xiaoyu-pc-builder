@@ -320,7 +320,8 @@ function ConfigSquare({ settings, onLoadConfig, showToast, onToggleLike, current
 
                     // Recalculate price for accuracy (sum of parts + dynamic fee)
                     let base = 0;
-                    Object.values(cfg.items).forEach((itemId: any) => {
+                    Object.entries(cfg.items).forEach(([key, itemId]: [string, any]) => {
+                        if (key.startsWith('__')) return;
                         if (!itemId) return;
                         if (typeof itemId === 'object') {
                             if (itemId.isCustom) {

@@ -56,6 +56,12 @@ export interface BuildEntry {
     isLockedQty?: boolean;
 }
 
+export interface StreamerLiveMeta {
+    budget: string;
+    customerName: string;
+    scenarios: string[];
+}
+
 export interface ConfigTemplate {
     id: string;
     title: string;
@@ -64,7 +70,7 @@ export interface ConfigTemplate {
     type: 'official' | 'streamer' | 'user' | 'help';
     tags: { type: 'appearance' | 'usage'; label: string }[];
     price: number;
-    items: Partial<Record<Category, string>>;
+    items: Partial<Record<Category, any>> & { __liveMeta?: StreamerLiveMeta };
     likes: number;
     views: number;
     comments: number;

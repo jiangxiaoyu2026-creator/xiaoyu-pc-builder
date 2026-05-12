@@ -9,6 +9,10 @@ import ConfirmModal from '../common/ConfirmModal';
 
 export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggleLike, currentUser }: { config: ConfigTemplate, onClose: () => void, onLoad: () => void, showToast: (msg: string) => void, onToggleLike: (id: string) => void, currentUser: UserItem | null }) {
     const [commentText, setCommentText] = React.useState('');
+    const hardwareEntries = React.useMemo(
+        () => Object.entries(config.items).filter(([cat]) => !cat.startsWith('__')),
+        [config.items]
+    );
 
     const [comments, setComments] = React.useState<any[]>([]);
     const [allProducts, setAllProducts] = React.useState<HardwareItem[]>([]);
@@ -24,7 +28,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
         const loadInitialData = async () => {
             // Extract all hardware IDs from the config
             const productIds: string[] = [];
-            Object.values(config.items).forEach(val => {
+            hardwareEntries.forEach(([, val]) => {
                 if (typeof val === 'string') productIds.push(val);
                 else if (val && typeof val === 'object' && (val as any).id) productIds.push((val as any).id);
             });
@@ -70,7 +74,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
             `------------------`
         ];
 
-        Object.entries(config.items).forEach(([cat, itemId]) => {
+        hardwareEntries.forEach(([cat, itemId]) => {
             const category = cat as keyof typeof CATEGORY_MAP;
             const item = getHardwareDetail(itemId);
             if (item) {
@@ -220,7 +224,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
                             <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 mt-0.5">
                                 <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400">配置清单</span>
                                 <span>•</span>
-                                <span>共 {Object.keys(config.items).length} 件硬件</span>
+                                <span>共 {hardwareEntries.length} 件硬件</span>
                             </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -242,7 +246,7 @@ export function ConfigDetailModal({ config, onClose, onLoad, showToast, onToggle
 
                     <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
                         <div className="space-y-1.5">
-                            {Object.entries(config.items).map(([cat, itemId]) => {
+                            {hardwareEntries.map(([cat, itemId]) => {
                                 const category = cat as keyof typeof CATEGORY_MAP;
                                 const item = getHardwareDetail(itemId as string);
                                 const isCore = ['cpu', 'gpu', 'mainboard'].includes(category);

@@ -1,8 +1,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, TrendingUp, Recycle, Monitor } from 'lucide-react';
-import { BuildEntry } from '../../types/clientTypes';
+import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, TrendingUp, Recycle, Monitor, FolderOpen } from 'lucide-react';
+import { BuildEntry, StreamerLiveMeta } from '../../types/clientTypes';
 import { storage } from '../../services/storage';
 import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
 import { AiGenerateModal } from './AiGenerateModal';
@@ -16,6 +16,8 @@ import { StreamerPerformanceSidebar } from './StreamerPerformanceSidebar';
 import { StreamerPosterTemplate } from './StreamerPosterTemplate';
 import { StreamerPermissionWall } from './StreamerPermissionWall';
 // --------------------
+
+const LIVE_SCENARIO_OPTIONS = ['实用', '颜值', '游戏', '直播', '生产力', '海景房'];
 
 // Components extracted to StreamerRow.tsx and StreamerPerformanceSidebar.tsx
 
@@ -88,6 +90,8 @@ function StreamerWorkbench({
     handleSave,
     clearBuild,
     hasPermission,
+    liveMeta,
+    onLiveMetaChange,
     onAiCheck,
     onOpenLibrary
 }: {
@@ -101,6 +105,8 @@ function StreamerWorkbench({
     handleSave: () => void,
     clearBuild: () => void,
     hasPermission: boolean,
+    liveMeta: StreamerLiveMeta,
+    onLiveMetaChange: (meta: StreamerLiveMeta) => void,
     onAiCheck?: () => boolean,
     onOpenLibrary: () => void
 
@@ -132,7 +138,6 @@ function StreamerWorkbench({
     
     const [showAiModal, setShowAiModal] = useState(false);
     const [showChatSettings, setShowChatSettings] = useState(false);
-
     const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
     const posterRef = useRef<HTMLDivElement>(null);
 
@@ -301,9 +306,22 @@ function StreamerWorkbench({
     };
 
     const validPosterItems = buildList.filter(b => b.item || b.customName);
+    const visibleBuildList = buildList;
+    const serviceFeeRate = pricingStrategy?.serviceFeeRate ?? pricing?.serviceFeeRate ?? 0.06;
+    const serviceFeePercent = (serviceFeeRate * 100).toFixed(0);
+    const updateLiveMeta = (updates: Partial<StreamerLiveMeta>) => {
+        onLiveMetaChange({ ...liveMeta, ...updates });
+    };
+    const toggleScenario = (label: string) => {
+        const scenarios = liveMeta.scenarios.includes(label)
+            ? liveMeta.scenarios.filter(item => item !== label)
+            : [...liveMeta.scenarios, label];
+        updateLiveMeta({ scenarios });
+    };
 
     return (
-        <div className={`${theme.cardBg} rounded-xl shadow-xl ${theme.borderColor} border overflow-hidden relative transition-colors duration-300`}>
+        <div className={isLiveMode ? 'w-[1204px] max-w-full mx-auto' : 'w-full'}>
+        <div className={`${theme.cardBg} ${isLiveMode ? 'h-[977px] rounded-lg' : 'rounded-xl'} shadow-xl ${theme.borderColor} border overflow-hidden relative transition-colors duration-300`}>
             
             {/* Hidden Poster Template */}
             <StreamerPosterTemplate 
@@ -323,7 +341,7 @@ function StreamerWorkbench({
                         <div className={`h-full ${theme.bgPrimary} animate-[loading_2s_ease-in-out_infinite]`}></div>
                     </div>
                 )}
-                <div className={`px-5 py-2.5 border-b ${theme.borderColor} ${theme.headerBg} flex items-center justify-between transition-colors duration-300`}>
+                <div className={`${isLiveMode ? 'hidden' : 'flex'} px-5 py-2.5 border-b ${theme.borderColor} ${theme.headerBg} items-center justify-between transition-colors duration-300`}>
                     <div className="flex items-center gap-3">
                         <h2 className={`text-base font-bold ${theme.textTitle} flex items-center gap-1.5`}>
                             <Zap className={theme.primary} size={18} />
@@ -343,12 +361,12 @@ function StreamerWorkbench({
                         )}
                         {/* Live Mode Style Switcher */}
                         {isLiveMode && (
-                            <div className="flex items-center gap-2 bg-slate-900 px-2 py-1 rounded-full border border-slate-700">
+                            <div className="hidden 2xl:flex items-center gap-1.5 bg-slate-900 px-2 py-1 rounded-full border border-slate-700 max-w-[620px] overflow-x-auto hide-scrollbar">
                                 {(Object.keys(LIVE_STYLES) as LiveStyleKey[]).map(s => (
                                     <button
                                         key={s}
                                         onClick={() => setLiveStyle(s)}
-                                        className={`text-xs px-2 py-0.5 rounded-full transition-all ${liveStyle === s ? 'bg-slate-700 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
+                                        className={`text-[11px] px-2 py-0.5 rounded-full transition-all whitespace-nowrap ${liveStyle === s ? 'bg-slate-700 text-white font-bold' : 'text-slate-400 hover:text-white'}`}
                                     >
                                         {LIVE_STYLES[s].emoji} {LIVE_STYLES[s].name}
                                     </button>
@@ -456,12 +474,69 @@ function StreamerWorkbench({
 
                 {activeTab === 'builder' ? (
                     <>
-                    <div className="flex flex-col xl:flex-row">
+                    <div className={`flex ${isLiveMode ? 'flex-row h-full' : 'flex-col xl:flex-row'}`}>
                     {/* === Left: Config Table === */}
-                    <div className={`flex-1 min-w-0 ${isLiveMode ? 'max-w-none' : 'max-w-[1550px]'}`}>
-                        <div className="overflow-x-auto">
-                            <div className="min-w-[600px]">
-                                <div className={`grid ${isLiveMode ? 'grid-cols-[100px_1fr_80px_150px]' : 'grid-cols-[75px_1fr_65px_70px_20px]'} gap-2 px-4 py-2 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300`}>
+                    <div className={`flex-1 min-w-0 ${isLiveMode ? 'max-w-none flex flex-col h-full' : 'max-w-[1550px]'}`}>
+                        {isLiveMode && (
+                            <div className={`px-4 py-2 ${liveStyleConfig.headerBg} border-b ${liveStyleConfig.border}`}>
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className={`text-3xl font-black tracking-tight ${liveStyleConfig.modelText}`}>DIYXX</div>
+                                        <div className={`h-10 w-px ${liveStyleConfig.glowBg} opacity-70 shrink-0`}></div>
+                                        <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+                                            {LIVE_SCENARIO_OPTIONS.map((label) => {
+                                                const checked = liveMeta.scenarios.includes(label);
+                                                return (
+                                                    <button
+                                                        key={label}
+                                                        type="button"
+                                                        onClick={() => toggleScenario(label)}
+                                                        className={`flex items-center gap-1.5 text-[14px] font-black transition-colors ${checked ? liveStyleConfig.modelText : liveStyleConfig.mutedText}`}
+                                                    >
+                                                        <span className={`w-3.5 h-3.5 rounded-[3px] border-2 flex items-center justify-center ${checked ? `${liveStyleConfig.glowBg} border-transparent` : liveStyleConfig.border}`}>
+                                                            {checked && <span className="text-[11px] leading-none text-gray-950">✓</span>}
+                                                        </span>
+                                                        {label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-stretch gap-2 shrink-0">
+                                        <button
+                                            onClick={onOpenLibrary}
+                                            className={`h-[62px] px-3 rounded-lg bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.modelText} hover:bg-white/15 transition-all text-[13px] font-black flex flex-col items-center justify-center gap-1`}
+                                            title="载入配置"
+                                        >
+                                            <FolderOpen size={16} />
+                                            载入配置
+                                        </button>
+                                    <div className="grid gap-1.5 w-[210px]">
+                                        <label className={`h-8 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 text-[15px] font-black ${liveStyleConfig.modelText}`}>
+                                            <span className={liveStyleConfig.mutedText}>预算:</span>
+                                            <input
+                                                value={liveMeta.budget}
+                                                onChange={(e) => updateLiveMeta({ budget: e.target.value })}
+                                                className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[15px] font-black ${liveStyleConfig.modelText} focus:ring-0 focus:outline-none`}
+                                            />
+                                        </label>
+                                        <label className={`h-8 px-2.5 rounded-md bg-white/10 border ${liveStyleConfig.border} flex items-center gap-1.5 text-[15px] font-black ${liveStyleConfig.modelText}`}>
+                                            <span className={liveStyleConfig.mutedText}>姓名:</span>
+                                            <input
+                                                value={liveMeta.customerName}
+                                                onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
+                                                className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[15px] font-black ${liveStyleConfig.modelText} focus:ring-0 focus:outline-none`}
+                                            />
+                                        </label>
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-x-auto' : 'overflow-x-auto'}`}>
+                            <div className={`${isLiveMode ? 'min-w-[860px] h-full flex flex-col' : 'min-w-[600px]'}`}>
+                                <div className={`grid ${isLiveMode ? 'grid-cols-[76px_1fr_78px_96px]' : 'grid-cols-[75px_1fr_65px_70px_20px]'} gap-2 px-4 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 {isLiveMode ? '' : '(智能搜索 / 自定义)'}</div>
                             <div className="text-center">数量</div>
@@ -469,9 +544,9 @@ function StreamerWorkbench({
                             {!isLiveMode && <div></div>}
                         </div>
 
-                        <div className={`divide-y ${theme.divider} transition-colors duration-300`}>
+                        <div className={`divide-y ${theme.divider} transition-colors duration-300 ${isLiveMode ? 'min-h-0' : ''}`}>
                             <AnimatePresence mode="popLayout">
-                                {buildList.map((entry, index) => (
+                                {visibleBuildList.map((entry, index) => (
                                     <motion.div
                                         key={entry.id}
                                         layout
@@ -485,6 +560,16 @@ function StreamerWorkbench({
                                 ))}
                             </AnimatePresence>
                         </div>
+                        {isLiveMode && (
+                            <div className={`mt-auto px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.modelText} text-[16px] font-black tracking-wide flex flex-wrap items-center justify-start gap-x-4 gap-y-1`}>
+                                <span>✅装机</span>
+                                <span>✅工整走线</span>
+                                <span>✅三年质保</span>
+                                <span>✅{serviceFeePercent}% 利润</span>
+                                <span>✅济南发货</span>
+                                <span>❌包邮</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -512,7 +597,7 @@ function StreamerWorkbench({
 
                                 <div className="flex items-center gap-3">
                                     <div className={`${isLiveMode ? 'text-xs' : 'text-[10px]'} ${isLiveMode ? liveStyleConfig.mutedText : theme.textMuted} font-bold whitespace-nowrap`}>
-                                        标准价格包含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 装机售后服务费
+                                        标准价格包含 {(serviceFeeRate * 100).toFixed(0)}% 装机售后服务费
                                     </div>
                                     <div className="flex items-center gap-2 h-10">
                                         <button onClick={clearBuild} className={`h-full aspect-square flex items-center justify-center rounded-lg transition-all active:scale-95 border ${isLiveMode ? 'bg-white/5 hover:bg-white/10 text-rose-400 border-white/10' : 'bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-500/20'}`} title="清空配置">
@@ -618,7 +703,7 @@ function StreamerWorkbench({
                     </div>
 
                     {/* === Right: Performance Sidebar === */}
-                    <StreamerPerformanceSidebar buildList={buildList} pricingProps={{ pricing, discountRate, setDiscountRate, strategies, serviceFeeRate: pricingStrategy?.serviceFeeRate || 0, clearBuild, handleSave, handleGeneratePoster, isGeneratingPoster, handleShareTrigger, isSharing }} />
+                    <StreamerPerformanceSidebar buildList={buildList} pricingProps={{ pricing, discountRate, setDiscountRate, strategies, serviceFeeRate, clearBuild, handleSave, handleGeneratePoster, isGeneratingPoster, handleShareTrigger, isSharing }} />
                     </div>
                 </>
                 ) : activeTab === 'trends' ? (
@@ -649,6 +734,40 @@ function StreamerWorkbench({
                 )}
             </div >
         </div>
+        {isLiveMode && (
+            <div className="mt-3 flex items-center justify-between gap-3">
+                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                    {(Object.keys(LIVE_STYLES) as LiveStyleKey[]).map(s => (
+                        <button
+                            key={s}
+                            onClick={() => setLiveStyle(s)}
+                            className={`h-10 px-3 rounded-lg border transition-all whitespace-nowrap text-xs font-black shadow-sm ${liveStyle === s ? 'bg-slate-900 text-white border-slate-900 dark:bg-indigo-600 dark:border-indigo-500' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
+                            title={LIVE_STYLES[s].name}
+                        >
+                            {LIVE_STYLES[s].name}
+                        </button>
+                    ))}
+                </div>
+                <div className="flex shrink-0 justify-end gap-2">
+                    <button onClick={() => setLiveMode(false)} className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-200 dark:hover:border-indigo-500/40 transition-all text-sm font-bold shadow-sm">
+                        <Monitor size={16} /> 退出直播
+                    </button>
+                    <button onClick={clearBuild} className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-rose-500 hover:border-rose-200 dark:hover:border-rose-500/40 transition-all text-sm font-bold shadow-sm">
+                        <Trash2 size={16} /> 删除
+                    </button>
+                    <button onClick={handleSave} className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all text-sm font-bold shadow-sm">
+                        <Save size={16} /> 保存
+                    </button>
+                    <button onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-60 transition-all text-sm font-bold shadow-sm">
+                        {isGeneratingPoster ? <RefreshCw size={16} className="animate-spin" /> : <Download size={16} />} 下载
+                    </button>
+                    <button onClick={handleShareTrigger} disabled={isSharing} className="h-10 px-4 flex items-center gap-2 rounded-lg bg-slate-900 dark:bg-indigo-600 text-white hover:bg-black dark:hover:bg-indigo-500 disabled:opacity-60 transition-all text-sm font-bold shadow-sm">
+                        {isSharing ? <RefreshCw size={16} className="animate-spin" /> : <Share2 size={16} />} 分享
+                    </button>
+                </div>
+            </div>
+        )}
+        </div>
     );
 }
 
@@ -672,5 +791,3 @@ export default function StreamerWorkbenchWrapper(props: any) {
         </ThemeContext.Provider>
     );
 }
-
-
