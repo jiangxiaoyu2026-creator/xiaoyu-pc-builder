@@ -34,7 +34,7 @@ export default function ClientApp() {
     const DEFAULT_LIVE_META: StreamerLiveMeta = {
         budget: '',
         customerName: '',
-        scenarios: ['游戏']
+        scenarios: []
     };
     const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'gamefps'>(() => {
         const path = window.location.pathname.toLowerCase();

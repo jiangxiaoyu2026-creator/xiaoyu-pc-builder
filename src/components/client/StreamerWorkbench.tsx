@@ -326,6 +326,10 @@ function StreamerWorkbench({
         { label: '济南发货', positive: true },
         { label: '不包邮', positive: false },
     ];
+    const isLightLiveStyle = ['pure', 'snow', 'violet', 'redline'].includes(liveStyle);
+    const liveControlBg = isLightLiveStyle ? 'bg-white/45 hover:bg-white/75 shadow-sm' : 'bg-white/[0.06] hover:bg-white/[0.1]';
+    const liveInputBg = isLightLiveStyle ? 'bg-white/45' : 'bg-white/[0.06]';
+    const liveCheckText = isLightLiveStyle ? 'text-white' : 'text-gray-950';
 
     return (
         <div className={isLiveMode ? 'w-[1204px] max-w-full mx-auto' : 'w-full'}>
@@ -487,18 +491,18 @@ function StreamerWorkbench({
                     <div className={`flex-1 min-w-0 ${isLiveMode ? `max-w-none flex flex-col h-full relative overflow-hidden rounded-[14px] border ${liveStyleConfig.stampBorder} shadow-[0_0_18px_rgba(0,0,0,0.22)]` : 'max-w-[1550px]'}`}>
                         {isLiveMode && (
                             <>
-                                <div className="pointer-events-none absolute inset-0 z-10 rounded-[14px] border border-black/55"></div>
-                                <div className={`pointer-events-none absolute inset-[5px] z-10 rounded-[9px] border ${liveStyleConfig.stampBorder}`}></div>
-                                <div className={`pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-[6px] ${liveStyleConfig.glowBg} opacity-90`}></div>
-                                <div className="pointer-events-none absolute left-[6px] top-[18px] bottom-[18px] z-20 w-[2px] bg-black/65"></div>
-                                <div className="pointer-events-none absolute left-0 top-0 z-20 h-[34px] w-[50px] bg-black/72 [clip-path:polygon(0_0,100%_0,35px_9px,20px_9px,6px_22px,6px_100%,0_100%)]"></div>
-                                <div className={`pointer-events-none absolute left-[6px] top-0 z-30 h-[24px] w-[38px] ${liveStyleConfig.glowBg} opacity-90 [clip-path:polygon(0_0,32px_0,22px_7px,10px_7px,0_18px)]`}></div>
-                                <div className="pointer-events-none absolute left-0 bottom-0 z-20 h-[34px] w-[50px] bg-black/72 [clip-path:polygon(0_0,6px_0,6px_14px,20px_25px,35px_25px,100%_34px,0_34px)]"></div>
-                                <div className={`pointer-events-none absolute left-[6px] bottom-0 z-30 h-[24px] w-[38px] ${liveStyleConfig.glowBg} opacity-90 [clip-path:polygon(0_10px,10px_18px,25px_18px,36px_24px,0_24px)]`}></div>
-                                <div className="pointer-events-none absolute right-0 top-0 z-20 h-[30px] w-[38px] bg-black/55 [clip-path:polygon(0_0,100%_0,100%_100%,28px_100%)]"></div>
-                                <div className={`pointer-events-none absolute right-0 top-0 z-30 h-[20px] w-[28px] ${liveStyleConfig.glowBg} opacity-75 [clip-path:polygon(0_0,100%_0,100%_100%,18px_100%)]`}></div>
-                                <div className={`pointer-events-none absolute inset-x-12 top-[6px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} opacity-80`}></div>
-                                <div className={`pointer-events-none absolute inset-x-12 bottom-[6px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} opacity-80`}></div>
+                                <div className="pointer-events-none absolute inset-0 z-10 rounded-[14px] border border-black/40"></div>
+                                <div className={`pointer-events-none absolute inset-[4px] z-10 rounded-[10px] border ${liveStyleConfig.stampBorder} opacity-80`}></div>
+                                <div className={`pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-[4px] ${liveStyleConfig.glowBg} opacity-85`}></div>
+                                <div className="pointer-events-none absolute left-[4px] top-[18px] bottom-[18px] z-20 w-[1.5px] bg-black/55"></div>
+                                <div className="pointer-events-none absolute left-0 top-0 z-20 h-[28px] w-[42px] bg-black/70 [clip-path:polygon(0_0,100%_0,30px_8px,17px_8px,5px_20px,5px_100%,0_100%)]"></div>
+                                <div className={`pointer-events-none absolute left-[5px] top-0 z-30 h-[20px] w-[31px] ${liveStyleConfig.glowBg} opacity-85 [clip-path:polygon(0_0,27px_0,19px_6px,9px_6px,0_16px)]`}></div>
+                                <div className="pointer-events-none absolute left-0 bottom-0 z-20 h-[28px] w-[42px] bg-black/70 [clip-path:polygon(0_0,5px_0,5px_12px,17px_20px,30px_20px,100%_28px,0_28px)]"></div>
+                                <div className={`pointer-events-none absolute left-[5px] bottom-0 z-30 h-[20px] w-[31px] ${liveStyleConfig.glowBg} opacity-85 [clip-path:polygon(0_8px,9px_15px,22px_15px,31px_20px,0_20px)]`}></div>
+                                <div className="pointer-events-none absolute right-0 top-0 z-20 h-[24px] w-[32px] bg-black/55 [clip-path:polygon(0_0,100%_0,100%_100%,24px_100%)]"></div>
+                                <div className={`pointer-events-none absolute right-0 top-0 z-30 h-[16px] w-[24px] ${liveStyleConfig.glowBg} opacity-75 [clip-path:polygon(0_0,100%_0,100%_100%,15px_100%)]`}></div>
+                                <div className={`pointer-events-none absolute left-14 right-[280px] top-[1px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} opacity-70`}></div>
+                                <div className={`pointer-events-none absolute inset-x-14 bottom-[4px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} opacity-75`}></div>
                             </>
                         )}
                         {isLiveMode && (
@@ -518,7 +522,7 @@ function StreamerWorkbench({
                                                         className={`flex items-center gap-1.5 text-[14px] font-black transition-colors ${checked ? liveStyleConfig.modelText : liveStyleConfig.mutedText}`}
                                                     >
                                                         <span className={`w-3.5 h-3.5 rounded-[3px] border-2 flex items-center justify-center ${checked ? `${liveStyleConfig.glowBg} border-transparent` : liveStyleConfig.border}`}>
-                                                            {checked && <span className="text-[11px] leading-none text-gray-950">✓</span>}
+                                                            {checked && <span className={`text-[11px] leading-none ${liveCheckText}`}>✓</span>}
                                                         </span>
                                                         {label}
                                                     </button>
@@ -528,34 +532,34 @@ function StreamerWorkbench({
                                     </div>
 
                                     <div className="flex items-center gap-1.5 shrink-0">
-                                        <div className="grid gap-1 w-[168px]">
-                                            <label className={`h-7 px-2 rounded-md bg-white/5 border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
-                                                <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>预算</span>
-                                                <input
-                                                    value={liveMeta.budget}
-                                                    onChange={(e) => updateLiveMeta({ budget: e.target.value })}
-                                                    placeholder="填写"
-                                                    className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[13px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
-                                                />
-                                            </label>
-                                            <label className={`h-7 px-2 rounded-md bg-white/5 border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
-                                                <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>姓名</span>
-                                                <input
-                                                    value={liveMeta.customerName}
-                                                    onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
-                                                    placeholder="填写"
-                                                    className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[13px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
-                                                />
-                                            </label>
-                                        </div>
                                         <button
                                             onClick={onOpenLibrary}
-                                            className={`h-[58px] px-2.5 rounded-lg bg-white/5 border ${liveStyleConfig.border} ${liveStyleConfig.modelText} hover:bg-white/10 transition-all text-[12px] font-black flex flex-col items-center justify-center gap-0.5`}
+                                            className={`h-[54px] px-3 rounded-lg ${liveControlBg} border ${liveStyleConfig.border} ${liveStyleConfig.modelText} transition-all text-[12px] font-black flex flex-col items-center justify-center gap-0.5`}
                                             title="载入配置"
                                         >
                                             <FolderOpen size={16} />
                                             载入配置
                                         </button>
+                                        <div className="grid gap-1 w-[154px]">
+                                            <label className={`h-6 px-2 rounded-md ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
+                                                <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>预算</span>
+                                                <input
+                                                    value={liveMeta.budget}
+                                                    onChange={(e) => updateLiveMeta({ budget: e.target.value })}
+                                                    placeholder="填写"
+                                                    className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[12px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
+                                                />
+                                            </label>
+                                            <label className={`h-6 px-2 rounded-md ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
+                                                <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>姓名</span>
+                                                <input
+                                                    value={liveMeta.customerName}
+                                                    onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
+                                                    placeholder="填写"
+                                                    className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[12px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
+                                                />
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -589,9 +593,9 @@ function StreamerWorkbench({
                         {isLiveMode && (
                             <div className={`mt-auto px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg} ${liveStyleConfig.modelText} flex items-center justify-between gap-3`}>
                                 <div className="min-w-0 flex flex-wrap items-center justify-start gap-x-2.5 gap-y-1 text-[15px] font-black tracking-wide">
-                                    {serviceItems.map(item => (
-                                        <span key={item.label} className="inline-flex items-center gap-1.5">
-                                            <span className={`${item.positive ? 'w-5 h-5 text-[17px]' : 'w-6 h-6 text-[22px]'} rounded-[5px] flex items-center justify-center leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} text-gray-950` : `bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
+                                            {serviceItems.map(item => (
+                                                <span key={item.label} className="inline-flex items-center gap-1.5">
+                                            <span className={`${item.positive ? 'w-5 h-5 text-[17px]' : 'w-6 h-6 text-[22px]'} rounded-[5px] flex items-center justify-center leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} ${liveCheckText}` : `${liveInputBg} border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
                                                 {item.positive ? '✓' : '×'}
                                             </span>
                                             {item.label}
@@ -811,7 +815,7 @@ function StreamerWorkbench({
 export default function StreamerWorkbenchWrapper(props: any) {
     const [themeKey, setThemeKey] = useState<ThemeColor>('default');
     const [isLiveMode, setLiveMode] = useState(false);
-    const [liveStyle, setLiveStyle] = useState<LiveStyleKey>('cyber');
+    const [liveStyle, setLiveStyle] = useState<LiveStyleKey>('violet');
     return (
         <ThemeContext.Provider value={{
             theme: THEMES[themeKey],

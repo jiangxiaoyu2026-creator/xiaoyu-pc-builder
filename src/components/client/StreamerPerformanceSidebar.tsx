@@ -49,7 +49,18 @@ export interface SidebarPricingProps {
 }
 
 export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildList: BuildEntry[], pricingProps?: SidebarPricingProps }) {
-    const { theme, isLiveMode, liveStyleConfig } = React.useContext(ThemeContext);
+    const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
+    const isLightLiveStyle = ['pure', 'snow', 'violet', 'redline'].includes(liveStyle);
+    const liveControlBg = isLightLiveStyle ? 'bg-white/55 border-slate-950/10' : 'bg-white/[0.06] border-white/10';
+    const liveControlHover = isLightLiveStyle ? 'hover:bg-white/75' : 'hover:bg-white/[0.1]';
+    const fpsTrackBg = isLightLiveStyle ? 'bg-slate-950/12 border-slate-950/10' : 'bg-white/12 border-white/10';
+    const activeResolutionText = isLightLiveStyle ? 'text-white' : 'text-gray-950';
+    const optionClassName = isLightLiveStyle ? 'bg-white text-slate-950' : 'bg-gray-900 text-white';
+    const placeholderBoxClassName = isLightLiveStyle ? 'bg-white border-slate-200' : 'bg-white/[0.06] border-white/12';
+    const placeholderDashClassName = isLightLiveStyle ? 'border-slate-200 opacity-45' : 'border-white/15 opacity-60';
+    const placeholderTitleTextClassName = isLightLiveStyle ? 'text-slate-500' : 'text-slate-200';
+    const placeholderMainTextClassName = isLightLiveStyle ? 'text-slate-600' : 'text-slate-100';
+    const placeholderAccentTextClassName = isLightLiveStyle ? 'text-slate-400' : 'text-slate-300';
     
     // === Performance Sidebar State ===
     const [simResult, setSimResult] = useState<{
@@ -252,9 +263,9 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
             {isLiveMode ? (
                 <>
                     {/* 1. Product Image Stamp */}
-                    <div className={`bg-white rounded-lg p-2 relative shadow-lg ${liveStyleConfig.stampBorder} border-4 overflow-hidden mb-1 flex items-center justify-center min-h-[165px]`}>
+                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} rounded-lg p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[165px]`}>
                         {/* Stamp inner dashed border */}
-                        <div className={`absolute inset-1 border-2 border-dashed ${liveStyleConfig.border} pointer-events-none rounded-lg opacity-30`}></div>
+                        <div className={`absolute inset-2 border border-dashed ${activeProductImage ? liveStyleConfig.border : placeholderDashClassName} pointer-events-none rounded-md ${activeProductImage ? 'opacity-30' : ''}`}></div>
                         
                         {activeProductImage ? (
                             <motion.img
@@ -267,9 +278,17 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                 transition={{ duration: 0.35 }}
                             />
                         ) : (
-                            <div className="flex flex-col items-center justify-center text-gray-300 opacity-50 relative z-10">
-                                <Activity size={48} strokeWidth={1} />
-                                <span className="text-sm font-bold mt-2 tracking-widest">DIYXX</span>
+                            <div className="relative z-10 flex h-full min-h-[140px] w-full flex-col items-center justify-center gap-2 px-3 text-center">
+                                <div className={`text-[22px] font-black leading-tight ${placeholderTitleTextClassName} drop-shadow-[0_1px_3px_rgba(148,163,184,0.25)]`}>
+                                    欢迎加入粉丝群
+                                </div>
+                                <div className={`text-[17px] font-black leading-tight ${placeholderMainTextClassName} drop-shadow-[0_1px_3px_rgba(148,163,184,0.25)]`}>
+                                    免费使用蒋小鱼装机平台
+                                </div>
+                                <div className={`flex flex-col gap-0.5 text-[13px] font-black leading-tight ${placeholderAccentTextClassName} drop-shadow-[0_1px_3px_rgba(148,163,184,0.25)]`}>
+                                    <span>直播间的各位彦祖</span>
+                                    <span>可以关注点赞支持一下</span>
+                                </div>
                             </div>
                         )}
                         {productImages.length > 1 && (
@@ -329,12 +348,12 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative flex-1 flex flex-col min-h-[360px]`}>
                         <div className="flex items-center justify-between mb-2 relative z-10">
                             <div className={`text-[12px] font-black tracking-widest ${liveStyleConfig.accentText}`}>游戏实测FPS</div>
-                            <div className={`grid grid-cols-3 gap-1 w-[150px] bg-white/5 border border-white/10 p-0.5 rounded-lg`} title="切换分辨率">
+                            <div className={`grid grid-cols-3 gap-1 w-[150px] ${liveControlBg} border p-0.5 rounded-lg shadow-sm`} title="切换分辨率">
                                 {[1080, 1440, 2160].map(res => (
                                     <button
                                         key={res}
                                         onClick={() => setSidebarResolution(res)}
-                                        className={`text-[10px] font-black py-1 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${liveStyleConfig.glowBg} text-gray-900 shadow-sm scale-105` : `${liveStyleConfig.modelText} opacity-70 hover:opacity-100 hover:bg-white/10`}`}
+                                        className={`text-[10px] font-black py-1 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${liveStyleConfig.glowBg} ${activeResolutionText} shadow-sm scale-105` : `${liveStyleConfig.modelText} opacity-75 hover:opacity-100 ${liveControlHover}`}`}
                                     >
                                         {res === 1080 ? '1K' : res === 1440 ? '2K' : '4K'}
                                     </button>
@@ -354,8 +373,8 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className={`text-[12px] font-black ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
-                                            <div className={`w-full bg-white/5 rounded-full h-1.5 overflow-hidden relative`}>
-                                                <div className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${item.fps === 0 ? 'bg-white/10' : liveStyleConfig.fpsBarColor}`} style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}></div>
+                                            <div className={`w-full ${fpsTrackBg} border rounded-full h-1.5 overflow-hidden relative`}>
+                                                <div className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${liveStyleConfig.fpsBarColor}`} style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}></div>
                                             </div>
                                         </div>
                                         <div className={`font-display font-black text-base ${item.fps === 0 ? `${liveStyleConfig.modelText} opacity-70` : liveStyleConfig.modelText} shrink-0 w-[52px] text-right`}>
@@ -374,18 +393,18 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
 
                     {/* 4. Pricing at bottom */}
                     {pricingProps && (
-                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} rounded-lg p-3 relative mt-auto shrink-0 flex flex-col gap-2`}>
+                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} rounded-lg p-3 relative mt-auto shrink-0 flex flex-col gap-2 shadow-sm`}>
                             <div className="flex items-center justify-between gap-2">
                                 <div className={`text-[13px] font-black ${liveStyleConfig.modelText}`}>优惠方案</div>
                                 <div className="relative group w-[142px]">
                                     <select
                                         value={pricingProps.discountRate}
                                         onChange={(e) => pricingProps.setDiscountRate(parseFloat(e.target.value))}
-                                        className={`w-full appearance-none bg-white/30 border-white/30 ${liveStyleConfig.modelText} border text-[12px] font-black py-1.5 pl-2.5 pr-7 rounded-md focus:outline-none focus:ring-1 focus:ring-white/20 transition-all cursor-pointer`}
+                                        className={`w-full appearance-none ${liveControlBg} ${liveStyleConfig.modelText} border text-[12px] font-black py-1.5 pl-2.5 pr-7 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-950/10 transition-all cursor-pointer shadow-sm`}
                                     >
-                                        {pricingProps.strategies.map(opt => <option key={opt.value} value={opt.value} className="bg-gray-800">{opt.label}</option>)}
+                                        {pricingProps.strategies.map(opt => <option key={opt.value} value={opt.value} className={optionClassName}>{opt.label}</option>)}
                                     </select>
-                                    <ChevronDown className={`absolute right-2 top-2 ${liveStyleConfig.modelText} opacity-60 pointer-events-none`} size={14} />
+                                    <ChevronDown className={`absolute right-2 top-2 ${liveStyleConfig.accentText} opacity-80 pointer-events-none`} size={14} />
                                 </div>
                             </div>
 
