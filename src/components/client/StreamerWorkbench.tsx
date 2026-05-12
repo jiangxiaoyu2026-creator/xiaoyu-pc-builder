@@ -590,17 +590,18 @@ function StreamerWorkbench({
                                 <div className="min-w-0 flex flex-wrap items-center justify-start gap-x-2.5 gap-y-1 text-[15px] font-black tracking-wide">
                                     {serviceItems.map(item => (
                                         <span key={item.label} className="inline-flex items-center gap-1.5">
-                                            <span className={`w-5 h-5 rounded-[5px] flex items-center justify-center text-[17px] leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} text-gray-950` : `bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
+                                            <span className={`${item.positive ? 'w-5 h-5 text-[17px]' : 'w-6 h-6 text-[22px]'} rounded-[5px] flex items-center justify-center leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} text-gray-950` : `bg-white/10 border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
                                                 {item.positive ? '✓' : '×'}
                                             </span>
                                             {item.label}
                                         </span>
                                     ))}
                                 </div>
-                                <div className="shrink-0 text-right leading-tight pl-3">
-                                    <div className={`text-[13px] font-black ${liveStyleConfig.modelText}`}>合计</div>
-                                    <div className={`text-[10px] font-black ${liveStyleConfig.mutedText}`}>含{serviceFeePercent}%利润</div>
-                                    <div className={`text-[24px] font-black font-mono ${liveStyleConfig.priceText}`}>¥{Math.floor(pricing.standardPrice || 0)}</div>
+                                <div className="shrink-0 pl-3">
+                                    <div className="flex items-baseline justify-end gap-2 leading-none">
+                                        <span className={`text-[17px] font-black ${liveStyleConfig.modelText}`}>合计</span>
+                                        <span className={`text-[28px] font-black font-mono ${liveStyleConfig.priceText}`}>¥{Math.floor(pricing.standardPrice || 0)}</span>
+                                    </div>
                                 </div>
                             </div>
                         )}
