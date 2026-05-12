@@ -487,17 +487,19 @@ function StreamerWorkbench({
                     <div className={`flex-1 min-w-0 ${isLiveMode ? `max-w-none flex flex-col h-full relative overflow-hidden rounded-[18px] border-2 ${liveStyleConfig.stampBorder} shadow-[0_0_28px_rgba(0,0,0,0.28)]` : 'max-w-[1550px]'}`}>
                         {isLiveMode && (
                             <>
-                                <div className={`pointer-events-none absolute inset-0 z-10 rounded-[18px] border border-white/10`}></div>
-                                <div className={`pointer-events-none absolute inset-x-10 top-0 z-20 h-[3px] ${liveStyleConfig.fpsBarColor}`}></div>
-                                <div className={`pointer-events-none absolute inset-x-10 bottom-0 z-20 h-[3px] ${liveStyleConfig.fpsBarColor}`}></div>
-                                <div className={`pointer-events-none absolute left-0 top-20 bottom-20 z-20 w-[8px] ${liveStyleConfig.accentText} opacity-25 bg-[repeating-linear-gradient(135deg,currentColor_0_2px,transparent_2px_8px)]`}></div>
-                                <div className={`pointer-events-none absolute right-0 top-20 bottom-20 z-20 w-[8px] ${liveStyleConfig.accentText} opacity-25 bg-[repeating-linear-gradient(45deg,currentColor_0_2px,transparent_2px_8px)]`}></div>
-                                <div className={`pointer-events-none absolute left-3 top-3 z-20 h-8 w-8 border-l-2 border-t-2 ${liveStyleConfig.stampBorder}`}></div>
-                                <div className={`pointer-events-none absolute right-3 top-3 z-20 h-8 w-8 border-r-2 border-t-2 ${liveStyleConfig.stampBorder}`}></div>
-                                <div className={`pointer-events-none absolute left-3 bottom-3 z-20 h-8 w-8 border-l-2 border-b-2 ${liveStyleConfig.stampBorder}`}></div>
-                                <div className={`pointer-events-none absolute right-3 bottom-3 z-20 h-8 w-8 border-r-2 border-b-2 ${liveStyleConfig.stampBorder}`}></div>
-                                <div className={`pointer-events-none absolute right-0 top-0 z-20 h-9 w-9 ${liveStyleConfig.glowBg} opacity-80 [clip-path:polygon(100%_0,0_0,100%_100%)]`}></div>
-                                <div className={`pointer-events-none absolute left-0 bottom-0 z-20 h-9 w-9 ${liveStyleConfig.glowBg} opacity-70 [clip-path:polygon(0_0,0_100%,100%_100%)]`}></div>
+                                <div className="pointer-events-none absolute inset-0 z-10 rounded-[18px] border-[4px] border-black/80"></div>
+                                <div className={`pointer-events-none absolute inset-[9px] z-10 rounded-[12px] border-2 ${liveStyleConfig.stampBorder}`}></div>
+                                <div className={`pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-[18px] ${liveStyleConfig.glowBg}`}></div>
+                                <div className="pointer-events-none absolute left-[18px] top-[22px] bottom-[22px] z-20 w-[6px] bg-black/90"></div>
+                                <div className={`pointer-events-none absolute left-[24px] top-[28px] bottom-[28px] z-20 w-[3px] ${liveStyleConfig.glowBg} opacity-90`}></div>
+                                <div className="pointer-events-none absolute left-0 top-0 z-20 h-[72px] w-[96px] bg-black/90 [clip-path:polygon(0_0,100%_0,72px_18px,38px_18px,18px_38px,18px_100%,0_100%)]"></div>
+                                <div className={`pointer-events-none absolute left-[18px] top-0 z-30 h-[54px] w-[72px] ${liveStyleConfig.glowBg} [clip-path:polygon(0_0,58px_0,40px_14px,18px_14px,0_32px)]`}></div>
+                                <div className="pointer-events-none absolute left-0 bottom-0 z-20 h-[72px] w-[96px] bg-black/90 [clip-path:polygon(0_0,18px_0,18px_34px,38px_54px,72px_54px,100%_72px,0_72px)]"></div>
+                                <div className={`pointer-events-none absolute left-[18px] bottom-0 z-30 h-[54px] w-[72px] ${liveStyleConfig.glowBg} [clip-path:polygon(0_22px,18px_40px,46px_40px,64px_54px,0_54px)]`}></div>
+                                <div className="pointer-events-none absolute right-0 top-0 z-20 h-[54px] w-[70px] bg-black/80 [clip-path:polygon(0_0,100%_0,100%_100%,52px_100%)]"></div>
+                                <div className={`pointer-events-none absolute right-0 top-0 z-30 h-[38px] w-[54px] ${liveStyleConfig.glowBg} opacity-90 [clip-path:polygon(0_0,100%_0,100%_100%,34px_100%)]`}></div>
+                                <div className={`pointer-events-none absolute inset-x-16 top-[9px] z-20 h-[4px] ${liveStyleConfig.fpsBarColor}`}></div>
+                                <div className={`pointer-events-none absolute inset-x-16 bottom-[9px] z-20 h-[4px] ${liveStyleConfig.fpsBarColor}`}></div>
                             </>
                         )}
                         {isLiveMode && (
