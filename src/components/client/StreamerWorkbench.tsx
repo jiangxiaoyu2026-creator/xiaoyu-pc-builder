@@ -332,7 +332,7 @@ function StreamerWorkbench({
     const liveCheckText = isLightLiveStyle ? 'text-white' : 'text-gray-950';
 
     return (
-        <div className={isLiveMode ? 'w-[1204px] max-w-full mx-auto' : 'w-full'}>
+        <div className={isLiveMode ? 'w-[964px] max-w-full mx-auto' : 'w-full'}>
         <div className={`${theme.cardBg} ${isLiveMode ? 'h-[977px] rounded-lg' : 'rounded-xl'} shadow-xl ${theme.borderColor} border overflow-hidden relative transition-colors duration-300`}>
             
             {/* Hidden Poster Template */}
@@ -565,8 +565,8 @@ function StreamerWorkbench({
                             </div>
                         )}
                         <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-x-auto' : 'overflow-x-auto'}`}>
-                            <div className={`${isLiveMode ? 'min-w-[860px] h-full flex flex-col' : 'min-w-[600px]'}`}>
-                                <div className={`grid ${isLiveMode ? 'grid-cols-[76px_1fr_78px_96px]' : 'grid-cols-[75px_1fr_65px_70px_20px]'} gap-2 px-4 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300`}>
+                            <div className={`${isLiveMode ? 'min-w-[660px] h-full flex flex-col' : 'min-w-[600px]'}`}>
+                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_420px_48px_88px]' : 'grid-cols-[75px_1fr_65px_70px_20px]'} gap-2 px-4 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 {isLiveMode ? '' : '(智能搜索 / 自定义)'}</div>
                             <div className="text-center">数量</div>

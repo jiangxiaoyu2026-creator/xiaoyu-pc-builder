@@ -294,8 +294,8 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
     const canEditQuantity = !entry.isLockedQty || ['ram', 'disk', 'fan'].includes(entry.category);
 
     return (
-        <div className={`grid ${isLiveMode ? 'grid-cols-[76px_1fr_78px_96px] px-4 py-3' : 'grid-cols-[75px_1fr_65px_70px_20px] px-4 py-2.5'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
-            <div className={`flex items-center gap-2 font-bold ${isLiveMode ? 'text-[14px]' : 'text-sm'} transition-all ${isLiveMode ? liveStyleConfig.categoryText : theme.primary}`}>
+        <div className={`grid ${isLiveMode ? 'grid-cols-[72px_420px_48px_88px] px-4 py-3' : 'grid-cols-[75px_1fr_65px_70px_20px] px-4 py-2.5'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
+            <div className={`flex items-center gap-1.5 font-bold ${isLiveMode ? 'text-[14px]' : 'text-sm'} transition-all ${isLiveMode ? liveStyleConfig.categoryText : theme.primary}`}>
                 <div
                     className={`${isLiveMode ? 'w-9 h-9 rounded-lg' : 'w-8 h-8 rounded-lg'} flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? (isLiveMode ? liveStyleConfig.accentText + ' bg-white/[0.06] border border-white/10' : `bg-gradient-to-br ${theme.gradient} text-white shadow-md`) : (isLiveMode ? liveStyleConfig.mutedText + ' bg-white/[0.04]' : `${style.bg} ${style.text}`)} ${!entry.item && !isLiveMode && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
                     onClick={() => entry.item?.image && onPreview(entry.item.image)}
@@ -335,12 +335,12 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
                 {entry.category === 'accessory' ? null : (
                     !canEditQuantity ? <span className={`${isLiveMode ? liveStyleConfig.mutedText + ' text-sm' : 'text-slate-400 text-sm'}`}>×{entry.quantity}</span> : (
                         <div className={`flex items-center rounded border ${isLiveMode ? 'bg-white/5 border-white/10' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
-                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) }); }} className={`${isLiveMode ? liveStyleConfig.mutedText + ' hover:text-white text-sm px-1.5' : `text-slate-400 dark:text-slate-500 hover:${theme.primary} px-1`} transition-colors`}>-</button>
+                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) }); }} className={`${isLiveMode ? liveStyleConfig.mutedText + ' hover:text-white text-sm px-1' : `text-slate-400 dark:text-slate-500 hover:${theme.primary} px-1`} transition-colors`}>-</button>
                             <input 
                                 ref={qtyRef}
                                 type="text"
                                 inputMode="numeric"
-                                className={`${isLiveMode ? 'w-9 text-[16px] font-black ' + liveStyleConfig.modelText + ' focus:bg-white/10' : 'w-6 text-sm dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-slate-700/50'} text-center bg-transparent border-none p-0 focus:ring-0 [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none rounded`}
+                                className={`${isLiveMode ? 'w-7 text-[16px] font-black ' + liveStyleConfig.modelText + ' focus:bg-white/10' : 'w-6 text-sm dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-slate-700/50'} text-center bg-transparent border-none p-0 focus:ring-0 [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none rounded`}
                                 value={entry.quantity || ''} 
                                 onChange={(e) => {
                                     const valStr = e.target.value.replace(/\D/g, '');
@@ -353,7 +353,7 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
                                 }} 
                                 onKeyDown={handleQtyKeyDown}
                             />
-                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: entry.quantity + 1 }); }} className={`${isLiveMode ? liveStyleConfig.mutedText + ' hover:text-white text-sm px-1.5' : `text-slate-400 dark:text-slate-500 hover:${theme.primary} px-1`} transition-colors`}>+</button>
+                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: entry.quantity + 1 }); }} className={`${isLiveMode ? liveStyleConfig.mutedText + ' hover:text-white text-sm px-1' : `text-slate-400 dark:text-slate-500 hover:${theme.primary} px-1`} transition-colors`}>+</button>
                         </div>
                     )
                 )}
@@ -362,7 +362,7 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
             <div className="flex flex-col items-end justify-center leading-none">
                 <div className="flex items-center gap-1 justify-end">
                     <span className={`${isLiveMode ? liveStyleConfig.priceText + ' opacity-60' : 'text-slate-300 dark:text-slate-600'} text-sm`}>¥</span>
-                    <input ref={priceRef} type="text" className={`${isLiveMode ? 'w-20 text-[22px] font-black' : 'w-14'} text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${isLiveMode ? liveStyleConfig.priceText : (entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300')}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
+                    <input ref={priceRef} type="text" className={`${isLiveMode ? 'w-[70px] text-[22px] font-black' : 'w-14'} text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${isLiveMode ? liveStyleConfig.priceText : (entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300')}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
                 </div>
             </div>
 
