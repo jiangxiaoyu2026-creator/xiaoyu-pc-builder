@@ -294,10 +294,10 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
     const canEditQuantity = !entry.isLockedQty || ['ram', 'disk', 'fan'].includes(entry.category);
 
     return (
-        <div className={`grid ${isLiveMode ? 'grid-cols-[72px_420px_48px_88px] px-4 py-3' : 'grid-cols-[75px_1fr_65px_70px_20px] px-4 py-2.5'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
-            <div className={`flex items-center gap-1.5 font-bold ${isLiveMode ? 'text-[14px]' : 'text-sm'} transition-all ${isLiveMode ? liveStyleConfig.categoryText : theme.primary}`}>
+        <div className={`grid ${isLiveMode ? 'grid-cols-[72px_420px_48px_88px] px-4 py-3' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px] px-3 py-2'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
+            <div className={`flex items-center gap-1.5 font-bold ${isLiveMode ? 'text-[14px]' : 'text-[13px]'} transition-all ${isLiveMode ? liveStyleConfig.categoryText : theme.primary}`}>
                 <div
-                    className={`${isLiveMode ? 'w-9 h-9 rounded-lg' : 'w-8 h-8 rounded-lg'} flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? (isLiveMode ? liveStyleConfig.accentText + ' bg-white/[0.06] border border-white/10' : `bg-gradient-to-br ${theme.gradient} text-white shadow-md`) : (isLiveMode ? liveStyleConfig.mutedText + ' bg-white/[0.04]' : `${style.bg} ${style.text}`)} ${!entry.item && !isLiveMode && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
+                    className={`${isLiveMode ? 'w-9 h-9 rounded-lg' : 'w-7 h-7 rounded-lg'} flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? (isLiveMode ? liveStyleConfig.accentText + ' bg-white/[0.06] border border-white/10' : `bg-gradient-to-br ${theme.gradient} text-white shadow-md`) : (isLiveMode ? liveStyleConfig.mutedText + ' bg-white/[0.04]' : `${style.bg} ${style.text}`)} ${!entry.item && !isLiveMode && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
                     onClick={() => entry.item?.image && onPreview(entry.item.image)}
                 >
                     {getIconByCategory(entry.category)}
@@ -306,7 +306,7 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 ${isLiveMode ? liveStyleConfig.modelText + ' text-[22px]' : 'text-slate-800 dark:text-slate-200 text-base'} font-semibold tracking-wide ${isLiveMode ? 'placeholder-white/20' : 'placeholder-slate-300 dark:placeholder-slate-600'} focus:ring-0 focus:outline-none ${entry.item ? (isLiveMode ? 'pr-2' : 'pr-14') : ''}`} placeholder={isLiveMode ? `${CATEGORY_MAP[entry.category]}...` : (entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`)} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 ${isLiveMode ? liveStyleConfig.modelText + ' text-[22px]' : 'text-slate-800 dark:text-slate-200 text-[15px]'} font-semibold tracking-wide ${isLiveMode ? 'placeholder-white/20' : 'placeholder-slate-300 dark:placeholder-slate-600'} focus:ring-0 focus:outline-none ${entry.item ? (isLiveMode ? 'pr-2' : 'pr-14') : ''}`} placeholder={isLiveMode ? `${CATEGORY_MAP[entry.category]}...` : (entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`)} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
                 {entry.item && !isLiveMode && (
                     <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
                         {entry.item.isRecommended && <span className="bg-orange-50 dark:bg-orange-500/20 text-orange-500 dark:text-orange-400 text-[9px] px-1 py-0.5 rounded-md font-bold border border-orange-100 dark:border-orange-500/30 flex items-center gap-0.5 whitespace-nowrap"><Sparkles size={10} /> 推荐</span>}
@@ -335,12 +335,12 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
                 {entry.category === 'accessory' ? null : (
                     !canEditQuantity ? <span className={`${isLiveMode ? liveStyleConfig.mutedText + ' text-sm' : 'text-slate-400 text-sm'}`}>×{entry.quantity}</span> : (
                         <div className={`flex items-center rounded border ${isLiveMode ? 'bg-white/5 border-white/10' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
-                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) }); }} className={`${isLiveMode ? liveStyleConfig.mutedText + ' hover:text-white text-sm px-1' : `text-slate-400 dark:text-slate-500 hover:${theme.primary} px-1`} transition-colors`}>-</button>
+                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) }); }} className={`${isLiveMode ? liveStyleConfig.mutedText + ' hover:text-white text-sm px-1' : `text-slate-400 dark:text-slate-500 hover:${theme.primary} px-0.5`} transition-colors`}>-</button>
                             <input 
                                 ref={qtyRef}
                                 type="text"
                                 inputMode="numeric"
-                                className={`${isLiveMode ? 'w-7 text-[16px] font-black ' + liveStyleConfig.modelText + ' focus:bg-white/10' : 'w-6 text-sm dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-slate-700/50'} text-center bg-transparent border-none p-0 focus:ring-0 [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none rounded`}
+                                className={`${isLiveMode ? 'w-7 text-[16px] font-black ' + liveStyleConfig.modelText + ' focus:bg-white/10' : 'w-5 text-[13px] dark:text-slate-200 focus:bg-slate-100 dark:focus:bg-slate-700/50'} text-center bg-transparent border-none p-0 focus:ring-0 [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none rounded`}
                                 value={entry.quantity || ''} 
                                 onChange={(e) => {
                                     const valStr = e.target.value.replace(/\D/g, '');
@@ -353,7 +353,7 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
                                 }} 
                                 onKeyDown={handleQtyKeyDown}
                             />
-                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: entry.quantity + 1 }); }} className={`${isLiveMode ? liveStyleConfig.mutedText + ' hover:text-white text-sm px-1' : `text-slate-400 dark:text-slate-500 hover:${theme.primary} px-1`} transition-colors`}>+</button>
+                            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: entry.quantity + 1 }); }} className={`${isLiveMode ? liveStyleConfig.mutedText + ' hover:text-white text-sm px-1' : `text-slate-400 dark:text-slate-500 hover:${theme.primary} px-0.5`} transition-colors`}>+</button>
                         </div>
                     )
                 )}
@@ -362,14 +362,14 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
             <div className="flex flex-col items-end justify-center leading-none">
                 <div className="flex items-center gap-1 justify-end">
                     <span className={`${isLiveMode ? liveStyleConfig.priceText + ' opacity-60' : 'text-slate-300 dark:text-slate-600'} text-sm`}>¥</span>
-                    <input ref={priceRef} type="text" className={`${isLiveMode ? 'w-[70px] text-[22px] font-black' : 'w-14'} text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${isLiveMode ? liveStyleConfig.priceText : (entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300')}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
+                    <input ref={priceRef} type="text" className={`${isLiveMode ? 'w-[70px] text-[22px] font-black' : 'w-12 text-[14px]'} text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${isLiveMode ? liveStyleConfig.priceText : (entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300')}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
                 </div>
             </div>
 
             {!isLiveMode && (
                 <div className="flex justify-end">
                     <button onClick={() => onUpdate(entry.id, { item: null, customPrice: undefined, customName: '' })} className="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                        <X size={16} />
+                        <X size={14} />
                     </button>
                 </div>
             )}

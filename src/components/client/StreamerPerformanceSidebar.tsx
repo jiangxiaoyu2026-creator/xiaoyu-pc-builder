@@ -257,7 +257,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const now = new Date();
     const timeString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     return (
-        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isLiveMode ? `w-[282px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} border-l-2 shadow-2xl overflow-hidden max-h-[977px]` : 'w-[280px] gap-3 p-4 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
+        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isLiveMode ? `w-[282px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} border-l-2 shadow-2xl overflow-hidden max-h-[977px]` : 'w-[260px] gap-2.5 p-3 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
 
             {/* In Live Mode: Special Layout Order */}
             {isLiveMode ? (
@@ -437,38 +437,38 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
             ) : (
                 // === Normal Mode: Kept as original ===
                 <>
-                    <div className="flex gap-4">
+                    <div className="flex gap-2.5">
                         {/* Module 1: 鲁大师跑分 */}
-                        <div className={`flex-1 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm rounded-2xl p-4 relative overflow-hidden group transition-colors flex flex-col justify-between items-start`}>
+                        <div className={`flex-1 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm rounded-xl p-3 relative overflow-hidden group transition-colors flex flex-col justify-between items-start`}>
                             <div className={`absolute right-0 top-0 w-32 h-32 ${theme.bgPrimary} opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 dark:group-hover:opacity-20 transition-all duration-500`}></div>
                             <div className={`absolute -right-4 -bottom-4 opacity-5 ${theme.primary} group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75`}><Activity size={48} strokeWidth={1.5}/></div>
-                            <div className="relative z-10 w-full flex justify-between items-center mb-2">
+                            <div className="relative z-10 w-full flex justify-between items-center mb-1.5">
                                 <h4 className={`text-[12px] font-extrabold text-slate-500 dark:text-slate-400 flex items-center gap-1.5`}><Activity size={14} className={theme.primary}/> 性能</h4>
                                 <div className={`w-1.5 h-1.5 rounded-full ${theme.bgPrimary} inline-block animate-pulse`}></div>
                             </div>
-                            <div className={`text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${theme.gradient} font-display tracking-tighter relative z-10 w-full`}>
+                            <div className={`text-xl font-black text-transparent bg-clip-text bg-gradient-to-r ${theme.gradient} font-display tracking-tighter relative z-10 w-full`}>
                                 {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={Math.floor(simResult.totalLuScore/10000)} /> : '---'}
                                 {simResult && simResult.totalLuScore > 0 && <span className={`text-sm text-slate-400 ml-1`}>万</span>}
                             </div>
                         </div>
 
                         {/* Module 2: 整机功耗 */}
-                        <div className={`flex-1 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 hover:border-amber-300 dark:hover:border-amber-500/50 shadow-sm rounded-2xl p-4 relative overflow-hidden group transition-colors flex flex-col justify-between items-start`}>
+                        <div className={`flex-1 bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 hover:border-amber-300 dark:hover:border-amber-500/50 shadow-sm rounded-xl p-3 relative overflow-hidden group transition-colors flex flex-col justify-between items-start`}>
                             <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2 group-hover:bg-amber-500/20 transition-all duration-500"></div>
                             <div className="absolute -right-2 -bottom-2 opacity-5 text-amber-500 group-hover:scale-110 group-hover:opacity-10 transition-all duration-500 delay-75"><Zap size={48} strokeWidth={1.5}/></div>
-                            <div className="relative z-10 w-full flex justify-between items-center mb-2">
+                            <div className="relative z-10 w-full flex justify-between items-center mb-1.5">
                                 <h4 className={`text-[12px] font-extrabold text-slate-500 dark:text-slate-400 flex items-center gap-1.5`}><Zap size={14} className={"text-amber-500"}/> 功耗</h4>
                             </div>
-                            <div className={`text-2xl text-slate-800 dark:text-slate-200 font-black font-display tracking-tighter relative z-10 w-full`}>
+                            <div className={`text-xl text-slate-800 dark:text-slate-200 font-black font-display tracking-tighter relative z-10 w-full`}>
                                 {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} /><span className="text-sm ml-0.5 text-slate-500 font-bold">W</span></> : '---'}
                             </div>
                         </div>
                     </div>
 
                     {/* Module 3: 游戏帧率 */}
-                    <div className={`bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm rounded-2xl p-5 relative overflow-hidden flex-1 flex flex-col group transition-colors`}>
+                    <div className={`bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm rounded-xl p-3.5 relative overflow-hidden flex-1 flex flex-col group transition-colors`}>
                         <div className={`absolute right-0 top-0 w-48 h-48 ${theme.bgPrimary} opacity-5 dark:opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2 group-hover:opacity-10 dark:group-hover:opacity-20 transition-all duration-500`}></div>
-                        <div className="flex items-center justify-between mb-4 relative z-10">
+                        <div className="flex items-center justify-between mb-3 relative z-10">
                             <h3 className={`font-extrabold text-slate-900 dark:text-white text-[13px] flex items-center gap-1.5 tracking-wide`}>
                                 <Gamepad2 size={16} className={theme.primary} />
                                 游戏FPS
@@ -478,14 +478,14 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                     <button
                                         key={res}
                                         onClick={() => setSidebarResolution(res)}
-                                        className={`text-[9px] font-black px-2.5 py-1 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${theme.bgPrimary} text-white shadow-sm scale-105` : `text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50`}`}
+                                        className={`text-[9px] font-black px-2 py-0.5 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${theme.bgPrimary} text-white shadow-sm scale-105` : `text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50`}`}
                                     >
                                         {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
                                     </button>
                                 ))}
                             </div>
                         </div>
-                        <div className={`relative z-10 flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-3.5`}>
+                        <div className={`relative z-10 flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-2.5`}>
                             {loadingFps ? (
                                 <div className={`py-8 flex flex-col items-center justify-center ${theme.primary} gap-3 h-full`}>
                                     <RefreshCw size={24} className="animate-spin opacity-80" />

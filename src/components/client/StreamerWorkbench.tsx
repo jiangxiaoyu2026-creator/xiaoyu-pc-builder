@@ -353,7 +353,7 @@ function StreamerWorkbench({
                         <div className={`h-full ${theme.bgPrimary} animate-[loading_2s_ease-in-out_infinite]`}></div>
                     </div>
                 )}
-                <div className={`${isLiveMode ? 'hidden' : 'flex'} px-5 py-2.5 border-b ${theme.borderColor} ${theme.headerBg} items-center justify-between transition-colors duration-300`}>
+                <div className={`${isLiveMode ? 'hidden' : 'flex'} px-4 py-2 border-b ${theme.borderColor} ${theme.headerBg} items-center justify-between transition-colors duration-300`}>
                     <div className="flex items-center gap-3">
                         <h2 className={`text-base font-bold ${theme.textTitle} flex items-center gap-1.5`}>
                             <Zap className={theme.primary} size={18} />
@@ -427,56 +427,56 @@ function StreamerWorkbench({
                 <div className={`flex flex-col md:flex-row flex-1 ${isLiveMode ? liveStyleConfig.wrapperBg : ''}`}>
                     {/* === Sidebar Navigation === */}
                     {!isLiveMode && (
-                        <div className="flex flex-row md:flex-col gap-2 p-3 md:p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 md:w-[180px] lg:w-[220px] shrink-0 overflow-x-auto hide-scrollbar">
+                        <div className="flex flex-row md:flex-col gap-1.5 p-2.5 md:p-3 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 md:w-[150px] lg:w-[172px] shrink-0 overflow-x-auto hide-scrollbar">
                             {/* 专业装机 Tab */}
                         <button
                             onClick={() => setActiveTab('builder')}
-                            className={`group relative flex md:flex-col items-center gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 shrink-0 ${activeTab === 'builder'
+                            className={`group relative flex md:flex-col items-center gap-1.5 p-2.5 md:p-3 rounded-xl transition-all duration-300 shrink-0 ${activeTab === 'builder'
                                 ? `bg-white dark:bg-slate-800 border-indigo-200 dark:border-indigo-600/50 text-indigo-600 dark:text-indigo-400 shadow-md ${theme.bgLight.replace('bg-', 'ring-')}/20 ring-4`
                                 : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
                         >
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'builder' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-500'}`}>
-                                <Zap size={20} />
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'builder' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-500'}`}>
+                                <Zap size={18} />
                             </div>
                             <div className="text-left md:text-center shrink-0">
-                                <div className={`text-sm md:text-sm font-black tracking-tight ${activeTab === 'builder' ? '' : 'text-slate-600 dark:text-slate-300'}`}>专业装机</div>
-                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden lg:block ${activeTab === 'builder' ? 'text-indigo-500/80 dark:text-indigo-400/80' : 'text-slate-400 dark:text-slate-500'}`}>AI大模型驱动</div>
+                                <div className={`text-[13px] font-black tracking-tight ${activeTab === 'builder' ? '' : 'text-slate-600 dark:text-slate-300'}`}>专业装机</div>
+                                <div className={`text-[10px] font-medium mt-0.5 hidden lg:block ${activeTab === 'builder' ? 'text-indigo-500/80 dark:text-indigo-400/80' : 'text-slate-400 dark:text-slate-500'}`}>AI大模型驱动</div>
                             </div>
-                            {activeTab === 'builder' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-500 rounded-r-md"></div>}
+                            {activeTab === 'builder' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-7 bg-indigo-500 rounded-r-md"></div>}
                         </button>
 
                         {/* 二手回收 Tab */}
                         <button
                             onClick={() => setActiveTab('recycle')}
-                            className={`group relative flex md:flex-col items-center gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 shrink-0 ${activeTab === 'recycle'
+                            className={`group relative flex md:flex-col items-center gap-1.5 p-2.5 md:p-3 rounded-xl transition-all duration-300 shrink-0 ${activeTab === 'recycle'
                                 ? `bg-white dark:bg-slate-800 border-teal-200 dark:border-teal-600/50 text-teal-600 dark:text-teal-400 shadow-md ring-4 ring-teal-100 dark:ring-teal-900/20`
                                 : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
                         >
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'recycle' ? 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-teal-50 dark:group-hover:bg-teal-500/10 group-hover:text-teal-500'}`}>
-                                <Recycle size={20} />
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'recycle' ? 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-teal-50 dark:group-hover:bg-teal-500/10 group-hover:text-teal-500'}`}>
+                                <Recycle size={18} />
                             </div>
                             <div className="text-left md:text-center shrink-0">
-                                <div className={`text-sm md:text-sm font-black tracking-tight ${activeTab === 'recycle' ? '' : 'text-slate-600 dark:text-slate-300'}`}>二手回收</div>
-                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden lg:block ${activeTab === 'recycle' ? 'text-teal-500/80 dark:text-teal-400/80' : 'text-slate-400 dark:text-slate-500'}`}>快速估价系统</div>
+                                <div className={`text-[13px] font-black tracking-tight ${activeTab === 'recycle' ? '' : 'text-slate-600 dark:text-slate-300'}`}>二手回收</div>
+                                <div className={`text-[10px] font-medium mt-0.5 hidden lg:block ${activeTab === 'recycle' ? 'text-teal-500/80 dark:text-teal-400/80' : 'text-slate-400 dark:text-slate-500'}`}>快速估价系统</div>
                             </div>
-                            {activeTab === 'recycle' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-teal-500 rounded-r-md"></div>}
+                            {activeTab === 'recycle' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-7 bg-teal-500 rounded-r-md"></div>}
                         </button>
 
                         {/* 行情分析 Tab */}
                         <button
                             onClick={() => setActiveTab('trends')}
-                            className={`group relative flex md:flex-col items-center gap-2 p-3 md:p-4 rounded-2xl transition-all duration-300 shrink-0 ${activeTab === 'trends'
+                            className={`group relative flex md:flex-col items-center gap-1.5 p-2.5 md:p-3 rounded-xl transition-all duration-300 shrink-0 ${activeTab === 'trends'
                                 ? `bg-white dark:bg-slate-800 border-purple-200 dark:border-purple-600/50 text-purple-600 dark:text-purple-400 shadow-md ring-4 ring-purple-100 dark:ring-purple-900/20`
                                 : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
                         >
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'trends' ? 'bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-purple-50 dark:group-hover:bg-purple-500/10 group-hover:text-purple-500'}`}>
-                                <TrendingUp size={20} />
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'trends' ? 'bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-purple-50 dark:group-hover:bg-purple-500/10 group-hover:text-purple-500'}`}>
+                                <TrendingUp size={18} />
                             </div>
                             <div className="text-left md:text-center shrink-0">
-                                <div className={`text-sm md:text-sm font-black tracking-tight ${activeTab === 'trends' ? '' : 'text-slate-600 dark:text-slate-300'}`}>行情分析</div>
-                                <div className={`text-[10px] md:text-[11px] font-medium mt-0.5 hidden lg:block ${activeTab === 'trends' ? 'text-purple-500/80 dark:text-purple-400/80' : 'text-slate-400 dark:text-slate-500'}`}>价格追踪监控</div>
+                                <div className={`text-[13px] font-black tracking-tight ${activeTab === 'trends' ? '' : 'text-slate-600 dark:text-slate-300'}`}>行情分析</div>
+                                <div className={`text-[10px] font-medium mt-0.5 hidden lg:block ${activeTab === 'trends' ? 'text-purple-500/80 dark:text-purple-400/80' : 'text-slate-400 dark:text-slate-500'}`}>价格追踪监控</div>
                             </div>
-                            {activeTab === 'trends' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-purple-500 rounded-r-md"></div>}
+                            {activeTab === 'trends' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-7 bg-purple-500 rounded-r-md"></div>}
                         </button>
                     </div>
                     )}
@@ -566,7 +566,7 @@ function StreamerWorkbench({
                         )}
                         <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-x-auto' : 'overflow-x-auto'}`}>
                             <div className={`${isLiveMode ? 'min-w-[660px] h-full flex flex-col' : 'min-w-[600px]'}`}>
-                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_420px_48px_88px]' : 'grid-cols-[75px_1fr_65px_70px_20px]'} gap-2 px-4 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300`}>
+                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_420px_48px_88px]' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px]'} gap-2 px-3 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 {isLiveMode ? '' : '(智能搜索 / 自定义)'}</div>
                             <div className="text-center">数量</div>
@@ -614,12 +614,12 @@ function StreamerWorkbench({
                 </div>
 
                         {!isLiveMode && (
-                            <div className={`${isLiveMode ? liveStyleConfig.headerBg : theme.footerBg + ' border-t ' + theme.borderColor} px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4 transition-colors duration-300`}>
+                            <div className={`${isLiveMode ? liveStyleConfig.headerBg : theme.footerBg + ' border-t ' + theme.borderColor} px-3 py-2 flex flex-col md:flex-row justify-between items-center gap-2.5 transition-colors duration-300`}>
                                 <div className="flex items-baseline gap-2 flex-wrap w-full md:w-auto">
-                                    <span className={`${isLiveMode ? 'text-2xl text-gray-500' : 'text-xl ' + theme.textMuted} font-bold whitespace-nowrap line-through decoration-2`}>¥{Math.floor(pricing.standardPrice)}</span>
+                                    <span className={`${isLiveMode ? 'text-2xl text-gray-500' : 'text-lg ' + theme.textMuted} font-bold whitespace-nowrap line-through decoration-2`}>¥{Math.floor(pricing.standardPrice)}</span>
                                     <div className="flex items-baseline gap-0.5">
-                                        <span className={`${isLiveMode ? 'text-4xl' : 'text-xl'} font-bold ${isLiveMode ? liveStyleConfig.totalPriceText : theme.textTitle}`}>¥</span>
-                                        <span className={`${isLiveMode ? 'text-6xl font-black drop-shadow-lg' : 'text-4xl font-extrabold'} ${isLiveMode ? liveStyleConfig.totalPriceText : 'text-transparent bg-clip-text bg-gradient-to-r ' + theme.gradient} font-mono tracking-tight`}>
+                                        <span className={`${isLiveMode ? 'text-4xl' : 'text-lg'} font-bold ${isLiveMode ? liveStyleConfig.totalPriceText : theme.textTitle}`}>¥</span>
+                                        <span className={`${isLiveMode ? 'text-6xl font-black drop-shadow-lg' : 'text-3xl font-extrabold'} ${isLiveMode ? liveStyleConfig.totalPriceText : 'text-transparent bg-clip-text bg-gradient-to-r ' + theme.gradient} font-mono tracking-tight`}>
                                             <RollingPrice value={pricing.finalPrice} />
                                         </span>
                                     </div>
@@ -635,11 +635,11 @@ function StreamerWorkbench({
                                         </div>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2.5">
                                     <div className={`${isLiveMode ? 'text-xs' : 'text-[10px]'} ${isLiveMode ? liveStyleConfig.mutedText : theme.textMuted} font-bold whitespace-nowrap`}>
                                         标准价格包含 {(serviceFeeRate * 100).toFixed(0)}% 装机售后服务费
                                     </div>
-                                    <div className="flex items-center gap-2 h-10">
+                                    <div className="flex items-center gap-2 h-9">
                                         <button onClick={clearBuild} className={`h-full aspect-square flex items-center justify-center rounded-lg transition-all active:scale-95 border ${isLiveMode ? 'bg-white/5 hover:bg-white/10 text-rose-400 border-white/10' : 'bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-500/20'}`} title="清空配置">
                                             <Trash2 size={18} />
                                         </button>
