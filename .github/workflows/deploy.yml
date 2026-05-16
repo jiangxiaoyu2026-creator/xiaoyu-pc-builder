@@ -90,7 +90,7 @@ jobs:
             # 基础部署流程
             $DC stop || true
             $DC rm -f || true
-            $DC build --no-cache
+            $DC build
             $DC up -d
 
             echo "--- Ready ---"
