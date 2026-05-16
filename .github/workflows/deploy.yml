@@ -54,6 +54,15 @@ jobs:
             set -e
             cd /root/pcbuilder
 
+            # 添加 Swap 空间防止构建时 OOM (内存溢出)
+            if [ ! -f /swapfile ]; then
+              echo "Creating 2GB swap space..."
+              dd if=/dev/zero of=/swapfile bs=1M count=2048 || true
+              chmod 600 /swapfile || true
+              mkswap /swapfile || true
+              swapon /swapfile || true
+            fi
+
             # 基础信息打印
             df -h && free -m
 
