@@ -56,7 +56,8 @@ def _migrate_extra_columns():
         if 'email' not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN email TEXT")
         if 'wechatOpenId' not in user_cols:
-            cursor.execute("ALTER TABLE users ADD COLUMN wechatOpenId TEXT UNIQUE")
+            cursor.execute("ALTER TABLE users ADD COLUMN wechatOpenId TEXT")
+            cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_wechatOpenId ON users(wechatOpenId)")
         if 'streamerExpireAt' not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN streamerExpireAt INTEGER")
             
