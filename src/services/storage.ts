@@ -53,9 +53,22 @@ const DEFAULT_SMS_SETTINGS: SMSSettings = {
     enabled: false
 };
 
+type ProductListResult = { items: HardwareItem[], total: number };
+
+const PRODUCT_LIST_CACHE_TTL = 60 * 1000;
+const productListCache = new Map<string, { expiresAt: number, request: Promise<ProductListResult> }>();
+
+const getProductListCacheKey = (page: number, pageSize: number, category: string, brand: string, search: string) =>
+    [page, pageSize, category || 'all', brand || 'all', search.trim()].join('|');
+
+const clearProductListCache = () => productListCache.clear();
+
 class StorageService {
     constructor() {
         // Migration will be called externally or via a specific trigger
+        if (typeof window !== 'undefined') {
+            window.addEventListener('xiaoyu-storage-update', clearProductListCache);
+        }
     }
 
     async init() {
@@ -135,25 +148,45 @@ class StorageService {
     }
 
     // --- Products ---
-    async getProducts(page: number = 1, pageSize: number = 20, category: string = 'all', brand: string = 'all', search: string = ''): Promise<{ items: HardwareItem[], total: number }> {
-        try {
-            const params = new URLSearchParams({
-                page: page.toString(),
-                page_size: pageSize.toString()
-            });
-            if (category && category !== 'all') params.append('category', category);
-            if (brand && brand !== 'all') params.append('brand', brand);
-            if (search) params.append('search', search);
-
-            const result = await ApiService.get(`/products?${params.toString()}`);
-            return {
-                items: result.items || [],
-                total: result.total || 0
-            };
-        } catch (e) {
-            console.error('Failed to load products', e);
-            return { items: [], total: 0 };
+    async getProducts(page: number = 1, pageSize: number = 20, category: string = 'all', brand: string = 'all', search: string = ''): Promise<ProductListResult> {
+        const cacheable = page === 1 && !search.trim();
+        const cacheKey = getProductListCacheKey(page, pageSize, category, brand, search);
+        const cached = cacheable ? productListCache.get(cacheKey) : undefined;
+        if (cached && cached.expiresAt > Date.now()) {
+            return cached.request;
         }
+        if (cached) productListCache.delete(cacheKey);
+
+        const request = (async (): Promise<ProductListResult> => {
+            try {
+                const params = new URLSearchParams({
+                    page: page.toString(),
+                    page_size: pageSize.toString()
+                });
+                if (category && category !== 'all') params.append('category', category);
+                if (brand && brand !== 'all') params.append('brand', brand);
+                if (search) params.append('search', search);
+
+                const result = await ApiService.get(`/products?${params.toString()}`);
+                return {
+                    items: result.items || [],
+                    total: result.total || 0
+                };
+            } catch (e) {
+                productListCache.delete(cacheKey);
+                console.error('Failed to load products', e);
+                return { items: [], total: 0 };
+            }
+        })();
+
+        if (cacheable) {
+            productListCache.set(cacheKey, {
+                expiresAt: Date.now() + PRODUCT_LIST_CACHE_TTL,
+                request
+            });
+        }
+
+        return request;
     }
 
     async getProductsByIds(ids: string[]): Promise<HardwareItem[]> {
@@ -232,16 +265,19 @@ class StorageService {
         for (const p of products) {
             await ApiService.post('/products', p);
         }
+        clearProductListCache();
         window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 
     async saveProduct(product: HardwareItem) {
         await ApiService.post('/products', product);
+        clearProductListCache();
         window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 
     async deleteProduct(id: string) {
         await ApiService.delete(`/products/${id}`);
+        clearProductListCache();
         window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 

@@ -1,5 +1,5 @@
 
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, type UIEvent } from 'react';
 import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor, Info, Activity, Gamepad2, Bell } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
@@ -10,6 +10,8 @@ import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { gamesFpsData, gamesList, Resolution } from '../../data/gameFpsData';
+
+const MODAL_ITEM_BATCH_SIZE = 40;
 
 // Component for bouncy number counting
 const BouncyNumber = ({ value, className }: { value: number; className?: string }) => {
@@ -74,6 +76,7 @@ function VisualBuilder({
     // Category-specific items for the selector
     const [modalItems, setModalItems] = useState<HardwareItem[]>([]);
     const [isModalLoading, setIsModalLoading] = useState(false);
+    const [visibleItemCount, setVisibleItemCount] = useState(MODAL_ITEM_BATCH_SIZE);
 
     // Handle external trigger for AI Modal
     useEffect(() => {
@@ -272,6 +275,7 @@ function VisualBuilder({
         setModalBrand('all');
         setSortOrder('default');
         setIsBrandsExpanded(false);
+        setVisibleItemCount(MODAL_ITEM_BATCH_SIZE);
 
         // Fetch items for this specific category
         setIsModalLoading(true);
@@ -285,6 +289,10 @@ function VisualBuilder({
             setIsModalLoading(false);
         }
     };
+
+    useEffect(() => {
+        setVisibleItemCount(MODAL_ITEM_BATCH_SIZE);
+    }, [modalCategory, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter]);
 
     const handleSelect = (item: HardwareItem) => {
         if (modalEntryId) {
@@ -476,6 +484,22 @@ function VisualBuilder({
 
         return items;
     }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter]);
+
+    const visibleModalItems = useMemo(
+        () => filteredItems.slice(0, visibleItemCount),
+        [filteredItems, visibleItemCount]
+    );
+
+    const handleModalListScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
+        const target = event.currentTarget;
+        const distanceToBottom = target.scrollHeight - target.scrollTop - target.clientHeight;
+        if (distanceToBottom > 280) return;
+
+        setVisibleItemCount(prev => {
+            if (prev >= filteredItems.length) return prev;
+            return Math.min(prev + MODAL_ITEM_BATCH_SIZE, filteredItems.length);
+        });
+    }, [filteredItems.length]);
 
     const availableBrands = useMemo(() => {
         if (!modalCategory) return [];
@@ -1236,7 +1260,7 @@ function VisualBuilder({
                         </div>
 
                         {/* Product List Content */}
-                        <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+                        <div className="flex-1 overflow-y-auto p-6 scroll-smooth" onScroll={handleModalListScroll}>
                             <div className="grid gap-4">
                                 {isModalLoading ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-slate-400">
@@ -1247,7 +1271,7 @@ function VisualBuilder({
                                     </div>
                                 ) : (
                                     <>
-                                        {filteredItems.map(item => {
+                                        {visibleModalItems.map(item => {
                                             const isOutOfStock = item.price === 0;
                                             return (
                                                 <div
@@ -1265,6 +1289,8 @@ function VisualBuilder({
                                                             <img
                                                                 src={item.image}
                                                                 alt={item.model}
+                                                                loading="lazy"
+                                                                decoding="async"
                                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();

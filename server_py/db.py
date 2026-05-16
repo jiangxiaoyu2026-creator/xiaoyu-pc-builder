@@ -98,6 +98,7 @@ def _migrate_extra_columns():
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_used_status ON used_items(status)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_hardware_category ON hardware(category)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_hardware_status ON hardware(status)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hardware_public_list ON hardware(status, category, sortOrder)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_userId ON orders(userId)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)")
         
