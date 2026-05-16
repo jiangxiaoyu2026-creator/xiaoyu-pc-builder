@@ -1,12 +1,4 @@
-# Stage 1: Build Frontend
-FROM registry.cn-hangzhou.aliyuncs.com/library/node:20-slim AS build-stage
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-
-# Stage 2: Build Final Image
+# Build Final Image
 FROM registry.cn-hangzhou.aliyuncs.com/library/python:3.12-slim
 WORKDIR /app
 
@@ -30,8 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY server_py/requirements.txt ./
 RUN pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com -r requirements.txt
 
-# Copy built frontend from build-stage
-COPY --from=build-stage /app/dist ./dist
+# Copy built frontend (already built by GitHub Actions)
+COPY dist ./dist
 
 # Copy backend code
 COPY server_py/ ./server_py/
