@@ -13,6 +13,62 @@ import { gamesFpsData, gamesList, Resolution } from '../../data/gameFpsData';
 
 const MODAL_ITEM_BATCH_SIZE = 40;
 
+type MonitorResolutionFilter = 'all' | '1K' | '2K' | '4K' | '5K';
+type MonitorRefreshFilter = 'all' | '60' | '75' | '100' | '144' | '180' | '240' | '300';
+type MonitorSizeFilter = 'all' | '22' | '24' | '25' | '27' | '32' | '34' | '49';
+
+const parseSpecsObject = (rawSpecs: unknown): Record<string, any> => {
+    let parsed = rawSpecs;
+    for (let i = 0; i < 3 && typeof parsed === 'string'; i += 1) {
+        try {
+            parsed = JSON.parse(parsed);
+        } catch {
+            return {};
+        }
+    }
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, any> : {};
+};
+
+const detectMonitorResolution = (text: string): Exclude<MonitorResolutionFilter, 'all'> | null => {
+    const normalized = text.toLowerCase().replace(/×/g, 'x');
+    if (/(?<![a-z0-9])5k(?=\d{2,3}(?!\d)|[^a-z0-9]|$)|5120\s*[x*]\s*(1440|2160)|5120/.test(normalized)) return '5K';
+    if (/(?<![a-z0-9])4k(?=\d{2,3}(?!\d)|[^a-z0-9]|$)|3840\s*[x*]\s*2160|2160p|uhd/.test(normalized)) return '4K';
+    if (/(?<![a-z0-9])2k(?=\d{2,3}(?!\d)|[^a-z0-9]|$)|2560\s*[x*]\s*1440|1440p|qhd/.test(normalized)) return '2K';
+    if (/(?<![a-z0-9])1k(?=\d{2,3}(?!\d)|[^a-z0-9]|$)|1920\s*[x*]\s*1080|1080p|fhd/.test(normalized)) return '1K';
+    return null;
+};
+
+const detectMonitorRefresh = (text: string): number | null => {
+    const values = Array.from(text.matchAll(/(\d{2,3})\s*(?:hz|赫兹)/gi), match => Number(match[1]));
+    values.push(...Array.from(text.matchAll(/[1254]k\s*(\d{2,3})(?!\d)/gi), match => Number(match[1])));
+    return values.length ? Math.max(...values) : null;
+};
+
+const detectMonitorSize = (text: string): number | null => {
+    const sizeMatch = text.match(/(\d{2}(?:\.\d)?)\s*(?:英寸|寸)/);
+    if (sizeMatch) return Number(sizeMatch[1]);
+    const codeMatch = text.match(/[A-Za-z]*([2-4]\d)[A-Za-z0-9]*/);
+    if (!codeMatch) return null;
+    const size = Number(codeMatch[1]);
+    return size >= 22 && size <= 49 ? size : null;
+};
+
+const matchesMonitorRefreshBand = (value: number | null, filter: MonitorRefreshFilter) => {
+    if (filter === 'all') return true;
+    if (value === null) return false;
+    const ranges: Record<Exclude<MonitorRefreshFilter, 'all'>, [number, number]> = {
+        '60': [0, 60],
+        '75': [61, 99],
+        '100': [100, 139],
+        '144': [140, 169],
+        '180': [170, 219],
+        '240': [220, 299],
+        '300': [300, Infinity],
+    };
+    const [min, max] = ranges[filter];
+    return value >= min && value <= max;
+};
+
 // Component for bouncy number counting
 const BouncyNumber = ({ value, className }: { value: number; className?: string }) => {
     const count = useMotionValue(0);
@@ -66,6 +122,9 @@ function VisualBuilder({
     const [cpuTypeFilter, setCpuTypeFilter] = useState<'all' | 'X3D'>('all');
     const [mbPlatformFilter, setMbPlatformFilter] = useState<'all' | 'AMD' | 'Intel'>('all');
     const [coolingTypeFilter, setCoolingTypeFilter] = useState<'all' | 'air' | '240' | '360'>('all');
+    const [monitorResolutionFilter, setMonitorResolutionFilter] = useState<MonitorResolutionFilter>('all');
+    const [monitorRefreshFilter, setMonitorRefreshFilter] = useState<MonitorRefreshFilter>('all');
+    const [monitorSizeFilter, setMonitorSizeFilter] = useState<MonitorSizeFilter>('all');
     const [sortOrder, setSortOrder] = useState<'default' | 'asc' | 'desc'>('default');
     const [isBrandsExpanded, setIsBrandsExpanded] = useState(false);
     const [showAiModal, setShowAiModal] = useState(false);
@@ -292,7 +351,7 @@ function VisualBuilder({
 
     useEffect(() => {
         setVisibleItemCount(MODAL_ITEM_BATCH_SIZE);
-    }, [modalCategory, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter]);
+    }, [modalCategory, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter, monitorResolutionFilter, monitorRefreshFilter, monitorSizeFilter]);
 
     const handleSelect = (item: HardwareItem) => {
         if (modalEntryId) {
@@ -392,9 +451,7 @@ function VisualBuilder({
             }
             // 解析 specs 为对象，修复 TypeScript 严格模式下的类型检查 (防止 never type 报错)
             const rawSpecs: any = i.specs;
-            const specsObj: Record<string, any> = typeof rawSpecs === 'object' && rawSpecs !== null 
-                ? rawSpecs 
-                : (typeof rawSpecs === 'string' ? (() => { try { return JSON.parse(rawSpecs) } catch { return {} } })() : {});
+            const specsObj = parseSpecsObject(rawSpecs);
             const modelLower = (i.model || '').toLowerCase();
             const specsStr = typeof rawSpecs === 'string' ? rawSpecs.toLowerCase() : JSON.stringify(rawSpecs || {}).toLowerCase();
             const combined = `${modelLower} ${specsStr}`;
@@ -459,6 +516,16 @@ function VisualBuilder({
                     if (coolingTypeFilter === '360' && !(/360/.test(combined))) return false;
                 }
             }
+
+            if (modalCategory === 'monitor') {
+                const monitorText = `${i.model || ''} ${JSON.stringify(specsObj)}`;
+                if (monitorResolutionFilter !== 'all' && detectMonitorResolution(monitorText) !== monitorResolutionFilter) return false;
+                if (!matchesMonitorRefreshBand(detectMonitorRefresh(monitorText), monitorRefreshFilter)) return false;
+                if (monitorSizeFilter !== 'all') {
+                    const size = detectMonitorSize(monitorText);
+                    if (size === null || Math.round(size) !== Number(monitorSizeFilter)) return false;
+                }
+            }
             return true;
         });
 
@@ -483,7 +550,7 @@ function VisualBuilder({
         });
 
         return items;
-    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter]);
+    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter, monitorResolutionFilter, monitorRefreshFilter, monitorSizeFilter]);
 
     const visibleModalItems = useMemo(
         () => filteredItems.slice(0, visibleItemCount),
@@ -1165,11 +1232,62 @@ function VisualBuilder({
                                             {isBrandsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                         </button>
                                     )}
-                                </div>
-
-                                {/* DDR4/DDR5 Type Filter - only for RAM */}
-                                {modalCategory === 'ram' && (
-                                    <div className="flex gap-2 items-center">
+                                    </div>
+    
+                                    {/* Monitor filters */}
+                                    {modalCategory === 'monitor' && (
+                                        <div className="space-y-2">
+                                            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1">
+                                                <span className="w-12 shrink-0 text-[11px] font-black text-slate-400 dark:text-slate-500">分辨率</span>
+                                                {(['all', '1K', '2K', '4K', '5K'] as const).map(resolution => (
+                                                    <button
+                                                        key={resolution}
+                                                        onClick={() => setMonitorResolutionFilter(resolution)}
+                                                        className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${monitorResolutionFilter === resolution
+                                                            ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
+                                                            : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
+                                                        }`}
+                                                    >
+                                                        {resolution === 'all' ? '全部' : resolution}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1">
+                                                <span className="w-12 shrink-0 text-[11px] font-black text-slate-400 dark:text-slate-500">刷新</span>
+                                                {(['all', '60', '75', '100', '144', '180', '240', '300'] as const).map(refresh => (
+                                                    <button
+                                                        key={refresh}
+                                                        onClick={() => setMonitorRefreshFilter(refresh)}
+                                                        className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${monitorRefreshFilter === refresh
+                                                            ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
+                                                            : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
+                                                        }`}
+                                                    >
+                                                        {refresh === 'all' ? '全部' : refresh === '300' ? '300+' : `${refresh}Hz`}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1">
+                                                <span className="w-12 shrink-0 text-[11px] font-black text-slate-400 dark:text-slate-500">尺寸</span>
+                                                {(['all', '22', '24', '25', '27', '32', '34', '49'] as const).map(size => (
+                                                    <button
+                                                        key={size}
+                                                        onClick={() => setMonitorSizeFilter(size)}
+                                                        className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${monitorSizeFilter === size
+                                                            ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
+                                                            : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
+                                                        }`}
+                                                    >
+                                                        {size === 'all' ? '全部' : `${size}寸`}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+    
+                                    {/* DDR4/DDR5 Type Filter - only for RAM */}
+                                    {modalCategory === 'ram' && (
+                                        <div className="flex gap-2 items-center">
                                         {(['all', 'DDR4', 'DDR5'] as const).map(type => (
                                             <button
                                                 key={type}
@@ -1321,15 +1439,11 @@ function VisualBuilder({
                                                             {item.model}
                                                         </h4>
                                                         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-400 font-bold">
-                                                            {(() => {
-                                                                let specsObj = item.specs;
-                                                                if (typeof specsObj === 'string') {
-                                                                    try { specsObj = JSON.parse(specsObj); } catch { specsObj = {}; }
-                                                                }
-                                                                if (!specsObj || typeof specsObj !== 'object') specsObj = {};
-
-                                                                const specEntries = Object.entries(specsObj).filter(([k, val]) => val && String(val).trim() !== '' && !k.startsWith('jd_'));
-                                                                if (specEntries.length === 0) return null;
+                                                                {(() => {
+                                                                    const specsObj = parseSpecsObject(item.specs);
+    
+                                                                    const specEntries = Object.entries(specsObj).filter(([k, val]) => val && String(val).trim() !== '' && !k.startsWith('jd_'));
+                                                                    if (specEntries.length === 0) return null;
 
                                                                 return specEntries.slice(0, 2).map(([key, val]) => (
                                                                     <div key={key} className="flex items-center gap-1">
@@ -1346,12 +1460,11 @@ function VisualBuilder({
                                                         <div className={`font-bold font-display tracking-tight transition-all ${isOutOfStock ? 'text-slate-400 dark:text-slate-600 text-base' : 'text-xl text-slate-900 dark:text-white group-hover:scale-105'}`}>
                                                             {isOutOfStock ? '—' : `¥${item.price}`}
                                                         </div>
-                                                        <div className="flex items-center gap-1.5">
-                                                            {(() => {
-                                                                let s = item.specs;
-                                                                if (typeof s === 'string') { try { s = JSON.parse(s); } catch { s = {}; } }
-                                                                const jdUrl = (s && typeof s === 'object') ? (s as any).jd_url : null;
-                                                                if (!jdUrl || isOutOfStock) return null;
+                                                            <div className="flex items-center gap-1.5">
+                                                                {(() => {
+                                                                    const s = parseSpecsObject(item.specs);
+                                                                    const jdUrl = s.jd_url;
+                                                                    if (!jdUrl || isOutOfStock) return null;
                                                                 return (
                                                                     <a
                                                                         href={jdUrl}
