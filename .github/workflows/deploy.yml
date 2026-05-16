@@ -51,6 +51,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           command_timeout: 60m
           script: |
+            set -e
             cd /root/pcbuilder
 
             # 基础信息打印
@@ -89,7 +90,7 @@ jobs:
             # 基础部署流程
             $DC stop || true
             $DC rm -f || true
-            $DC build --no-cache --pull=false
+            $DC build --no-cache
             $DC up -d
 
             echo "--- Ready ---"
