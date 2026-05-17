@@ -17,7 +17,9 @@ def wait_for_output(manager, invoke_id, timeout=60):
 manager = AliyunECSManager()
 base_url = "http://123.56.227.40:8000"
 
-token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc3NTIzODA1OX0.JyvZlqrzUX6cFt954Q1PxMZFhsROYM3l09l6h7nYWsY"
+token = os.getenv("DIYXX_ADMIN_TOKEN")
+if not token:
+    sys.exit("Missing DIYXX_ADMIN_TOKEN")
 
 print("Uploading server.zip spoofed as PNG...")
 headers = {"Authorization": f"Bearer {token}"}

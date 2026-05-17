@@ -130,23 +130,30 @@ def _create_default_admin():
     from .models import User
     from .utils.auth import get_password_hash
 
+    admin_username = os.getenv("DIYXX_DEFAULT_ADMIN_USERNAME", "xiaoyu")
+    admin_password = os.getenv("DIYXX_DEFAULT_ADMIN_PASSWORD") or os.getenv("DIYXX_ADMIN_PASSWORD")
+
     with Session(engine) as session:
         # 检查是否已存在管理员
-        existing = session.exec(select(User).where(User.username == "xiaoyu")).first()
+        existing = session.exec(select(User).where(User.username == admin_username)).first()
         if existing:
+            return
+
+        if not admin_password:
+            print(f"Default admin not created for {admin_username}: set DIYXX_DEFAULT_ADMIN_PASSWORD")
             return
 
         # 创建默认管理员
         admin = User(
             id="admin-default-001",
-            username="xiaoyu",
-            password=get_password_hash("jiangxiaoyu119"),
+            username=admin_username,
+            password=get_password_hash(admin_password),
             role="admin",
             status="active"
         )
         session.add(admin)
         session.commit()
-        print("Default admin created: xiaoyu / jiangxiaoyu119")
+        print(f"Default admin created: {admin_username}")
 
 def get_session():
     with Session(engine) as session:

@@ -8,6 +8,7 @@
 import json
 import hashlib
 import logging
+import os
 import requests
 import urllib3
 from datetime import datetime, timedelta
@@ -17,9 +18,9 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logger = logging.getLogger(__name__)
 
 # 京东联盟 API 配置
-JD_APP_KEY = "95d6ef40876feb5446e1a76483e77fe0"
-JD_APP_SECRET = "1cbc87e2d83e470e8b8f931971309c95"
-JD_SITE_ID = "4103715068"  # 蒋小鱼装机 网站ID
+JD_APP_KEY = os.getenv("JD_APP_KEY", "")
+JD_APP_SECRET = os.getenv("JD_APP_SECRET", "")
+JD_SITE_ID = os.getenv("JD_SITE_ID", "")
 JD_API_URL = "https://router.jd.com/api"
 
 
@@ -36,6 +37,10 @@ def _generate_sign(params: dict, secret: str) -> str:
 
 def _call_jd_api(method: str, param_json_obj: dict) -> Optional[dict]:
     """统一的京东联盟 API 调用"""
+    if not JD_APP_KEY or not JD_APP_SECRET or not JD_SITE_ID:
+        logger.warning("JD Union API is not configured; set JD_APP_KEY, JD_APP_SECRET and JD_SITE_ID")
+        return None
+
     param_json = json.dumps(param_json_obj)
     params = {
         "method": method,

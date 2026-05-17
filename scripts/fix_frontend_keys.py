@@ -1,5 +1,6 @@
 import sqlite3
 import json
+import os
 import re
 import requests
 import time
@@ -7,10 +8,12 @@ from jose import jwt
 from datetime import datetime, timedelta
 
 PROD_API = "https://www.diyxx.com/api"
-SECRET = 'xiaoyu_pc_builder_secret_key_2026'
 
 def get_token():
-    return jwt.encode({'sub': 'admin', 'exp': datetime.utcnow() + timedelta(days=1)}, SECRET, algorithm='HS256')
+    secret = os.getenv("JWT_SECRET")
+    if not secret:
+        raise RuntimeError("Missing JWT_SECRET")
+    return jwt.encode({'sub': 'admin', 'exp': datetime.utcnow() + timedelta(days=1)}, secret, algorithm='HS256')
 
 def fix_specs(cat, specs):
     new_specs = dict(specs)

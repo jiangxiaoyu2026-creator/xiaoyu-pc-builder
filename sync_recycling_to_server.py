@@ -7,6 +7,7 @@ import openpyxl
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+import os
 import sys
 import time
 from datetime import datetime
@@ -29,8 +30,12 @@ def create_session():
     return session
 
 def login(session):
+    password = os.getenv("DIYXX_ADMIN_PASSWORD")
+    if not password:
+        raise RuntimeError("Missing DIYXX_ADMIN_PASSWORD")
     resp = session.post("https://www.diyxx.com/api/auth/login", json={
-        "username": "xiaoyu", "password": "jiangxiaoyu119"
+        "username": os.getenv("DIYXX_ADMIN_USERNAME", "xiaoyu"),
+        "password": password
     })
     return resp.json()["access_token"]
 

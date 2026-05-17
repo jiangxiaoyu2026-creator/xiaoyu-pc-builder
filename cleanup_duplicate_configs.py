@@ -5,13 +5,20 @@ keep the one with the most likes or the newest, and delete the rest.
 """
 import requests
 import json
+import os
+import sys
 
 API_BASE = "https://www.diyxx.com/api"
+USERNAME = os.getenv("DIYXX_ADMIN_USERNAME", "xiaoyu")
+PASSWORD = os.getenv("DIYXX_ADMIN_PASSWORD")
+
+if not PASSWORD:
+    sys.exit("Missing DIYXX_ADMIN_PASSWORD")
 
 # 1. Login to get token
 login_res = requests.post(f"{API_BASE}/auth/login", json={
-    "username": "xiaoyu",
-    "password": "jiangxiaoyu119"
+    "username": USERNAME,
+    "password": PASSWORD
 })
 if login_res.status_code != 200:
     print(f"Login failed: {login_res.status_code}")

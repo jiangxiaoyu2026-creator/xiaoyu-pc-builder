@@ -6,7 +6,10 @@ import { authenticate, authorize } from '../middleware/auth';
 import crypto from 'crypto';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'xiaoyu_pc_builder_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is required');
+}
 
 // Register
 router.post('/register', async (req: Request, res: Response) => {

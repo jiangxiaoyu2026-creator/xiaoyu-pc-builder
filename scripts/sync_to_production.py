@@ -1,13 +1,18 @@
 import sqlite3
 import requests
 import json
+import os
 from jose import jwt
 from datetime import datetime, timedelta
 
 # Create valid JWT
+jwt_secret = os.getenv("JWT_SECRET")
+if not jwt_secret:
+    raise RuntimeError("Missing JWT_SECRET")
+
 token = jwt.encode(
     {'sub': 'admin', 'exp': datetime.utcnow() + timedelta(days=1)}, 
-    'xiaoyu_pc_builder_secret_key_2026', 
+    jwt_secret,
     algorithm='HS256'
 )
 headers = {'Authorization': f'Bearer {token}'}

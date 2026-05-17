@@ -42,7 +42,7 @@ async function testUserInsert() {
     console.log('\n--- Testing User INSERT ---');
     const userData = {
         username: 'tester-' + Date.now(),
-        password: 'password123',
+        password: process.env.DEBUG_TEST_USER_PASSWORD || 'test',
         phone: '13800138000',
         role: 'user',
         status: 'active'

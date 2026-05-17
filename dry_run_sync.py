@@ -5,6 +5,7 @@ Sync recycling prices from Excel (4.7) to production server via API.
 """
 import openpyxl
 import requests
+import os
 import sys
 from datetime import datetime
 
@@ -18,8 +19,12 @@ SHEET_MAP = {
 }
 
 def login():
+    password = os.getenv("DIYXX_ADMIN_PASSWORD")
+    if not password:
+        raise RuntimeError("Missing DIYXX_ADMIN_PASSWORD")
     resp = requests.post("https://www.diyxx.com/api/auth/login", json={
-        "username": "xiaoyu", "password": "jiangxiaoyu119"
+        "username": os.getenv("DIYXX_ADMIN_USERNAME", "xiaoyu"),
+        "password": password
     })
     return resp.json()["access_token"]
 

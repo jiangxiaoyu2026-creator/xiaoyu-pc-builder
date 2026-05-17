@@ -1,4 +1,5 @@
 import os
+import secrets
 from datetime import datetime, timedelta
 from typing import Optional, Any, Union
 from jose import jwt, JWTError
@@ -9,7 +10,10 @@ load_dotenv()
 import bcrypt
 
 # Configuration
-SECRET_KEY = os.getenv("JWT_SECRET", "xiaoyu_pc_builder_secret_key_2026")
+SECRET_KEY = os.getenv("JWT_SECRET")
+if not SECRET_KEY:
+    SECRET_KEY = secrets.token_urlsafe(32)
+    print("Warning: JWT_SECRET is not set; using an ephemeral per-process secret.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 

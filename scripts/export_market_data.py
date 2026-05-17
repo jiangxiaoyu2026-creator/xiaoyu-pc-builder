@@ -13,8 +13,8 @@ from datetime import date, timedelta
 
 # =================== 配置 ===================
 API_BASE = "https://www.diyxx.com/api"
-USERNAME = "xiaoyu"
-PASSWORD = "jiangxiaoyu119"
+USERNAME = os.getenv("DIYXX_ADMIN_USERNAME", "xiaoyu")
+PASSWORD = os.getenv("DIYXX_ADMIN_PASSWORD")
 OUTPUT_DIR = "exports"
 DAYS = 30
 CATEGORIES = ["gpu", "cpu", "ram", "disk"]
@@ -22,6 +22,8 @@ CATEGORIES = ["gpu", "cpu", "ram", "disk"]
 
 
 def login():
+    if not PASSWORD:
+        raise RuntimeError("Missing DIYXX_ADMIN_PASSWORD")
     data = json.dumps({"username": USERNAME, "password": PASSWORD}).encode()
     req = urllib.request.Request(
         f"{API_BASE}/auth/login",

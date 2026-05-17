@@ -192,12 +192,19 @@ export function connectDB() {
     // Seed Admin User
     const admin = db.prepare('SELECT * FROM users WHERE role = ?').get('admin');
     if (!admin) {
+        const adminUsername = process.env.DIYXX_DEFAULT_ADMIN_USERNAME || 'xiaoyu';
+        const adminPassword = process.env.DIYXX_DEFAULT_ADMIN_PASSWORD || process.env.DIYXX_ADMIN_PASSWORD;
+        if (!adminPassword) {
+            console.log(`Default admin not created for ${adminUsername}: set DIYXX_DEFAULT_ADMIN_PASSWORD`);
+            return;
+        }
+
         console.log('🌱 Seeding default admin user...');
-        const hashedPassword = bcrypt.hashSync('jiangxiaoyu119', 10);
+        const hashedPassword = bcrypt.hashSync(adminPassword, 10);
         db.prepare(`
             INSERT INTO users (id, username, password, role, status, inviteCount, inviteVipDays, createdAt)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `).run('admin-root', 'xiaoyu', hashedPassword, 'admin', 'active', 0, 0, new Date().toISOString());
-        console.log('✅ Default admin user created: xiaoyu / jiangxiaoyu119');
+        `).run('admin-root', adminUsername, hashedPassword, 'admin', 'active', 0, 0, new Date().toISOString());
+        console.log(`✅ Default admin user created: ${adminUsername}`);
     }
 }

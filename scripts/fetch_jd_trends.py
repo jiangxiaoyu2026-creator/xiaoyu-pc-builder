@@ -24,8 +24,8 @@ DB_PATH = os.getenv("SQLITE_DB_PATH", os.path.join(os.path.dirname(os.path.dirna
 
 # 京东联盟 API 配置
 # 请注意：账号必须在京东联盟/京粉 APP 完成“实名认证”，否则 API 会返回 431 拒绝访问错误
-APP_KEY = "95d6ef40876feb5446e1a76483e77fe0"
-APP_SECRET = "1cbc87e2d83e470e8b8f931971309c95"
+APP_KEY = os.getenv("JD_APP_KEY", "")
+APP_SECRET = os.getenv("JD_APP_SECRET", "")
 JD_ROUTER_URL = "https://router.jd.com/api"
 
 def generate_sign(params, secret):
@@ -66,6 +66,10 @@ def save_price(conn, product_id, sku_id, price, record_date):
 
 def fetch_price_via_jd_union(sku_id):
     """通过京东联盟官方接口获取最新价格"""
+    if not APP_KEY or not APP_SECRET:
+        logger.error("JD Union API is not configured; set JD_APP_KEY and JD_APP_SECRET")
+        return None
+
     param_json = json.dumps({"goodsReqDTO": {"skuIds": [str(sku_id)]}})
     
     params = {
