@@ -1,4 +1,5 @@
 import requests
+import os
 
 API_BASE = "https://www.diyxx.com/api"
 LOGIN_URL = f"{API_BASE}/auth/login"
@@ -6,7 +7,10 @@ HARDWARE_URL = f"{API_BASE}/hardware"
 
 def main():
     # Login
-    resp = requests.post(LOGIN_URL, data={"username": "xiaoyu", "password": "jiangxiaoyu119", "grant_type": "password"}, timeout=10)
+    password = os.getenv("DIYXX_ADMIN_PASSWORD")
+    if not password:
+        raise RuntimeError("Missing DIYXX_ADMIN_PASSWORD")
+    resp = requests.post(LOGIN_URL, data={"username": os.getenv("DIYXX_ADMIN_USERNAME", "xiaoyu"), "password": password, "grant_type": "password"}, timeout=10)
     if resp.status_code != 200:
         print("Login failed:", resp.text)
         return

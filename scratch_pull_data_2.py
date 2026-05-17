@@ -3,9 +3,13 @@ import json
 import os
 
 base_url = "https://www.diyxx.com/api"
+password = os.getenv("DIYXX_ADMIN_PASSWORD")
+if not password:
+    raise RuntimeError("Missing DIYXX_ADMIN_PASSWORD")
+
 payload = {
-    "username": "xiaoyu",
-    "password": "jiangxiaoyu119"
+    "username": os.getenv("DIYXX_ADMIN_USERNAME", "xiaoyu"),
+    "password": password
 }
 
 r = requests.post(f"{base_url}/auth/login", json=payload)
@@ -37,4 +41,3 @@ if r.status_code == 200:
         print("Failed to get configs", configs_resp.status_code)
 else:
     print("Login Failed", r.status_code, r.text)
-
