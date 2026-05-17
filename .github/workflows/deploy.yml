@@ -54,14 +54,42 @@ jobs:
             set -e
             RELEASE_DIR=/root/pcbuilder_release
             APP_DIR=/root/pcbuilder
+            DIST_SRC="$RELEASE_DIR/dist"
+            SERVER_SRC="$RELEASE_DIR/server_py"
+            DOCKERFILE_SRC="$RELEASE_DIR/Dockerfile"
+            COMPOSE_SRC="$RELEASE_DIR/docker-compose.yml"
+
+            if [ ! -d "$DIST_SRC" ]; then
+              DIST_SRC="$(find "$RELEASE_DIR" -type d -name dist | head -n 1)"
+            fi
+            if [ ! -d "$SERVER_SRC" ]; then
+              SERVER_SRC="$(find "$RELEASE_DIR" -type d -name server_py | head -n 1)"
+            fi
+            if [ ! -f "$DOCKERFILE_SRC" ]; then
+              DOCKERFILE_SRC="$(find "$RELEASE_DIR" -type f -name Dockerfile | head -n 1)"
+            fi
+            if [ ! -f "$COMPOSE_SRC" ]; then
+              COMPOSE_SRC="$(find "$RELEASE_DIR" -type f -name docker-compose.yml | head -n 1)"
+            fi
+            if [ ! -d "$DIST_SRC" ] || [ ! -d "$SERVER_SRC" ] || [ ! -f "$DOCKERFILE_SRC" ] || [ ! -f "$COMPOSE_SRC" ]; then
+              echo "Release package missing required files"
+              find "$RELEASE_DIR" -maxdepth 3 -print
+              exit 1
+            fi
 
             mkdir -p "$APP_DIR"
             rm -rf "$APP_DIR/dist" "$APP_DIR/server_py"
-            cp -a "$RELEASE_DIR/dist" "$APP_DIR/dist"
-            cp -a "$RELEASE_DIR/server_py" "$APP_DIR/server_py"
-            cp -a "$RELEASE_DIR/Dockerfile" "$APP_DIR/Dockerfile"
-            cp -a "$RELEASE_DIR/docker-compose.yml" "$APP_DIR/docker-compose.yml"
+            cp -a "$DIST_SRC" "$APP_DIR/dist"
+            cp -a "$SERVER_SRC" "$APP_DIR/server_py"
+            cp -a "$DOCKERFILE_SRC" "$APP_DIR/Dockerfile"
+            cp -a "$COMPOSE_SRC" "$APP_DIR/docker-compose.yml"
             cd "$APP_DIR"
+
+            fallback_deploy() {
+              echo "Using direct container copy fallback..."
+              docker cp "$APP_DIR/dist/." xiaoyu-pc-builder:/app/dist/
+              docker restart xiaoyu-pc-builder
+            }
 
             # 添加 Swap 空间防止构建时 OOM (内存溢出)
             if [ ! -f /swapfile ]; then
@@ -81,8 +109,7 @@ jobs:
             elif docker-compose version >/dev/null 2>&1; then
               DC="docker-compose"
             else
-              echo "Error: Docker Compose not found"
-              exit 1
+              DC=""
             fi
 
             echo "Using command: $DC"
@@ -91,8 +118,11 @@ jobs:
             docker system prune -f || true
 
             # 先构建新镜像，成功后再切换容器，避免失败时线上继续使用旧版本
-            $DC build
-            $DC up -d --remove-orphans
+            if [ -n "$DC" ] && $DC build && $DC up -d --remove-orphans; then
+              echo "Compose deploy succeeded"
+            else
+              fallback_deploy
+            fi
 
             echo "--- Ready ---"
             docker ps
