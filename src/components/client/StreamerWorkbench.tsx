@@ -397,7 +397,7 @@ function StreamerWorkbench({
                                     className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all shadow-sm border ${isLiveMode ? 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700 shadow-indigo-500/20' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'}`}
                                 >
                                     <Monitor size={14} className={isLiveMode ? 'animate-pulse text-indigo-200' : ''} />
-                                    {isLiveMode ? '退出直播模式' : '直播大图模式'}
+                                    {isLiveMode ? '退出直播模式' : '直播大屏模式'}
                                 </button>
 
                                 {!isLiveMode && (

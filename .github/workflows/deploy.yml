@@ -60,26 +60,11 @@ jobs:
               dd if=/dev/zero of=/swapfile bs=1M count=2048 || true
               chmod 600 /swapfile || true
               mkswap /swapfile || true
-              swapon /swapfile || true
             fi
+            swapon --show | grep -q '/swapfile' || swapon /swapfile || true
 
             # 基础信息打印
             df -h && free -m
-
-            # 配置 Docker 阿里云镜像加速器（解决国内拉取慢的问题）
-            mkdir -p /etc/docker
-            cat > /etc/docker/daemon.json <<'EOF'
-            {
-              "registry-mirrors": [
-                "https://registry.cn-hangzhou.aliyuncs.com",
-                "https://mirror.ccs.tencentyun.com",
-                "https://docker.mirrors.ustc.edu.cn"
-              ]
-            }
-            EOF
-            systemctl daemon-reload && systemctl restart docker || true
-            sleep 3
-            echo "Docker mirror configured"
 
             # 检测 Docker Compose 命令
             if docker compose version >/dev/null 2>&1; then
@@ -94,13 +79,11 @@ jobs:
             echo "Using command: $DC"
 
             # 清理空间
-            docker system prune -f
+            docker system prune -f || true
 
-            # 基础部署流程
-            $DC stop || true
-            $DC rm -f || true
+            # 先构建新镜像，成功后再切换容器，避免失败时线上继续使用旧版本
             $DC build
-            $DC up -d
+            $DC up -d --remove-orphans
 
             echo "--- Ready ---"
             docker ps
