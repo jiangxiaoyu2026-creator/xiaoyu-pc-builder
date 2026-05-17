@@ -777,16 +777,21 @@ function StreamerWorkbench({
         {isLiveMode && (
             <div className="mt-3 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-1.5">
-                    {(Object.keys(LIVE_STYLES) as LiveStyleKey[]).map(s => (
-                        <button
-                            key={s}
-                            onClick={() => setLiveStyle(s)}
-                            className={`w-9 h-9 p-0 rounded-lg border transition-all text-base shadow-sm ${liveStyle === s ? 'bg-slate-900 text-white border-slate-900 dark:bg-indigo-600 dark:border-indigo-500' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
-                            title={LIVE_STYLES[s].name}
-                        >
-                            {LIVE_STYLES[s].emoji}
-                        </button>
-                    ))}
+                    {(Object.keys(LIVE_STYLES) as LiveStyleKey[]).map(s => {
+                        const isActive = liveStyle === s;
+                        const styleConfig = LIVE_STYLES[s];
+                        // 使用 glowBg 作为按钮背景色，选中时加深
+                        return (
+                            <button
+                                key={s}
+                                onClick={() => setLiveStyle(s)}
+                                className={`w-9 h-9 p-0 rounded-lg border transition-all text-base shadow-sm ${isActive ? `${styleConfig.glowBg} text-white border-transparent scale-110` : `bg-white/80 dark:bg-slate-800 ${styleConfig.glowBg} text-white border-transparent opacity-70 hover:opacity-100 hover:scale-105`}`}
+                                title={styleConfig.name}
+                            >
+                                {styleConfig.emoji}
+                            </button>
+                        );
+                    })}
                 </div>
                 <div className="flex shrink-0 justify-end gap-2">
                     <button onClick={() => setLiveMode(false)} className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-200 dark:hover:border-indigo-500/40 transition-all text-sm font-bold shadow-sm">
