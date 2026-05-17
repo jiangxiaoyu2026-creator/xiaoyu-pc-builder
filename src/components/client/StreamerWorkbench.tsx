@@ -592,10 +592,10 @@ function StreamerWorkbench({
                         </div>
                         {isLiveMode && (
                             <div className={`mt-auto px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg} ${liveStyleConfig.modelText} flex items-center justify-between gap-3`}>
-                                <div className="min-w-0 flex flex-wrap items-center justify-start gap-x-2.5 gap-y-1 text-[15px] font-black tracking-wide">
+                                <div className="min-w-0 flex items-center justify-start gap-x-1.5 text-[12px] font-black tracking-wide whitespace-nowrap overflow-x-auto">
                                             {serviceItems.map(item => (
-                                                <span key={item.label} className="inline-flex items-center gap-1.5">
-                                            <span className={`${item.positive ? 'w-5 h-5 text-[17px]' : 'w-6 h-6 text-[22px]'} rounded-[5px] flex items-center justify-center leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} ${liveCheckText}` : `${liveInputBg} border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
+                                                <span key={item.label} className="inline-flex items-center gap-1 shrink-0">
+                                            <span className={`w-4 h-4 text-[13px] rounded-[4px] flex items-center justify-center leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} ${liveCheckText}` : `${liveInputBg} border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
                                                 {item.positive ? '✓' : '×'}
                                             </span>
                                             {item.label}
@@ -776,15 +776,15 @@ function StreamerWorkbench({
         </div>
         {isLiveMode && (
             <div className="mt-3 flex items-center justify-between gap-3">
-                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                <div className="flex min-w-0 items-center gap-1.5">
                     {(Object.keys(LIVE_STYLES) as LiveStyleKey[]).map(s => (
                         <button
                             key={s}
                             onClick={() => setLiveStyle(s)}
-                            className={`h-10 px-3 rounded-lg border transition-all whitespace-nowrap text-xs font-black shadow-sm ${liveStyle === s ? 'bg-slate-900 text-white border-slate-900 dark:bg-indigo-600 dark:border-indigo-500' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
+                            className={`w-9 h-9 p-0 rounded-lg border transition-all text-base shadow-sm ${liveStyle === s ? 'bg-slate-900 text-white border-slate-900 dark:bg-indigo-600 dark:border-indigo-500' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
                             title={LIVE_STYLES[s].name}
                         >
-                            {LIVE_STYLES[s].name}
+                            {LIVE_STYLES[s].emoji}
                         </button>
                     ))}
                 </div>
