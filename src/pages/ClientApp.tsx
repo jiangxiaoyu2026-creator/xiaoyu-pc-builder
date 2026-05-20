@@ -662,7 +662,7 @@ export default function ClientApp() {
 
     return (
         <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#FAFAFA] dark:bg-[#0B0B10] font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800 dark:text-slate-200 transition-colors duration-300">
-            <header className="relative md:sticky top-0 z-40 bg-white/70 dark:bg-[#0B0B10]/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-[#1E293B]/50 transition-all duration-300">
+            <header className={`relative md:sticky top-0 z-40 bg-white/70 dark:bg-[#0B0B10]/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-[#1E293B]/50 transition-all duration-300 ${viewMode === 'visual' ? 'hidden md:block' : ''}`}>
                 <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                         <div className="w-9 h-9 bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] rounded-xl flex items-center justify-center shadow-sm dark:shadow-none">

@@ -1171,14 +1171,17 @@ function VisualBuilder({
 
             {/* Premium Modal Category Selector */}
             {modalCategory && typeof document !== 'undefined' && createPortal((
-                <div className="fixed inset-0 z-[120] flex items-end md:items-center justify-center bg-slate-900/60 md:p-4 backdrop-blur-md animate-fade-in">
-                    <div className="bg-[#FAFAFA] dark:bg-[#121218] rounded-t-2xl md:rounded-2xl w-full max-w-3xl h-[92dvh] md:h-[88vh] flex flex-col shadow-2xl dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] overflow-hidden animate-scale-up border border-slate-200 dark:border-[#1E293B]">
+                <div className="fixed inset-0 z-[120] flex items-end md:items-center justify-center bg-slate-900/45 md:bg-slate-900/60 md:p-4 backdrop-blur-sm md:backdrop-blur-md animate-fade-in">
+                    <div
+                        className="bg-[#FAFAFA] dark:bg-[#121218] rounded-none md:rounded-2xl w-full max-w-3xl h-[100dvh] md:h-[88vh] overflow-y-auto overscroll-contain custom-scrollbar shadow-xl md:shadow-2xl dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] animate-scale-up border-x md:border border-slate-200 dark:border-[#1E293B]"
+                        onScroll={handleModalListScroll}
+                    >
                         {/* Modal Header */}
-                        <div className="p-4 md:p-6 border-b border-slate-200 dark:border-[#1E293B] flex flex-col gap-3 md:gap-5 bg-white/95 dark:bg-[#1A1A24]/95 backdrop-blur-xl sticky top-0 z-10">
-                            <div className="md:hidden w-10 h-1 rounded-full bg-slate-200 dark:bg-[#2D3748] mx-auto -mt-1" />
+                        <div className="px-4 pt-3 pb-3 md:p-6 border-b border-slate-200 dark:border-[#1E293B] flex flex-col gap-2.5 md:gap-5 bg-white/95 dark:bg-[#1A1A24]/95 backdrop-blur-xl">
+                            <div className="md:hidden w-9 h-1 rounded-full bg-slate-200 dark:bg-[#2D3748] mx-auto" />
                             <div className="flex justify-between items-center text-slate-900 dark:text-white">
                                 <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
-                                    <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-md md:shadow-lg shadow-slate-200 shrink-0">
+                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-sm md:shadow-lg shadow-slate-200 shrink-0">
                                         {getIconByCategory(modalCategory)}
                                     </div>
                                     <div className="min-w-0">
@@ -1188,13 +1191,13 @@ function VisualBuilder({
                                 </div>
                                 <button
                                     onClick={() => setModalCategory(null)}
-                                    className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-slate-100 dark:bg-[#121218] hover:bg-slate-200 dark:hover:bg-[#2D3748] border border-slate-200 dark:border-[#2D3748] rounded-xl transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-90 shrink-0"
+                                    className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-slate-100 dark:bg-[#121218] hover:bg-slate-200 dark:hover:bg-[#2D3748] border border-slate-200 dark:border-[#2D3748] rounded-xl transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-90 shrink-0"
                                 >
                                     <X size={18} strokeWidth={2.5} />
                                 </button>
                             </div>
 
-                            <div className="flex flex-col gap-3 md:gap-4">
+                            <div className="flex flex-col gap-2.5 md:gap-4">
                                 <div className="flex gap-2 md:gap-3 items-center">
                                     <div className="relative flex-1 group">
                                         <Search className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={17} />
@@ -1204,12 +1207,12 @@ function VisualBuilder({
                                             value={modalSearch}
                                             onChange={(e) => setModalSearch(e.target.value)}
                                             placeholder={`在 ${CATEGORY_MAP[modalCategory]} 中搜寻方案...`}
-                                            className="w-full bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#2D3748] rounded-xl py-3 md:py-3.5 pl-10 md:pl-12 pr-3 md:pr-4 text-[13px] md:text-sm font-bold placeholder:text-slate-400 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all shadow-sm dark:shadow-none"
+                                            className="w-full bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#2D3748] rounded-xl py-2.5 md:py-3.5 pl-10 md:pl-12 pr-3 md:pr-4 text-[16px] md:text-sm font-bold placeholder:text-slate-400 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all shadow-sm dark:shadow-none"
                                         />
                                     </div>
                                     <button
                                         onClick={() => setSortOrder(prev => prev === 'default' ? 'asc' : prev === 'asc' ? 'desc' : 'default')}
-                                        className={`h-[46px] md:h-[52px] px-3 md:px-5 rounded-xl md:rounded-[22px] font-black text-[11px] md:text-xs flex items-center gap-1.5 md:gap-2 transition-all shrink-0 active:scale-95 ${sortOrder !== 'default'
+                                        className={`h-[42px] md:h-[52px] px-3 md:px-5 rounded-xl md:rounded-[22px] font-black text-[11px] md:text-xs flex items-center gap-1.5 md:gap-2 transition-all shrink-0 active:scale-95 ${sortOrder !== 'default'
                                             ? 'bg-slate-900 dark:bg-[#2D3748] text-white shadow-md border border-slate-800 dark:border-[#1E293B]'
                                             : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none hover:bg-slate-50 dark:hover:bg-[#2D3748]'
                                             }`}
@@ -1222,7 +1225,7 @@ function VisualBuilder({
                                 </div>
 
                                 <div className="flex items-start gap-2 md:gap-3">
-                                    <div className={`flex-1 flex gap-1.5 md:gap-2 ${isBrandsExpanded ? 'flex-wrap max-h-24 md:max-h-none overflow-y-auto md:overflow-visible pr-1' : 'overflow-x-auto no-scrollbar scroll-smooth'} items-center pb-1.5 md:pb-2 px-0.5 md:px-1 mask-linear-fade`}>
+                                    <div className={`flex-1 flex gap-1.5 md:gap-2 ${isBrandsExpanded ? 'flex-wrap max-h-20 md:max-h-none overflow-y-auto md:overflow-visible pr-1' : 'overflow-x-auto no-scrollbar scroll-smooth'} items-center pb-1 md:pb-2 px-0.5 md:px-1 mask-linear-fade`}>
                                         {availableBrands.map(brand => (
                                             <button
                                                 key={brand}
@@ -1249,8 +1252,9 @@ function VisualBuilder({
                                     {/* Monitor filters */}
                                     {modalCategory === 'monitor' && (
                                         <div className="space-y-1.5 md:space-y-2">
-                                            <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
-                                                <span className="w-10 md:w-12 shrink-0 text-[10px] md:text-[11px] font-black text-slate-400 dark:text-slate-500">分辨率</span>
+                                            <div className="space-y-1">
+                                                <span className="block px-0.5 text-[9px] md:text-[11px] font-black text-slate-300 dark:text-slate-600">分辨率</span>
+                                                <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-0.5 md:pb-1">
                                                 {(['all', '1K', '2K', '4K', '5K'] as const).map(resolution => (
                                                     <button
                                                         key={resolution}
@@ -1263,9 +1267,11 @@ function VisualBuilder({
                                                         {resolution === 'all' ? '全部' : resolution}
                                                     </button>
                                                 ))}
+                                                </div>
                                             </div>
-                                            <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
-                                                <span className="w-10 md:w-12 shrink-0 text-[10px] md:text-[11px] font-black text-slate-400 dark:text-slate-500">刷新</span>
+                                            <div className="space-y-1">
+                                                <span className="block px-0.5 text-[9px] md:text-[11px] font-black text-slate-300 dark:text-slate-600">刷新</span>
+                                                <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-0.5 md:pb-1">
                                                 {(['all', '60', '75', '100', '144', '180', '240', '300'] as const).map(refresh => (
                                                     <button
                                                         key={refresh}
@@ -1278,9 +1284,11 @@ function VisualBuilder({
                                                         {refresh === 'all' ? '全部' : refresh === '300' ? '300+' : `${refresh}Hz`}
                                                     </button>
                                                 ))}
+                                                </div>
                                             </div>
-                                            <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
-                                                <span className="w-10 md:w-12 shrink-0 text-[10px] md:text-[11px] font-black text-slate-400 dark:text-slate-500">尺寸</span>
+                                            <div className="space-y-1">
+                                                <span className="block px-0.5 text-[9px] md:text-[11px] font-black text-slate-300 dark:text-slate-600">尺寸</span>
+                                                <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-0.5 md:pb-1">
                                                 {(['all', '22', '24', '25', '27', '32', '34', '49'] as const).map(size => (
                                                     <button
                                                         key={size}
@@ -1293,6 +1301,7 @@ function VisualBuilder({
                                                         {size === 'all' ? '全部' : `${size}寸`}
                                                     </button>
                                                 ))}
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -1403,8 +1412,8 @@ function VisualBuilder({
                         </div>
 
                         {/* Product List Content */}
-                        <div className="flex-1 overflow-y-auto p-3 md:p-6 scroll-smooth overscroll-contain" onScroll={handleModalListScroll}>
-                            <div className="grid gap-2.5 md:gap-4">
+                        <div className="px-2.5 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] md:p-6 scroll-smooth">
+                            <div className="grid gap-2 md:gap-4">
                                 {isModalLoading ? (
                                     <div className="flex flex-col items-center justify-center py-16 md:py-20 text-slate-400">
                                         <div className="w-11 h-11 md:w-12 md:h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-4 ring-1 ring-slate-100">
@@ -1421,7 +1430,7 @@ function VisualBuilder({
                                                     key={item.id}
                                                     ref={(el) => { if (el) modalItemRefs[item.id] = el; }}
                                                     onClick={() => !isOutOfStock && handleSelect(item)}
-                                                    className={`group relative flex items-center gap-3 md:gap-5 p-3 md:p-4 rounded-xl bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none transition-all duration-300 active:scale-[0.98] ${isOutOfStock
+                                                    className={`group relative flex items-center gap-2.5 md:gap-5 p-2.5 md:p-4 rounded-xl bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none transition-all duration-300 active:scale-[0.98] ${isOutOfStock
                                                         ? 'opacity-50 grayscale cursor-not-allowed'
                                                         : 'hover:border-indigo-200 dark:hover:border-[#2D3748] hover:shadow-md dark:hover:shadow-none cursor-pointer hover:-translate-y-0.5'
                                                         }`}
@@ -1481,8 +1490,8 @@ function VisualBuilder({
                                                     </div>
 
                                                     {/* Price Tag & JD Buy */}
-                                                    <div className="flex flex-col items-end gap-1.5 md:gap-2 shrink-0 ml-1 md:ml-2">
-                                                        <div className={`font-bold font-display tracking-tight transition-all ${isOutOfStock ? 'text-slate-400 dark:text-slate-600 text-sm md:text-base' : 'text-lg md:text-xl text-slate-900 dark:text-white md:group-hover:scale-105'}`}>
+                                                    <div className="flex flex-col items-end gap-1 md:gap-2 shrink-0 ml-1 md:ml-2">
+                                                        <div className={`font-bold font-display tracking-tight transition-all ${isOutOfStock ? 'text-slate-400 dark:text-slate-600 text-sm md:text-base' : 'text-base md:text-xl text-slate-900 dark:text-white md:group-hover:scale-105'}`}>
                                                             {isOutOfStock ? '—' : `¥${item.price}`}
                                                         </div>
                                                             <div className="flex items-center gap-1.5">
@@ -1505,7 +1514,7 @@ function VisualBuilder({
                                                                 );
                                                             })()}
                                                             {!isOutOfStock && (
-                                                                <div className="w-8 h-8 rounded-lg md:rounded-xl bg-slate-50 dark:bg-[#1A1A24] group-hover:bg-slate-900 dark:group-hover:bg-[#2D3748] text-slate-400 group-hover:text-white flex items-center justify-center transition-all border border-slate-200 dark:border-[#2D3748] shadow-sm">
+                                                                <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-slate-50 dark:bg-[#1A1A24] group-hover:bg-slate-900 dark:group-hover:bg-[#2D3748] text-slate-400 group-hover:text-white flex items-center justify-center transition-all border border-slate-200 dark:border-[#2D3748] shadow-sm">
                                                                     <ArrowRight size={15} />
                                                                 </div>
                                                             )}
