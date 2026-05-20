@@ -3,6 +3,35 @@ const API_BASE = '/api';
 // 确保 endpoint 以 / 结尾（用于 POST 请求） - 被移除，因为 FastAPI 路由参数不兼容多余斜杠
 
 export class ApiService {
+    private static clearAuthState() {
+        try {
+            localStorage.removeItem('xiaoyu_token');
+            localStorage.removeItem('xiaoyu_user');
+            localStorage.removeItem('xiaoyu_current_user');
+        } catch { /* localStorage not available */ }
+
+        try {
+            window.dispatchEvent(new Event('xiaoyu-auth-expired'));
+        } catch { /* window not available */ }
+    }
+
+    private static async handleResponse(response: Response) {
+        if (response.status === 401 || response.status === 403) {
+            this.clearAuthState();
+        }
+
+        if (!response.ok) {
+            let message = response.statusText;
+            try {
+                const data = await response.clone().json();
+                message = data.detail || data.message || message;
+            } catch { /* response body is not JSON */ }
+            throw new Error(`API Error ${response.status}: ${message}`);
+        }
+
+        return response.json();
+    }
+
     private static safeGetToken(): string | null {
         try {
             return localStorage.getItem('xiaoyu_token');
@@ -26,8 +55,7 @@ export class ApiService {
         const response = await fetch(`${API_BASE}${endpoint}`, {
             headers: this.getHeaders()
         });
-        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-        return response.json();
+        return this.handleResponse(response);
     }
 
     static async post(endpoint: string, data: any) {
@@ -37,8 +65,7 @@ export class ApiService {
             headers: this.getHeaders(),
             body: JSON.stringify(data)
         });
-        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-        return response.json();
+        return this.handleResponse(response);
     }
 
     static async postFile(endpoint: string, formData: FormData) {
@@ -54,8 +81,7 @@ export class ApiService {
             headers: headers,
             body: formData
         });
-        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-        return response.json();
+        return this.handleResponse(response);
     }
 
     static async login(form_data: { username: string, password: string }) {
@@ -64,9 +90,8 @@ export class ApiService {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(form_data)
         });
-        if (!response.ok) throw new Error(`Login failed: ${response.statusText}`);
 
-        const result = await response.json();
+        const result = await this.handleResponse(response);
         if (result.access_token) {
             try {
                 localStorage.setItem('xiaoyu_token', result.access_token);
@@ -80,6 +105,7 @@ export class ApiService {
         try {
             localStorage.removeItem('xiaoyu_token');
             localStorage.removeItem('xiaoyu_user');
+            localStorage.removeItem('xiaoyu_current_user');
         } catch { /* localStorage not available */ }
     }
 
@@ -88,8 +114,7 @@ export class ApiService {
             method: 'DELETE',
             headers: this.getHeaders()
         });
-        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-        return response.json();
+        return this.handleResponse(response);
     }
 
     static async put(endpoint: string, data: any) {
@@ -98,7 +123,6 @@ export class ApiService {
             headers: this.getHeaders(),
             body: JSON.stringify(data)
         });
-        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-        return response.json();
+        return this.handleResponse(response);
     }
 }

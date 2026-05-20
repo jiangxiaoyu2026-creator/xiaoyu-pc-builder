@@ -275,6 +275,16 @@ class StorageService {
         window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 
+    /**
+     * 增量更新产品：只发送修改的字段，避免覆盖其他管理员的修改
+     * 用于 toggleRecommended/toggleDiscount/toggleStatus 等非价格操作
+     */
+    async patchProduct(id: string, fields: Partial<HardwareItem>) {
+        await ApiService.put(`/products/${id}`, fields);
+        clearProductListCache();
+        window.dispatchEvent(new Event('xiaoyu-storage-update'));
+    }
+
     async deleteProduct(id: string) {
         await ApiService.delete(`/products/${id}`);
         clearProductListCache();
@@ -761,6 +771,7 @@ class StorageService {
 
     getCurrentUser(): UserItem | null {
         try {
+            if (!localStorage.getItem('xiaoyu_token')) return null;
             const data = localStorage.getItem(KEYS.CURRENT_USER);
             return data ? JSON.parse(data) : null;
         } catch (e) {
@@ -794,6 +805,8 @@ class StorageService {
 
     logout() {
         localStorage.removeItem(KEYS.CURRENT_USER);
+        localStorage.removeItem('xiaoyu_token');
+        localStorage.removeItem('xiaoyu_user');
     }
 
     // --- Utils ---

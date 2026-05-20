@@ -76,12 +76,22 @@ export default function AdminApp() {
     const [currentUser, setCurrentUser] = useState<UserItem | null>(() => storage.getCurrentUser());
 
     useEffect(() => {
+        const handleAuthExpired = () => setCurrentUser(null);
+        window.addEventListener('xiaoyu-auth-expired', handleAuthExpired);
+        return () => window.removeEventListener('xiaoyu-auth-expired', handleAuthExpired);
+    }, []);
+
+    useEffect(() => {
         if (!currentUser || !['admin', 'sub_admin'].includes(currentUser.role)) {
             // Login handled by LoginModal below
         } else {
             // Verify admin status on load to prevent downgraded users from staying in the penal
             const verifyAdmin = async () => {
                 const users = await storage.getUsers();
+                if (!storage.getCurrentUser()) {
+                    setCurrentUser(null);
+                    return;
+                }
                 const freshUser = users.find(u => u.id === currentUser.id || (u as any)._id === currentUser.id);
                 if (freshUser && freshUser.role !== currentUser.role) {
                     // Role was changed (e.g., downgraded)

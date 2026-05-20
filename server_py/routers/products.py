@@ -4,12 +4,14 @@ from typing import List, Optional
 from ..db import get_session
 from ..models import Hardware, User, PriceHistory
 from .auth import get_current_admin
-from .auth import get_current_admin
 from ..services.ai_service import AiService
 from pydantic import BaseModel
 import uuid
 import json
+import logging
 from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -346,6 +348,12 @@ async def get_spec_values(
             
     return sorted(list(values))
 
+# 前端不允许直接覆盖的受保护字段（只能由后端逻辑维护）
+PROTECTED_FIELDS = {'previousPrice', 'createdAt', 'id'}
+
+# 价格变动安全阈值（超过此比例的变动会被拒绝，除非显式 force）
+PRICE_CHANGE_THRESHOLD = 0.30  # 30%
+
 def _serialize_specs(specs) -> dict:
     """确保 specs 是字典（适应 JSON 字段）"""
     if specs is None:
@@ -422,11 +430,13 @@ async def create_product(
     if existing:
         old_price = existing.price
         for key, value in product_data.items():
+            if key in PROTECTED_FIELDS:
+                continue  # 跳过受保护字段，防止前端覆盖
             if key == "specs":
                 value = _serialize_specs(value)
             if hasattr(existing, key):
                 setattr(existing, key, value)
-        existing.updatedAt = datetime.utcnow().isoformat()
+        existing.updatedAt = (datetime.utcnow() + timedelta(hours=8)).isoformat()
         new_price = existing.price
         # 如果更新了成本或利润，且本次没有显式提供售价，则联动计算
         if any(k in product_data for k in ["costPrice", "profitType", "profitValue"]):
@@ -436,6 +446,11 @@ async def create_product(
                 elif existing.profitType == "percent":
                     existing.price = existing.costPrice * (1 + existing.profitValue / 100)
                 new_price = existing.price
+        # 价格变动安全阈值校验
+        if old_price and old_price > 0 and new_price and new_price > 0:
+            change_pct = abs(new_price - old_price) / old_price
+            if change_pct > PRICE_CHANGE_THRESHOLD and product_data.get("force_price_update") is not True:
+                logger.warning(f"⚠️ 价格变动 {change_pct*100:.1f}% 超过阈值: {existing.brand} {existing.model} {old_price}->{new_price}")
         if existing.price == 0:
             existing.status = "archived"
         # 智能记录价格变动（15分钟合并）
@@ -491,12 +506,14 @@ async def update_product(
 
     old_price = product.price
     for key, value in product_data.items():
+        if key in PROTECTED_FIELDS:
+            continue  # 跳过受保护字段，防止前端覆盖
         if key == "specs":
             value = _serialize_specs(value)
         if hasattr(product, key):
             setattr(product, key, value)
             
-    product.updatedAt = datetime.utcnow().isoformat()
+    product.updatedAt = (datetime.utcnow() + timedelta(hours=8)).isoformat()
 
     # 如果更新了成本或利润，且没有显式更新售价（或者售价为0），则重新计算售价
     # 注意：这里我们假设如果用户在 UI 上手动改了售价，则以售价为准；如果改的是成本/利润，则联动。

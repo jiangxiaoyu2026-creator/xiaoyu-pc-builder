@@ -77,6 +77,27 @@ export default function ClientApp() {
     const [showDiscountSheet, setShowDiscountSheet] = useState(false);
     const [triggerAiModal, setTriggerAiModal] = useState(false);
     const [liveMeta, setLiveMeta] = useState<StreamerLiveMeta>(DEFAULT_LIVE_META);
+    const [isScrolling, setIsScrolling] = useState(false);
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const handleScroll = () => {
+        if (viewMode !== 'visual') return;
+        setIsScrolling(true);
+        if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+        }
+        scrollTimeoutRef.current = setTimeout(() => {
+            setIsScrolling(false);
+        }, 250);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+        };
+    }, []);
     
     // Theme
     const { theme, setTheme } = useTheme();
@@ -662,7 +683,7 @@ export default function ClientApp() {
 
     return (
         <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#FAFAFA] dark:bg-[#0B0B10] font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800 dark:text-slate-200 transition-colors duration-300">
-            <header className={`relative md:sticky top-0 z-40 bg-white/70 dark:bg-[#0B0B10]/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-[#1E293B]/50 transition-all duration-300 ${viewMode === 'visual' ? 'hidden md:block' : ''}`}>
+            <header className="relative md:sticky top-0 z-40 bg-white/70 dark:bg-[#0B0B10]/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-[#1E293B]/50 transition-all duration-300">
                 <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                         <div className="w-9 h-9 bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] rounded-xl flex items-center justify-center shadow-sm dark:shadow-none">
@@ -860,7 +881,7 @@ export default function ClientApp() {
             )}
 
             {/* Application Mobile Bottom Tab Bar */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[45] bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl border-t border-slate-200 dark:border-[#1E293B] pb-safe pt-1 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] dark:shadow-none">
+            <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-[45] bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl border-t border-slate-200 dark:border-[#1E293B] pb-safe pt-1 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] dark:shadow-none transition-all duration-300 ${isScrolling && viewMode === 'visual' ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
                 <div className="flex justify-around items-center h-[56px] px-2 relative">
                     {[
                         { id: 'visual', icon: LayoutGrid, label: '装机' },
@@ -911,7 +932,7 @@ export default function ClientApp() {
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     className="flex-1 min-h-0 w-full max-w-7xl mx-auto overflow-hidden pb-[calc(56px+env(safe-area-inset-bottom)+10px)] md:pb-0"
                 >
-                    <div className="h-full overflow-y-auto custom-scrollbar pb-0" id="main-scroll-container">
+                    <div className="h-full overflow-y-auto custom-scrollbar pb-0" id="main-scroll-container" onScroll={handleScroll}>
                     <Suspense fallback={<div className="flex items-center justify-center h-64"><RefreshCw size={24} className="animate-spin text-indigo-500" /></div>}>
                     {viewMode === 'streamer' && (
                         <StreamerWorkbench
@@ -1126,7 +1147,7 @@ export default function ClientApp() {
             )}
 
             {viewMode === 'visual' && (
-                <footer className="fixed bottom-[60px] md:bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl border-t border-slate-200 dark:border-[#1E293B] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-none">
+                <footer className={`fixed left-0 right-0 z-40 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-xl border-t border-slate-200 dark:border-[#1E293B] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-none transition-all duration-300 ${isScrolling ? 'bottom-0 pb-safe md:bottom-0 md:pb-0' : 'bottom-[60px] pb-0 md:bottom-0 md:pb-0'}`}>
                     <div className="max-w-7xl mx-auto px-3 md:px-4">
                         {/* Mobile: Two-row layout */}
                         <div className="flex md:hidden flex-col gap-1 py-2">

@@ -179,26 +179,24 @@ export default function ProductManager() {
     const toggleStatus = async (id: string) => {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
-        const updated = { ...p, status: (p.status === 'active' ? 'archived' : 'active') as any };
-        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
-        await storage.saveProduct(updated);
+        const newStatus = p.status === 'active' ? 'archived' : 'active';
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? { ...x, status: newStatus as any } : x));
+        await storage.patchProduct(id, { status: newStatus as any });
         loadCategoryCounts();
     };
 
     const toggleRecommended = async (id: string, current: boolean) => {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
-        const updated = { ...p, isRecommended: !current };
-        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
-        await storage.saveProduct(updated);
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? { ...x, isRecommended: !current } : x));
+        await storage.patchProduct(id, { isRecommended: !current });
     };
 
     const toggleDiscount = async (id: string, current: boolean) => {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
-        const updated = { ...p, isDiscount: !current };
-        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
-        await storage.saveProduct(updated);
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? { ...x, isDiscount: !current } : x));
+        await storage.patchProduct(id, { isDiscount: !current });
     };
 
     const handleSort = (key: keyof HardwareItem) => {
@@ -328,19 +326,15 @@ export default function ProductManager() {
     const confirmAiImage = async (id: string) => {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
-        
-        const updated = { ...p, imageSource: 'user' as any };
-        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
-        await storage.saveProduct(updated);
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? { ...x, imageSource: 'user' as any } : x));
+        await storage.patchProduct(id, { imageSource: 'user' as any });
     };
 
     const rejectAiImage = async (id: string) => {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
-        // 拒绝：清空图片并重置来源
-        const updated = { ...p, image: null as any, imageSource: 'user' as any };
-        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
-        await storage.saveProduct(updated);
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? { ...x, image: null as any, imageSource: 'user' as any } : x));
+        await storage.patchProduct(id, { image: null as any, imageSource: 'user' as any });
     };
 
     const handleAutofillSpecs = async () => {
@@ -363,19 +357,15 @@ export default function ProductManager() {
     const confirmAiSpecs = async (id: string) => {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
-        
-        const updated = { ...p, specsSource: 'user' as any };
-        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
-        await storage.saveProduct(updated);
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? { ...x, specsSource: 'user' as any } : x));
+        await storage.patchProduct(id, { specsSource: 'user' as any });
     };
 
     const rejectAiSpecs = async (id: string) => {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
-        // 拒绝：清空参数并重置来源
-        const updated = { ...p, specs: {} as any, specsSource: 'user' as any };
-        setProducts(prev => prev.map(x => String(x.id) === String(id) ? updated : x));
-        await storage.saveProduct(updated);
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? { ...x, specs: {} as any, specsSource: 'user' as any } : x));
+        await storage.patchProduct(id, { specs: {} as any, specsSource: 'user' as any });
     };
 
     const handleDelete = async () => {
