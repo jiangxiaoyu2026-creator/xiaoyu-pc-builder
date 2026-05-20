@@ -1,6 +1,7 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef, type UIEvent } from 'react';
 import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor, Info, Activity, Gamepad2, Bell } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
@@ -327,14 +328,26 @@ function VisualBuilder({
         }, 300);
     }, [buildList, resolution]);
 
-    const openSelector = async (entry: BuildEntry) => {
-        setModalCategory(entry.category);
-        setModalEntryId(entry.id);
+    const resetModalFilters = () => {
         setModalSearch('');
         setModalBrand('all');
         setSortOrder('default');
         setIsBrandsExpanded(false);
+        setRamTypeFilter('all');
+        setDiskCapFilter('all');
+        setCpuTypeFilter('all');
+        setMbPlatformFilter('all');
+        setCoolingTypeFilter('all');
+        setMonitorResolutionFilter('all');
+        setMonitorRefreshFilter('all');
+        setMonitorSizeFilter('all');
         setVisibleItemCount(MODAL_ITEM_BATCH_SIZE);
+    };
+
+    const openSelector = async (entry: BuildEntry) => {
+        setModalCategory(entry.category);
+        setModalEntryId(entry.id);
+        resetModalFilters();
 
         // Fetch items for this specific category
         setIsModalLoading(true);
@@ -1157,63 +1170,64 @@ function VisualBuilder({
             </div>
 
             {/* Premium Modal Category Selector */}
-            {modalCategory && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-                    <div className="bg-[#FAFAFA] dark:bg-[#121218] rounded-2xl w-full max-w-3xl h-[88vh] flex flex-col shadow-2xl dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] overflow-hidden animate-scale-up border border-slate-200 dark:border-[#1E293B]">
+            {modalCategory && typeof document !== 'undefined' && createPortal((
+                <div className="fixed inset-0 z-[120] flex items-end md:items-center justify-center bg-slate-900/60 md:p-4 backdrop-blur-md animate-fade-in">
+                    <div className="bg-[#FAFAFA] dark:bg-[#121218] rounded-t-2xl md:rounded-2xl w-full max-w-3xl h-[92dvh] md:h-[88vh] flex flex-col shadow-2xl dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] overflow-hidden animate-scale-up border border-slate-200 dark:border-[#1E293B]">
                         {/* Modal Header */}
-                        <div className="p-6 border-b border-slate-200 dark:border-[#1E293B] flex flex-col gap-5 bg-white/80 dark:bg-[#1A1A24]/80 backdrop-blur-xl sticky top-0 z-10">
+                        <div className="p-4 md:p-6 border-b border-slate-200 dark:border-[#1E293B] flex flex-col gap-3 md:gap-5 bg-white/95 dark:bg-[#1A1A24]/95 backdrop-blur-xl sticky top-0 z-10">
+                            <div className="md:hidden w-10 h-1 rounded-full bg-slate-200 dark:bg-[#2D3748] mx-auto -mt-1" />
                             <div className="flex justify-between items-center text-slate-900 dark:text-white">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg shadow-slate-200">
+                                <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
+                                    <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-md md:shadow-lg shadow-slate-200 shrink-0">
                                         {getIconByCategory(modalCategory)}
                                     </div>
-                                    <div>
-                                        <h2 className="text-xl font-black tracking-tight leading-none">选择 {CATEGORY_MAP[modalCategory]}</h2>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">产品选择</p>
+                                    <div className="min-w-0">
+                                        <h2 className="text-base md:text-xl font-black tracking-tight leading-none truncate">选择 {CATEGORY_MAP[modalCategory]}</h2>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">共 {filteredItems.length} 个可选方案</p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setModalCategory(null)}
-                                    className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-[#121218] hover:bg-slate-200 dark:hover:bg-[#2D3748] border border-slate-200 dark:border-[#2D3748] rounded-xl transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-90"
+                                    className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-slate-100 dark:bg-[#121218] hover:bg-slate-200 dark:hover:bg-[#2D3748] border border-slate-200 dark:border-[#2D3748] rounded-xl transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white active:scale-90 shrink-0"
                                 >
-                                    <X size={20} strokeWidth={2.5} />
+                                    <X size={18} strokeWidth={2.5} />
                                 </button>
                             </div>
 
-                            <div className="flex flex-col gap-4">
-                                <div className="flex gap-3 items-center">
+                            <div className="flex flex-col gap-3 md:gap-4">
+                                <div className="flex gap-2 md:gap-3 items-center">
                                     <div className="relative flex-1 group">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                                        <Search className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={17} />
                                         <input
                                             ref={(el) => modalSearchInputRef.current = el}
                                             type="text"
                                             value={modalSearch}
                                             onChange={(e) => setModalSearch(e.target.value)}
                                             placeholder={`在 ${CATEGORY_MAP[modalCategory]} 中搜寻方案...`}
-                                            className="w-full bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#2D3748] rounded-xl py-3.5 pl-12 pr-4 text-sm font-bold placeholder:text-slate-400 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all shadow-sm dark:shadow-none"
+                                            className="w-full bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#2D3748] rounded-xl py-3 md:py-3.5 pl-10 md:pl-12 pr-3 md:pr-4 text-[13px] md:text-sm font-bold placeholder:text-slate-400 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all shadow-sm dark:shadow-none"
                                         />
                                     </div>
                                     <button
                                         onClick={() => setSortOrder(prev => prev === 'default' ? 'asc' : prev === 'asc' ? 'desc' : 'default')}
-                                        className={`h-[52px] px-5 rounded-[22px] font-black text-xs flex items-center gap-2 transition-all shrink-0 active:scale-95 ${sortOrder !== 'default'
+                                        className={`h-[46px] md:h-[52px] px-3 md:px-5 rounded-xl md:rounded-[22px] font-black text-[11px] md:text-xs flex items-center gap-1.5 md:gap-2 transition-all shrink-0 active:scale-95 ${sortOrder !== 'default'
                                             ? 'bg-slate-900 dark:bg-[#2D3748] text-white shadow-md border border-slate-800 dark:border-[#1E293B]'
                                             : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none hover:bg-slate-50 dark:hover:bg-[#2D3748]'
                                             }`}
                                     >
                                         <ArrowRight size={16} className={`transition-transform duration-500 ${sortOrder === 'asc' ? '-rotate-90' : sortOrder === 'desc' ? 'rotate-90' : 'rotate-0'}`} />
                                         <span className="tracking-wider">
-                                            {sortOrder === 'default' ? '价格排序' : sortOrder === 'asc' ? '价格最低' : '价格最高'}
+                                            {sortOrder === 'default' ? '排序' : sortOrder === 'asc' ? '低价' : '高价'}
                                         </span>
                                     </button>
                                 </div>
 
-                                <div className="flex items-start gap-3">
-                                    <div className={`flex-1 flex gap-2 ${isBrandsExpanded ? 'flex-wrap' : 'overflow-x-auto no-scrollbar scroll-smooth'} items-center pb-2 px-1 mask-linear-fade`}>
+                                <div className="flex items-start gap-2 md:gap-3">
+                                    <div className={`flex-1 flex gap-1.5 md:gap-2 ${isBrandsExpanded ? 'flex-wrap max-h-24 md:max-h-none overflow-y-auto md:overflow-visible pr-1' : 'overflow-x-auto no-scrollbar scroll-smooth'} items-center pb-1.5 md:pb-2 px-0.5 md:px-1 mask-linear-fade`}>
                                         {availableBrands.map(brand => (
                                             <button
                                                 key={brand}
                                                 onClick={() => setModalBrand(brand)}
-                                                className={`px-4 py-2 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 tap-active uppercase ${modalBrand === brand
+                                                className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 tap-active uppercase ${modalBrand === brand
                                                     ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
                                                     : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                     }`}
@@ -1225,7 +1239,7 @@ function VisualBuilder({
                                     {availableBrands.length > 5 && (
                                         <button
                                             onClick={() => setIsBrandsExpanded(!isBrandsExpanded)}
-                                            className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all shrink-0 mt-0.5 shadow-sm dark:shadow-none border ${isBrandsExpanded ? 'bg-slate-100 dark:bg-[#2D3748] text-slate-900 dark:text-white border-slate-200 dark:border-transparent' : 'bg-white dark:bg-[#121218] text-slate-400 border-slate-200 dark:border-[#2D3748]'}`}
+                                            className={`w-8 h-8 flex items-center justify-center rounded-lg md:rounded-xl transition-all shrink-0 mt-0.5 shadow-sm dark:shadow-none border ${isBrandsExpanded ? 'bg-slate-100 dark:bg-[#2D3748] text-slate-900 dark:text-white border-slate-200 dark:border-transparent' : 'bg-white dark:bg-[#121218] text-slate-400 border-slate-200 dark:border-[#2D3748]'}`}
                                         >
                                             {isBrandsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                         </button>
@@ -1234,14 +1248,14 @@ function VisualBuilder({
     
                                     {/* Monitor filters */}
                                     {modalCategory === 'monitor' && (
-                                        <div className="space-y-2">
-                                            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1">
-                                                <span className="w-12 shrink-0 text-[11px] font-black text-slate-400 dark:text-slate-500">分辨率</span>
+                                        <div className="space-y-1.5 md:space-y-2">
+                                            <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
+                                                <span className="w-10 md:w-12 shrink-0 text-[10px] md:text-[11px] font-black text-slate-400 dark:text-slate-500">分辨率</span>
                                                 {(['all', '1K', '2K', '4K', '5K'] as const).map(resolution => (
                                                     <button
                                                         key={resolution}
                                                         onClick={() => setMonitorResolutionFilter(resolution)}
-                                                        className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${monitorResolutionFilter === resolution
+                                                        className={`px-3 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${monitorResolutionFilter === resolution
                                                             ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
                                                             : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                         }`}
@@ -1250,13 +1264,13 @@ function VisualBuilder({
                                                     </button>
                                                 ))}
                                             </div>
-                                            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1">
-                                                <span className="w-12 shrink-0 text-[11px] font-black text-slate-400 dark:text-slate-500">刷新</span>
+                                            <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
+                                                <span className="w-10 md:w-12 shrink-0 text-[10px] md:text-[11px] font-black text-slate-400 dark:text-slate-500">刷新</span>
                                                 {(['all', '60', '75', '100', '144', '180', '240', '300'] as const).map(refresh => (
                                                     <button
                                                         key={refresh}
                                                         onClick={() => setMonitorRefreshFilter(refresh)}
-                                                        className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${monitorRefreshFilter === refresh
+                                                        className={`px-3 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${monitorRefreshFilter === refresh
                                                             ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
                                                             : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                         }`}
@@ -1265,13 +1279,13 @@ function VisualBuilder({
                                                     </button>
                                                 ))}
                                             </div>
-                                            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar pb-1">
-                                                <span className="w-12 shrink-0 text-[11px] font-black text-slate-400 dark:text-slate-500">尺寸</span>
+                                            <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
+                                                <span className="w-10 md:w-12 shrink-0 text-[10px] md:text-[11px] font-black text-slate-400 dark:text-slate-500">尺寸</span>
                                                 {(['all', '22', '24', '25', '27', '32', '34', '49'] as const).map(size => (
                                                     <button
                                                         key={size}
                                                         onClick={() => setMonitorSizeFilter(size)}
-                                                        className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${monitorSizeFilter === size
+                                                        className={`px-3 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${monitorSizeFilter === size
                                                             ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
                                                             : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                         }`}
@@ -1285,12 +1299,12 @@ function VisualBuilder({
     
                                     {/* DDR4/DDR5 Type Filter - only for RAM */}
                                     {modalCategory === 'ram' && (
-                                        <div className="flex gap-2 items-center">
+                                        <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
                                         {(['all', 'DDR4', 'DDR5'] as const).map(type => (
                                             <button
                                                 key={type}
                                                 onClick={() => setRamTypeFilter(type)}
-                                                className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${ramTypeFilter === type
+                                                className={`px-3 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${ramTypeFilter === type
                                                     ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
                                                     : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
@@ -1303,12 +1317,12 @@ function VisualBuilder({
 
                                 {/* Disk Capacity Filter - only for disk */}
                                 {modalCategory === 'disk' && (
-                                    <div className="flex gap-2 items-center">
+                                    <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
                                         {(['all', '500G', '1T', '2T', '4T'] as const).map(cap => (
                                             <button
                                                 key={cap}
                                                 onClick={() => setDiskCapFilter(cap)}
-                                                className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${diskCapFilter === cap
+                                                className={`px-3 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${diskCapFilter === cap
                                                     ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
                                                     : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
@@ -1321,12 +1335,12 @@ function VisualBuilder({
 
                                 {/* CPU X3D Filter */}
                                 {modalCategory === 'cpu' && (
-                                    <div className="flex gap-2 items-center">
+                                    <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
                                         {(['all', 'X3D'] as const).map(type => (
                                             <button
                                                 key={type}
                                                 onClick={() => setCpuTypeFilter(type)}
-                                                className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${cpuTypeFilter === type
+                                                className={`px-3 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${cpuTypeFilter === type
                                                     ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
                                                     : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
@@ -1339,12 +1353,12 @@ function VisualBuilder({
 
                                 {/* Motherboard Platform Filter */}
                                 {modalCategory === 'mainboard' && (
-                                    <div className="flex gap-2 items-center">
+                                    <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
                                         {(['all', 'AMD', 'Intel'] as const).map(plat => (
                                             <button
                                                 key={plat}
                                                 onClick={() => setMbPlatformFilter(plat)}
-                                                className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${mbPlatformFilter === plat
+                                                className={`px-3 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${mbPlatformFilter === plat
                                                     ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
                                                     : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
@@ -1357,12 +1371,12 @@ function VisualBuilder({
 
                                 {/* Cooling Type Filter */}
                                 {modalCategory === 'cooling' && (
-                                    <div className="flex gap-2 items-center">
+                                    <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
                                         {(['all', 'air', '240', '360'] as const).map(ct => (
                                             <button
                                                 key={ct}
                                                 onClick={() => setCoolingTypeFilter(ct)}
-                                                className={`px-4 py-1.5 rounded-xl text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${coolingTypeFilter === ct
+                                                className={`px-3 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${coolingTypeFilter === ct
                                                     ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border-indigo-500 dark:border-indigo-500/30'
                                                     : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-indigo-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
                                                 }`}
@@ -1372,15 +1386,28 @@ function VisualBuilder({
                                         ))}
                                     </div>
                                 )}
+
+                                <div className="md:hidden flex items-center justify-between rounded-lg bg-slate-50 dark:bg-[#121218] border border-slate-200 dark:border-[#2D3748] px-3 py-2">
+                                    <span className="text-[11px] font-bold text-slate-500">
+                                        当前显示 {visibleModalItems.length}/{filteredItems.length} 件
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={resetModalFilters}
+                                        className="text-[11px] font-black text-indigo-600 dark:text-indigo-400"
+                                    >
+                                        重置筛选
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         {/* Product List Content */}
-                        <div className="flex-1 overflow-y-auto p-6 scroll-smooth" onScroll={handleModalListScroll}>
-                            <div className="grid gap-4">
+                        <div className="flex-1 overflow-y-auto p-3 md:p-6 scroll-smooth overscroll-contain" onScroll={handleModalListScroll}>
+                            <div className="grid gap-2.5 md:gap-4">
                                 {isModalLoading ? (
-                                    <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-4 ring-1 ring-slate-100">
+                                    <div className="flex flex-col items-center justify-center py-16 md:py-20 text-slate-400">
+                                        <div className="w-11 h-11 md:w-12 md:h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg mb-4 ring-1 ring-slate-100">
                                             <div className="animate-spin rounded-full h-5 w-5 border-2 border-slate-200 border-t-indigo-600"></div>
                                         </div>
                                         <p className="text-xs font-black uppercase tracking-widest text-slate-300">正在同步数据库...</p>
@@ -1394,20 +1421,20 @@ function VisualBuilder({
                                                     key={item.id}
                                                     ref={(el) => { if (el) modalItemRefs[item.id] = el; }}
                                                     onClick={() => !isOutOfStock && handleSelect(item)}
-                                                    className={`group relative flex items-center gap-5 p-4 rounded-xl bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none transition-all duration-300 active:scale-[0.98] ${isOutOfStock
+                                                    className={`group relative flex items-center gap-3 md:gap-5 p-3 md:p-4 rounded-xl bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none transition-all duration-300 active:scale-[0.98] ${isOutOfStock
                                                         ? 'opacity-50 grayscale cursor-not-allowed'
                                                         : 'hover:border-indigo-200 dark:hover:border-[#2D3748] hover:shadow-md dark:hover:shadow-none cursor-pointer hover:-translate-y-0.5'
                                                         }`}
                                                 >
                                                     {/* Product Image Wrapper */}
-                                                    <div className="w-20 h-20 bg-slate-50 dark:bg-[#1A1A24] rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition-all overflow-hidden border border-slate-200 dark:border-[#2D3748] shrink-0 relative">
+                                                    <div className="w-14 h-14 md:w-20 md:h-20 bg-slate-50 dark:bg-[#1A1A24] rounded-lg md:rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition-all overflow-hidden border border-slate-200 dark:border-[#2D3748] shrink-0 relative">
                                                         {item.image ? (
                                                             <img
                                                                 src={item.image}
                                                                 alt={item.model}
                                                                 loading="lazy"
                                                                 decoding="async"
-                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                                className="w-full h-full object-cover md:group-hover:scale-110 transition-transform duration-500"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     setPreviewImage(item.image!);
@@ -1423,7 +1450,7 @@ function VisualBuilder({
 
                                                     {/* Product Info */}
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-1.5">
+                                                        <div className="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-1.5 overflow-hidden">
                                                             <span className="text-[9px] font-black uppercase text-indigo-500 dark:text-indigo-300 tracking-widest bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded-md">
                                                                 {item.brand}
                                                             </span>
@@ -1433,10 +1460,10 @@ function VisualBuilder({
                                                                 <span className="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-md font-black uppercase shadow-sm shadow-emerald-200">新品</span>
                                                             )}
                                                         </div>
-                                                        <h4 className="font-bold text-slate-900 dark:text-slate-100 text-[15px] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug tracking-tight mb-2">
+                                                        <h4 className="font-bold text-slate-900 dark:text-slate-100 text-[13px] md:text-[15px] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug tracking-tight mb-1 md:mb-2 line-clamp-2">
                                                             {item.model}
                                                         </h4>
-                                                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-400 font-bold">
+                                                        <div className="hidden sm:flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-400 font-bold">
                                                                 {(() => {
                                                                     const specsObj = parseSpecsObject(item.specs);
     
@@ -1454,8 +1481,8 @@ function VisualBuilder({
                                                     </div>
 
                                                     {/* Price Tag & JD Buy */}
-                                                    <div className="flex flex-col items-end gap-2 shrink-0 ml-2">
-                                                        <div className={`font-bold font-display tracking-tight transition-all ${isOutOfStock ? 'text-slate-400 dark:text-slate-600 text-base' : 'text-xl text-slate-900 dark:text-white group-hover:scale-105'}`}>
+                                                    <div className="flex flex-col items-end gap-1.5 md:gap-2 shrink-0 ml-1 md:ml-2">
+                                                        <div className={`font-bold font-display tracking-tight transition-all ${isOutOfStock ? 'text-slate-400 dark:text-slate-600 text-sm md:text-base' : 'text-lg md:text-xl text-slate-900 dark:text-white md:group-hover:scale-105'}`}>
                                                             {isOutOfStock ? '—' : `¥${item.price}`}
                                                         </div>
                                                             <div className="flex items-center gap-1.5">
@@ -1469,17 +1496,17 @@ function VisualBuilder({
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         onClick={(e) => e.stopPropagation()}
-                                                                        className="flex items-center gap-1 px-2.5 py-1.5 bg-[#E2231A] hover:bg-[#C81912] text-white text-[10px] font-black rounded-lg transition-all shadow-sm hover:shadow-md hover:shadow-red-200 active:scale-95 whitespace-nowrap"
+                                                                        className="flex items-center gap-1 px-2 md:px-2.5 py-1.5 bg-[#E2231A] hover:bg-[#C81912] text-white text-[10px] font-black rounded-lg transition-all shadow-sm hover:shadow-md hover:shadow-red-200 active:scale-95 whitespace-nowrap"
                                                                         title="在京东购买"
                                                                     >
                                                                         <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current"><path d="M19.451 4.926c-.398-.354-.93-.561-1.49-.561h-.001c-.563 0-1.092.207-1.49.561L12 8.926l-4.47-4c-.398-.354-.93-.561-1.49-.561-.563 0-1.092.207-1.49.561L2 7.076V18.5a1.5 1.5 0 001.5 1.5h17a1.5 1.5 0 001.5-1.5V7.076l-2.549-2.15z"/></svg>
-                                                                        京东购买
+                                                                        <span className="hidden md:inline">京东购买</span>
                                                                     </a>
                                                                 );
                                                             })()}
                                                             {!isOutOfStock && (
-                                                                <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-[#1A1A24] group-hover:bg-slate-900 dark:group-hover:bg-[#2D3748] text-slate-400 group-hover:text-white flex items-center justify-center transition-all border border-slate-200 dark:border-[#2D3748] shadow-sm">
-                                                                    <ArrowRight size={16} />
+                                                                <div className="w-8 h-8 rounded-lg md:rounded-xl bg-slate-50 dark:bg-[#1A1A24] group-hover:bg-slate-900 dark:group-hover:bg-[#2D3748] text-slate-400 group-hover:text-white flex items-center justify-center transition-all border border-slate-200 dark:border-[#2D3748] shadow-sm">
+                                                                    <ArrowRight size={15} />
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1488,12 +1515,12 @@ function VisualBuilder({
                                             );
                                         })}
                                         {filteredItems.length === 0 && (
-                                            <div className="flex flex-col items-center justify-center py-20 text-slate-300">
-                                                <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 opacity-50">
-                                                    <Search size={32} strokeWidth={1.5} />
+                                            <div className="flex flex-col items-center justify-center py-16 md:py-20 text-slate-300">
+                                                <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 opacity-50">
+                                                    <Search size={28} strokeWidth={1.5} />
                                                 </div>
                                                 <p className="text-sm font-black uppercase tracking-widest italic">未找到匹配的产品</p>
-                                                <button onClick={() => { setModalSearch(''); setModalBrand('all'); }} className="mt-4 text-xs font-bold text-indigo-500 hover:text-indigo-700 underline underline-offset-4">重置筛选条件</button>
+                                                <button onClick={resetModalFilters} className="mt-4 text-xs font-bold text-indigo-500 hover:text-indigo-700 underline underline-offset-4">重置筛选条件</button>
                                             </div>
                                         )}
                                     </>
@@ -1502,8 +1529,7 @@ function VisualBuilder({
                         </div>
                     </div>
                 </div >
-            )
-            }
+            ), document.body)}
 
             {showAiModal && <AiGenerateModal key="ai-modal" onClose={() => setShowAiModal(false)} onSubmit={handleAiBuild} />}
         </div >
