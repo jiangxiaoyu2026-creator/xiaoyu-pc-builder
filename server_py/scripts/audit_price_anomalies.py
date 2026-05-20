@@ -1,8 +1,8 @@
 """
 Audit hardware price anomalies.
 
-Default mode is read-only. Use explicit flags to clean public-product fields or
-delete invalid PriceHistory rows after reviewing the output.
+Default mode is read-only. Zero-price history can be a normal archive record;
+this script separates it from suspicious positive-price jumps.
 """
 
 import argparse
@@ -38,7 +38,7 @@ def _history_ratio(change: PriceHistory) -> str:
     return f"{max(old_price, new_price) / min(old_price, new_price):.2f}x"
 
 
-def audit(limit: int, fix_public_products: bool, delete_invalid_history: bool):
+def audit(limit: int, fix_public_products: bool, delete_extreme_history: bool):
     with Session(engine) as session:
         active_products = session.exec(
             select(Hardware).where(Hardware.status == "active")
@@ -53,9 +53,15 @@ def audit(limit: int, fix_public_products: bool, delete_invalid_history: bool):
         ]
 
         history_rows = session.exec(select(PriceHistory)).all()
-        invalid_history_rows = [
+        zero_history_rows = [
             h for h in history_rows
-            if not is_valid_price_history_change(h.oldPrice, h.newPrice)
+            if (h.oldPrice or 0) <= 0 or (h.newPrice or 0) <= 0
+        ]
+        extreme_history_rows = [
+            h for h in history_rows
+            if (h.oldPrice or 0) > 0
+            and (h.newPrice or 0) > 0
+            and not is_valid_price_history_change(h.oldPrice, h.newPrice)
         ]
 
         _print_items(
@@ -71,8 +77,17 @@ def audit(limit: int, fix_public_products: bool, delete_invalid_history: bool):
             limit,
         )
         _print_items(
-            "异常 PriceHistory",
-            invalid_history_rows,
+            "下架/无价 PriceHistory（正常保留，前台趋势会过滤）",
+            zero_history_rows,
+            lambda h: (
+                f"{h.id} | {h.category} | {h.hardwareName} | "
+                f"{h.oldPrice}->{h.newPrice} | {h.changedAt}"
+            ),
+            limit,
+        )
+        _print_items(
+            "倍率异常 PriceHistory",
+            extreme_history_rows,
             lambda h: (
                 f"{h.id} | {h.category} | {h.hardwareName} | "
                 f"{h.oldPrice}->{h.newPrice} | ratio={_history_ratio(h)} | {h.changedAt}"
@@ -90,10 +105,10 @@ def audit(limit: int, fix_public_products: bool, delete_invalid_history: bool):
                 session.add(product)
             changed = bool(active_zero_products or bad_previous_products)
 
-        if delete_invalid_history:
-            for row in invalid_history_rows:
+        if delete_extreme_history:
+            for row in extreme_history_rows:
                 session.delete(row)
-            changed = changed or bool(invalid_history_rows)
+            changed = changed or bool(extreme_history_rows)
 
         if changed:
             session.commit()
@@ -111,13 +126,13 @@ if __name__ == "__main__":
         help="归档 active price<=0 商品，并清空倍率异常的 previousPrice",
     )
     parser.add_argument(
-        "--delete-invalid-history",
+        "--delete-extreme-history",
         action="store_true",
-        help="删除 old/new<=0 或倍率超过 3x 的 PriceHistory 记录",
+        help="删除 old/new 都大于 0 且倍率超过 3x 的 PriceHistory 记录",
     )
     args = parser.parse_args()
     audit(
         limit=args.limit,
         fix_public_products=args.fix_public_products,
-        delete_invalid_history=args.delete_invalid_history,
+        delete_extreme_history=args.delete_extreme_history,
     )

@@ -29,6 +29,8 @@ def sanitize_previous_price(price, previous_price):
 
 
 def is_valid_price_history_change(old_price, new_price, max_ratio: float = MAX_HISTORY_PRICE_RATIO) -> bool:
+    # Public trend/report visibility rule. Zero-price rows can be valid archive records,
+    # but should not participate in market movement charts.
     old = _positive_float(old_price)
     new = _positive_float(new_price)
     if old <= 0 or new <= 0:
@@ -36,7 +38,13 @@ def is_valid_price_history_change(old_price, new_price, max_ratio: float = MAX_H
     return max(old, new) / min(old, new) <= max_ratio
 
 
-def validate_price_change(old_price, new_price, force: bool = False, threshold: float = PRICE_CHANGE_THRESHOLD):
+def validate_price_change(
+    old_price,
+    new_price,
+    force: bool = False,
+    threshold: float = PRICE_CHANGE_THRESHOLD,
+    allow_zero_archive: bool = False,
+):
     if old_price == new_price or old_price is None:
         return
     if new_price is None:
@@ -46,8 +54,12 @@ def validate_price_change(old_price, new_price, force: bool = False, threshold: 
     new = float(new_price)
     if force:
         return
-    if old > 0 and new <= 0:
-        raise PriceSafetyError("价格从有效值变为 0，请改用下架状态；如确需写入 0 元，请使用 force_price_update")
+    if new < 0:
+        raise PriceSafetyError("价格不能小于 0")
+    if old > 0 and new == 0:
+        if allow_zero_archive:
+            return
+        raise PriceSafetyError("价格从有效值变为 0，请确认该商品将被下架")
     if old > 0 and new > 0:
         change_pct = abs(new - old) / old
         if change_pct > threshold:

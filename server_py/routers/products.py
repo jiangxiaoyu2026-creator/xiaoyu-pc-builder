@@ -357,9 +357,20 @@ async def get_spec_values(
 # 前端不允许直接覆盖的受保护字段（只能由后端逻辑维护）
 PROTECTED_FIELDS = {'previousPrice', 'createdAt', 'id'}
 
-def _validate_price_change(product: Hardware, old_price: float, new_price: float, force: bool = False):
+def _validate_price_change(
+    product: Hardware,
+    old_price: float,
+    new_price: float,
+    force: bool = False,
+    allow_zero_archive: bool = False,
+):
     try:
-        validate_price_change(old_price, new_price, force=force)
+        validate_price_change(
+            old_price,
+            new_price,
+            force=force,
+            allow_zero_archive=allow_zero_archive,
+        )
     except PriceSafetyError as exc:
         logger.warning(
             "Rejected unsafe price change: %s %s %s->%s",
@@ -462,7 +473,13 @@ async def create_product(
                 elif existing.profitType == "percent":
                     existing.price = existing.costPrice * (1 + existing.profitValue / 100)
                 new_price = existing.price
-        _validate_price_change(existing, old_price, new_price, product_data.get("force_price_update") is True)
+        _validate_price_change(
+            existing,
+            old_price,
+            new_price,
+            product_data.get("force_price_update") is True,
+            allow_zero_archive=True,
+        )
         if existing.price == 0:
             existing.status = "archived"
         # 智能记录价格变动（15分钟合并）
@@ -539,7 +556,13 @@ async def update_product(
                 product.price = product.costPrice * (1 + product.profitValue / 100)
 
     new_price = product.price
-    _validate_price_change(product, old_price, new_price, product_data.get("force_price_update") is True)
+    _validate_price_change(
+        product,
+        old_price,
+        new_price,
+        product_data.get("force_price_update") is True,
+        allow_zero_archive=True,
+    )
     if product.price == 0:
         product.status = "archived"
         
