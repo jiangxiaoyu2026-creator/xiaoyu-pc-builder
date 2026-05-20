@@ -4,10 +4,14 @@ from typing import List, Optional
 from ..db import get_session
 from ..models import DailyStat, User, Order, Hardware, UsedItem, Config, RecycleRequest, PriceHistory
 from .auth import get_current_admin, get_current_streamer_or_admin
+from ..services.price_safety import is_valid_price_history_change
 from datetime import datetime, timedelta
 import time
 
 router = APIRouter()
+
+def _is_valid_trend_change(change: PriceHistory) -> bool:
+    return is_valid_price_history_change(change.oldPrice, change.newPrice)
 
 @router.get("/")
 @router.get("")
@@ -159,7 +163,7 @@ async def get_price_trends(
         query = query.where(PriceHistory.category == category)
     query = query.order_by(PriceHistory.changedAt.desc())
     
-    changes = session.exec(query.limit(3000)).all()
+    changes = [c for c in session.exec(query.limit(3000)).all() if _is_valid_trend_change(c)]
     
     # Optional subcategory filtering (DDR4/5 or specific spec)
     if subcategory and category in ['ram', 'disk']:
@@ -313,11 +317,10 @@ async def get_public_category_trends(
     
     changes = session.exec(query.limit(1000)).all()
     
-    # 剔除价格变为0的数据
-    valid_changes = []
-    for c in changes:
-        if c.oldPrice and c.newPrice and c.oldPrice > 0 and c.newPrice > 0 and getattr(c, 'changeAmount', 0) != 0:
-            valid_changes.append(c)
+    valid_changes = [
+        c for c in changes
+        if _is_valid_trend_change(c) and getattr(c, 'changeAmount', 0) != 0
+    ]
             
     groups = {}
     for c in valid_changes:
@@ -379,7 +382,7 @@ async def get_public_price_trends(
     
     # Get recent price changes
     query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff).order_by(PriceHistory.changedAt.desc())
-    changes = session.exec(query.limit(200)).all() # 限制给前台的数据量
+    changes = [c for c in session.exec(query.limit(200)).all() if _is_valid_trend_change(c)] # 限制给前台的数据量
     
     # Today's summary
     now_cst = datetime.utcnow() + timedelta(hours=8)
@@ -476,7 +479,7 @@ async def get_product_price_history(
         query = query.where(PriceHistory.hardwareId == hardware_id)
     query = query.order_by(PriceHistory.changedAt.asc())
 
-    changes = session.exec(query.limit(5000)).all()
+    changes = [c for c in session.exec(query.limit(5000)).all() if _is_valid_trend_change(c)]
 
     # --- Build per-product DAILY price timeline ---
     # Reconstruct full daily price for each product using backward reconstruction
@@ -716,6 +719,7 @@ async def get_market_overview(
         .order_by(PriceHistory.changedAt.desc())
         .limit(5000)
     ).all()
+    changes = [c for c in changes if _is_valid_trend_change(c)]
 
     # 2. Today's summary
     today_changes = [c for c in changes if c.changedAt.startswith(today)]

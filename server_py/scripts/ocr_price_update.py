@@ -13,6 +13,7 @@ OCR 批量改价工具 (ocr_price_update.py)
   --profit-type     利润类型：percent（百分比）或 fixed（固定金额），默认 percent
   --profit          利润数值，默认 15（即 15%）
   --category        可选，限定只更新某类别（如 cpu, gpu）
+  --force-price-update  跳过 30% 价格安全阈值（人工确认后使用）
 """
 
 import os
@@ -30,6 +31,7 @@ from sqlmodel import Session, select
 from server_py.models import Hardware
 from server_py.db import engine
 from server_py.models import Setting
+from server_py.services.price_safety import PriceSafetyError, validate_price_change
 from openai import OpenAI
 
 
@@ -156,7 +158,8 @@ def run_ocr_price_update(
     dry_run: bool = True,
     profit_type: str = "percent",
     profit_value: float = 15.0,
-    category_filter: Optional[str] = None
+    category_filter: Optional[str] = None,
+    force_price_update: bool = False
 ):
     """主函数"""
     if not os.path.exists(image_path):
@@ -166,6 +169,8 @@ def run_ocr_price_update(
     print(f"\n{'🔍 [预览模式]' if dry_run else '✅ [执行模式]'} OCR 批量改价工具")
     print(f"  📷 图片: {image_path}")
     print(f"  💰 利润设置: {profit_type} / {profit_value}{'%' if profit_type == 'percent' else '元'}")
+    if force_price_update:
+        print("  ⚠️ 已开启强制价格写入，将跳过 30% 安全阈值")
     if category_filter:
         print(f"  🔧 仅更新分类: {category_filter}")
     print("-" * 60)
@@ -214,6 +219,13 @@ def run_ocr_price_update(
                     new_price = new_cost * (1 + profit_value / 100)
                 else:
                     new_price = new_cost + profit_value
+
+                try:
+                    validate_price_change(matched.price, new_price, force=force_price_update)
+                except PriceSafetyError as e:
+                    print(f"  ⚠️ 跳过 [{matched.brand} {matched.model}]：{e}")
+                    skipped_count += 1
+                    continue
                 
                 action_str = (
                     f"  ✅ [{confidence.upper()}] {brand} {model_name}\n"
@@ -253,6 +265,7 @@ if __name__ == "__main__":
     parser.add_argument("--profit-type", choices=["percent", "fixed"], default="percent", help="利润类型")
     parser.add_argument("--profit", type=float, default=15.0, help="利润数值（百分比或固定金额）")
     parser.add_argument("--category", default=None, help="限定分类（如 cpu, gpu）")
+    parser.add_argument("--force-price-update", action="store_true", help="跳过 30% 价格安全阈值")
     
     args = parser.parse_args()
     
@@ -264,5 +277,6 @@ if __name__ == "__main__":
         dry_run=is_dry_run,
         profit_type=args.profit_type,
         profit_value=args.profit,
-        category_filter=args.category
+        category_filter=args.category,
+        force_price_update=args.force_price_update
     )

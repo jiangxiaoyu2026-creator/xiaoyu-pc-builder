@@ -8,6 +8,7 @@ from collections import defaultdict
 
 from ..db import get_session
 from ..models import PriceHistory, Hardware
+from ..services.price_safety import is_valid_price_history_change
 
 router = APIRouter()
 
@@ -67,6 +68,7 @@ async def get_market_report_data(
     changes = session.exec(
         query.order_by(PriceHistory.changeAmount.asc())
     ).all()
+    changes = [c for c in changes if is_valid_price_history_change(c.oldPrice, c.newPrice)]
     
     # 按照正宗变动分组
     drops = [c for c in changes if c.changeAmount < 0]
@@ -186,6 +188,7 @@ async def get_date_range_comparison(
     
     query = query.order_by(PriceHistory.changedAt.asc())
     all_changes = session.exec(query).all()
+    all_changes = [c for c in all_changes if is_valid_price_history_change(c.oldPrice, c.newPrice)]
     
     if not all_changes:
         now_cst = datetime.utcnow() + timedelta(hours=8)
@@ -294,4 +297,3 @@ async def get_date_range_comparison(
             "categories": dict(categories_data)
         }
     }
-

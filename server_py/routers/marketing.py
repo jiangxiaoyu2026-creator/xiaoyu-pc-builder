@@ -5,10 +5,14 @@ from ..db import get_session
 from ..models import Hardware, PriceHistory, User
 from .auth import get_current_admin
 from ..services.ai_service import AiService
+from ..services.price_safety import is_valid_price_history_change
 from datetime import datetime, timedelta
 import collections
 
 router = APIRouter()
+
+def _valid_history(change: PriceHistory) -> bool:
+    return is_valid_price_history_change(change.oldPrice, change.newPrice)
 
 @router.get("/daily-summary")
 async def get_marketing_summary(
@@ -32,8 +36,9 @@ async def get_marketing_summary(
             select(PriceHistory)
             .where(PriceHistory.changedAt >= start_date)
             .order_by(func.abs(PriceHistory.changeAmount).desc()) # Biggest absolute changes
-            .limit(50)
+            .limit(200)
         ).all()
+        recent_changes = [c for c in recent_changes if _valid_history(c)][:50]
         
         # 2. Fetch All-time Lows (Simple approximation: min price in history or current)
         # In a real app, we'd have a specific column, but here we scan PriceHistory
@@ -41,11 +46,13 @@ async def get_marketing_summary(
         # This is a bit heavy, in production we should cache this or use a materialized view
         # For now, let's just get items changed in the last 30 days
         recent_history = session.exec(
-            select(PriceHistory.hardwareId, func.min(PriceHistory.newPrice))
-            .group_by(PriceHistory.hardwareId)
+            select(PriceHistory.hardwareId, PriceHistory.oldPrice, PriceHistory.newPrice)
+            .where(PriceHistory.oldPrice > 0, PriceHistory.newPrice > 0)
         ).all()
-        for hw_id, min_price in recent_history:
-            all_time_lows[hw_id] = min_price
+        for hw_id, old_price, new_price in recent_history:
+            if not is_valid_price_history_change(old_price, new_price):
+                continue
+            all_time_lows[hw_id] = min(all_time_lows.get(hw_id, new_price), new_price)
 
         # 3. Build Category Highlights
         # For each major category, pick the most popular/relevant items
@@ -63,12 +70,13 @@ async def get_marketing_summary(
             cat_data = []
             for item in items:
                 # Find yesterday's price (latest change before today)
-                yesterday_price_record = session.exec(
+                yesterday_price_records = session.exec(
                     select(PriceHistory)
                     .where(PriceHistory.hardwareId == item.id, PriceHistory.changedAt < today_start)
                     .order_by(PriceHistory.changedAt.desc())
-                    .limit(1)
-                ).first()
+                    .limit(20)
+                ).all()
+                yesterday_price_record = next((c for c in yesterday_price_records if _valid_history(c)), None)
                 
                 yesterday_price = yesterday_price_record.newPrice if yesterday_price_record else item.price
                 
@@ -125,8 +133,9 @@ def generate_daily_marketing(
         select(PriceHistory)
         .where(PriceHistory.changedAt >= today_start)
         .order_by(PriceHistory.changeAmount.asc())
-        .limit(30)
+        .limit(100)
     ).all()
+    today_changes = [c for c in today_changes if _valid_history(c)][:30]
     
     # 按品类分组，给 AI 更有结构的数据
     grouped: dict = {}
@@ -255,11 +264,13 @@ def get_category_trends(
             total = 0
             for item in hw_list:
                 # 1. Try to find the latest price BEFORE or AT day_start
-                ph_before = session.exec(
+                ph_before_records = session.exec(
                     select(PriceHistory)
                     .where(PriceHistory.hardwareId == item.id, PriceHistory.changedAt <= day_start)
                     .order_by(PriceHistory.changedAt.desc())
-                ).first()
+                    .limit(20)
+                ).all()
+                ph_before = next((c for c in ph_before_records if _valid_history(c)), None)
                 
                 if ph_before:
                     total += ph_before.newPrice
@@ -267,11 +278,13 @@ def get_category_trends(
                     
                 # 2. If no history before, find the EARLIEST price AFTER day_start
                 # This represents the price before the first recorded change!
-                ph_after = session.exec(
+                ph_after_records = session.exec(
                     select(PriceHistory)
                     .where(PriceHistory.hardwareId == item.id, PriceHistory.changedAt > day_start)
                     .order_by(PriceHistory.changedAt.asc())
-                ).first()
+                    .limit(20)
+                ).all()
+                ph_after = next((c for c in ph_after_records if _valid_history(c)), None)
                 
                 if ph_after:
                     total += ph_after.oldPrice
@@ -308,4 +321,3 @@ def get_category_trends(
     # Sort by current average price ascending
     results.sort(key=lambda x: x["currentAvg"])
     return results[:15] # Limit to 15 rows for neatness
-

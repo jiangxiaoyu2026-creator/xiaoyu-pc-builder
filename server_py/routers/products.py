@@ -5,6 +5,7 @@ from ..db import get_session
 from ..models import Hardware, User, PriceHistory
 from .auth import get_current_admin
 from ..services.ai_service import AiService
+from ..services.price_safety import PriceSafetyError, sanitize_previous_price, validate_price_change
 from pydantic import BaseModel
 import uuid
 import json
@@ -14,6 +15,11 @@ from datetime import datetime, timedelta
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+def _dump_public_product(hw: Hardware) -> dict:
+    data = hw.model_dump()
+    data["previousPrice"] = sanitize_previous_price(hw.price, hw.previousPrice)
+    return data
 
 @router.get("/", response_model=dict)
 @router.get("", response_model=dict)
@@ -26,8 +32,8 @@ async def get_products(
     page_size: int = 20,
     session: Session = Depends(get_session)
 ):
-    # Only return active products for public API
-    query = select(Hardware).where(Hardware.status == "active")
+    # Only return sellable products for public API; 0 means unpriced/archived.
+    query = select(Hardware).where(Hardware.status == "active", Hardware.price > 0)
     
     if category:
         query = query.where(Hardware.category == category)
@@ -50,7 +56,7 @@ async def get_products(
         
     # Count total
     from sqlalchemy import func
-    count_query = select(func.count()).select_from(Hardware).where(Hardware.status == "active")
+    count_query = select(func.count()).select_from(Hardware).where(Hardware.status == "active", Hardware.price > 0)
     if category: count_query = count_query.where(Hardware.category == category)
     if brand: count_query = count_query.where(Hardware.brand == brand)
     if is_recommended is not None: count_query = count_query.where(Hardware.isRecommended == is_recommended)
@@ -67,7 +73,7 @@ async def get_products(
     offset = (page - 1) * page_size
     results = session.exec(query.order_by(Hardware.sortOrder).offset(offset).limit(page_size)).all()
     
-    products = [hw.model_dump() for hw in results]
+    products = [_dump_public_product(hw) for hw in results]
         
     return {
         "items": products,
@@ -108,7 +114,7 @@ async def get_products_batch(
     if missing_ids:
         print(f"DIAGNOSTIC - Batch Products Missing: {missing_ids}")
     
-    products = [hw.model_dump() for hw in results]
+    products = [_dump_public_product(hw) for hw in results]
     
     # 保持请求中的顺序
     id_map = {p["id"]: p for p in products}
@@ -351,8 +357,18 @@ async def get_spec_values(
 # 前端不允许直接覆盖的受保护字段（只能由后端逻辑维护）
 PROTECTED_FIELDS = {'previousPrice', 'createdAt', 'id'}
 
-# 价格变动安全阈值（超过此比例的变动会被拒绝，除非显式 force）
-PRICE_CHANGE_THRESHOLD = 0.30  # 30%
+def _validate_price_change(product: Hardware, old_price: float, new_price: float, force: bool = False):
+    try:
+        validate_price_change(old_price, new_price, force=force)
+    except PriceSafetyError as exc:
+        logger.warning(
+            "Rejected unsafe price change: %s %s %s->%s",
+            product.brand,
+            product.model,
+            old_price,
+            new_price,
+        )
+        raise HTTPException(status_code=400, detail=str(exc))
 
 def _serialize_specs(specs) -> dict:
     """确保 specs 是字典（适应 JSON 字段）"""
@@ -446,11 +462,7 @@ async def create_product(
                 elif existing.profitType == "percent":
                     existing.price = existing.costPrice * (1 + existing.profitValue / 100)
                 new_price = existing.price
-        # 价格变动安全阈值校验
-        if old_price and old_price > 0 and new_price and new_price > 0:
-            change_pct = abs(new_price - old_price) / old_price
-            if change_pct > PRICE_CHANGE_THRESHOLD and product_data.get("force_price_update") is not True:
-                logger.warning(f"⚠️ 价格变动 {change_pct*100:.1f}% 超过阈值: {existing.brand} {existing.model} {old_price}->{new_price}")
+        _validate_price_change(existing, old_price, new_price, product_data.get("force_price_update") is True)
         if existing.price == 0:
             existing.status = "archived"
         # 智能记录价格变动（15分钟合并）
@@ -527,6 +539,7 @@ async def update_product(
                 product.price = product.costPrice * (1 + product.profitValue / 100)
 
     new_price = product.price
+    _validate_price_change(product, old_price, new_price, product_data.get("force_price_update") is True)
     if product.price == 0:
         product.status = "archived"
         
@@ -694,4 +707,3 @@ async def get_jd_bind_stats(
         "bound": bound_count,
         "unbound": (total or 0) - bound_count
     }
-
