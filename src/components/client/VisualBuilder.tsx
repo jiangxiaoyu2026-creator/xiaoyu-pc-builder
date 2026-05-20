@@ -577,48 +577,48 @@ function VisualBuilder({
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     const renderGameFpsSection = () => (
-        <div className="bg-[#F6F6FD] dark:bg-[#121218] lg:rounded-[20px] p-4 relative overflow-hidden">
-            <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
+        <div className="bg-[#F6F6FD] dark:bg-[#121218] lg:bg-white lg:dark:bg-[#121218] lg:rounded-xl lg:border lg:border-slate-200 lg:dark:border-[#1E293B] p-4 lg:p-3 relative overflow-hidden lg:shadow-sm lg:dark:shadow-none">
+            <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/10 lg:bg-indigo-500/[0.04] rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
             
-            <div className="flex items-center justify-between mb-5 relative z-10">
-                <h3 className="font-extrabold text-slate-900 dark:text-white text-[14px] flex items-center gap-1.5 tracking-wide">
-                    <Gamepad2 size={16} className="text-indigo-500" />
+            <div className="flex items-center justify-between mb-5 lg:mb-3 relative z-10">
+                <h3 className="font-extrabold text-slate-900 dark:text-white text-[14px] lg:text-[12px] flex items-center gap-1.5 tracking-wide">
+                    <Gamepad2 size={16} className="text-indigo-500 lg:w-3.5 lg:h-3.5" />
                     游戏试玩体验
                 </h3>
-                <div className="flex gap-1 bg-white dark:bg-[#1A1A24] p-0.5 rounded-[12px] shadow-sm">
+                <div className="flex gap-1 bg-white dark:bg-[#1A1A24] lg:bg-slate-100 lg:dark:bg-[#1A1A24] p-0.5 rounded-[12px] lg:rounded-lg shadow-sm lg:shadow-none border border-transparent lg:border-slate-200 lg:dark:border-[#2D3748]">
                     {[1080, 1440, 2160].map(res => (
                         <button
                             key={res}
                             onClick={() => setResolution(res)}
-                            className={`text-[9px] font-black px-3 py-1.5 rounded-[10px] transition-all uppercase tracking-wider ${resolution === res ? 'bg-[#5B5CE6] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'}`}
+                            className={`text-[9px] font-black px-3 lg:px-2.5 py-1.5 lg:py-1 rounded-[10px] lg:rounded-md transition-all uppercase tracking-wider ${resolution === res ? 'bg-[#5B5CE6] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'}`}
                         >
                             {res === 1080 ? '1080P' : res === 1440 ? '2K' : '4K'}
                         </button>
                     ))}
                 </div>
             </div>
-            <div className="space-y-3.5 relative z-10 min-h-[140px]">
+            <div className="space-y-3.5 lg:space-y-2.5 relative z-10 min-h-[140px] lg:min-h-[120px]">
                 {loadingFps ? (
-                    <div className="py-12 flex flex-col items-center justify-center text-indigo-400 gap-3">
-                        <RefreshCw size={24} className="animate-spin opacity-80" />
-                        <div className="text-xs font-black tracking-widest uppercase opacity-80">测算帧率数据中...</div>
+                    <div className="py-12 lg:py-8 flex flex-col items-center justify-center text-indigo-400 gap-3 lg:gap-2">
+                        <RefreshCw size={24} className="animate-spin opacity-80 lg:w-5 lg:h-5" />
+                        <div className="text-xs lg:text-[10px] font-black tracking-widest uppercase opacity-80">测算帧率数据中...</div>
                     </div>
                 ) : fpsData.length > 0 ? (
                     fpsData.slice(0, 8).map((item, idx) => (
                             <div key={idx} className="group/item">
-                                <div className="flex justify-between items-end text-[11px] mb-2">
+                                <div className="flex justify-between items-center text-[11px] lg:text-[10px] mb-2 lg:mb-1.5">
                                     <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
                                         <img src={`/images/games/icons/${item.name}.png`} alt="" className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                         <span className="truncate">{item.name}</span>
                                     </span>
-                                    <div className="flex items-baseline gap-1.5">
+                                    <div className="flex items-baseline gap-1.5 shrink-0">
                                         {item.lowFps && (
-                                            <span className="flex items-baseline gap-0.5 text-slate-400">
-                                                <span className="text-[10px] uppercase font-bold tracking-wider">Low</span>
-                                                <span className="font-mono text-xs font-bold">{item.lowFps}</span>
+                                            <span className="flex items-baseline justify-end gap-0.5 text-slate-400 w-12">
+                                                <span className="text-[10px] lg:text-[8px] uppercase font-bold tracking-wider">Low</span>
+                                                <span className="font-mono text-xs lg:text-[10px] font-bold">{item.lowFps}</span>
                                             </span>
                                         )}
-                                        <div className="flex items-baseline gap-0.5 ml-1">
+                                        <div className="flex items-baseline justify-end gap-0.5 ml-1 w-14">
                                             <span className={`font-display font-black text-sm ${
                                                 item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
                                                 item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
@@ -630,7 +630,7 @@ function VisualBuilder({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="w-full bg-slate-200/60 dark:bg-[#1A1A24] rounded-full h-[6px] overflow-hidden relative">
+                                <div className="w-full bg-slate-200/60 dark:bg-[#1A1A24] rounded-full h-[6px] lg:h-1 overflow-hidden relative">
                                     <div 
                                         className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
                                             item.fps === 0 ? 'bg-slate-300 dark:bg-slate-600' :
@@ -647,9 +647,9 @@ function VisualBuilder({
                             </div>
                         ))
                     ) : (
-                        <div className="py-12 flex flex-col items-center justify-center text-slate-500 gap-3 opacity-60">
-                            <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-[#1A1A24] flex items-center justify-center border border-slate-200 dark:border-[#2D3748]"><Gamepad2 size={24} className="text-slate-400" /></div>
-                            <div className="text-xs font-black text-slate-400 mt-2">添加 CPU/显卡 后展示帧率</div>
+                        <div className="py-12 lg:py-8 flex flex-col items-center justify-center text-slate-500 gap-3 lg:gap-2 opacity-60">
+                            <div className="w-12 h-12 lg:w-10 lg:h-10 rounded-2xl lg:rounded-xl bg-slate-50 dark:bg-[#1A1A24] flex items-center justify-center border border-slate-200 dark:border-[#2D3748]"><Gamepad2 size={24} className="text-slate-400 lg:w-5 lg:h-5" /></div>
+                            <div className="text-xs lg:text-[10px] font-black text-slate-400 mt-2 lg:mt-1">添加 CPU/显卡 后展示帧率</div>
                         </div>
                     )}
                 </div>
@@ -657,7 +657,7 @@ function VisualBuilder({
     );
 
     return (
-        <div className="flex flex-col lg:flex-row gap-5 relative">
+        <div className="flex flex-col lg:flex-row gap-3 relative">
 
             {/* Hidden Poster Template */}
             <div style={{ position: 'fixed', top: -9999, left: -9999, zIndex: -9999 }}>
@@ -851,15 +851,14 @@ function VisualBuilder({
             </div>
 
             {/* Desktop List View (Hidden on mobile) */}
-            <div className="hidden lg:flex flex-1 max-w-[800px] mx-auto flex-col pb-20 relative">
+            <div className="hidden lg:flex flex-1 min-w-0 max-w-[820px] mx-auto flex-col pb-16 relative">
                 {/* Top Bar: Announcement + AI Build + Quick Build in one row */}
-                <div className="flex gap-2.5 mb-3 items-stretch">
+                <div className="flex gap-2 mb-2.5 items-stretch">
                     {/* System Announcement - takes most space */}
                     {sysAnnouncement?.enabled && sysAnnouncement.items && sysAnnouncement.items.length > 0 && (
-                        <div className="flex-1 relative overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-indigo-200/50 dark:border-indigo-500/20 rounded-2xl py-2 px-3 shadow-[0_0_15px_-3px_rgba(99,102,241,0.1)] dark:shadow-[0_0_15px_-3px_rgba(99,102,241,0.05)] flex items-center gap-2.5 group">
-                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                            <div className="shrink-0 relative z-20 flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                                 <Bell size={14} className="animate-[wiggle_3s_ease-in-out_infinite]" />
+                        <div className="flex-1 relative overflow-hidden bg-white/80 dark:bg-[#121218]/80 backdrop-blur-xl border border-slate-200 dark:border-[#1E293B] rounded-xl py-1.5 px-2.5 shadow-sm dark:shadow-none flex items-center gap-2 group">
+                            <div className="shrink-0 relative z-20 flex items-center justify-center w-6 h-6 rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                                 <Bell size={13} className="animate-[wiggle_3s_ease-in-out_infinite]" />
                             </div>
                             <div className="flex-1 overflow-hidden relative h-5">
                                 <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10 pointer-events-none"></div>
@@ -894,19 +893,19 @@ function VisualBuilder({
                     )}
 
                     {/* AI Smart Build - compact */}
-                    <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.95 }} onClick={() => {
+                    <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={() => {
                         if (onAiCheck && !onAiCheck()) return;
                         setShowAiModal(true);
                     }} className="group relative cursor-pointer shrink-0">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 rounded-2xl blur-md opacity-15 group-hover:opacity-35 transition duration-500"></div>
-                        <div className="relative flex items-center gap-2 bg-white/90 dark:bg-[#121218]/90 backdrop-blur-xl rounded-2xl px-3 py-2 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none h-full">
-                            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-sm shadow-indigo-500/30">
+                        <div className="absolute -inset-px bg-indigo-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition duration-300"></div>
+                        <div className="relative flex items-center gap-2 bg-white/90 dark:bg-[#121218]/90 backdrop-blur-xl rounded-xl px-3 py-1.5 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none h-10">
+                            <div className="w-7 h-7 rounded-md bg-indigo-600 text-white flex items-center justify-center shrink-0 group-hover:bg-indigo-500 transition-colors duration-300 shadow-sm shadow-indigo-500/20">
                                 <Sparkles size={13} className="animate-pulse" />
                             </div>
                             <div className="min-w-0">
                                 <div className="flex items-center gap-1">
                                     <span className="font-extrabold text-[11px] text-slate-900 dark:text-white whitespace-nowrap">AI 装机</span>
-                                    <span className="text-[7px] font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-1 py-0.5 rounded uppercase tracking-wider shadow-sm">Pro</span>
+                                    <span className="text-[7px] font-black bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 px-1 py-0.5 rounded uppercase tracking-wider">Pro</span>
                                 </div>
                             </div>
                             <ArrowRight size={11} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0" />
@@ -914,9 +913,9 @@ function VisualBuilder({
                     </motion.div>
 
                     {/* Quick Build - compact */}
-                    <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.95 }} onClick={onOpenLibrary} className="group relative cursor-pointer shrink-0">
-                        <div className="relative flex items-center gap-2 bg-white/80 dark:bg-[#121218]/80 backdrop-blur-xl rounded-2xl px-3 py-2 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none group-hover:border-indigo-200 dark:group-hover:border-indigo-500/30 transition-all h-full">
-                            <div className="w-7 h-7 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 group-hover:bg-indigo-50 group-hover:text-indigo-600">
+                    <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={onOpenLibrary} className="group relative cursor-pointer shrink-0">
+                        <div className="relative flex items-center gap-2 bg-white/80 dark:bg-[#121218]/80 backdrop-blur-xl rounded-xl px-3 py-1.5 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none group-hover:border-slate-300 dark:group-hover:border-slate-600 transition-all h-10">
+                            <div className="w-7 h-7 bg-slate-100 text-slate-500 rounded-md flex items-center justify-center shrink-0 transition-colors duration-300 group-hover:bg-slate-200 group-hover:text-slate-700">
                                 <FileText size={13} />
                             </div>
                             <span className="font-extrabold text-slate-800 dark:text-white text-[11px] whitespace-nowrap">快速装机</span>
@@ -926,25 +925,25 @@ function VisualBuilder({
                 </div>
 
                 <motion.div 
-                    initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
+                    initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.035 } } }}
                     className="flex flex-col space-y-1.5"
                 >
                     {buildList.map((entry) => (
                         <motion.div
                             variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } } }}
-                            whileHover={{ y: -2 }}
-                            whileTap={{ scale: 0.98 }}
+                            whileHover={{ y: 0 }}
+                            whileTap={{ scale: 0.995 }}
                             layout
                             key={entry.id}
                             ref={(el: any) => { if (el) rowRefs[entry.id] = el; }}
                             onClick={() => openSelector(entry)}
-                            className={`relative rounded-xl px-3 py-2.5 border transition-colors duration-300 cursor-pointer group flex items-center gap-4 ${entry.item || entry.customName
-                                ? 'bg-white dark:bg-[#121218] border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-md dark:hover:shadow-none'
-                                : 'bg-white/60 dark:bg-[#121218]/60 border-dashed border-slate-300/60 dark:border-[#2D3748] hover:bg-white dark:hover:bg-[#121218] hover:border-indigo-300 dark:hover:border-indigo-500/30 hover:shadow-sm dark:hover:shadow-none'
+                            className={`relative rounded-lg px-3 py-2 border transition-all duration-200 cursor-pointer group flex items-center gap-3 min-h-[58px] ${entry.item || entry.customName
+                                ? 'bg-white dark:bg-[#121218] border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none hover:bg-slate-50/80 dark:hover:bg-[#15151d] hover:border-slate-300 dark:hover:border-slate-600'
+                                : 'bg-white/50 dark:bg-[#121218]/50 border-dashed border-slate-300/70 dark:border-[#2D3748] hover:bg-white dark:hover:bg-[#121218] hover:border-indigo-300 dark:hover:border-indigo-500/30'
                                 }`}
                         >
                             <div 
-                                className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 transition-all duration-500 shadow-sm dark:shadow-none relative overflow-hidden ${entry.item ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white group-hover:scale-105 group-hover:shadow-indigo-500/25 group-hover:shadow-lg dark:group-hover:shadow-none' : 'bg-slate-100 dark:bg-[#1A1A24] text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-400'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
+                                className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0 transition-all duration-300 relative overflow-hidden ${entry.item ? 'bg-indigo-600 text-white group-hover:bg-indigo-500' : 'bg-slate-100 dark:bg-[#1A1A24] text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-500'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
                                 onClick={(e) => {
                                     if (entry.item?.image) {
                                         e.stopPropagation();
@@ -955,48 +954,48 @@ function VisualBuilder({
                                 {entry.item && <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>}
                                 {getIconByCategory(entry.category)}
                             </div>
-                            <div className={`text-[13px] font-black w-14 tracking-wider ${entry.item ? 'text-indigo-900' : 'text-slate-400 group-hover:text-slate-500'}`}>{CATEGORY_MAP[entry.category]}</div>
+                            <div className={`text-[12px] font-black w-12 tracking-wider ${entry.item ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 group-hover:text-slate-500'}`}>{CATEGORY_MAP[entry.category]}</div>
 
                             <div className="flex-1 min-w-0 flex flex-col justify-center">
                                 {entry.category === 'accessory' ? (
                                     <input
                                         type="text"
-                                        className="w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-extrabold placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 truncate text-sm"
+                                        className="w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-bold placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 truncate text-[13px]"
                                         placeholder="快捷输入附件..."
                                         value={entry.customName || ''}
                                         onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : entry.item ? (
-                                    <div className="font-extrabold text-slate-800 dark:text-slate-100 text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug tracking-tight">{entry.item.brand} {entry.item.model}</div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-100 text-[13px] group-hover:text-slate-950 dark:group-hover:text-white transition-colors leading-snug tracking-tight truncate">{entry.item.brand} {entry.item.model}</div>
                                 ) : entry.category === aiActiveCategory ? (
-                                    <div className="text-indigo-500 text-xs font-bold flex items-center gap-2 animate-pulse bg-indigo-50 w-max px-3 py-1.5 rounded-full">
-                                        <Sparkles size={14} className="animate-spin-slow" />
+                                    <div className="text-indigo-500 text-xs font-bold flex items-center gap-2 animate-pulse bg-indigo-50 w-max px-2.5 py-1 rounded-md">
+                                        <Sparkles size={13} className="animate-spin-slow" />
                                         AI 正在为您挑选...
                                     </div>
                                 ) : (
-                                    <div className="text-slate-300/80 text-xs font-bold italic tracking-wide">未挑选 {CATEGORY_MAP[entry.category]}</div>
+                                    <div className="text-slate-300/80 text-xs font-bold tracking-wide">未挑选 {CATEGORY_MAP[entry.category]}</div>
                                 )}
                             </div>
-                            <div className="flex items-center gap-4 w-40 justify-end shrink-0">
+                            <div className="flex items-center gap-3 w-36 justify-end shrink-0">
                                 <div className="hidden md:flex" onClick={e => e.stopPropagation()}>
                                     {entry.category === 'accessory' ? null : (
                                         !entry.isLockedQty ? (
-                                            <div className="flex items-center bg-slate-100/80 rounded-xl p-1 border border-slate-200/60 shadow-inner">
-                                                <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded-lg text-slate-500 font-black hover:shadow-sm transition-all">-</button>
+                                            <div className="flex items-center bg-slate-100/80 rounded-lg p-0.5 border border-slate-200/80">
+                                                <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded-md text-slate-500 font-black hover:shadow-sm transition-all">-</button>
                                                 <span className="w-6 text-center text-xs font-black text-slate-700">{entry.quantity}</span>
-                                                <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded-lg text-slate-500 font-black hover:shadow-sm transition-all">+</button>
+                                                <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded-md text-slate-500 font-black hover:shadow-sm transition-all">+</button>
                                             </div>
                                         ) : null
                                     )}
                                 </div>
-                                <div className="text-right font-black text-slate-900 dark:text-slate-200 text-sm font-mono tracking-tight">
+                                <div className="text-right font-black text-slate-900 dark:text-slate-200 text-[13px] font-mono tracking-tight min-w-[56px]">
                                     {entry.item || entry.customName ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : <span className="text-slate-200">-</span>}
                                 </div>
                             </div>
                             {(entry.item || (entry.category === 'accessory' && entry.customName)) && (
                                 <button
-                                    className="absolute -top-1.5 -right-1.5 p-1 bg-white text-slate-200 hover:text-red-500 hover:bg-red-50 border border-slate-100 rounded-full transition-all opacity-0 group-hover:opacity-100 shadow-sm"
+                                    className="absolute -top-1.5 -right-1.5 p-1 bg-white text-slate-300 hover:text-red-500 hover:bg-red-50 border border-slate-100 rounded-full transition-all opacity-0 group-hover:opacity-100 shadow-sm"
                                     onClick={(e) => { e.stopPropagation(); onUpdate(entry.id, { item: null, customName: '', customPrice: undefined, quantity: 1 }); }}
                                 >
                                     <X size={10} strokeWidth={3} />
@@ -1021,44 +1020,43 @@ function VisualBuilder({
 
             </div>
             {/* Merged Sidebar */}
-            <div className="w-full lg:w-[320px] xl:w-[340px] shrink-0 flex flex-col gap-4 mt-2 lg:mt-0 mb-28 lg:mb-0 relative z-10">
+            <div className="w-full lg:w-[306px] xl:w-[320px] shrink-0 flex flex-col gap-3 mt-2 lg:mt-0 mb-28 lg:mb-0 relative z-10">
                 {/* Box 1: Price Details (Hidden on Mobile) */}
-                <div className="hidden lg:block bg-white dark:bg-[#121218] rounded-2xl border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none p-5 md:p-6 overflow-hidden relative">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+                <div className="hidden lg:block bg-white dark:bg-[#121218] rounded-xl border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none p-4 overflow-hidden relative">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/[0.04] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                     
-                    <h3 className="font-extrabold text-slate-800 dark:text-white mb-2 flex items-center gap-2 text-sm relative z-10"><CreditCard size={18} className="text-indigo-500" /> 价格明细</h3>
-                    <div className="space-y-1.5 mb-3 relative z-10">
-                        <div className="flex justify-between items-center text-xs font-medium px-1">
+                    <h3 className="font-extrabold text-slate-800 dark:text-white mb-2.5 flex items-center gap-2 text-[13px] relative z-10"><CreditCard size={16} className="text-indigo-500" /> 价格明细</h3>
+                    <div className="space-y-1.5 mb-2.5 relative z-10">
+                        <div className="flex justify-between items-center text-[11px] font-medium px-1">
                             <span className="text-slate-500">基础总价</span>
                             <span className="font-black text-slate-700">¥{pricing.totalHardware || 0}</span>
                         </div>
-                        <div className="flex justify-between items-center text-xs font-medium px-1">
+                        <div className="flex justify-between items-center text-[11px] font-medium px-1">
                             <span className="text-slate-500">优惠前金额</span>
                             <span className="font-black text-slate-400 line-through decoration-slate-300">¥{Math.floor(pricing.standardPrice || 0)}</span>
                         </div>
-                        <div className="flex flex-col gap-1 bg-slate-50 dark:bg-[#1A1A24] rounded-2xl border border-slate-200 dark:border-[#2D3748] p-4 shadow-sm dark:shadow-none relative overflow-hidden mt-1">
-                            <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-1 bg-slate-50 dark:bg-[#1A1A24] rounded-lg border border-slate-200 dark:border-[#2D3748] p-3 relative overflow-hidden mt-1">
+                            <div className="flex items-center gap-2 justify-between">
                                 <span className="text-slate-600 dark:text-slate-300 font-extrabold text-[12px]">实付预估</span>
                                 {(pricing.savedAmount || 0) > 0 && (
-                                    <div className="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-md font-bold self-start">
+                                    <div className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-md font-bold self-start">
                                         已省 ¥{pricing.savedAmount}
                                     </div>
                                 )}
                             </div>
-                            <span className="text-[28px] font-black text-indigo-600 dark:text-indigo-400 font-display tracking-tight leading-none">¥<BouncyNumber value={pricing.finalPrice || 0} /></span>
+                            <span className="text-[30px] font-black text-indigo-600 dark:text-indigo-400 font-display tracking-tight leading-none">¥<BouncyNumber value={pricing.finalPrice || 0} /></span>
                         </div>
                     </div>
 
-                    <div className="mb-4 relative z-10">
+                    <div className="mb-3 relative z-10">
                         <div className="relative">
                             <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
-                                <div className="bg-orange-100 text-orange-600 text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm">优惠</div>
+                                <div className="bg-orange-50 text-orange-600 text-[10px] font-black px-1.5 py-0.5 rounded border border-orange-100">优惠</div>
                             </div>
                             <select
                                 value={pricing.discountRate}
                                 onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
-                                className="w-full appearance-none bg-slate-50 dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl pl-12 pr-8 py-2 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
+                                className="w-full appearance-none bg-slate-50 dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg pl-12 pr-8 py-2 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
                             >
                                 {pricing.discountTiers?.map((tier: any) => (
                                     <option key={tier.id} value={tier.multiplier}>
@@ -1073,57 +1071,57 @@ function VisualBuilder({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 h-10 shrink-0 relative z-10">
-                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onReset} className="h-full aspect-square flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-all border border-rose-100" title="清空配置">
-                            <Trash2 size={18} />
+                    <div className="flex items-center gap-2 h-9 shrink-0 relative z-10">
+                        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }} onClick={onReset} className="h-full aspect-square flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-all border border-rose-100" title="清空配置">
+                            <Trash2 size={16} />
                         </motion.button>
-                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-all border border-indigo-100" title="生成海报">
-                            {isGeneratingPoster ? <RefreshCw size={20} className="animate-spin" /> : <Download size={20} />}
+                        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }} onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg transition-all border border-indigo-100" title="生成海报">
+                            {isGeneratingPoster ? <RefreshCw size={17} className="animate-spin" /> : <Download size={17} />}
                         </motion.button>
-                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={onSave} className="h-full px-5 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all text-sm border border-slate-200">
+                        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={onSave} className="h-full px-4 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-all text-xs border border-slate-200">
                             保存
                         </motion.button>
-                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={handleShareClick} className="h-full flex-1 flex items-center justify-center bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] dark:shadow-none transition-all text-sm">
-                            <Share2 size={16} className="mr-2 opacity-80" /> 分享
+                        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={handleShareClick} className="h-full flex-1 flex items-center justify-center bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-lg shadow-sm dark:shadow-none transition-all text-xs">
+                            <Share2 size={14} className="mr-1.5 opacity-80" /> 分享
                         </motion.button>
                     </div>
                 </div>
 
                 {/* Box 2: Health Check */}
-                <div className={`relative p-5 rounded-2xl border transition-all duration-500 overflow-hidden shadow-sm dark:shadow-none ${(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0)))
-                    ? 'bg-emerald-50 dark:bg-[#121218] border-emerald-200 dark:border-emerald-500/20'
-                    : 'bg-amber-50 dark:bg-[#121218] border-amber-200 dark:border-amber-500/20'
+                <div className={`relative p-4 rounded-xl border transition-all duration-500 overflow-hidden shadow-sm dark:shadow-none ${(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0)))
+                    ? 'bg-white dark:bg-[#121218] border-emerald-200 dark:border-emerald-500/20'
+                    : 'bg-white dark:bg-[#121218] border-amber-200 dark:border-amber-500/20'
                     }`}>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
-                            <Zap size={16} className={(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? 'text-emerald-500' : 'text-amber-500'} />
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] flex items-center gap-2">
+                            <Zap size={15} className={(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? 'text-emerald-500' : 'text-amber-500'} />
                             兼容性检测
                         </h3>
                         {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
-                            <div className="px-2 py-0.5 rounded-lg bg-emerald-500 text-white text-[8px] font-black uppercase shadow-sm">通过</div>
+                            <div className="px-2 py-0.5 rounded-md bg-emerald-500 text-white text-[8px] font-black uppercase shadow-sm">通过</div>
                         ) : (
-                            <div className="px-2 py-0.5 rounded-lg bg-amber-500 text-white text-[8px] font-black uppercase shadow-sm">待检查</div>
+                            <div className="px-2 py-0.5 rounded-md bg-amber-500 text-white text-[8px] font-black uppercase shadow-sm">待检查</div>
                         )}
                     </div>
                     <div className="text-[12px] font-bold">
                         {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
-                            <div className="text-emerald-700 dark:text-emerald-400 flex items-center gap-2 bg-emerald-100/50 dark:bg-emerald-500/10 p-3 rounded-xl border border-transparent dark:border-emerald-500/20">
-                                <CheckCircle2 size={16} /> <span>核心组件完美兼容，方案健康</span>
+                            <div className="text-emerald-700 dark:text-emerald-400 flex items-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
+                                <CheckCircle2 size={15} /> <span>核心组件完美兼容，方案健康</span>
                             </div>
                         ) : (
-                            <div className="space-y-2.5">
+                            <div className="space-y-2">
                                 {health.issues.map((issue: string, idx: number) => (
-                                    <div key={`health-${idx}`} className="flex gap-2.5 text-amber-800 bg-amber-100/30 p-2.5 rounded-[12px]">
+                                    <div key={`health-${idx}`} className="flex gap-2.5 text-amber-800 bg-amber-50 p-2.5 rounded-lg border border-amber-100">
                                         <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span className="leading-tight">{issue}</span>
                                     </div>
                                 ))}
                                 {simResult?.errors?.map((issue: string, idx: number) => (
-                                    <div key={`err-${idx}`} className="flex gap-2.5 text-rose-700 bg-rose-100/30 p-2.5 rounded-[12px]">
+                                    <div key={`err-${idx}`} className="flex gap-2.5 text-rose-700 bg-rose-50 p-2.5 rounded-lg border border-rose-100">
                                         <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span className="leading-tight">{issue}</span>
                                     </div>
                                 ))}
                                 {simResult?.warnings?.map((issue: string, idx: number) => (
-                                    <div key={`warn-${idx}`} className="flex gap-2.5 text-amber-700 bg-amber-100/30 p-2.5 rounded-[12px]">
+                                    <div key={`warn-${idx}`} className="flex gap-2.5 text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-100">
                                         <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span className="leading-tight">{issue}</span>
                                     </div>
                                 ))}
@@ -1133,21 +1131,21 @@ function VisualBuilder({
                 </div>
 
                 {/* Box 3: 鲁大师跑分与功耗 Grid */}
-                <div className="hidden lg:grid grid-cols-2 gap-4">
-                    <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none rounded-2xl p-5 relative overflow-hidden group">
-                                <div className="absolute -right-4 -bottom-4 opacity-5 text-indigo-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Activity size={72}/></div>
-                                <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Activity size={14} className="text-indigo-500"/> 鲁大师跑分</h4>
-                                <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 font-display tracking-tighter mt-2">
+                <div className="hidden lg:grid grid-cols-2 gap-3">
+                    <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none rounded-xl p-3.5 relative overflow-hidden group min-h-[92px]">
+                                <div className="absolute -right-4 -bottom-4 opacity-[0.04] text-indigo-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Activity size={64}/></div>
+                                <h4 className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Activity size={13} className="text-indigo-500"/> 鲁大师跑分</h4>
+                                <div className="text-[22px] font-black text-indigo-600 dark:text-indigo-400 font-display tracking-tighter mt-1.5">
                                     {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
                                 </div>
                     </div>
-                    <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none rounded-2xl p-5 relative overflow-hidden group">
-                        <div className="absolute -right-2 -bottom-2 opacity-5 text-amber-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Zap size={72}/></div>
-                        <h4 className="text-[12px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Zap size={14} className="text-amber-500"/> 系统峰值功耗</h4>
-                        <div className="text-2xl font-black text-slate-800 dark:text-slate-300 font-display tracking-tighter flex items-center mt-2">
+                    <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none rounded-xl p-3.5 relative overflow-hidden group min-h-[92px]">
+                        <div className="absolute -right-2 -bottom-2 opacity-[0.04] text-amber-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Zap size={64}/></div>
+                        <h4 className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Zap size={13} className="text-amber-500"/> 系统峰值功耗</h4>
+                        <div className="text-[22px] font-black text-slate-800 dark:text-slate-300 font-display tracking-tighter flex items-center mt-1.5">
                             {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} />W</> : '---'}
                         </div>
-                        {simResult && simResult.totalPowerDraw > 0 && <div className="text-[9px] text-slate-400 font-bold mt-1 bg-slate-50 dark:bg-slate-800 py-1 px-2 rounded-lg inline-block">推荐电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+</div>}
+                        {simResult && simResult.totalPowerDraw > 0 && <div className="text-[9px] text-slate-400 font-bold mt-1 bg-slate-50 dark:bg-slate-800 py-0.5 px-1.5 rounded-md inline-block">推荐电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+</div>}
                         {(!simResult || simResult.totalPowerDraw <= 0) && <div className="text-[9px] text-slate-400/80 font-bold mt-1 whitespace-nowrap">完善配置后可见</div>}
                     </div>
                 </div>

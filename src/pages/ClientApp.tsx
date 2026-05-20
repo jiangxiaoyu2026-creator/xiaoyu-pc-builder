@@ -1159,20 +1159,20 @@ export default function ClientApp() {
                         </div>
 
                         {/* Desktop: Single-row layout */}
-                        <div className="hidden md:flex h-14 items-center justify-between gap-2">
+                        <div className="hidden md:flex h-12 items-center justify-between gap-2">
                             {/* Price Info */}
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-slate-400 line-through">¥{Math.floor(pricing.standardPrice)}</span>
-                                    <span className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold">省¥{pricing.savedAmount}</span>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-[11px] text-slate-400 line-through">¥{Math.floor(pricing.standardPrice)}</span>
+                                    <span className="bg-emerald-50 text-emerald-700 text-[9px] px-1.5 py-0.5 rounded-md border border-emerald-100 font-bold">省¥{pricing.savedAmount}</span>
                                 </div>
                                 <div className="flex items-baseline gap-0.5">
-                                    <span className="text-lg font-bold text-slate-900">¥</span>
-                                    <span className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-600 font-mono">{pricing.finalPrice}</span>
+                                    <span className="text-base font-bold text-slate-900">¥</span>
+                                    <span className="text-[22px] font-extrabold text-slate-900 font-mono tracking-tight">{pricing.finalPrice}</span>
                                 </div>
                                 {/* Discount selector */}
                                 <div className="relative group">
-                                    <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="appearance-none bg-slate-100 border border-slate-200 hover:border-indigo-300 text-slate-700 text-[10px] font-medium py-1 pl-2 pr-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer">
+                                    <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="appearance-none bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 text-[10px] font-bold py-1 pl-2 pr-6 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer">
                                         {settings.discountTiers.map(opt => (
                                             <option key={opt.id} value={opt.multiplier}>
                                                 {opt.name.replace(/\s*\(.*?\)/g, '')}
@@ -1183,20 +1183,20 @@ export default function ClientApp() {
                             </div>
 
                             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                                <span className="text-[10px] font-medium text-slate-400 bg-slate-50/80 px-3 py-1 rounded-full border border-slate-100 whitespace-nowrap">
+                                <span className="text-[9px] font-medium text-slate-400 bg-slate-50/80 px-2.5 py-0.5 rounded-md border border-slate-100 whitespace-nowrap">
                                     标准价格含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机售后服务费
                                 </span>
                             </div>
 
                             {/* Action Buttons */}
                             <div className="flex items-center gap-2">
-                                <button onClick={clearBuild} className="flex items-center gap-1 px-3 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all text-xs font-bold">
+                                <button onClick={clearBuild} className="flex items-center gap-1 px-2.5 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all text-xs font-bold">
                                     <Trash2 size={14} /><span>清空</span>
                                 </button>
-                                <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg shadow-sm transition-all">
+                                <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-md shadow-sm transition-all">
                                     <Save size={14} /><span>保存</span>
                                 </button>
-                                <button onClick={handleShareTrigger} disabled={isSharing} className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 hover:bg-black disabled:bg-slate-700 text-white text-xs font-bold rounded-lg shadow-md transition-all min-w-[100px] justify-center">
+                                <button onClick={handleShareTrigger} disabled={isSharing} className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 hover:bg-black disabled:bg-slate-700 text-white text-xs font-bold rounded-md shadow-sm transition-all min-w-[94px] justify-center">
                                     {isSharing ? <RefreshCw size={14} className="animate-spin" /> : <Share2 size={14} />}<span>{isSharing ? '...' : '分享'}</span>
                                 </button>
                             </div>
