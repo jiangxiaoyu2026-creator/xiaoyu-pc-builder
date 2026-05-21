@@ -292,9 +292,14 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
 
     const style = CATEGORY_STYLES[entry.category] || CATEGORY_STYLES.default;
     const canEditQuantity = !entry.isLockedQty || ['ram', 'disk', 'fan'].includes(entry.category);
+    const clearEntry = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onUpdate(entry.id, { item: null, customPrice: undefined, customName: undefined, quantity: 1 });
+    };
 
     return (
-        <div className={`grid ${isLiveMode ? 'grid-cols-[72px_420px_48px_88px] px-4 py-3' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px] px-3 py-2'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
+        <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(360px,1fr)_48px_88px_28px] px-4 py-3' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px] px-3 py-2'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
             <div className={`flex items-center gap-1.5 font-bold ${isLiveMode ? 'text-[14px]' : 'text-[13px]'} transition-all ${isLiveMode ? liveStyleConfig.categoryText : theme.primary}`}>
                 <div
                     className={`${isLiveMode ? 'w-9 h-9 rounded-lg' : 'w-7 h-7 rounded-lg'} flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? (isLiveMode ? liveStyleConfig.accentText + ' bg-white/[0.06] border border-white/10' : `bg-gradient-to-br ${theme.gradient} text-white shadow-md`) : (isLiveMode ? liveStyleConfig.mutedText + ' bg-white/[0.04]' : `${style.bg} ${style.text}`)} ${!entry.item && !isLiveMode && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
@@ -366,13 +371,18 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
                 </div>
             </div>
 
-            {!isLiveMode && (
-                <div className="flex justify-end">
-                    <button onClick={() => onUpdate(entry.id, { item: null, customPrice: undefined, customName: '' })} className="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                        <X size={14} />
+            <div className="flex justify-end">
+                {(isLiveMode || entry.item || entry.customName || entry.customPrice || entry.quantity > 1) && (
+                    <button
+                        type="button"
+                        onClick={clearEntry}
+                        className={`${isLiveMode ? liveStyleConfig.mutedText + ' hover:text-red-400 w-7 h-7 rounded-md hover:bg-white/10' : 'text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400'} flex items-center justify-center transition-colors`}
+                        title="清空这一行"
+                    >
+                        <X size={isLiveMode ? 18 : 14} />
                     </button>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 });

@@ -565,13 +565,13 @@ function StreamerWorkbench({
                             </div>
                         )}
                         <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-x-auto' : 'overflow-x-auto'}`}>
-                            <div className={`${isLiveMode ? 'min-w-[660px] h-full flex flex-col' : 'min-w-[600px]'}`}>
-                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_420px_48px_88px]' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px]'} gap-2 px-3 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300`}>
+                            <div className={`${isLiveMode ? 'min-w-[700px] h-full flex flex-col' : 'min-w-[600px]'}`}>
+                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(360px,1fr)_48px_88px_28px]' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px]'} gap-2 px-3 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300`}>
                             <div>类别</div>
                             <div>硬件型号 {isLiveMode ? '' : '(智能搜索 / 自定义)'}</div>
                             <div className="text-center">数量</div>
                             <div className="text-right">价格</div>
-                            {!isLiveMode && <div></div>}
+                            <div></div>
                         </div>
 
                         <div className={`divide-y-[1.5px] ${isLiveMode ? liveStyleConfig.divider : theme.divider} transition-colors duration-300 ${isLiveMode ? 'min-h-0' : ''}`}>
