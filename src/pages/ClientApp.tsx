@@ -11,7 +11,7 @@ import { ShareFormModal, SavePreviewModal, ConfigLibraryModal } from '../compone
 import { UsedItem } from '../types/adminTypes';
 import DailyPopup from '../components/client/DailyPopup';
 // Removed ArticleList
-// Removed StreamerPriceTrend
+// Client trends page reuses the full admin trend center.
 
 // Lazy-loaded heavy components (code splitting for faster initial load)
 const StreamerWorkbench = lazy(() => import('../components/client/StreamerWorkbench'));
@@ -25,7 +25,7 @@ const PaymentModal = lazy(() => import('../components/client/UiComponents/Paymen
 const SellModal = lazy(() => import('../components/client/SellModal'));
 const RecycleEstimator = lazy(() => import('../components/client/RecycleEstimator'));
 const UsedItemDetail = lazy(() => import('../components/client/UsedItemDetail'));
-const StreamerPriceTrend = lazy(() => import('../components/client/StreamerPriceTrend'));
+const PriceTrendChart = lazy(() => import('../components/admin/PriceTrendChart'));
 
 // ...
 import { useTheme } from '../hooks/useTheme';
@@ -1000,7 +1000,11 @@ export default function ClientApp() {
 
                     {viewMode === 'gamefps' && <GameFPSViewer />}
                     {viewMode === 'about' && <AboutUs />}
-                    {viewMode === 'trends' && <StreamerPriceTrend />}
+                    {viewMode === 'trends' && (
+                        <div className="min-h-full bg-slate-50/70 dark:bg-slate-950/60 px-2 py-4 md:px-4 md:py-6">
+                            <PriceTrendChart />
+                        </div>
+                    )}
                     </Suspense>
                 </div>
                 </motion.main>
