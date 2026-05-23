@@ -74,6 +74,26 @@ function getDisplaySpecs(specs: Record<string, any>, category: string): { label:
     return result;
 }
 
+const roundPriceValue = (value: number) => Number(value.toFixed(2));
+
+const withManualPrice = <T extends Partial<HardwareItem>>(item: T, price: number): T => {
+    const costPrice = Number(item.costPrice || 0);
+    const profitType = item.profitType || 'fixed';
+    const profitValue = profitType === 'percent'
+        ? (costPrice > 0 ? roundPriceValue(((price - costPrice) / costPrice) * 100) : 0)
+        : roundPriceValue(price - costPrice);
+
+    return {
+        ...item,
+        price,
+        profitType,
+        profitValue
+    };
+};
+
+const isUnsafePriceChangeError = (error: unknown) =>
+    error instanceof Error && error.message.includes('force_price_update');
+
 
 export default function ProductManager() {
     const { showToast } = useToast();
@@ -156,13 +176,17 @@ export default function ProductManager() {
 
     // 价格编辑：onChange 只更新本地状态，onBlur 时才保存到后端
     const handlePriceChange = (id: string, newPrice: number) => {
-        setProducts(prev => prev.map(x => String(x.id) === String(id) ? { ...x, price: newPrice } : x));
+        setProducts(prev => prev.map(x => String(x.id) === String(id) ? withManualPrice(x, newPrice) : x));
     };
 
     const handlePriceBlur = async (id: string, e?: React.FocusEvent<HTMLInputElement>) => {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
-        await storage.saveProduct(p);
+        const saved = await saveProductWithPriceGuard(p);
+        if (!saved) {
+            loadProducts();
+            return;
+        }
         // Save flash feedback
         if (e?.target) {
             e.target.classList.add('animate-save-flash');
@@ -173,7 +197,7 @@ export default function ProductManager() {
     const handleSortOrderBlur = async (id: string) => {
         const p = products.find(x => String(x.id) === String(id));
         if (!p) return;
-        await storage.saveProduct(p);
+        await saveProductWithPriceGuard(p);
     };
 
     const toggleStatus = async (id: string) => {
@@ -308,8 +332,33 @@ export default function ProductManager() {
     };
 
 
+    const saveProductWithPriceGuard = async (product: HardwareItem) => {
+        try {
+            await storage.saveProduct(product);
+            return true;
+        } catch (error) {
+            if (!isUnsafePriceChangeError(error)) {
+                showToast(error instanceof Error ? error.message : '保存失败，请重试', 'error');
+                return false;
+            }
+
+            const confirmed = window.confirm('这次价格变动超过 30%，系统默认会拦截以防误操作。\n\n确认要按当前价格保存吗？');
+            if (!confirmed) return false;
+
+            try {
+                await storage.saveProduct(product, { forcePriceUpdate: true });
+                showToast('已确认并保存大幅改价', 'success');
+                return true;
+            } catch (retryError) {
+                showToast(retryError instanceof Error ? retryError.message : '保存失败，请重试', 'error');
+                return false;
+            }
+        }
+    };
+
     const handleSaveProduct = async (product: HardwareItem, keepOpen = false) => {
-        await storage.saveProduct(product);
+        const saved = await saveProductWithPriceGuard(product);
+        if (!saved) return;
         loadProducts(); // Re-fetch to see changes
         loadCategoryCounts(); // Update counts
         if (!keepOpen) {
@@ -963,7 +1012,7 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                                         type="number" 
                                         className="w-full border-2 border-indigo-100 bg-indigo-50/30 rounded-lg p-2 text-lg font-mono font-bold text-indigo-600 focus:border-indigo-500 outline-none" 
                                         value={formData.price} 
-                                        onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} 
+                                        onChange={e => setFormData(withManualPrice(formData, Number(e.target.value)))}
                                         onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                         required 
                                     />

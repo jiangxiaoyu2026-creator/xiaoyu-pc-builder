@@ -269,8 +269,11 @@ class StorageService {
         window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
 
-    async saveProduct(product: HardwareItem) {
-        await ApiService.post('/products', product);
+    async saveProduct(product: HardwareItem, options?: { forcePriceUpdate?: boolean }) {
+        await ApiService.post('/products', {
+            ...product,
+            ...(options?.forcePriceUpdate ? { force_price_update: true } : {})
+        });
         clearProductListCache();
         window.dispatchEvent(new Event('xiaoyu-storage-update'));
     }
