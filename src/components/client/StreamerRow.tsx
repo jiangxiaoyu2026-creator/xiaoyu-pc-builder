@@ -16,8 +16,105 @@ export interface StreamerRowHandle {
     closeSuggestions: () => void;
 }
 
+const PIXEL_ICON_PATTERNS: Record<string, string[]> = {
+    cpu: [
+        '10101',
+        '01110',
+        '11111',
+        '01110',
+        '10101',
+    ],
+    mainboard: [
+        '11110',
+        '10010',
+        '11110',
+        '10100',
+        '11111',
+    ],
+    gpu: [
+        '11110',
+        '10011',
+        '11110',
+        '00100',
+        '01110',
+    ],
+    ram: [
+        '11111',
+        '10101',
+        '11111',
+        '01010',
+        '01010',
+    ],
+    disk: [
+        '11111',
+        '10001',
+        '10101',
+        '10001',
+        '11111',
+    ],
+    power: [
+        '00100',
+        '01110',
+        '11100',
+        '00110',
+        '00100',
+    ],
+    cooling: [
+        '00100',
+        '10101',
+        '01110',
+        '10101',
+        '00100',
+    ],
+    fan: [
+        '10001',
+        '01010',
+        '00100',
+        '01010',
+        '10001',
+    ],
+    monitor: [
+        '11111',
+        '10001',
+        '10001',
+        '11111',
+        '00100',
+    ],
+    case: [
+        '11111',
+        '10001',
+        '10101',
+        '10001',
+        '11111',
+    ],
+    default: [
+        '01110',
+        '10001',
+        '10101',
+        '10001',
+        '01110',
+    ],
+};
+
+function PixelCategoryIcon({ category }: { category: string }) {
+    const pattern = PIXEL_ICON_PATTERNS[category] || PIXEL_ICON_PATTERNS.default;
+    return (
+        <div className="grid grid-cols-5 gap-[1px] drop-shadow-[2px_2px_0_#050505]" aria-hidden="true">
+            {pattern.flatMap((row, y) =>
+                row.split('').map((cell, x) => (
+                    <span
+                        key={`${y}-${x}`}
+                        className={`h-[3px] w-[3px] ${cell === '1' ? 'bg-current' : 'bg-transparent'}`}
+                    />
+                ))
+            )}
+        </div>
+    );
+}
+
 export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPrev: () => void, onPreview: (img: string) => void }>(({ entry, index, onUpdate, onEnter, onPrev, onPreview }, ref) => {
-    const { theme, isLiveMode, liveStyleConfig } = React.useContext(ThemeContext);
+    const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
+    const isPixelLiveStyle = liveStyle.startsWith('pixel');
     const [query, setQuery] = useState(entry.customName || entry.item?.model || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [highlightIndex, setHighlightIndex] = useState(0);
@@ -303,10 +400,10 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
         <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px] h-full px-3 py-0' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px] px-3 py-2'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
             <div className={`flex items-center gap-1.5 font-bold whitespace-nowrap ${isLiveMode ? 'text-[14px]' : 'text-[13px]'} transition-all ${isLiveMode ? liveStyleConfig.categoryText : theme.primary}`}>
                 <div
-                    className={`${isLiveMode ? 'w-8 h-8 rounded-lg' : 'w-7 h-7 rounded-lg'} flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? (isLiveMode ? liveStyleConfig.accentText + ' bg-white/[0.06] border border-white/10' : `bg-gradient-to-br ${theme.gradient} text-white shadow-md`) : (isLiveMode ? liveStyleConfig.mutedText + ' bg-white/[0.04]' : `${style.bg} ${style.text}`)} ${!entry.item && !isLiveMode && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
+                    className={`${isLiveMode ? `w-8 h-8 ${isPixelLiveStyle ? `rounded-none border-2 ${liveStyleConfig.stampBorder} ${liveStyleConfig.panelBg} shadow-[2px_2px_0_#050505]` : 'rounded-lg'}` : 'w-7 h-7 rounded-lg'} flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? (isLiveMode ? liveStyleConfig.accentText + (isPixelLiveStyle ? '' : ' bg-white/[0.06] border border-white/10') : `bg-gradient-to-br ${theme.gradient} text-white shadow-md`) : (isLiveMode ? liveStyleConfig.mutedText + (isPixelLiveStyle ? '' : ' bg-white/[0.04]') : `${style.bg} ${style.text}`)} ${!entry.item && !isLiveMode && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
                     onClick={() => entry.item?.image && onPreview(entry.item.image)}
                 >
-                    {getIconByCategory(entry.category)}
+                    {isLiveMode && isPixelLiveStyle ? <PixelCategoryIcon category={entry.category} /> : getIconByCategory(entry.category)}
                 </div>
                 <span>{CATEGORY_MAP[entry.category]}</span>
             </div>
@@ -330,10 +427,10 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
                     </div>
                 )}
                 {showSuggestions && query.trim().length > 0 && (
-                    <div ref={suggestionsRef} className={`absolute ${index >= 6 ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 right-0 ${isLiveMode ? 'bg-gray-900 border-gray-700 shadow-black/50' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'} shadow-2xl rounded-xl border z-[999] overflow-hidden max-h-[300px] overflow-y-auto`}>
+                    <div ref={suggestionsRef} className={`absolute ${index >= 6 ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 right-0 ${isLiveMode ? `${isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} shadow-[5px_5px_0_#050505]` : 'bg-gray-900 border-gray-700 shadow-black/50'}` : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'} shadow-2xl ${isPixelLiveStyle && isLiveMode ? 'rounded-none border-2' : 'rounded-xl border'} z-[999] overflow-hidden max-h-[300px] overflow-y-auto`}>
                         {isLoading && <div className={`px-4 py-3 ${isLiveMode ? 'text-[14px] text-gray-400' : 'text-xs text-slate-400'} text-center flex items-center justify-center gap-2`}><RefreshCw size={12} className="animate-spin" /> 正在加载产品库...</div>}
                         {!isLoading && suggestions.map((item, idx) => (
-                            <div key={item.id} className={`px-4 ${isLiveMode ? 'py-2.5 text-[15px]' : 'py-2 text-sm'} flex justify-between cursor-pointer ${idx === highlightIndex ? (isLiveMode ? 'bg-gray-800 text-white' : `${theme.bgLight} ${theme.primary} transition-colors`) : (isLiveMode ? 'text-gray-300 hover:bg-gray-800' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50')}`} onMouseDown={() => selectItem(item)}>
+                            <div key={item.id} className={`px-4 ${isLiveMode ? 'py-2.5 text-[15px]' : 'py-2 text-sm'} flex justify-between cursor-pointer ${idx === highlightIndex ? (isLiveMode ? (isPixelLiveStyle ? `${liveStyleConfig.glowBg} text-gray-950` : 'bg-gray-800 text-white') : `${theme.bgLight} ${theme.primary} transition-colors`) : (isLiveMode ? (isPixelLiveStyle ? `${liveStyleConfig.modelText} hover:brightness-110` : 'text-gray-300 hover:bg-gray-800') : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50')}`} onMouseDown={() => selectItem(item)}>
                                 <span className="flex items-center">
                                     {item.brand} {item.model}
                                     {item.isRecommended && <span className={`ml-1.5 ${isLiveMode ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' : 'bg-orange-50 dark:bg-orange-500/20 text-orange-500 dark:text-orange-400 border-orange-100 dark:border-orange-500/30'} text-[9px] px-1 py-0.5 rounded-md font-bold border shrink-0 scale-90 origin-left flex items-center gap-0.5`}><Sparkles size={10} /> 推荐</span>}
@@ -350,7 +447,7 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
             <div className="flex justify-center">
                 {entry.category === 'accessory' ? null : (
                     !canEditQuantity ? <span className={`${isLiveMode ? liveStyleConfig.mutedText + ' text-sm' : 'text-slate-400 text-sm'}`}>×{entry.quantity}</span> : (
-                        <div className={`flex items-center rounded border ${isLiveMode ? 'bg-white/5 border-white/10' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                        <div className={`flex items-center ${isPixelLiveStyle && isLiveMode ? `rounded-none border-2 ${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} shadow-[2px_2px_0_#050505]` : 'rounded border'} ${isLiveMode ? `${isPixelLiveStyle ? '' : 'bg-white/5 border-white/10'}` : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
                             <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) }); }} className={`${isLiveMode ? liveStyleConfig.mutedText + ' hover:text-white text-sm px-1' : `text-slate-400 dark:text-slate-500 hover:${theme.primary} px-0.5`} transition-colors`}>-</button>
                             <input 
                                 ref={qtyRef}

@@ -22,7 +22,7 @@ export const RECYCLE_CATEGORIES = [
 
 export default function StreamerRecycleTab() {
     const { theme } = useContext(ThemeContext);
-    
+
     // Each row represents a category just like VisualBuilder
     const [rows, setRows] = useState(() => {
         return RECYCLE_CATEGORIES.map(cat => ({
@@ -142,7 +142,7 @@ export default function StreamerRecycleTab() {
             <div className="overflow-x-auto w-full">
                 <div className="min-w-[800px]">
                     {/* Header */}
-                <div className={`grid grid-cols-[90px_1fr_60px_120px_100px_120px_40px] gap-2 md:gap-4 px-6 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-dashed ${theme.borderColor}`}>
+                <div className={`grid grid-cols-[90px_1fr_60px_120px_100px_120px_40px] gap-2 md:gap-4 px-6 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b-2 border-dashed ${theme.borderColor} ${theme.tableHeaderBg}`}>
                     <div className="text-center">类别</div>
                     <div className="text-slate-400">搜索配件 (智能搜索)</div>
                     <div className="text-center text-slate-400">数量</div>
@@ -155,7 +155,7 @@ export default function StreamerRecycleTab() {
                     {/* Rows */}
                     <div className={`divide-y ${theme.divider} ${theme.rowBg} transition-colors duration-300`}>
                         {rows.map((row, index) => (
-                            <RecycleInlineRow 
+                            <RecycleInlineRow
                                 key={row.id}
                                 index={index}
                                 totalRows={rows.length}
@@ -174,10 +174,10 @@ export default function StreamerRecycleTab() {
                     </div>
                     
                     {/* Add Row Button */}
-                    <div className="px-6 py-3 border-b border-dashed border-slate-200 dark:border-slate-800">
-                        <button 
+                    <div className={`px-6 py-3 border-b border-dashed ${theme.borderColor}`}>
+                        <button
                             onClick={addRow}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-500/10 rounded-lg transition-colors border border-transparent hover:border-indigo-200 dark:hover:border-indigo-500/30"
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold ${theme.primary} ${theme.bgLight} rounded-[3px] transition-colors border ${theme.borderColor} hover:bg-slate-100 dark:hover:bg-slate-800 shadow-[2px_2px_0px_0px_rgba(15,23,42,0.08)] font-mono`}
                         >
                             <Plus size={14} /> 添加一行
                         </button>
@@ -187,11 +187,11 @@ export default function StreamerRecycleTab() {
 
             {/* Footer Summary Bar */}
             <div className={`sticky bottom-0 z-20 ${theme.cardBg} backdrop-blur-xl border-t ${theme.borderColor} shadow-[0_-10px_30px_rgba(0,0,0,0.05)] p-4 flex items-center justify-between`}>
-                
+
                 {/* Front: Final Customer Quote (Prominent) */}
                 <div className="flex items-center gap-4">
                     <div className="text-left flex flex-col items-start pl-2 pr-4">
-                        <p className={`text-[11px] font-black uppercase tracking-widest mb-1 ${theme.primary}`}>最终客户总报价（回收底价）</p>
+                        <p className={`text-[11px] font-black uppercase tracking-widest mb-1 ${theme.primary} font-mono`}>最终客户总报价（回收底价）</p>
                         <div className="flex items-baseline gap-1">
                             <span className={`text-2xl font-black ${theme.primary}`}>¥</span>
                             <span className={`text-5xl font-black font-mono tracking-tighter ${theme.primary}`}>{summary.totalQuote.toLocaleString()}</span>
@@ -211,10 +211,10 @@ export default function StreamerRecycleTab() {
                             <div className="font-mono text-xl font-black text-amber-500/80">¥{summary.totalProfit.toLocaleString()}</div>
                         </div>
                     </div>
-                    
-                    <button 
+
+                    <button
                         onClick={clearAll}
-                        className="ml-2 w-10 h-10 flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl transition-colors shrink-0"
+                        className="ml-2 w-10 h-10 flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-[3px] border border-rose-100 transition-colors shrink-0 shadow-[2px_2px_0px_0px_rgba(244,63,94,0.12)]"
                         title="清空全部"
                     >
                         <Trash2 size={18} />
@@ -236,6 +236,9 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
     const inputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
     const searchTimeout = useRef<any>(null);
+
+    const hasItem = !!row.item;
+    const resalePrice = row.item?.resalePrice || 0;
 
     // Auto focus when opened via NextFocus
     useEffect(() => {
@@ -330,23 +333,20 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
         }
     };
 
-    const hasItem = !!row.item;
-    const resalePrice = row.item?.resalePrice || 0;
-
     return (
         <div className={`grid grid-cols-[90px_1fr_60px_120px_100px_120px_40px] gap-2 md:gap-4 px-6 items-center border-l-4 transition-all ${theme.rowBg} hover:bg-slate-50 dark:hover:bg-slate-800/10 py-1 relative ${isOpen ? 'z-50' : 'z-10'} ${hasItem ? theme.borderColor.replace('border-', 'border-l-') : 'border-l-transparent'}`}>
-            
+
             {/* 1. Category Dropdown (Allows changing category) */}
             <div className="flex items-center justify-start pl-2 pr-1 relative group w-full h-full">
                 <div className={`flex items-center gap-2 transition-all ${theme.primary}`}>
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${theme.bgLight} ${hasItem ? 'shadow-sm' : ''}`}>
+                    <div className={`w-7 h-7 rounded-[3px] flex items-center justify-center transition-all ${theme.bgLight} border ${theme.borderColor} ${hasItem ? 'shadow-[2px_2px_0px_0px_rgba(15,23,42,0.08)]' : ''}`}>
                         <div className="scale-[0.65]">
                             {getIconByCategory(row.category)}
                         </div>
                     </div>
                     <span className="text-[12px] font-black tracking-widest">{RECYCLE_CATEGORIES.find(c => c.code === row.category)?.label || row.category}</span>
                 </div>
-                <select 
+                <select
                     value={row.category}
                     onChange={(e) => onUpdate({ category: e.target.value, item: null, query: '' })}
                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full appearance-none"
@@ -365,13 +365,13 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
                     onChange={(e) => handleSearch(e.target.value)}
                     onFocus={() => { if (row.query && !hasItem) onOpen(); }}
                     onKeyDown={handleKeyDown}
-                    placeholder={`搜索型号...`}
-                    className={`w-full bg-transparent text-sm md:text-base font-bold text-slate-800 dark:text-slate-100 placeholder-slate-300 dark:placeholder-slate-500 py-1 focus:outline-none transition-colors `}
+                    placeholder="搜索型号..."
+                    className="w-full bg-transparent text-sm md:text-base font-bold text-slate-800 dark:text-slate-100 placeholder-slate-300 dark:placeholder-slate-500 py-1 border-b border-transparent focus:border-slate-300 dark:focus:border-slate-600 focus:outline-none transition-colors"
                 />
                 
                 {/* Suggestions Dropdown */}
                 {isOpen && (row.query.trim().length > 0) && (
-                    <div className={`absolute ${index >= totalRows - 4 ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'} left-0 w-[400px] bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-700 overflow-hidden z-[100] transition-all`}>
+                    <div className={`absolute ${index >= totalRows - 4 ? 'bottom-full mb-2 origin-bottom' : 'top-full mt-2 origin-top'} left-0 w-[400px] bg-white dark:bg-slate-800 rounded-[4px] shadow-[4px_4px_0px_0px_rgba(15,23,42,0.14)] border-2 border-slate-200 dark:border-slate-700 overflow-hidden z-[100] transition-all`}>
                         {searching ? (
                             <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700/50">
                                 <span className="text-xs font-bold text-slate-500">正在检索二手底价库...</span>
@@ -379,14 +379,14 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
                         ) : suggestions.length > 0 ? (
                             <div ref={suggestionsRef} className="max-h-[300px] overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-900/50 py-2">
                                 {suggestions.map((item, i) => (
-                                    <div 
-                                        key={item.id} 
+                                    <div
+                                        key={item.id}
                                         onClick={() => selectItem(item)}
-                                        className={`px-4 py-1.5 mx-2 my-0.5 rounded-lg cursor-pointer flex justify-between items-center transition-colors group ${i === highlightIndex ? 'bg-indigo-50 border border-indigo-200/50' : 'hover:bg-slate-100 border border-transparent'}`}
+                                        className={`px-4 py-1.5 mx-2 my-0.5 rounded-[3px] cursor-pointer flex justify-between items-center transition-colors group ${i === highlightIndex ? `${theme.bgLight} border ${theme.borderColor} shadow-[2px_2px_0px_0px_rgba(15,23,42,0.08)]` : 'hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent'}`}
                                         onMouseEnter={() => setHighlightIndex(i)}
                                     >
                                         <div className="flex-1 min-w-0 pr-4 flex justify-between items-center gap-4">
-                                            <div className="font-bold text-sm text-slate-800 truncate group-hover:text-indigo-700" title={item.model}>{item.model}</div>
+                                            <div className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate" title={item.model}>{item.model}</div>
                                             {item.recyclePrice > 0 ? (
                                                 <div className="text-xs font-mono font-medium text-slate-400 shrink-0">
                                                     参考: <span className="text-emerald-600 font-bold">¥{item.recyclePrice}</span>
@@ -414,18 +414,18 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
 
             {/* 3. Quantity */}
             <div className="flex items-center justify-center gap-1.5">
-                <button 
+                <button
                     onClick={() => row.quantity > 1 && onUpdate({ quantity: row.quantity - 1 })}
                     disabled={row.quantity <= 1 || !hasItem}
-                    className="w-4 h-4 flex items-center justify-center rounded-sm bg-slate-100 text-slate-500 font-bold hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-slate-100"
+                    className="w-5 h-5 flex items-center justify-center rounded-[3px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-100 dark:disabled:hover:bg-slate-800 font-mono shadow-[1px_1px_0px_0px_rgba(15,23,42,0.08)]"
                 >-</button>
-                <div className="w-4 text-center font-bold text-slate-700 text-[13px]">
+                <div className="w-5 text-center font-bold text-slate-700 dark:text-slate-200 text-[13px] font-mono">
                     {row.quantity}
                 </div>
-                <button 
+                <button
                     onClick={() => onUpdate({ quantity: row.quantity + 1 })}
                     disabled={!hasItem}
-                    className="w-4 h-4 flex items-center justify-center rounded-sm bg-slate-100 text-slate-500 font-bold hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-slate-100"
+                    className="w-5 h-5 flex items-center justify-center rounded-[3px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-100 dark:disabled:hover:bg-slate-800 font-mono shadow-[1px_1px_0px_0px_rgba(15,23,42,0.08)]"
                 >+</button>
             </div>
 
@@ -433,12 +433,12 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
             <div className="flex items-center justify-end">
                 <div className="relative w-full text-right">
                     <span className={`absolute left-2 top-1/2 -translate-y-1/2 font-bold text-[10px] pointer-events-none opacity-50 ${theme.primary}`}>¥</span>
-                    <input 
-                        type="number" 
+                    <input
+                        type="number"
                         disabled={!hasItem}
-                        value={row.customQuote === 0 && !hasItem ? '' : row.customQuote} 
+                        value={row.customQuote === 0 && !hasItem ? '' : row.customQuote}
                         onChange={e => onUpdate({ customQuote: parseInt(e.target.value) || 0 })}
-                        className={`w-full h-7 pl-4 pr-1.5 rounded ${theme.bgLight} border ${theme.borderColor} ${theme.primary} font-bold font-mono focus:outline-none focus:ring-1 ${theme.ring} disabled:opacity-50 text-right transition-colors appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-[13px]`}
+                        className={`w-full h-7 pl-4 pr-1.5 rounded-[3px] ${theme.bgLight} border ${theme.borderColor} ${theme.primary} font-bold font-mono focus:outline-none focus:ring-1 ${theme.ring} disabled:opacity-50 text-right transition-colors appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-[13px] shadow-[2px_2px_0px_0px_rgba(15,23,42,0.08)]`}
                     />
                 </div>
             </div>
@@ -457,12 +457,12 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
             <div className="flex items-center justify-end pr-2">
                 <div className="relative w-full max-w-[90px] text-right">
                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-amber-600/50 font-bold text-xs pointer-events-none">¥</span>
-                    <input 
-                        type="number" 
+                    <input
+                        type="number"
                         disabled={!hasItem}
-                        value={row.profitAmount === 0 && !hasItem ? '' : row.profitAmount} 
+                        value={row.profitAmount === 0 && !hasItem ? '' : row.profitAmount}
                         onChange={e => onUpdate({ profitAmount: parseInt(e.target.value) || 0 })}
-                        className="w-full h-7 pl-5 pr-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 font-black font-mono focus:outline-none focus:ring-1 focus:ring-amber-500/30 disabled:opacity-50 text-right appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors hover:bg-amber-100/50 text-sm"
+                        className="w-full h-7 pl-5 pr-2 rounded-[3px] bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-300 font-black font-mono focus:outline-none focus:ring-1 focus:ring-amber-500/30 disabled:opacity-50 text-right appearance-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-colors hover:bg-amber-100/50 dark:hover:bg-amber-500/20 text-sm shadow-[2px_2px_0px_0px_rgba(217,119,6,0.10)]"
                     />
                 </div>
             </div>
@@ -470,7 +470,7 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
             {/* 8. Clear/Remove */}
             <div className="flex justify-center flex-1 h-full items-center">
                 {(hasItem || row.query || !row.isDefault) && (
-                    <button 
+                    <button
                         onClick={() => {
                             if (hasItem || row.query) {
                                 onUpdate({ query: '', item: null, quantity: 1, profitRate: 15, customQuote: 0, profitAmount: 0 });
@@ -478,7 +478,7 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
                                 onRemove();
                             }
                         }}
-                        className={`p-1.5 rounded-md transition-colors ${hasItem || row.query ? 'text-slate-400 hover:text-rose-500 hover:bg-rose-50' : 'text-slate-300 hover:text-slate-500 hover:bg-slate-100'}`}
+                        className={`p-1.5 rounded-[3px] border transition-colors ${hasItem || row.query ? 'text-slate-400 hover:text-rose-500 hover:bg-rose-50 border-transparent' : 'text-slate-300 hover:text-slate-500 hover:bg-slate-100 border-slate-100'} shadow-[1px_1px_0px_0px_rgba(15,23,42,0.06)]`}
                         title={hasItem || row.query ? '清空此行内容' : '删除此行'}
                     >
                         {hasItem || row.query ? <X size={14} strokeWidth={3} /> : <Trash2 size={14} />}
@@ -488,4 +488,3 @@ function RecycleInlineRow({ row, index, totalRows, isOpen, onOpen, onClose, onUp
         </div>
     );
 }
-

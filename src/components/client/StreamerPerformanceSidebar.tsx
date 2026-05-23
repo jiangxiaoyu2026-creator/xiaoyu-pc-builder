@@ -50,13 +50,14 @@ export interface SidebarPricingProps {
 
 export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildList: BuildEntry[], pricingProps?: SidebarPricingProps }) {
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
-    const isLightLiveStyle = ['pure', 'snow', 'violet', 'redline'].includes(liveStyle);
-    const liveControlBg = isLightLiveStyle ? 'bg-white/55 border-slate-950/10' : 'bg-white/[0.06] border-white/10';
-    const liveControlHover = isLightLiveStyle ? 'hover:bg-white/75' : 'hover:bg-white/[0.1]';
-    const fpsTrackBg = isLightLiveStyle ? 'bg-slate-950/12 border-slate-950/10' : 'bg-white/12 border-white/10';
-    const activeResolutionText = isLightLiveStyle ? 'text-white' : 'text-gray-950';
+    const isPixelLiveStyle = liveStyle.startsWith('pixel');
+    const isLightLiveStyle = ['pure', 'snow', 'violet', 'redline', 'pixelWhite', 'pixelCream'].includes(liveStyle);
+    const liveControlBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} shadow-[2px_2px_0_#050505]` : isLightLiveStyle ? 'bg-white/55 border-slate-950/10' : 'bg-white/[0.06] border-white/10';
+    const liveControlHover = isPixelLiveStyle ? 'hover:brightness-110' : isLightLiveStyle ? 'hover:bg-white/75' : 'hover:bg-white/[0.1]';
+    const fpsTrackBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder}` : isLightLiveStyle ? 'bg-slate-950/12 border-slate-950/10' : 'bg-white/12 border-white/10';
+    const activeResolutionText = isPixelLiveStyle ? 'text-gray-950' : isLightLiveStyle ? 'text-white' : 'text-gray-950';
     const optionClassName = isLightLiveStyle ? 'bg-white text-slate-950' : 'bg-gray-900 text-white';
-    const placeholderBoxClassName = isLightLiveStyle ? 'bg-white border-slate-200' : 'bg-white/[0.06] border-white/12';
+    const placeholderBoxClassName = isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} shadow-[3px_3px_0_#050505]` : isLightLiveStyle ? 'bg-white border-slate-200' : 'bg-white/[0.06] border-white/12';
     const placeholderDashClassName = isLightLiveStyle ? 'border-slate-200 opacity-45' : 'border-white/15 opacity-60';
     const placeholderTitleTextClassName = isLightLiveStyle ? 'text-slate-500' : 'text-slate-200';
     const placeholderMainTextClassName = isLightLiveStyle ? 'text-slate-600' : 'text-slate-100';
@@ -257,15 +258,15 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const now = new Date();
     const timeString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     return (
-        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isLiveMode ? `h-full w-[240px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} border-l-2 shadow-2xl overflow-hidden` : 'w-[260px] gap-2.5 p-3 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
+        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isLiveMode ? `h-full w-[240px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} ${isPixelLiveStyle ? 'border-l-4 shadow-[6px_0_0_#050505]' : 'border-l-2 shadow-2xl'} overflow-hidden` : 'w-[260px] gap-2.5 p-3 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
 
             {/* In Live Mode: Special Layout Order */}
             {isLiveMode ? (
                 <>
                     {/* 1. Product Image Stamp */}
-                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} rounded-lg p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[120px]`}>
+                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[120px]`}>
                         {/* Stamp inner dashed border */}
-                        <div className={`absolute inset-2 border border-dashed ${activeProductImage ? liveStyleConfig.border : placeholderDashClassName} pointer-events-none rounded-md ${activeProductImage ? 'opacity-30' : ''}`}></div>
+                        <div className={`absolute inset-2 border border-dashed ${activeProductImage ? liveStyleConfig.border : placeholderDashClassName} pointer-events-none ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} ${activeProductImage ? 'opacity-30' : ''}`}></div>
                         
                         {activeProductImage ? (
                             <motion.img
@@ -314,7 +315,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     {/* 2. Score & Power Cards Side-by-Side */}
                     <div className="flex flex-row gap-2 shrink-0">
                         {/* 鲁大师跑分 */}
-                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px]`}>
+                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px]`}>
                             <div className={`absolute right-0 top-0 w-32 h-32 ${liveStyleConfig.glowBg} opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2`}></div>
                             <div className={`absolute left-2 top-1.5 flex items-center gap-1 text-[10px] font-black ${liveStyleConfig.modelText}`}>
                                 <Activity size={12} className={liveStyleConfig.accentText}/>
@@ -329,7 +330,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         </div>
 
                         {/* 整机功耗 */}
-                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px]`}>
+                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px]`}>
                             <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2"></div>
                             <div className={`absolute left-2 top-1.5 flex items-center gap-1 text-[10px] font-black ${liveStyleConfig.modelText}`}>
                                 <Zap size={12} className={liveStyleConfig.accentText}/>
@@ -345,15 +346,15 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     </div>
 
                     {/* 3. FPS single column */}
-                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative flex-1 flex flex-col min-h-[330px]`}>
+                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative flex-1 flex flex-col min-h-[330px]`}>
                         <div className="flex items-center justify-between mb-2 relative z-10">
                             <div className={`text-[12px] font-black tracking-widest ${liveStyleConfig.accentText}`}>游戏实测FPS</div>
-                            <div className={`grid grid-cols-3 gap-1 w-[122px] ${liveControlBg} border p-0.5 rounded-lg shadow-sm`} title="切换分辨率">
+                            <div className={`grid grid-cols-3 gap-1 w-[122px] ${liveControlBg} border p-0.5 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} shadow-sm`} title="切换分辨率">
                                 {[1080, 1440, 2160].map(res => (
                                     <button
                                         key={res}
                                         onClick={() => setSidebarResolution(res)}
-                                        className={`text-[10px] font-black py-1 rounded-md transition-all uppercase tracking-wider ${sidebarResolution === res ? `${liveStyleConfig.glowBg} ${activeResolutionText} shadow-sm scale-105` : `${liveStyleConfig.modelText} opacity-75 hover:opacity-100 ${liveControlHover}`}`}
+                                        className={`text-[10px] font-black py-1 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} transition-all uppercase tracking-wider ${sidebarResolution === res ? `${liveStyleConfig.glowBg} ${activeResolutionText} shadow-sm scale-105` : `${liveStyleConfig.modelText} opacity-75 hover:opacity-100 ${liveControlHover}`}`}
                                     >
                                         {res === 1080 ? '1K' : res === 1440 ? '2K' : '4K'}
                                     </button>
@@ -373,8 +374,8 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className={`text-[11px] font-black ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
-                                            <div className={`w-full ${fpsTrackBg} border rounded-full h-1.5 overflow-hidden relative`}>
-                                                <div className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${liveStyleConfig.fpsBarColor}`} style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}></div>
+                                            <div className={`w-full ${fpsTrackBg} border ${isPixelLiveStyle ? 'rounded-none h-2' : 'rounded-full h-1.5'} overflow-hidden relative`}>
+                                                <div className={`h-full ${isPixelLiveStyle ? 'rounded-none' : 'rounded-full'} transition-all duration-1000 ease-out relative overflow-hidden ${liveStyleConfig.fpsBarColor}`} style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}></div>
                                             </div>
                                         </div>
                                         <div className={`font-display font-black text-sm ${item.fps === 0 ? `${liveStyleConfig.modelText} opacity-70` : liveStyleConfig.modelText} shrink-0 w-[42px] text-right`}>
@@ -393,14 +394,14 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
 
                     {/* 4. Pricing at bottom */}
                     {pricingProps && (
-                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} rounded-lg p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5 shadow-sm`}>
+                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'rounded-lg shadow-sm'} p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5`}>
                             <div className="flex items-center justify-between gap-2">
                                 <div className={`text-[12px] font-black ${liveStyleConfig.modelText}`}>优惠方案</div>
                                 <div className="relative group w-[118px]">
                                     <select
                                         value={pricingProps.discountRate}
                                         onChange={(e) => pricingProps.setDiscountRate(parseFloat(e.target.value))}
-                                        className={`w-full appearance-none ${liveControlBg} ${liveStyleConfig.modelText} border text-[11px] font-black py-1 pl-2.5 pr-7 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-950/10 transition-all cursor-pointer shadow-sm`}
+                                        className={`w-full appearance-none ${liveControlBg} ${liveStyleConfig.modelText} border text-[11px] font-black py-1 pl-2.5 pr-7 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} focus:outline-none focus:ring-1 focus:ring-slate-950/10 transition-all cursor-pointer shadow-sm`}
                                     >
                                         {pricingProps.strategies.map(opt => <option key={opt.value} value={opt.value} className={optionClassName}>{opt.label}</option>)}
                                     </select>

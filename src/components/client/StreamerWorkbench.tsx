@@ -1,13 +1,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, TrendingUp, Recycle, Monitor, FolderOpen } from 'lucide-react';
+import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Recycle, Monitor, FolderOpen } from 'lucide-react';
 import { BuildEntry, StreamerLiveMeta } from '../../types/clientTypes';
 import { storage } from '../../services/storage';
 import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
 import { AiGenerateModal } from './AiGenerateModal';
 import { ChatSettingsModal } from '../admin/ChatSettingsModal';
-import PriceTrendChart from '../admin/PriceTrendChart';
 import StreamerRecycleTab from './StreamerRecycleTab';
 import HardwareLeaderboard from './HardwareLeaderboard';
 import { ThemeColor, THEMES, ThemeContext, LiveStyleKey, LIVE_STYLES } from './StreamerThemeContext';
@@ -24,14 +23,17 @@ const LIVE_SCENARIO_ROWS = [
 
 const LIVE_STYLE_SWATCHES: Record<LiveStyleKey, string> = {
     cyber: 'linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899)',
-    tactical: 'linear-gradient(135deg, #3f6212, #84cc16, #eab308)',
+    pixel: 'repeating-conic-gradient(#17243b 0 25%, #7dd3fc 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #162033, #ffd166, #ff8a7a)',
+    pixelWhite: 'repeating-conic-gradient(#ffffff 0 25%, #0f172a 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #ffffff, #38bdf8, #e34f3f)',
+    pixelCream: 'repeating-conic-gradient(#fff7e6 0 25%, #584030 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #ffd98a, #0f766e, #d94832)',
+    pixelOcean: 'repeating-conic-gradient(#092b33 0 25%, #99f6e4 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #0e3a43, #67e8f9, #ff8f70)',
+    pixelNight: 'repeating-conic-gradient(#101827 0 25%, #fbbf24 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #172033, #7dd3fc, #fb7185)',
+    pixelSunset: 'repeating-conic-gradient(#261833 0 25%, #fdba74 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #37214a, #fde68a, #67e8f9)',
     gundam: 'linear-gradient(135deg, #dc2626, #f8fafc, #2563eb)',
     mecha: 'linear-gradient(135deg, #111827, #f97316, #facc15)',
     pure: 'linear-gradient(135deg, #ffffff, #4f46e5, #f97316)',
-    graphite: 'linear-gradient(135deg, #111827, #64748b, #34d399)',
     aurora: 'linear-gradient(135deg, #042f2e, #5eead4, #bef264)',
     snow: 'linear-gradient(135deg, #f8fafc, #60a5fa, #10b981)',
-    crimson: 'linear-gradient(135deg, #450a0a, #f87171, #f59e0b)',
     pink: 'linear-gradient(135deg, #831843, #f9a8d4, #f0abfc)',
     orange: 'linear-gradient(135deg, #431407, #fb923c, #fde047)',
     violet: 'linear-gradient(135deg, #ffffff, #7c3aed, #d946ef)',
@@ -130,7 +132,7 @@ function StreamerWorkbench({
     onOpenLibrary: () => void
 
 }) {
-    const [activeTab, setActiveTab] = useState<'builder' | 'trends' | 'recycle' | 'leaderboard'>('builder');
+    const [activeTab, setActiveTab] = useState<'builder' | 'recycle' | 'leaderboard'>('builder');
     const [pricingStrategy, setPricingStrategy] = useState<import('../../types/adminTypes').PricingStrategy | null>(null);
     const [strategies, setStrategies] = useState<{ value: number; label: string }[]>([]);
 
@@ -345,14 +347,29 @@ function StreamerWorkbench({
         { label: '济南发货', positive: true },
         { label: '不包邮', positive: false },
     ];
-    const isLightLiveStyle = ['pure', 'snow', 'violet', 'redline'].includes(liveStyle);
-    const liveControlBg = isLightLiveStyle ? 'bg-white/45 hover:bg-white/75 shadow-sm' : 'bg-white/[0.06] hover:bg-white/[0.1]';
-    const liveInputBg = isLightLiveStyle ? 'bg-white/45' : 'bg-white/[0.06]';
-    const liveCheckText = isLightLiveStyle ? 'text-white' : 'text-gray-950';
+    const isPixelLiveStyle = liveStyle.startsWith('pixel');
+    const isLightLiveStyle = ['pure', 'snow', 'violet', 'redline', 'pixelWhite', 'pixelCream'].includes(liveStyle);
+    const liveControlBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} hover:brightness-110 shadow-[3px_3px_0_#050505]` : isLightLiveStyle ? 'bg-white/45 hover:bg-white/75 shadow-sm' : 'bg-white/[0.06] hover:bg-white/[0.1]';
+    const liveInputBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} shadow-[2px_2px_0_#050505]` : isLightLiveStyle ? 'bg-white/45' : 'bg-white/[0.06]';
+    const liveCheckText = isPixelLiveStyle ? 'text-gray-950' : isLightLiveStyle ? 'text-white' : 'text-gray-950';
+    const liveShellClass = isLiveMode
+        ? isPixelLiveStyle
+            ? `h-[790px] rounded-none flex flex-col border-4 ${liveStyleConfig.stampBorder} shadow-[8px_8px_0_#050505]`
+            : `h-[790px] rounded-lg flex flex-col border shadow-xl ${theme.borderColor}`
+        : `rounded-xl shadow-xl border ${theme.borderColor}`;
+    const liveTableShellClass = isPixelLiveStyle
+        ? `max-w-none flex flex-col h-full relative overflow-hidden rounded-none border-4 ${liveStyleConfig.stampBorder} shadow-[5px_5px_0_#050505]`
+        : `max-w-none flex flex-col h-full relative overflow-hidden rounded-[14px] border ${liveStyleConfig.stampBorder} shadow-[0_0_18px_rgba(0,0,0,0.22)]`;
+    const livePanelRadius = isPixelLiveStyle ? 'rounded-none' : 'rounded-[14px]';
+    const livePanelInsetRadius = isPixelLiveStyle ? 'rounded-none' : 'rounded-[10px]';
+    const liveControlRadius = isPixelLiveStyle ? 'rounded-none' : 'rounded-lg';
+    const liveInputRadius = isPixelLiveStyle ? 'rounded-none' : 'rounded-md';
+    const liveCheckRadius = isPixelLiveStyle ? 'rounded-none' : 'rounded-[3px]';
+    const liveBadgeRadius = isPixelLiveStyle ? 'rounded-none' : 'rounded-[4px]';
 
     return (
         <div className={isLiveMode ? 'w-[964px] max-w-full mx-auto' : 'w-full'}>
-        <div className={`${theme.cardBg} ${isLiveMode ? 'h-[790px] rounded-lg flex flex-col' : 'rounded-xl'} shadow-xl ${theme.borderColor} border overflow-hidden relative transition-colors duration-300`}>
+        <div className={`${theme.cardBg} ${liveShellClass} overflow-hidden relative transition-colors duration-300`}>
             
             {/* Hidden Poster Template */}
             <StreamerPosterTemplate 
@@ -376,7 +393,7 @@ function StreamerWorkbench({
                     <div className="flex items-center gap-3">
                         <h2 className={`text-base font-bold ${theme.textTitle} flex items-center gap-1.5`}>
                             <Zap className={theme.primary} size={18} />
-                            {activeTab === 'builder' ? '大屏模式控制台' : activeTab === 'recycle' ? '二手回收估价系统' : activeTab === 'trends' ? '全网行情雷达' : '硬件性价比天梯'}
+                            {activeTab === 'builder' ? '大屏模式控制台' : activeTab === 'recycle' ? '二手回收估价系统' : '硬件性价比天梯'}
                         </h2>
                         {!isLiveMode && (
                             <div className="hidden md:flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -434,11 +451,6 @@ function StreamerWorkbench({
                                 )}
                             </>
                         )}
-                        {activeTab === 'trends' && (
-                            <div className="flex items-center px-4 py-1">
-                                <span className={`text-xs font-bold ${theme.primary}`}>每日全网行情雷达</span>
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -451,7 +463,7 @@ function StreamerWorkbench({
                         <button
                             onClick={() => setActiveTab('builder')}
                             className={`group relative flex md:flex-col items-center gap-1.5 p-2.5 md:p-3 rounded-xl transition-all duration-300 shrink-0 ${activeTab === 'builder'
-                                ? `bg-white dark:bg-slate-800 border-indigo-200 dark:border-indigo-600/50 text-indigo-600 dark:text-indigo-400 shadow-md ${theme.bgLight.replace('bg-', 'ring-')}/20 ring-4`
+                                ? 'bg-white dark:bg-slate-800 border-indigo-200 dark:border-indigo-600/50 text-indigo-600 dark:text-indigo-400 shadow-md ring-4 ring-indigo-100 dark:ring-indigo-900/20'
                                 : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
                         >
                             <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'builder' ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-500'}`}>
@@ -468,7 +480,7 @@ function StreamerWorkbench({
                         <button
                             onClick={() => setActiveTab('recycle')}
                             className={`group relative flex md:flex-col items-center gap-1.5 p-2.5 md:p-3 rounded-xl transition-all duration-300 shrink-0 ${activeTab === 'recycle'
-                                ? `bg-white dark:bg-slate-800 border-teal-200 dark:border-teal-600/50 text-teal-600 dark:text-teal-400 shadow-md ring-4 ring-teal-100 dark:ring-teal-900/20`
+                                ? 'bg-white dark:bg-slate-800 border-teal-200 dark:border-teal-600/50 text-teal-600 dark:text-teal-400 shadow-md ring-4 ring-teal-100 dark:ring-teal-900/20'
                                 : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
                         >
                             <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'recycle' ? 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-teal-50 dark:group-hover:bg-teal-500/10 group-hover:text-teal-500'}`}>
@@ -480,23 +492,6 @@ function StreamerWorkbench({
                             </div>
                             {activeTab === 'recycle' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-7 bg-teal-500 rounded-r-md"></div>}
                         </button>
-
-                        {/* 行情分析 Tab */}
-                        <button
-                            onClick={() => setActiveTab('trends')}
-                            className={`group relative flex md:flex-col items-center gap-1.5 p-2.5 md:p-3 rounded-xl transition-all duration-300 shrink-0 ${activeTab === 'trends'
-                                ? `bg-white dark:bg-slate-800 border-purple-200 dark:border-purple-600/50 text-purple-600 dark:text-purple-400 shadow-md ring-4 ring-purple-100 dark:ring-purple-900/20`
-                                : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'} border-2`}
-                        >
-                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${activeTab === 'trends' ? 'bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover:bg-purple-50 dark:group-hover:bg-purple-500/10 group-hover:text-purple-500'}`}>
-                                <TrendingUp size={18} />
-                            </div>
-                            <div className="text-left md:text-center shrink-0">
-                                <div className={`text-[13px] font-black tracking-tight ${activeTab === 'trends' ? '' : 'text-slate-600 dark:text-slate-300'}`}>行情分析</div>
-                                <div className={`text-[10px] font-medium mt-0.5 hidden lg:block ${activeTab === 'trends' ? 'text-purple-500/80 dark:text-purple-400/80' : 'text-slate-400 dark:text-slate-500'}`}>价格追踪监控</div>
-                            </div>
-                            {activeTab === 'trends' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-7 bg-purple-500 rounded-r-md"></div>}
-                        </button>
                     </div>
                     )}
 
@@ -507,11 +502,11 @@ function StreamerWorkbench({
                     <>
                     <div className={`flex ${isLiveMode ? 'flex-row h-full' : 'flex-col xl:flex-row'}`}>
                     {/* === Left: Config Table === */}
-                    <div className={`flex-1 min-w-0 ${isLiveMode ? `max-w-none flex flex-col h-full relative overflow-hidden rounded-[14px] border ${liveStyleConfig.stampBorder} shadow-[0_0_18px_rgba(0,0,0,0.22)]` : 'max-w-[1550px]'}`}>
+                    <div className={`flex-1 min-w-0 ${isLiveMode ? liveTableShellClass : 'max-w-[1550px]'}`}>
                         {isLiveMode && (
                             <>
-                                <div className="pointer-events-none absolute inset-0 z-10 rounded-[14px] border border-black/40"></div>
-                                <div className={`pointer-events-none absolute inset-[4px] z-10 rounded-[10px] border ${liveStyleConfig.stampBorder} opacity-80`}></div>
+                                <div className={`pointer-events-none absolute inset-0 z-10 ${livePanelRadius} border ${isPixelLiveStyle ? 'border-black' : 'border-black/40'}`}></div>
+                                <div className={`pointer-events-none absolute inset-[4px] z-10 ${livePanelInsetRadius} border ${liveStyleConfig.stampBorder} opacity-80`}></div>
                                 <div className={`pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-[4px] ${liveStyleConfig.glowBg} opacity-85`}></div>
                                 <div className="pointer-events-none absolute left-[4px] top-[18px] bottom-[18px] z-20 w-[1.5px] bg-black/55"></div>
                                 <div className="pointer-events-none absolute left-0 top-0 z-20 h-[28px] w-[42px] bg-black/70 [clip-path:polygon(0_0,100%_0,30px_8px,17px_8px,5px_20px,5px_100%,0_100%)]"></div>
@@ -542,7 +537,7 @@ function StreamerWorkbench({
                                                                 onClick={() => toggleScenario(label)}
                                                                 className={`flex items-center gap-1.5 text-[14px] font-black transition-colors ${checked ? liveStyleConfig.modelText : liveStyleConfig.mutedText}`}
                                                             >
-                                                                <span className={`w-3.5 h-3.5 rounded-[3px] border-2 flex items-center justify-center ${checked ? `${liveStyleConfig.glowBg} border-transparent` : liveStyleConfig.border}`}>
+                                                                <span className={`w-3.5 h-3.5 ${liveCheckRadius} border-2 flex items-center justify-center ${checked ? `${liveStyleConfig.glowBg} border-transparent` : liveStyleConfig.border}`}>
                                                                     {checked && <span className={`text-[11px] leading-none ${liveCheckText}`}>✓</span>}
                                                                 </span>
                                                                 {label}
@@ -557,14 +552,14 @@ function StreamerWorkbench({
                                     <div className="ml-5 flex items-center gap-1.5 shrink-0">
                                         <button
                                             onClick={onOpenLibrary}
-                                            className={`h-[54px] px-3 rounded-lg ${liveControlBg} border ${liveStyleConfig.border} ${liveStyleConfig.modelText} transition-all text-[12px] font-black flex flex-col items-center justify-center gap-0.5`}
+                                            className={`h-[54px] px-3 ${liveControlRadius} ${liveControlBg} border ${liveStyleConfig.border} ${liveStyleConfig.modelText} transition-all text-[12px] font-black flex flex-col items-center justify-center gap-0.5`}
                                             title="载入配置"
                                         >
                                             <FolderOpen size={16} />
                                             载入配置
                                         </button>
                                         <div className="grid gap-1 w-[154px]">
-                                            <label className={`h-6 px-2 rounded-md ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
+                                            <label className={`h-6 px-2 ${liveInputRadius} ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
                                                 <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>预算</span>
                                                 <input
                                                     value={liveMeta.budget}
@@ -573,7 +568,7 @@ function StreamerWorkbench({
                                                     className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[12px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
                                                 />
                                             </label>
-                                            <label className={`h-6 px-2 rounded-md ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
+                                            <label className={`h-6 px-2 ${liveInputRadius} ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
                                                 <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>姓名</span>
                                                 <input
                                                     value={liveMeta.customerName}
@@ -619,7 +614,7 @@ function StreamerWorkbench({
                                 <div className="min-w-0 flex items-center justify-start gap-x-2 text-[13px] font-black tracking-wide whitespace-nowrap overflow-x-auto">
                                     {serviceItems.map(item => (
                                         <span key={item.label} className="inline-flex items-center gap-1 shrink-0">
-                                            <span className={`w-4 h-4 text-[13px] rounded-[4px] flex items-center justify-center leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} ${liveCheckText}` : `${liveInputBg} border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
+                                            <span className={`w-4 h-4 text-[13px] ${liveBadgeRadius} flex items-center justify-center leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} ${liveCheckText}` : `${liveInputBg} border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
                                                 {item.positive ? '✓' : '×'}
                                             </span>
                                             {item.label}
@@ -770,10 +765,6 @@ function StreamerWorkbench({
                     <StreamerPerformanceSidebar buildList={buildList} pricingProps={{ pricing, discountRate, setDiscountRate, strategies, serviceFeeRate, clearBuild, handleSave, handleGeneratePoster, isGeneratingPoster, handleShareTrigger, isSharing }} />
                     </div>
                 </>
-                ) : activeTab === 'trends' ? (
-                    <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 p-2 md:p-6 overflow-hidden">
-                        <PriceTrendChart hideSummaryPanel={true} />
-                    </div>
                 ) : activeTab === 'leaderboard' ? (
                     <div className="min-h-[600px] w-full bg-slate-50/50 dark:bg-slate-900/50 relative overflow-hidden">
                         <HardwareLeaderboard />
@@ -809,11 +800,11 @@ function StreamerWorkbench({
                             <button
                                 key={s}
                                 onClick={() => setLiveStyle(s)}
-                                className={`w-9 h-9 p-0 rounded-lg border transition-all shadow-sm ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
+                                className={`w-9 h-9 p-0 border transition-all ${s.startsWith('pixel') ? 'rounded-none border-2 shadow-[3px_3px_0_#111]' : 'rounded-lg shadow-sm'} ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
                                 style={{ background: LIVE_STYLE_SWATCHES[s] }}
                                 title={styleConfig.name}
                             >
-                                <span className={`block h-full w-full rounded-[7px] ${isActive ? 'bg-white/0' : 'bg-black/0'}`} />
+                                <span className={`block h-full w-full ${s.startsWith('pixel') ? 'rounded-none' : 'rounded-[7px]'} ${isActive ? 'bg-white/0' : 'bg-black/0'}`} />
                             </button>
                         );
                     })}
@@ -827,15 +818,6 @@ function StreamerWorkbench({
                         className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-teal-600 hover:border-teal-200 dark:hover:border-teal-500/40 transition-all text-sm font-bold shadow-sm"
                     >
                         <Recycle size={16} /> 二手回收
-                    </button>
-                    <button
-                        onClick={() => {
-                            setLiveMode(false);
-                            setActiveTab('trends');
-                        }}
-                        className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-purple-600 hover:border-purple-200 dark:hover:border-purple-500/40 transition-all text-sm font-bold shadow-sm"
-                    >
-                        <TrendingUp size={16} /> 行情分析
                     </button>
                     <button onClick={() => setLiveMode(false)} className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-200 dark:hover:border-indigo-500/40 transition-all text-sm font-bold shadow-sm">
                         <Monitor size={16} /> 退出直播

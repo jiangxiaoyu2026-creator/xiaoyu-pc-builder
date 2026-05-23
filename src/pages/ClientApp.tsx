@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon, Gamepad2 } from 'lucide-react';
+import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon, Gamepad2, TrendingUp } from 'lucide-react';
 import { BuildEntry, ConfigTemplate, Category, UserItem, StreamerLiveMeta } from '../types/clientTypes';
 import { DEFAULT_BUILD_TEMPLATE, HARDWARE_DB } from '../data/clientData';
 import { storage } from '../services/storage';
@@ -25,6 +25,7 @@ const PaymentModal = lazy(() => import('../components/client/UiComponents/Paymen
 const SellModal = lazy(() => import('../components/client/SellModal'));
 const RecycleEstimator = lazy(() => import('../components/client/RecycleEstimator'));
 const UsedItemDetail = lazy(() => import('../components/client/UsedItemDetail'));
+const StreamerPriceTrend = lazy(() => import('../components/client/StreamerPriceTrend'));
 
 // ...
 import { useTheme } from '../hooks/useTheme';
@@ -36,12 +37,13 @@ export default function ClientApp() {
         customerName: '',
         scenarios: []
     };
-    const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'gamefps'>(() => {
+    const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'gamefps' | 'trends'>(() => {
         const path = window.location.pathname.toLowerCase();
         if (path === '/vip' || path === '/vip/') return 'streamer';
         const params = new URLSearchParams(window.location.search);
         const tab = params.get('tab');
         if (tab === 'gamefps' || tab === 'headlines') return 'gamefps';
+        if (tab === 'trends') return 'trends';
         if (params.get('config') || tab === 'square') return 'square';
         if (tab === 'used') return 'used';
         if (tab === 'about') return 'about';
@@ -702,6 +704,7 @@ export default function ClientApp() {
                             label="主播中心"
                         />
                         <TabButton active={viewMode === 'visual'} onClick={() => setViewMode('visual')} icon={<LayoutGrid />} label="AI装机台" />
+                        <TabButton active={viewMode === 'trends'} onClick={() => setViewMode('trends')} icon={<TrendingUp />} label="行情分析" />
                         <TabButton active={viewMode === 'square'} onClick={() => setViewMode('square')} icon={<Share2 />} label="配置广场" />
                         <TabButton active={viewMode === 'gamefps'} onClick={() => setViewMode('gamefps')} icon={<Gamepad2 />} label="游戏FPS" />
                         <TabButton active={viewMode === 'used'} onClick={() => setViewMode('used')} icon={<ShoppingBag />} label="二手闲置" />
@@ -997,6 +1000,7 @@ export default function ClientApp() {
 
                     {viewMode === 'gamefps' && <GameFPSViewer />}
                     {viewMode === 'about' && <AboutUs />}
+                    {viewMode === 'trends' && <StreamerPriceTrend />}
                     </Suspense>
                 </div>
                 </motion.main>
