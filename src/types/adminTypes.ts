@@ -227,6 +227,31 @@ export interface SystemStats {
     dailyStats: DailyStat[];
 }
 
+export interface VisitTrendItem {
+    date: string;
+    pv: number;
+    uv: number;
+    sessions: number;
+}
+
+export interface VisitStatsSummary {
+    days: number;
+    today: {
+        pv: number;
+        uv: number;
+        sessions: number;
+    };
+    total: {
+        pv: number;
+        uv: number;
+        sessions: number;
+    };
+    dailyTrends: VisitTrendItem[];
+    topPages: { path: string; pv: number }[];
+    referrers: { source: string; pv: number }[];
+    devices: { device: string; pv: number }[];
+}
+
 export interface AboutUsCard {
     title: string;
     description: string;

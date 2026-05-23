@@ -164,6 +164,18 @@ class DailyStat(SQLModel, table=True):
     newConfigs: int = Field(default=0)
     newUsers: int = Field(default=0)
 
+class VisitEvent(SQLModel, table=True):
+    __tablename__ = "visit_events"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    visitorId: str = Field(index=True)
+    sessionId: str = Field(index=True)
+    path: str = Field(index=True)
+    referrer: Optional[str] = None
+    device: str = Field(default="desktop", index=True)
+    ipHash: Optional[str] = Field(default=None, index=True)
+    userAgent: Optional[str] = None
+    visitedAt: str = Field(default_factory=lambda: (datetime.utcnow() + timedelta(hours=8)).isoformat(), index=True)
+
 class SMSVerification(SQLModel, table=True):
     __tablename__ = "sms_verifications"
     id: Optional[int] = Field(default=None, primary_key=True)

@@ -1,12 +1,15 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { storage } from './services/storage';
+import { useVisitTracker } from './hooks/useVisitTracker';
 
 const ClientApp = lazy(() => import('./pages/ClientApp'));
 const AdminApp = lazy(() => import('./pages/AdminApp'));
 const ArticleDetail = lazy(() => import('./components/client/ArticleDetail'));
 
 function App() {
+    useVisitTracker();
+
     useEffect(() => {
         // Trigger one-time migration and initialization
         storage.init();

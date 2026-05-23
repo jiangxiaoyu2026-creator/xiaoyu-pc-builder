@@ -1,4 +1,4 @@
-import { HardwareItem, ConfigItem, PricingStrategy, UserItem, UsedItem, RecycleRequest, SMSSettings, SystemStats, DailyStat, AboutUsConfig } from '../types/adminTypes';
+import { HardwareItem, ConfigItem, PricingStrategy, UserItem, UsedItem, RecycleRequest, SMSSettings, SystemStats, DailyStat, AboutUsConfig, VisitStatsSummary } from '../types/adminTypes';
 import { DEFAULT_AI_CONTENT } from '../data/adminData';
 import { ApiService } from './api';
 
@@ -1160,6 +1160,21 @@ class StorageService {
     async saveSystemStats(stats: SystemStats) {
         localStorage.setItem(KEYS.SYSTEM_STATS, JSON.stringify(stats));
         window.dispatchEvent(new Event('xiaoyu-stats-update'));
+    }
+
+    async logVisit(data: {
+        visitorId: string;
+        sessionId: string;
+        path: string;
+        referrer?: string;
+        device?: string;
+        userAgent?: string;
+    }) {
+        return ApiService.post('/stats/visit', data);
+    }
+
+    async getVisitSummary(days = 7): Promise<VisitStatsSummary> {
+        return ApiService.get(`/stats/visits/summary?days=${days}`);
     }
 
     private getOrCreateDailyStat(date: string, stats: SystemStats): DailyStat {

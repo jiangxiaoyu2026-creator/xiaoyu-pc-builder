@@ -1,14 +1,51 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session, select, func
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel
 from ..db import get_session
-from ..models import DailyStat, User, Order, Hardware, UsedItem, Config, RecycleRequest, PriceHistory
+from ..models import DailyStat, User, Order, Hardware, UsedItem, Config, RecycleRequest, PriceHistory, VisitEvent
 from .auth import get_current_admin, get_current_streamer_or_admin
 from ..services.price_safety import is_valid_price_history_change
 from datetime import datetime, timedelta
+from urllib.parse import urlparse
+import hashlib
 import time
 
 router = APIRouter()
+
+class VisitPayload(BaseModel):
+    visitorId: str
+    sessionId: str
+    path: str
+    referrer: Optional[str] = None
+    device: Optional[str] = "desktop"
+    userAgent: Optional[str] = None
+
+def _now_cst() -> datetime:
+    return datetime.utcnow() + timedelta(hours=8)
+
+def _hash_ip(ip: Optional[str]) -> Optional[str]:
+    if not ip:
+        return None
+    return hashlib.sha256(ip.encode("utf-8")).hexdigest()[:32]
+
+def _get_client_ip(request: Request) -> Optional[str]:
+    forwarded_for = request.headers.get("x-forwarded-for", "")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    real_ip = request.headers.get("x-real-ip")
+    if real_ip:
+        return real_ip.strip()
+    return request.client.host if request.client else None
+
+def _referrer_label(referrer: Optional[str]) -> str:
+    if not referrer:
+        return "直接访问"
+    try:
+        host = urlparse(referrer).netloc
+        return host or "站内跳转"
+    except Exception:
+        return "其他来源"
 
 def _is_valid_trend_change(change: PriceHistory) -> bool:
     return is_valid_price_history_change(change.oldPrice, change.newPrice)
@@ -133,6 +170,143 @@ async def log_event(
     except Exception as e:
         session.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/visit")
+async def log_visit(
+    payload: VisitPayload,
+    request: Request,
+    session: Session = Depends(get_session)
+):
+    """记录前台访问事件。后台页面不计入访问统计。"""
+    path = (payload.path or "").strip()[:300]
+    if not path:
+        raise HTTPException(status_code=400, detail="path is required")
+    if not path.startswith("/"):
+        path = f"/{path}"
+    if path.lower().startswith("/admin"):
+        return {"success": True, "tracked": False}
+
+    visitor_id = (payload.visitorId or "").strip()[:80]
+    session_id = (payload.sessionId or "").strip()[:80]
+    if not visitor_id or not session_id:
+        raise HTTPException(status_code=400, detail="visitorId and sessionId are required")
+
+    device = (payload.device or "desktop").strip().lower()
+    if device not in ("desktop", "mobile", "tablet"):
+        device = "desktop"
+
+    event = VisitEvent(
+        visitorId=visitor_id,
+        sessionId=session_id,
+        path=path,
+        referrer=(payload.referrer or "")[:500] or None,
+        device=device,
+        ipHash=_hash_ip(_get_client_ip(request)),
+        userAgent=(payload.userAgent or request.headers.get("user-agent") or "")[:300] or None,
+        visitedAt=_now_cst().isoformat(),
+    )
+    try:
+        session.add(event)
+        session.commit()
+        return {"success": True, "tracked": True}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/visits/summary")
+async def get_visit_summary(
+    days: int = 7,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin)
+):
+    """获取访问统计汇总（仅限管理员）"""
+    days = max(1, min(days, 90))
+    today_dt = _now_cst().date()
+    start_dt = today_dt - timedelta(days=days - 1)
+    cutoff = f"{start_dt.isoformat()}T00:00:00"
+
+    events = session.exec(
+        select(VisitEvent)
+        .where(VisitEvent.visitedAt >= cutoff)
+        .order_by(VisitEvent.visitedAt.asc())
+    ).all()
+
+    daily: Dict[str, Dict[str, Any]] = {}
+    for i in range(days):
+        day = (start_dt + timedelta(days=i)).isoformat()
+        daily[day] = {
+            "date": day,
+            "pv": 0,
+            "visitors": set(),
+            "sessions": set(),
+        }
+
+    total_visitors = set()
+    total_sessions = set()
+    page_counts: Dict[str, int] = {}
+    referrer_counts: Dict[str, int] = {}
+    device_counts: Dict[str, int] = {"desktop": 0, "mobile": 0, "tablet": 0}
+
+    for event in events:
+        day = event.visitedAt[:10]
+        if day not in daily:
+            continue
+
+        visitor_key = event.visitorId or event.ipHash or "unknown"
+        session_key = event.sessionId or visitor_key
+
+        daily[day]["pv"] += 1
+        daily[day]["visitors"].add(visitor_key)
+        daily[day]["sessions"].add(session_key)
+        total_visitors.add(visitor_key)
+        total_sessions.add(session_key)
+
+        page_counts[event.path] = page_counts.get(event.path, 0) + 1
+        source = _referrer_label(event.referrer)
+        referrer_counts[source] = referrer_counts.get(source, 0) + 1
+
+        device = event.device if event.device in device_counts else "desktop"
+        device_counts[device] += 1
+
+    daily_trends = []
+    for value in daily.values():
+        daily_trends.append({
+            "date": value["date"],
+            "pv": value["pv"],
+            "uv": len(value["visitors"]),
+            "sessions": len(value["sessions"]),
+        })
+
+    today_key = today_dt.isoformat()
+    today_stat = daily.get(today_key, {"pv": 0, "visitors": set(), "sessions": set()})
+
+    return {
+        "days": days,
+        "today": {
+            "pv": today_stat["pv"],
+            "uv": len(today_stat["visitors"]),
+            "sessions": len(today_stat["sessions"]),
+        },
+        "total": {
+            "pv": len(events),
+            "uv": len(total_visitors),
+            "sessions": len(total_sessions),
+        },
+        "dailyTrends": daily_trends,
+        "topPages": [
+            {"path": path, "pv": count}
+            for path, count in sorted(page_counts.items(), key=lambda item: item[1], reverse=True)[:8]
+        ],
+        "referrers": [
+            {"source": source, "pv": count}
+            for source, count in sorted(referrer_counts.items(), key=lambda item: item[1], reverse=True)[:8]
+        ],
+        "devices": [
+            {"device": device, "pv": count}
+            for device, count in device_counts.items()
+            if count > 0
+        ],
+    }
 
 @router.get("/price-trends")
 async def get_price_trends(

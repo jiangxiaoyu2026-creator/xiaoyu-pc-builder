@@ -102,6 +102,10 @@ def _migrate_extra_columns():
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_hardware_public_list ON hardware(status, category, sortOrder)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_userId ON orders(userId)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_visit_events_visitedAt ON visit_events(visitedAt)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_visit_events_path ON visit_events(path)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_visit_events_visitorId ON visit_events(visitorId)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_visit_events_sessionId ON visit_events(sessionId)")
         
         # PriceHistory 索引优化（提升日期范围查询性能）
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_price_history_changedAt ON price_history(changedAt)")
