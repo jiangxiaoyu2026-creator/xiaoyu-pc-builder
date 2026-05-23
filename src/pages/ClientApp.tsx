@@ -379,7 +379,7 @@ export default function ClientApp() {
         return {
             title: `${customerName} ${budget}预算装机单`,
             tags: scenarios,
-            desc: `客户：${customerName}；预算：${budget}；用途：${scenarios.join('、')}；电脑组装、工整走线、三年质保、${serviceFeePercent}% 利润、济南发货、不包邮`
+            desc: `客户：${customerName}；预算：${budget}；用途：${scenarios.join('、')}；组装、走线、三年质保、${serviceFeePercent}% 利润、济南发货、不包邮`
         };
     };
 
@@ -824,7 +824,7 @@ export default function ClientApp() {
                                         id: 'streamer',
                                         icon: Zap,
                                         label: '主播工作台',
-                                        desc: '专业装机推流工具',
+                                        desc: '大屏模式推流工具',
                                         onClick: () => {
                                             if (!hasStreamerPermission) {
                                                 showToast("🔒 此功能仅限合作主播与管理员使用");

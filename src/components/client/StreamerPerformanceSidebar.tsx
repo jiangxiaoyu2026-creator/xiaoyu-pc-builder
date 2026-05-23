@@ -231,7 +231,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
         });
     }, [cpuItemId, gpuItemId, sidebarResolution]);
 
-    const displayFpsData = isLiveMode ? fpsData.slice(0, 12) : fpsData.slice(0, 12);
+    const displayFpsData = isLiveMode ? fpsData.slice(0, 10) : fpsData.slice(0, 12);
 
     const productImages = buildList
         .filter(e => e.item?.image)
@@ -257,13 +257,13 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const now = new Date();
     const timeString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     return (
-        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isLiveMode ? `w-[282px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} border-l-2 shadow-2xl overflow-hidden max-h-[977px]` : 'w-[260px] gap-2.5 p-3 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
+        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isLiveMode ? `h-full w-[240px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} border-l-2 shadow-2xl overflow-hidden` : 'w-[260px] gap-2.5 p-3 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
 
             {/* In Live Mode: Special Layout Order */}
             {isLiveMode ? (
                 <>
                     {/* 1. Product Image Stamp */}
-                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} rounded-lg p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[165px]`}>
+                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} rounded-lg p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[120px]`}>
                         {/* Stamp inner dashed border */}
                         <div className={`absolute inset-2 border border-dashed ${activeProductImage ? liveStyleConfig.border : placeholderDashClassName} pointer-events-none rounded-md ${activeProductImage ? 'opacity-30' : ''}`}></div>
                         
@@ -272,20 +272,20 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                 key={activeProductImage.src}
                                 src={activeProductImage.src}
                                 alt={activeProductImage.label}
-                                className="w-full h-full max-h-[150px] object-contain relative z-10"
+                                className="w-full h-full max-h-[105px] object-contain relative z-10"
                                 initial={{ opacity: 0, x: 18 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.35 }}
                             />
                         ) : (
-                            <div className="relative z-10 flex h-full min-h-[140px] w-full flex-col items-center justify-center gap-2 px-3 text-center">
-                                <div className={`text-[22px] font-black leading-tight ${placeholderTitleTextClassName} drop-shadow-[0_1px_3px_rgba(148,163,184,0.25)]`}>
+                            <div className="relative z-10 flex h-full min-h-[96px] w-full flex-col items-center justify-center gap-1 px-3 text-center">
+                                <div className={`text-[18px] font-black leading-tight ${placeholderTitleTextClassName} drop-shadow-[0_1px_3px_rgba(148,163,184,0.25)]`}>
                                     欢迎加入粉丝群
                                 </div>
-                                <div className={`text-[17px] font-black leading-tight ${placeholderMainTextClassName} drop-shadow-[0_1px_3px_rgba(148,163,184,0.25)]`}>
+                                <div className={`text-[14px] font-black leading-tight ${placeholderMainTextClassName} drop-shadow-[0_1px_3px_rgba(148,163,184,0.25)]`}>
                                     免费使用蒋小鱼装机平台
                                 </div>
-                                <div className={`flex flex-col gap-0.5 text-[13px] font-black leading-tight ${placeholderAccentTextClassName} drop-shadow-[0_1px_3px_rgba(148,163,184,0.25)]`}>
+                                <div className={`flex flex-col gap-0.5 text-[12px] font-black leading-tight ${placeholderAccentTextClassName} drop-shadow-[0_1px_3px_rgba(148,163,184,0.25)]`}>
                                     <span>直播间的各位彦祖</span>
                                     <span>可以关注点赞支持一下</span>
                                 </div>
@@ -314,14 +314,14 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     {/* 2. Score & Power Cards Side-by-Side */}
                     <div className="flex flex-row gap-2 shrink-0">
                         {/* 鲁大师跑分 */}
-                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[82px]`}>
+                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px]`}>
                             <div className={`absolute right-0 top-0 w-32 h-32 ${liveStyleConfig.glowBg} opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2`}></div>
-                            <div className={`absolute left-2 top-2 flex items-center gap-1 text-[11px] font-black ${liveStyleConfig.modelText}`}>
-                                <Activity size={13} className={liveStyleConfig.accentText}/>
+                            <div className={`absolute left-2 top-1.5 flex items-center gap-1 text-[10px] font-black ${liveStyleConfig.modelText}`}>
+                                <Activity size={12} className={liveStyleConfig.accentText}/>
                                 鲁大师跑分
                             </div>
                             <div className="flex items-center gap-1 mb-1 z-10">
-                                <span className={`${liveStyleConfig.accentText} text-2xl font-black font-display tracking-tighter`}>
+                                <span className={`${liveStyleConfig.accentText} text-xl font-black font-display tracking-tighter`}>
                                     {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={Math.floor(simResult.totalLuScore/10000)} /> : '---'}
                                 </span>
                                 {simResult && simResult.totalLuScore > 0 && <span className={`text-xs ${liveStyleConfig.accentText} font-bold`}>W+</span>}
@@ -329,14 +329,14 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         </div>
 
                         {/* 整机功耗 */}
-                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[82px]`}>
+                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px]`}>
                             <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2"></div>
-                            <div className={`absolute left-2 top-2 flex items-center gap-1 text-[11px] font-black ${liveStyleConfig.modelText}`}>
-                                <Zap size={13} className={liveStyleConfig.accentText}/>
+                            <div className={`absolute left-2 top-1.5 flex items-center gap-1 text-[10px] font-black ${liveStyleConfig.modelText}`}>
+                                <Zap size={12} className={liveStyleConfig.accentText}/>
                                 整机功耗
                             </div>
                             <div className="flex items-center gap-1 mb-1 z-10">
-                                <span className={`${liveStyleConfig.accentText} text-2xl font-black font-display tracking-tighter`}>
+                                <span className={`${liveStyleConfig.accentText} text-xl font-black font-display tracking-tighter`}>
                                     {simResult && simResult.totalPowerDraw > 0 ? <BouncyNumber value={simResult.totalPowerDraw} /> : '---'}
                                 </span>
                                 {simResult && simResult.totalPowerDraw > 0 && <span className={`text-xs ${liveStyleConfig.accentText} font-bold`}>W</span>}
@@ -345,10 +345,10 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     </div>
 
                     {/* 3. FPS single column */}
-                    <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative flex-1 flex flex-col min-h-[360px]`}>
+                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} shadow-sm rounded-lg p-2 relative flex-1 flex flex-col min-h-[330px]`}>
                         <div className="flex items-center justify-between mb-2 relative z-10">
                             <div className={`text-[12px] font-black tracking-widest ${liveStyleConfig.accentText}`}>游戏实测FPS</div>
-                            <div className={`grid grid-cols-3 gap-1 w-[150px] ${liveControlBg} border p-0.5 rounded-lg shadow-sm`} title="切换分辨率">
+                            <div className={`grid grid-cols-3 gap-1 w-[122px] ${liveControlBg} border p-0.5 rounded-lg shadow-sm`} title="切换分辨率">
                                 {[1080, 1440, 2160].map(res => (
                                     <button
                                         key={res}
@@ -369,15 +369,15 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                 displayFpsData.map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-2">
                                         <div className="relative shrink-0">
-                                            <img src={`/images/games/icons/${item.name}.png`} alt={item.name} className={`w-9 h-9 rounded-full object-cover border-2 ${liveStyleConfig.border}`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                            <img src={`/images/games/icons/${item.name}.png`} alt={item.name} className={`w-8 h-8 rounded-full object-cover border-2 ${liveStyleConfig.border}`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className={`text-[12px] font-black ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
+                                            <div className={`text-[11px] font-black ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
                                             <div className={`w-full ${fpsTrackBg} border rounded-full h-1.5 overflow-hidden relative`}>
                                                 <div className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${liveStyleConfig.fpsBarColor}`} style={{ width: `${Math.min(100, (item.fps / 240) * 100)}%` }}></div>
                                             </div>
                                         </div>
-                                        <div className={`font-display font-black text-base ${item.fps === 0 ? `${liveStyleConfig.modelText} opacity-70` : liveStyleConfig.modelText} shrink-0 w-[52px] text-right`}>
+                                        <div className={`font-display font-black text-sm ${item.fps === 0 ? `${liveStyleConfig.modelText} opacity-70` : liveStyleConfig.modelText} shrink-0 w-[42px] text-right`}>
                                             {item.fps}<span className="text-[9px] ml-0.5">FPS</span>
                                         </div>
                                     </div>
@@ -393,31 +393,31 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
 
                     {/* 4. Pricing at bottom */}
                     {pricingProps && (
-                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} rounded-lg p-3 relative mt-auto shrink-0 flex flex-col gap-2 shadow-sm`}>
+                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} rounded-lg p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5 shadow-sm`}>
                             <div className="flex items-center justify-between gap-2">
-                                <div className={`text-[13px] font-black ${liveStyleConfig.modelText}`}>优惠方案</div>
-                                <div className="relative group w-[142px]">
+                                <div className={`text-[12px] font-black ${liveStyleConfig.modelText}`}>优惠方案</div>
+                                <div className="relative group w-[118px]">
                                     <select
                                         value={pricingProps.discountRate}
                                         onChange={(e) => pricingProps.setDiscountRate(parseFloat(e.target.value))}
-                                        className={`w-full appearance-none ${liveControlBg} ${liveStyleConfig.modelText} border text-[12px] font-black py-1.5 pl-2.5 pr-7 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-950/10 transition-all cursor-pointer shadow-sm`}
+                                        className={`w-full appearance-none ${liveControlBg} ${liveStyleConfig.modelText} border text-[11px] font-black py-1 pl-2.5 pr-7 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-950/10 transition-all cursor-pointer shadow-sm`}
                                     >
                                         {pricingProps.strategies.map(opt => <option key={opt.value} value={opt.value} className={optionClassName}>{opt.label}</option>)}
                                     </select>
-                                    <ChevronDown className={`absolute right-2 top-2 ${liveStyleConfig.accentText} opacity-80 pointer-events-none`} size={14} />
+                                    <ChevronDown className={`absolute right-2 top-1.5 ${liveStyleConfig.accentText} opacity-80 pointer-events-none`} size={14} />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-[76px_1fr] gap-2 items-end">
-                                <div className="flex flex-col gap-1">
+                            <div className="grid grid-cols-[70px_1fr] gap-2 items-end">
+                                <div className="flex flex-col gap-0.5">
                                     <span className={`text-[10px] font-black ${liveStyleConfig.mutedText}`}>原价</span>
-                                    <span className={`text-xl font-black line-through decoration-2 ${liveStyleConfig.mutedText}`}>¥{Math.floor(pricingProps.pricing.standardPrice)}</span>
+                                    <span className={`text-lg font-black line-through decoration-2 ${liveStyleConfig.mutedText}`}>¥{Math.floor(pricingProps.pricing.standardPrice)}</span>
                                 </div>
                                 <div className="flex flex-col items-end">
                                     <span className={`text-[10px] font-black ${liveStyleConfig.accentText}`}>优惠后</span>
                                     <div className="flex items-baseline gap-1 leading-none">
-                                        <span className={`text-2xl font-bold ${liveStyleConfig.totalPriceText}`}>¥</span>
-                                        <span className={`text-5xl font-black drop-shadow-md ${liveStyleConfig.totalPriceText} font-mono tracking-tighter`}>
+                                        <span className={`text-xl font-bold ${liveStyleConfig.totalPriceText}`}>¥</span>
+                                        <span className={`text-4xl font-black drop-shadow-md ${liveStyleConfig.totalPriceText} font-mono tracking-tighter`}>
                                             <SidebarRollingPrice value={pricingProps.pricing.finalPrice} />
                                         </span>
                                     </div>

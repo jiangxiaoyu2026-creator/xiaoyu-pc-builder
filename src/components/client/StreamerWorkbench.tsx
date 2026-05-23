@@ -17,7 +17,26 @@ import { StreamerPosterTemplate } from './StreamerPosterTemplate';
 import { StreamerPermissionWall } from './StreamerPermissionWall';
 // --------------------
 
-const LIVE_SCENARIO_OPTIONS = ['实用', '颜值', '游戏', '直播', '生产力', '海景房'];
+const LIVE_SCENARIO_ROWS = [
+    ['实用', '颜值', '海景房'],
+    ['游戏', '直播', '生产力'],
+];
+
+const LIVE_STYLE_SWATCHES: Record<LiveStyleKey, string> = {
+    cyber: 'linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899)',
+    tactical: 'linear-gradient(135deg, #3f6212, #84cc16, #eab308)',
+    gundam: 'linear-gradient(135deg, #dc2626, #f8fafc, #2563eb)',
+    mecha: 'linear-gradient(135deg, #111827, #f97316, #facc15)',
+    pure: 'linear-gradient(135deg, #ffffff, #4f46e5, #f97316)',
+    graphite: 'linear-gradient(135deg, #111827, #64748b, #34d399)',
+    aurora: 'linear-gradient(135deg, #042f2e, #5eead4, #bef264)',
+    snow: 'linear-gradient(135deg, #f8fafc, #60a5fa, #10b981)',
+    crimson: 'linear-gradient(135deg, #450a0a, #f87171, #f59e0b)',
+    pink: 'linear-gradient(135deg, #831843, #f9a8d4, #f0abfc)',
+    orange: 'linear-gradient(135deg, #431407, #fb923c, #fde047)',
+    violet: 'linear-gradient(135deg, #ffffff, #7c3aed, #d946ef)',
+    redline: 'linear-gradient(135deg, #0f172a, #dc2626, #fb7185)',
+};
 
 // Components extracted to StreamerRow.tsx and StreamerPerformanceSidebar.tsx
 
@@ -319,8 +338,8 @@ function StreamerWorkbench({
         updateLiveMeta({ scenarios });
     };
     const serviceItems = [
-        { label: '电脑组装', positive: true },
-        { label: '工整走线', positive: true },
+        { label: '组装', positive: true },
+        { label: '走线', positive: true },
         { label: '三年质保', positive: true },
         { label: `${serviceFeePercent}% 利润`, positive: true },
         { label: '济南发货', positive: true },
@@ -333,7 +352,7 @@ function StreamerWorkbench({
 
     return (
         <div className={isLiveMode ? 'w-[964px] max-w-full mx-auto' : 'w-full'}>
-        <div className={`${theme.cardBg} ${isLiveMode ? 'h-[977px] rounded-lg' : 'rounded-xl'} shadow-xl ${theme.borderColor} border overflow-hidden relative transition-colors duration-300`}>
+        <div className={`${theme.cardBg} ${isLiveMode ? 'h-[790px] rounded-lg flex flex-col' : 'rounded-xl'} shadow-xl ${theme.borderColor} border overflow-hidden relative transition-colors duration-300`}>
             
             {/* Hidden Poster Template */}
             <StreamerPosterTemplate 
@@ -346,7 +365,7 @@ function StreamerWorkbench({
             {/* Permission Overlay */}
             {!hasPermission && <StreamerPermissionWall />}
 
-            <div className={!hasPermission ? 'filter blur-[2px] opacity-60 pointer-events-none select-none' : ''}>
+            <div className={`${isLiveMode ? 'flex flex-1 min-h-0 flex-col' : ''} ${!hasPermission ? 'filter blur-[2px] opacity-60 pointer-events-none select-none' : ''}`}>
                 <GhostCursor x={ghostPos.x} y={ghostPos.y} active={isAiTyping} status={ghostStatus} />
                 {isAiTyping && (
                     <div className={`absolute top-0 left-0 right-0 h-1 ${theme.bgLight} z-50`}>
@@ -357,7 +376,7 @@ function StreamerWorkbench({
                     <div className="flex items-center gap-3">
                         <h2 className={`text-base font-bold ${theme.textTitle} flex items-center gap-1.5`}>
                             <Zap className={theme.primary} size={18} />
-                            {activeTab === 'builder' ? '专业装机控制台' : activeTab === 'recycle' ? '二手回收估价系统' : activeTab === 'trends' ? '全网行情雷达' : '硬件性价比天梯'}
+                            {activeTab === 'builder' ? '大屏模式控制台' : activeTab === 'recycle' ? '二手回收估价系统' : activeTab === 'trends' ? '全网行情雷达' : '硬件性价比天梯'}
                         </h2>
                         {!isLiveMode && (
                             <div className="hidden md:flex items-center gap-1.5 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -424,11 +443,11 @@ function StreamerWorkbench({
                 </div>
 
                 {/* === Layout Container === */}
-                <div className={`flex flex-col md:flex-row flex-1 ${isLiveMode ? liveStyleConfig.wrapperBg : ''}`}>
+                <div className={`flex flex-col md:flex-row flex-1 min-h-0 ${isLiveMode ? liveStyleConfig.wrapperBg : ''}`}>
                     {/* === Sidebar Navigation === */}
                     {!isLiveMode && (
                         <div className="flex flex-row md:flex-col gap-1.5 p-2.5 md:p-3 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 md:w-[150px] lg:w-[172px] shrink-0 overflow-x-auto hide-scrollbar">
-                            {/* 专业装机 Tab */}
+                            {/* 大屏模式 Tab */}
                         <button
                             onClick={() => setActiveTab('builder')}
                             className={`group relative flex md:flex-col items-center gap-1.5 p-2.5 md:p-3 rounded-xl transition-all duration-300 shrink-0 ${activeTab === 'builder'
@@ -439,7 +458,7 @@ function StreamerWorkbench({
                                 <Zap size={18} />
                             </div>
                             <div className="text-left md:text-center shrink-0">
-                                <div className={`text-[13px] font-black tracking-tight ${activeTab === 'builder' ? '' : 'text-slate-600 dark:text-slate-300'}`}>专业装机</div>
+                                <div className={`text-[13px] font-black tracking-tight ${activeTab === 'builder' ? '' : 'text-slate-600 dark:text-slate-300'}`}>大屏模式</div>
                                 <div className={`text-[10px] font-medium mt-0.5 hidden lg:block ${activeTab === 'builder' ? 'text-indigo-500/80 dark:text-indigo-400/80' : 'text-slate-400 dark:text-slate-500'}`}>AI大模型驱动</div>
                             </div>
                             {activeTab === 'builder' && <div className="hidden md:block absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-7 bg-indigo-500 rounded-r-md"></div>}
@@ -507,31 +526,35 @@ function StreamerWorkbench({
                         )}
                         {isLiveMode && (
                             <div className={`px-4 py-2 ${liveStyleConfig.headerBg} border-b ${liveStyleConfig.border}`}>
-                                <div className="flex items-center justify-between gap-3">
-                                    <div className="flex flex-wrap items-center gap-3 min-w-0 flex-1">
+                                <div className="flex items-center justify-start gap-5">
+                                    <div className="flex flex-wrap items-center gap-3 min-w-0 shrink-0">
                                         <div className={`text-3xl font-black tracking-tight ${liveStyleConfig.modelText}`}>DIYXX</div>
                                         <div className={`h-10 w-px ${liveStyleConfig.glowBg} opacity-70 shrink-0`}></div>
-                                        <div className="flex flex-wrap gap-x-3 gap-y-1.5">
-                                            {LIVE_SCENARIO_OPTIONS.map((label) => {
-                                                const checked = liveMeta.scenarios.includes(label);
-                                                return (
-                                                    <button
-                                                        key={label}
-                                                        type="button"
-                                                        onClick={() => toggleScenario(label)}
-                                                        className={`flex items-center gap-1.5 text-[14px] font-black transition-colors ${checked ? liveStyleConfig.modelText : liveStyleConfig.mutedText}`}
-                                                    >
-                                                        <span className={`w-3.5 h-3.5 rounded-[3px] border-2 flex items-center justify-center ${checked ? `${liveStyleConfig.glowBg} border-transparent` : liveStyleConfig.border}`}>
-                                                            {checked && <span className={`text-[11px] leading-none ${liveCheckText}`}>✓</span>}
-                                                        </span>
-                                                        {label}
-                                                    </button>
-                                                );
-                                            })}
+                                        <div className="flex flex-col gap-1.5">
+                                            {LIVE_SCENARIO_ROWS.map((row, rowIndex) => (
+                                                <div key={rowIndex} className="flex flex-wrap gap-x-3 gap-y-1.5">
+                                                    {row.map((label) => {
+                                                        const checked = liveMeta.scenarios.includes(label);
+                                                        return (
+                                                            <button
+                                                                key={label}
+                                                                type="button"
+                                                                onClick={() => toggleScenario(label)}
+                                                                className={`flex items-center gap-1.5 text-[14px] font-black transition-colors ${checked ? liveStyleConfig.modelText : liveStyleConfig.mutedText}`}
+                                                            >
+                                                                <span className={`w-3.5 h-3.5 rounded-[3px] border-2 flex items-center justify-center ${checked ? `${liveStyleConfig.glowBg} border-transparent` : liveStyleConfig.border}`}>
+                                                                    {checked && <span className={`text-[11px] leading-none ${liveCheckText}`}>✓</span>}
+                                                                </span>
+                                                                {label}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-1.5 shrink-0">
+                                    <div className="ml-5 flex items-center gap-1.5 shrink-0">
                                         <button
                                             onClick={onOpenLibrary}
                                             className={`h-[54px] px-3 rounded-lg ${liveControlBg} border ${liveStyleConfig.border} ${liveStyleConfig.modelText} transition-all text-[12px] font-black flex flex-col items-center justify-center gap-0.5`}
@@ -564,21 +587,22 @@ function StreamerWorkbench({
                                 </div>
                             </div>
                         )}
-                        <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-x-auto' : 'overflow-x-auto'}`}>
-                            <div className={`${isLiveMode ? 'min-w-[700px] h-full flex flex-col' : 'min-w-[600px]'}`}>
-                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(360px,1fr)_48px_88px_28px]' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px]'} gap-2 px-3 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300`}>
-                            <div>类别</div>
-                            <div>硬件型号 {isLiveMode ? '' : '(智能搜索 / 自定义)'}</div>
-                            <div className="text-center">数量</div>
-                            <div className="text-right">价格</div>
-                            <div></div>
-                        </div>
+                        <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-hidden' : 'overflow-x-auto'}`}>
+                            <div className={`${isLiveMode ? 'w-full h-full flex flex-col' : 'min-w-[600px]'}`}>
+                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px]' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px]'} gap-2 px-3 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300 shrink-0`}>
+                                    <div>类别</div>
+                                    <div>硬件型号 {isLiveMode ? '' : '(智能搜索 / 自定义)'}</div>
+                                    <div className="text-center">数量</div>
+                                    <div className="text-right">价格</div>
+                                    {!isLiveMode && <div></div>}
+                                </div>
 
-                        <div className={`divide-y-[1.5px] ${isLiveMode ? liveStyleConfig.divider : theme.divider} transition-colors duration-300 ${isLiveMode ? 'min-h-0' : ''}`}>
+                        <div className={`divide-y-[1.5px] ${isLiveMode ? liveStyleConfig.divider : theme.divider} transition-colors duration-300 ${isLiveMode ? 'flex shrink-0 flex-col' : ''}`}>
                             <AnimatePresence mode="popLayout">
                                 {visibleBuildList.map((entry, index) => (
                                     <motion.div
                                         key={entry.id}
+                                        className={isLiveMode ? 'h-[47px] shrink-0' : ''}
                                         layout
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -591,10 +615,10 @@ function StreamerWorkbench({
                             </AnimatePresence>
                         </div>
                         {isLiveMode && (
-                            <div className={`mt-auto px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg} ${liveStyleConfig.modelText} flex items-center justify-between gap-3`}>
-                                <div className="min-w-0 flex items-center justify-start gap-x-1.5 text-[12px] font-black tracking-wide whitespace-nowrap overflow-x-auto">
-                                            {serviceItems.map(item => (
-                                                <span key={item.label} className="inline-flex items-center gap-1 shrink-0">
+                            <div className={`px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg} ${liveStyleConfig.modelText} flex items-center justify-between gap-3 shrink-0`}>
+                                <div className="min-w-0 flex items-center justify-start gap-x-2 text-[13px] font-black tracking-wide whitespace-nowrap overflow-x-auto">
+                                    {serviceItems.map(item => (
+                                        <span key={item.label} className="inline-flex items-center gap-1 shrink-0">
                                             <span className={`w-4 h-4 text-[13px] rounded-[4px] flex items-center justify-center leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} ${liveCheckText}` : `${liveInputBg} border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
                                                 {item.positive ? '✓' : '×'}
                                             </span>
@@ -602,7 +626,7 @@ function StreamerWorkbench({
                                         </span>
                                     ))}
                                 </div>
-                                <div className="shrink-0 pl-3">
+                                <div className="shrink-0 pl-3 pr-6">
                                     <div className="flex items-baseline justify-end gap-2 leading-none">
                                         <span className={`text-[17px] font-black ${liveStyleConfig.modelText}`}>合计</span>
                                         <span className={`text-[28px] font-black font-mono ${liveStyleConfig.priceText}`}>¥{Math.floor(pricing.standardPrice || 0)}</span>
@@ -785,15 +809,34 @@ function StreamerWorkbench({
                             <button
                                 key={s}
                                 onClick={() => setLiveStyle(s)}
-                                className={`w-9 h-9 p-0 rounded-lg border transition-all text-base shadow-sm ${isActive ? `${styleConfig.glowBg} text-white border-transparent scale-110` : `bg-white/80 dark:bg-slate-800 ${styleConfig.glowBg} text-white border-transparent opacity-70 hover:opacity-100 hover:scale-105`}`}
+                                className={`w-9 h-9 p-0 rounded-lg border transition-all shadow-sm ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
+                                style={{ background: LIVE_STYLE_SWATCHES[s] }}
                                 title={styleConfig.name}
                             >
-                                {styleConfig.emoji}
+                                <span className={`block h-full w-full rounded-[7px] ${isActive ? 'bg-white/0' : 'bg-black/0'}`} />
                             </button>
                         );
                     })}
                 </div>
                 <div className="flex shrink-0 justify-end gap-2">
+                    <button
+                        onClick={() => {
+                            setLiveMode(false);
+                            setActiveTab('recycle');
+                        }}
+                        className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-teal-600 hover:border-teal-200 dark:hover:border-teal-500/40 transition-all text-sm font-bold shadow-sm"
+                    >
+                        <Recycle size={16} /> 二手回收
+                    </button>
+                    <button
+                        onClick={() => {
+                            setLiveMode(false);
+                            setActiveTab('trends');
+                        }}
+                        className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-purple-600 hover:border-purple-200 dark:hover:border-purple-500/40 transition-all text-sm font-bold shadow-sm"
+                    >
+                        <TrendingUp size={16} /> 行情分析
+                    </button>
                     <button onClick={() => setLiveMode(false)} className="h-10 px-4 flex items-center gap-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-200 dark:hover:border-indigo-500/40 transition-all text-sm font-bold shadow-sm">
                         <Monitor size={16} /> 退出直播
                     </button>
@@ -819,7 +862,7 @@ function StreamerWorkbench({
 
 export default function StreamerWorkbenchWrapper(props: any) {
     const [themeKey, setThemeKey] = useState<ThemeColor>('default');
-    const [isLiveMode, setLiveMode] = useState(false);
+    const [isLiveMode, setLiveMode] = useState(true);
     const [liveStyle, setLiveStyle] = useState<LiveStyleKey>('violet');
     return (
         <ThemeContext.Provider value={{
