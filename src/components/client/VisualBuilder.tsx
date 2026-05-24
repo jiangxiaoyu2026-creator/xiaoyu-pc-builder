@@ -734,16 +734,22 @@ function VisualBuilder({
             </div>
 
             {/* Image Preview Modal */}
-            {previewImage && (
-                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={() => setPreviewImage(null)}>
-                    <div className="relative max-w-4xl max-h-[90vh] bg-white rounded-2xl p-2 shadow-2xl animate-scale-up">
+            {previewImage && typeof document !== 'undefined' && createPortal((
+                <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={() => setPreviewImage(null)}>
+                    <div
+                        className="relative max-w-4xl max-h-[90vh] bg-white rounded-2xl p-2 shadow-2xl animate-scale-up"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <img src={previewImage} alt="Preview" className="w-full h-full object-contain rounded-xl max-h-[85vh]" />
-                        <button className="absolute -top-4 -right-4 bg-white rounded-full p-2 text-slate-800 shadow-lg hover:text-red-500 transition-colors">
+                        <button
+                            onClick={() => setPreviewImage(null)}
+                            className="absolute -top-4 -right-4 bg-white rounded-full p-2 text-slate-800 shadow-lg hover:text-red-500 transition-colors"
+                        >
                             <X size={24} />
                         </button>
                     </div>
                 </div>
-            )}
+            ), document.body)}
 
 
 
