@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 from typing import List, Optional
-from fastapi.security import OAuth2PasswordBearer
-from fastapi import Request
 from pydantic import BaseModel
 from ..db import get_session
 from ..models import User
@@ -11,10 +9,50 @@ from ..utils.auth import get_password_hash, verify_password, create_access_token
 from ..services.sms_service import SMSService
 from ..services.email_service import EmailService
 import uuid
+import time
 from datetime import datetime
+from collections import defaultdict
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
+
+# --- rate limiter ---
+class _RateLimiter:
+    def __init__(self, max_requests: int, window_seconds: int):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self._attempts: dict[str, list[float]] = defaultdict(list)
+
+    def check(self, key: str) -> bool:
+        now = time.time()
+        cutoff = now - self.window_seconds
+        self._attempts[key] = [t for t in self._attempts[key] if t > cutoff]
+        if len(self._attempts[key]) >= self.max_requests:
+            return False
+        self._attempts[key].append(now)
+        return True
+
+_login_limiter = _RateLimiter(max_requests=10, window_seconds=60)
+_sms_email_limiter = _RateLimiter(max_requests=3, window_seconds=300)
+_register_limiter = _RateLimiter(max_requests=5, window_seconds=3600)
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+def _make_rate_limit(limiter: _RateLimiter, prefix: str):
+    async def _check(request: Request):
+        ip = _client_ip(request)
+        if not limiter.check(f"{prefix}:{ip}"):
+            raise HTTPException(status_code=429, detail="请求过于频繁，请稍后再试")
+    return _check
+
+_rate_limit_login = _make_rate_limit(_login_limiter, "login")
+_rate_limit_sms = _make_rate_limit(_sms_email_limiter, "sms")
+_rate_limit_email = _make_rate_limit(_sms_email_limiter, "email")
+_rate_limit_register = _make_rate_limit(_register_limiter, "register")
 
 class LoginRequest(BaseModel):
     username: str
@@ -86,7 +124,7 @@ async def get_current_streamer_or_admin(current_user: User = Depends(get_current
     return current_user
 
 @router.post("/register")
-async def register(request: Request, user_data: dict, session: Session = Depends(get_session)):
+async def register(request: Request, user_data: dict, session: Session = Depends(get_session), _rate: None = Depends(_rate_limit_register)):
     username = user_data.get("username")
     password = user_data.get("password")
     invite_code = user_data.get("inviteCode")
@@ -199,7 +237,7 @@ async def register(request: Request, user_data: dict, session: Session = Depends
 
 @router.post("/register-sms")
 @router.post("/register-sms/")
-async def register_sms(data: dict, session: Session = Depends(get_session)):
+async def register_sms(data: dict, request: Request, session: Session = Depends(get_session), _rate: None = Depends(_rate_limit_sms)):
     mobile = data.get("mobile")
     code = data.get("code")
     username = data.get("username")
@@ -235,7 +273,7 @@ async def register_sms(data: dict, session: Session = Depends(get_session)):
 
 @router.post("/register-email")
 @router.post("/register-email/")
-async def register_email(data: dict, session: Session = Depends(get_session)):
+async def register_email(data: dict, request: Request, session: Session = Depends(get_session), _rate: None = Depends(_rate_limit_email)):
     email = data.get("email")
     code = data.get("code")
     username = data.get("username")
@@ -336,12 +374,13 @@ async def wechat_login(data: dict, session: Session = Depends(get_session)):
 @router.post("/login")
 async def login(
     login_data: LoginRequest,
-    session: Session = Depends(get_session)
+    request: Request,
+    session: Session = Depends(get_session),
+    _rate: None = Depends(_rate_limit_login)
 ):
     import logging
     logger = logging.getLogger(__name__)
 
-    # Determine which data source to use
     username = login_data.username
     password = login_data.password
 
@@ -349,10 +388,6 @@ async def login(
          raise HTTPException(status_code=400, detail="Missing username or password")
 
     logger.info(f"Login attempt - Username: {username}")
-
-
-    logger.info(f"Login attempt - Username: {username}")
-
 
     statement = select(User).where(User.username == username)
     user = session.exec(statement).first()
@@ -366,10 +401,8 @@ async def login(
         )
 
     logger.info(f"User found - Username: {user.username}, Role: {user.role}")
-    logger.info(f"Stored password hash: {user.password}")
 
     password_valid = verify_password(password, user.password)
-    logger.info(f"Password verification result: {password_valid}")
 
     if not password_valid:
         logger.warning(f"Password verification failed for user: {username}")
@@ -408,7 +441,7 @@ async def login(
     }
 
 @router.post("/login-sms")
-async def login_sms(data: dict, session: Session = Depends(get_session)):
+async def login_sms(data: dict, request: Request, session: Session = Depends(get_session), _rate: None = Depends(_rate_limit_sms)):
     mobile = data.get("mobile")
     code = data.get("code")
     
@@ -450,7 +483,7 @@ async def login_sms(data: dict, session: Session = Depends(get_session)):
 
 @router.post("/login-email")
 @router.post("/login-email/")
-async def login_email(data: dict, session: Session = Depends(get_session)):
+async def login_email(data: dict, request: Request, session: Session = Depends(get_session), _rate: None = Depends(_rate_limit_email)):
     email = data.get("email")
     code = data.get("code")
     

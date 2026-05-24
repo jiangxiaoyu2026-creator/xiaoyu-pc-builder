@@ -13,10 +13,12 @@ from ..services.price_safety import is_valid_price_history_change
 router = APIRouter()
 
 # 获取配置的 API KEY，并在如果没有配置时给予一个默认值提示
-EXTERNAL_API_KEY = os.getenv("EXTERNAL_API_KEY", "diyxx-ai-secret-key-2026")
+EXTERNAL_API_KEY = os.getenv("EXTERNAL_API_KEY")
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 async def verify_api_key(api_key: str = Security(api_key_header)):
+    if not EXTERNAL_API_KEY:
+        raise HTTPException(status_code=503, detail="外部 API 未配置")
     if not api_key:
         raise HTTPException(status_code=401, detail="Missing X-API-Key header")
     if api_key != EXTERNAL_API_KEY:
