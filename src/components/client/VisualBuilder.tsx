@@ -1443,20 +1443,20 @@ function VisualBuilder({
                                                 >
                                                     {/* Product Image Wrapper */}
                                                     <div className="w-14 h-14 md:w-20 md:h-20 bg-slate-50 dark:bg-[#1A1A24] rounded-lg md:rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition-all overflow-hidden border border-slate-200 dark:border-[#2D3748] shrink-0 relative">
-                                                        {item.image ? (
+                                                        <div className="opacity-40">{getIconByCategory(modalCategory)}</div>
+                                                        {item.image && (
                                                             <img
                                                                 src={item.image}
                                                                 alt={item.model}
                                                                 loading="lazy"
                                                                 decoding="async"
-                                                                className="w-full h-full object-cover md:group-hover:scale-110 transition-transform duration-500"
+                                                                className="absolute inset-0 w-full h-full object-cover md:group-hover:scale-110 transition-transform duration-500"
+                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     setPreviewImage(item.image!);
                                                                 }}
                                                             />
-                                                        ) : (
-                                                            <div className="opacity-40">{getIconByCategory(modalCategory)}</div>
                                                         )}
                                                         {item.isRecommended && (
                                                             <div className="absolute top-0 left-0 bg-orange-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-br-lg shadow-sm">TOP</div>

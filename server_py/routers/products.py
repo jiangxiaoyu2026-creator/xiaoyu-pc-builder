@@ -10,14 +10,32 @@ from pydantic import BaseModel
 import uuid
 import json
 import logging
+import os
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+
+def _missing_local_upload(image: Optional[str]) -> bool:
+    if not image or not image.startswith("/uploads/"):
+        return False
+
+    upload_root = os.path.abspath(UPLOAD_DIR)
+    relative_path = image[len("/uploads/"):].lstrip("/")
+    file_path = os.path.abspath(os.path.join(upload_root, relative_path))
+    if not file_path.startswith(upload_root + os.sep):
+        return True
+
+    return not os.path.isfile(file_path)
+
 def _dump_public_product(hw: Hardware) -> dict:
     data = hw.model_dump()
+    if _missing_local_upload(data.get("image")):
+        data["image"] = None
     data["previousPrice"] = sanitize_previous_price(hw.price, hw.previousPrice)
     return data
 
