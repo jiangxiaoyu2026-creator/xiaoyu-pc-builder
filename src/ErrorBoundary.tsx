@@ -1,6 +1,58 @@
 
 import { Component, ErrorInfo, ReactNode } from 'react';
 
+const CHUNK_ERROR_RELOAD_KEY = 'xiaoyu_chunk_error_reload_at';
+const CHUNK_ERROR_AUTO_RELOAD_INTERVAL = 5 * 60 * 1000;
+const CACHE_BUST_PARAM = 'xiaoyu_refresh';
+
+function isChunkLoadError(error: Error | null): boolean {
+    const message = (error?.message || '').toLowerCase();
+    return [
+        'failed to fetch dynamically imported module',
+        'error loading dynamically imported module',
+        'importing a module script failed',
+        'loading chunk',
+        'chunkloaderror',
+        'unable to preload css'
+    ].some(pattern => message.includes(pattern));
+}
+
+async function clearRuntimeCaches() {
+    const tasks: Promise<unknown>[] = [];
+
+    if ('caches' in window) {
+        tasks.push(
+            window.caches.keys().then(cacheNames =>
+                Promise.all(cacheNames.map(cacheName => window.caches.delete(cacheName)))
+            )
+        );
+    }
+
+    if ('serviceWorker' in navigator) {
+        tasks.push(
+            navigator.serviceWorker.getRegistrations().then(registrations =>
+                Promise.all(registrations.map(registration => registration.unregister()))
+            )
+        );
+    }
+
+    await Promise.allSettled(tasks);
+}
+
+async function reloadWithFreshAssets() {
+    try {
+        localStorage.removeItem('xiaoyu_cache_version');
+    } catch {
+        // Ignore storage failures and still try to reload.
+    }
+
+    await clearRuntimeCaches();
+
+    const url = new URL(window.location.href);
+    url.searchParams.set(CACHE_BUST_PARAM, Date.now().toString());
+    window.location.replace(url.toString());
+}
+
 interface Props {
     children: ReactNode;
 }
@@ -16,6 +68,14 @@ class ErrorBoundary extends Component<Props, State> {
         error: null
     };
 
+    public componentDidMount() {
+        window.addEventListener('vite:preloadError', this.handlePreloadError);
+    }
+
+    public componentWillUnmount() {
+        window.removeEventListener('vite:preloadError', this.handlePreloadError);
+    }
+
     public static getDerivedStateFromError(error: Error): State {
         return { hasError: true, error };
     }
@@ -23,26 +83,44 @@ class ErrorBoundary extends Component<Props, State> {
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error('Uncaught error:', error, errorInfo);
 
-        // Check if it's a dynamic import failure (common during deployment)
-        const isChunkError = error.message.includes('Failed to fetch dynamically imported module') ||
-            error.message.includes('Loading chunk');
-
-        if (isChunkError) {
-            const lastReload = sessionStorage.getItem('last-chunk-error-reload');
-            const now = Date.now();
-
-            // Only auto-reload if it hasn't happened in the last 10 seconds to avoid infinite loops
-            if (!lastReload || now - parseInt(lastReload) > 10000) {
-                sessionStorage.setItem('last-chunk-error-reload', now.toString());
-                window.location.reload();
-            }
+        if (isChunkLoadError(error)) {
+            this.tryRecoverFromChunkError();
         }
+    }
+
+    private handlePreloadError = (event: Event) => {
+        if (this.tryRecoverFromChunkError()) {
+            event.preventDefault();
+        }
+    };
+
+    private tryRecoverFromChunkError() {
+        const now = Date.now();
+        let lastReload = 0;
+
+        try {
+            lastReload = Number(sessionStorage.getItem(CHUNK_ERROR_RELOAD_KEY) || 0);
+        } catch {
+            lastReload = 0;
+        }
+
+        if (lastReload && now - lastReload < CHUNK_ERROR_AUTO_RELOAD_INTERVAL) {
+            return false;
+        }
+
+        try {
+            sessionStorage.setItem(CHUNK_ERROR_RELOAD_KEY, now.toString());
+        } catch {
+            // If session storage is unavailable, a single cache-busted navigation is still useful.
+        }
+
+        void reloadWithFreshAssets();
+        return true;
     }
 
     public render() {
         if (this.state.hasError) {
-            const isChunkError = this.state.error?.message.includes('Failed to fetch dynamically imported module') ||
-                this.state.error?.message.includes('Loading chunk');
+            const isChunkError = isChunkLoadError(this.state.error);
 
             return (
                 <div className="min-h-screen flex items-center justify-center bg-slate-100 p-6 font-sans">
@@ -64,9 +142,12 @@ class ErrorBoundary extends Component<Props, State> {
                         <div className="flex flex-col gap-3">
                             <button
                                 onClick={() => {
-                                    sessionStorage.clear();
-                                    localStorage.removeItem('xiaoyu_cache_version');
-                                    window.location.reload();
+                                    try {
+                                        sessionStorage.removeItem(CHUNK_ERROR_RELOAD_KEY);
+                                    } catch {
+                                        // Ignore storage failures and still try to reload.
+                                    }
+                                    void reloadWithFreshAssets();
                                 }}
                                 className="w-full py-4 bg-slate-900 text-white font-black text-sm rounded-2xl hover:bg-slate-800 transition-all active:scale-[0.98] shadow-xl shadow-slate-200"
                             >

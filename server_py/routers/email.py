@@ -1,16 +1,45 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from typing import Optional
 from sqlmodel import Session
 from ..db import get_session
 from ..services.email_service import EmailService
 from ..models import EmailSettings, User
 from .auth import get_current_admin
+from collections import defaultdict
+import time
+
+# Simple rate limiter class
+class _EmailRateLimiter:
+    def __init__(self, max_requests: int, window_seconds: int):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self._attempts: dict[str, list[float]] = defaultdict(list)
+
+    def check(self, key: str) -> bool:
+        now = time.time()
+        cutoff = now - self.window_seconds
+        self._attempts[key] = [t for t in self._attempts[key] if t > cutoff]
+        if len(self._attempts[key]) >= self.max_requests:
+            return False
+        self._attempts[key].append(now)
+        return True
+
+# 5 minutes window: Max 3 requests per IP, Max 3 requests per email
+_email_ip_limiter = _EmailRateLimiter(max_requests=3, window_seconds=300)
+_email_addr_limiter = _EmailRateLimiter(max_requests=3, window_seconds=300)
+
+# 60 seconds throttle to prevent instant double clicks
+_email_addr_throttle = _EmailRateLimiter(max_requests=1, window_seconds=60)
 
 router = APIRouter()
 
 @router.post("/send-code")
 @router.post("/send-code/")
-async def send_code(data: dict, session: Session = Depends(get_session)):
+async def send_code(
+    data: dict,
+    request: Request,
+    session: Session = Depends(get_session)
+):
     email = data.get("email")
     if not email:
         raise HTTPException(status_code=400, detail="请输入邮箱地址")
@@ -18,6 +47,19 @@ async def send_code(data: dict, session: Session = Depends(get_session)):
     # Simple email format check
     if "@" not in email or "." not in email:
         raise HTTPException(status_code=400, detail="邮箱格式不正确")
+        
+    # Rate Limiting
+    forwarded = request.headers.get("x-forwarded-for", "")
+    client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
+    
+    if not _email_addr_throttle.check(email):
+        raise HTTPException(status_code=429, detail="发送验证码过于频繁，请等待60秒后重试")
+        
+    if not _email_ip_limiter.check(client_ip):
+        raise HTTPException(status_code=429, detail="请求过于频繁，请稍后再试")
+        
+    if not _email_addr_limiter.check(email):
+        raise HTTPException(status_code=429, detail="该邮箱获取验证码过于频繁，请稍后再试")
     
     # Try sending
     success = await EmailService.send_verification_code(email, session)

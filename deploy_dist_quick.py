@@ -53,15 +53,13 @@ cd /root/pcbuilder
 rm -rf /root/pcbuilder/dist_new
 mkdir -p /root/pcbuilder/dist_new
 python3 -c "import zipfile; zipfile.ZipFile('{remote_zip}', 'r').extractall('/root/pcbuilder/dist_new/')"
-# Atomic-ish swap
-rm -rf /root/pcbuilder/dist_old
-cp -r /root/pcbuilder/dist /root/pcbuilder/dist_old 2>/dev/null || true
-rm -rf /root/pcbuilder/dist/*
-cp -r /root/pcbuilder/dist_new/dist/* /root/pcbuilder/dist/
-# Copy into Docker
-docker cp /root/pcbuilder/dist/. xiaoyu-pc-builder:/app/dist/
+# Keep old hashed assets so users with an already-open tab can still load stale chunks.
+mkdir -p /root/pcbuilder/dist
+cp -r /root/pcbuilder/dist_new/dist/. /root/pcbuilder/dist/
+# Copy only the new build over the existing Docker dist; this preserves old hashed assets too.
+docker cp /root/pcbuilder/dist_new/dist/. xiaoyu-pc-builder:/app/dist/
 # Cleanup
-rm -rf /root/pcbuilder/dist_new /root/pcbuilder/dist_old {remote_zip}
+rm -rf /root/pcbuilder/dist_new {remote_zip}
 echo 'DIST DEPLOYED SUCCESSFULLY INTO DOCKER!'
 """
 res2 = manager.run_remote_command(unpack_cmd)

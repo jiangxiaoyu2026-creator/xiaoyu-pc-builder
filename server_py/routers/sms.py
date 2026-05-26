@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlmodel import Session, select
 from typing import List, Optional
 from ..db import get_session
@@ -7,6 +7,31 @@ from ..services.sms_service import SMSService
 from .auth import get_current_admin
 import json
 import os
+from collections import defaultdict
+import time
+
+# Simple rate limiter class
+class _SmsRateLimiter:
+    def __init__(self, max_requests: int, window_seconds: int):
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self._attempts: dict[str, list[float]] = defaultdict(list)
+
+    def check(self, key: str) -> bool:
+        now = time.time()
+        cutoff = now - self.window_seconds
+        self._attempts[key] = [t for t in self._attempts[key] if t > cutoff]
+        if len(self._attempts[key]) >= self.max_requests:
+            return False
+        self._attempts[key].append(now)
+        return True
+
+# 5 minutes window: Max 3 requests per IP, Max 3 requests per mobile
+_sms_ip_limiter = _SmsRateLimiter(max_requests=3, window_seconds=300)
+_sms_mobile_limiter = _SmsRateLimiter(max_requests=3, window_seconds=300)
+
+# 60 seconds throttle to prevent instant double clicks
+_sms_mobile_throttle = _SmsRateLimiter(max_requests=1, window_seconds=60)
 
 router = APIRouter()
 
@@ -97,12 +122,26 @@ async def save_sms_settings(
 @router.post("/send-code/")
 async def send_code(
     data: dict,
+    request: Request,
     session: Session = Depends(get_session)
 ):
     mobile = data.get("mobile")
     if not mobile:
         raise HTTPException(status_code=400, detail="请输入手机号")
     
+    # Rate Limiting
+    forwarded = request.headers.get("x-forwarded-for", "")
+    client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
+    
+    if not _sms_mobile_throttle.check(mobile):
+        raise HTTPException(status_code=429, detail="发送验证码过于频繁，请等待60秒后重试")
+        
+    if not _sms_ip_limiter.check(client_ip):
+        raise HTTPException(status_code=429, detail="请求过于频繁，请稍后再试")
+        
+    if not _sms_mobile_limiter.check(mobile):
+        raise HTTPException(status_code=429, detail="该手机号获取验证码过于频繁，请稍后再试")
+        
     # Get SMS config for appCode
     setting = session.get(Setting, "sms_config")
     if not setting:
