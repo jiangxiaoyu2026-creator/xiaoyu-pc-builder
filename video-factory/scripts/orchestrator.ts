@@ -1,6 +1,4 @@
-// @ts-nocheck
 import axios from "axios";
-import OpenAI from "openai";
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
@@ -8,150 +6,189 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: path.join(__dirname, "../../.env") });
 
-const API_KEY = process.env.EXTERNAL_API_KEY || "diyxx-ai-secret-key-2026";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const TEMP_DIR = path.join(__dirname, "../temp");
-const PUBLIC_DIR = path.join(__dirname, "../public");
+const OUT_DIR = path.join(__dirname, "../out");
 
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR, { recursive: true });
-if (!fs.existsSync(PUBLIC_DIR)) fs.mkdirSync(PUBLIC_DIR, { recursive: true });
+if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 
-async function getMarketData() {
-  console.log("=> 调用行情 API 获取数据...");
-  const res = await axios.get("https://www.diyxx.com/api/external/market-report-data?period=daily", {
-    headers: { "X-API-Key": API_KEY }
-  });
-  
-  if (res.data.data.summary.totalItemChanged === 0) {
-    console.log("=> 今日无数据，切换为 weekly 数据...");
-    const weeklyRes = await axios.get("https://www.diyxx.com/api/external/market-report-data?period=weekly", {
-      headers: { "X-API-Key": API_KEY }
-    });
-    return weeklyRes.data.data;
-  }
-  return res.data.data;
-}
-
-async function generateScript(topDrops: any[], topRises: any[]) {
-  if (!OPENAI_API_KEY) {
-    console.warn("⚠️ 警告: OPENAI_API_KEY 未找到，使用默认回退文案...");
-    return "完了完了，兄弟们，现在的行情太魔幻了。AMD 疯狂跳水，Intel 却在疯狂涨价，这谁懂啊？现在的配电脑，简直就像在买理财。我的建议是，游戏党直接冲超高性价比的X3D，早买早享受！";
-  }
-
-  console.log("=> 正在请求 LLM 生成赛博朋克风/毒舌口播文案...");
-  const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
-  const prompt = `
-  你是“小鱼”，一个精通电脑硬件、自带毒舌和赛博朋克情绪的硬件博主。
-  这里有一些最近的价格极值：
-  大幅跌价: ${JSON.stringify(topDrops)}
-  大幅涨价: ${JSON.stringify(topRises)}
-  
-  请为我写一段连续的口播配音文案（控制在100字左右，适合做短视频），不需要写动作指导，只需要纯念出来的文字。
-  风格：情绪化，专业黑话，干脆利落。
-  `;
-
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }]
-  });
-
-  return response.choices[0].message.content || "";
-}
-
-function runTTS(text: string): { srtPath: string } {
-  console.log("=> 调用 Edge-TTS 中...");
-  const baseName = "audio";
-  const audioPath = path.join(PUBLIC_DIR, `${baseName}.mp3`);
-  const vttPath = path.join(TEMP_DIR, `${baseName}.vtt`);
-
-  // Force bash execution environment
-  const edgeTtsCmd = `/Users/mac/Library/Python/3.9/bin/edge-tts --voice zh-CN-YunxiNeural --text "${text}" --write-media ${audioPath} --write-subtitles ${vttPath}`;
-  execSync(edgeTtsCmd, { stdio: "inherit" });
-  
-  return { srtPath: vttPath };
-}
-
-function parseVTT(vttStr: string) {
-  const blocks = vttStr.split(/\r?\n\r?\n/).filter(b => b.includes('-->'));
-  return blocks.map(block => {
-    const lines = block.split(/\r?\n/);
-    const timeLine = lines.find(l => l.includes('-->'));
-    const textLines = lines.filter(l => !l.includes('-->') && !l.startsWith('WEBVTT') && l.trim().length > 0);
-    
-    if (!timeLine) return null;
-    
-    const [startStr, endStr] = timeLine.split('-->').map(s => s.trim());
-    
-    const parseTime = (t: string) => {
-      const parts = t.split(':');
-      const secParts = parts[parts.length - 1].split('.');
-      let seconds = parseFloat(secParts[0]) + parseFloat(secParts[1]) / 1000;
-      if (parts.length > 2) seconds += parseInt(parts[parts.length - 2]) * 60;
-      if (parts.length > 3) seconds += parseInt(parts[parts.length - 3]) * 3600;
-      return seconds;
-    };
-    
-    return {
-      start: parseTime(startStr),
-      end: parseTime(endStr),
-      text: textLines.join(' ').replace(/<[^>]+>/g, '') 
-    };
-  }).filter(Boolean);
-}
-
-async function renderVideo(inputProps: any) {
-  const propsPath = path.join(TEMP_DIR, "inputProps.json");
-  fs.writeFileSync(propsPath, JSON.stringify(inputProps, null, 2));
-
-  console.log("=> 调用 Remotion 重渲染...");
-  const exportPath = path.join(__dirname, "../out/final_video.mp4");
-  if (!fs.existsSync(path.join(__dirname, "../out"))) fs.mkdirSync(path.join(__dirname, "../out"), { recursive: true });
-  
-  const PATH_ENV = "/usr/local/bin:/opt/homebrew/bin:" + process.env.PATH;
-  
-  // Calculate frames length directly
-  const totalFrames = Math.ceil(inputProps.audioDurationInSeconds * 60);
-
-  execSync(`npx remotion render src/index.ts MarketReport ${exportPath} --props=${propsPath} --frames=0-${totalFrames}`, {
-    stdio: "inherit",
-    env: { ...process.env, PATH: PATH_ENV }
-  });
-  
-  console.log(`=> ✅ 视频已成功生成: ${exportPath}`);
-}
+// Friendly display mapping for hardware categories
+const categoryNames: Record<string, string> = {
+  cpu: "CPU 处理器",
+  gpu: "显卡",
+  ram: "内存",
+  disk: "硬盘",
+  mainboard: "主板",
+  psu: "电源",
+  case: "机箱",
+  cooler: "散热器",
+  all: "全品类硬件",
+};
 
 async function main() {
   try {
-    const data = await getMarketData();
-    const extremeChanges = data.extremeChanges;
-    
-    const topDrops = extremeChanges.biggestDrops.slice(0, 3);
-    const topRises = extremeChanges.biggestIncreases.slice(0, 3);
-    
-    const script = await generateScript(topDrops, topRises);
-    console.log("==> 剧本内容:", script);
-    
-    const { srtPath } = runTTS(script);
-    
-    const vttContent = fs.readFileSync(srtPath, "utf-8");
-    const subtitles = parseVTT(vttContent);
-    
-    const finalSubtitles = subtitles.length > 0 ? subtitles : [{start: 0, end: 10, text: script}];
-    
-    // Add 1s padding to the end of the audio
-    const audioDurationInSeconds = finalSubtitles[finalSubtitles.length - 1]?.end + 1 || 15;
+    // 1. Parse command line arguments
+    const args = process.argv.slice(2);
+    let category = "gpu";
+    let subcategory = "";
+    let days = 30;
+    let hardwareId = "";
+    let titleOverride = "";
 
+    for (const arg of args) {
+      if (arg.startsWith("--category=")) {
+        category = arg.split("=")[1];
+      } else if (arg.startsWith("--subcategory=")) {
+        subcategory = arg.split("=")[1];
+      } else if (arg.startsWith("--days=")) {
+        days = parseInt(arg.split("=")[1], 10) || 30;
+      } else if (arg.startsWith("--hardwareId=")) {
+        hardwareId = arg.split("=")[1];
+      } else if (arg.startsWith("--title=")) {
+        titleOverride = arg.split("=")[1];
+      }
+    }
+
+    console.log(`=> Running orchestrator: category=${category}, subcategory=${subcategory || "none"}, days=${days}, hardwareId=${hardwareId || "none"}`);
+
+    // 2. Fetch history and trends from backend APIs
+    let historyUrl = `https://www.diyxx.com/api/stats/product-price-history?days=${days}`;
+    if (category) historyUrl += `&category=${category}`;
+    if (subcategory) historyUrl += `&subcategory=${encodeURIComponent(subcategory)}`;
+    if (hardwareId) historyUrl += `&hardware_id=${hardwareId}`;
+
+    let trendsUrl = `https://www.diyxx.com/api/stats/price-trends?days=${days}`;
+    if (category) trendsUrl += `&category=${category}`;
+    if (subcategory) trendsUrl += `&subcategory=${encodeURIComponent(subcategory)}`;
+
+    console.log(`=> Fetching price history: ${historyUrl}`);
+    const historyRes = await axios.get(historyUrl);
+    const historyData = historyRes.data;
+
+    console.log(`=> Fetching recent trends: ${trendsUrl}`);
+    const trendsRes = await axios.get(trendsUrl);
+    const trendsData = trendsRes.data;
+
+    // 3. Assemble chart points and title info
+    let chartData: { date: string; price: number }[] = [];
+    let startPrice = 0;
+    let endPrice = 0;
+    let title = "";
+    let subtitle = "";
+
+    if (hardwareId && historyData.productTrends && historyData.productTrends.length > 0) {
+      // Single product trend
+      const trend = historyData.productTrends.find((t: any) => String(t.hardwareId) === String(hardwareId)) || historyData.productTrends[0];
+      title = titleOverride || `${trend.name} 价格走势报告`;
+      subtitle = `近 ${days} 天单品价格变动历史`;
+      
+      chartData = trend.points.map((p: any) => ({
+        date: p.date,
+        price: p.price,
+      }));
+    } else {
+      // Category benchmark trend
+      const catLabel = categoryNames[category] || category;
+      const subLabel = subcategory ? ` (${subcategory})` : "";
+      title = titleOverride || `DIYXX ${catLabel}${subLabel}价格走势报告`;
+      subtitle = `近 ${days} 天类目基准均价走势`;
+
+      if (historyData.categoryTotalAvgTrend && historyData.categoryTotalAvgTrend.length > 0) {
+        chartData = historyData.categoryTotalAvgTrend.map((pt: any) => ({
+          date: pt.date,
+          price: pt.avgPrice,
+        }));
+      } else {
+        console.warn("⚠️ Warning: No categoryTotalAvgTrend returned from server. Falling back to product averages.");
+        // Fallback: aggregate product trends
+        const dateMap: Record<string, { sum: number; count: number }> = {};
+        if (historyData.productTrends) {
+          for (const trend of historyData.productTrends) {
+            for (const pt of trend.points) {
+              if (!dateMap[pt.date]) dateMap[pt.date] = { sum: 0, count: 0 };
+              dateMap[pt.date].sum += pt.price;
+              dateMap[pt.date].count += 1;
+            }
+          }
+        }
+        chartData = Object.entries(dateMap).map(([date, val]) => ({
+          date,
+          price: Math.round((val.sum / val.count) * 100) / 100,
+        })).sort((a, b) => a.date.localeCompare(b.date));
+      }
+    }
+
+    if (chartData.length === 0) {
+      throw new Error("No chart data points could be collected or fallback.");
+    }
+
+    // Compute stats
+    startPrice = chartData[0].price;
+    endPrice = chartData[chartData.length - 1].price;
+    const priceChange = endPrice - startPrice;
+    const priceChangePercent = startPrice > 0 ? (priceChange / startPrice) * 100 : 0;
+
+    // Filter and map recent price adjustments
+    const rawChanges = trendsData.recentChanges || [];
+    const recentChanges = rawChanges
+      .filter((c: any) => c.changeAmount !== 0)
+      .slice(0, 3)
+      .map((c: any) => ({
+        hardwareName: c.hardwareName,
+        category: c.category,
+        oldPrice: c.oldPrice,
+        newPrice: c.newPrice,
+        changeAmount: c.changeAmount,
+        changePercent: c.changePercent,
+        changedAt: c.changedAt,
+      }));
+
+    // If API returned no recent changes, create dummy placeholders matching the category
+    if (recentChanges.length === 0) {
+      recentChanges.push({
+        hardwareName: `基准产品价格核定调整`,
+        category: category,
+        oldPrice: Math.round(startPrice),
+        newPrice: Math.round(endPrice),
+        changeAmount: Math.round(priceChange),
+        changePercent: parseFloat(priceChangePercent.toFixed(2)),
+        changedAt: new Date().toISOString().replace("T", " ").slice(0, 19),
+      });
+    }
+
+    // 4. Write inputProps.json
     const inputProps = {
-      topDrops,
-      topRises,
-      subtitles: finalSubtitles,
-      audioDurationInSeconds
+      title,
+      subtitle,
+      chartData,
+      recentChanges,
+      category,
+      days,
+      priceChange,
+      priceChangePercent,
+      startPrice,
+      endPrice,
     };
-    
-    await renderVideo(inputProps);
+
+    const propsPath = path.join(TEMP_DIR, "inputProps.json");
+    fs.writeFileSync(propsPath, JSON.stringify(inputProps, null, 2));
+    console.log(`=> ✅ Generated props at: ${propsPath}`);
+
+    // 5. Invoke Remotion render to build output video
+    console.log("=> Starting Remotion render...");
+    const exportPath = path.join(OUT_DIR, "final_video.mp4");
+    const PATH_ENV = "/usr/local/bin:/opt/homebrew/bin:" + process.env.PATH;
+
+    execSync(`npx remotion render src/index.ts MarketReport ${exportPath} --props=${propsPath}`, {
+      stdio: "inherit",
+      env: { ...process.env, PATH: PATH_ENV }
+    });
+
+    console.log(`=> ✅ Video successfully generated at: ${exportPath}`);
 
   } catch (error) {
-    console.error("执行流水线时出错:", error);
+    console.error("❌ Error running orchestrator:", error);
+    process.exit(1);
   }
 }
 
