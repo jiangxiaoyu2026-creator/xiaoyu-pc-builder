@@ -1,7 +1,8 @@
 import json
 import random
+import re
 from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Set
 from sqlmodel import Session, select, col
 from server_py.models import Hardware, Config, Setting, ChatSettings
 from server_py.db import engine
@@ -13,6 +14,7 @@ class AiService:
         from server_py.models import User # Added import here for convenience or at top
         self.session = session
         self.client = None
+        self.provider = "deepseek"
         self.model = "gpt-3.5-turbo"
         self.persona = "balanced"
         self.strategy = "balanced"
@@ -25,6 +27,7 @@ class AiService:
             try:
                 config = json.loads(setting.value)
                 if config.get("enabled"):
+                    self.provider = config.get("provider", "deepseek")
                     api_key = config.get("apiKey")
                     base_url = config.get("baseUrl")
                     self.model = config.get("model", "deepseek-chat")
@@ -32,12 +35,58 @@ class AiService:
                     self.strategy = config.get("strategy", "balanced")
                     
                     if api_key:
+                        default_base_urls = {
+                            "deepseek": "https://api.deepseek.com",
+                            "openai": "https://api.openai.com/v1",
+                        }
                         self.client = OpenAI(
                             api_key=api_key,
-                            base_url=base_url if base_url else "https://api.deepseek.com"
+                            base_url=base_url if base_url else default_base_urls.get(self.provider, "https://api.deepseek.com")
                         )
             except Exception as e:
                 print(f"Error loading AI settings: {e}")
+
+    def _normalize_prompt(self, text: str) -> str:
+        return (text or "").lower().replace(" ", "").replace("-", "").replace("_", "")
+
+    def _find_user_requested_items(self, all_hardware: List[Hardware], user_prompt: str) -> List[Hardware]:
+        """
+        Find products explicitly mentioned by the user. These items must remain in the candidate set
+        and are protected during later budget trimming unless they create a hard incompatibility.
+        """
+        user_prompt_lower = (user_prompt or "").lower()
+        prompt_clean = self._normalize_prompt(user_prompt)
+        prompt_segments = set(re.findall(r'[a-zA-Z0-9]{3,}', user_prompt_lower))
+
+        forced_items = []
+        seen_ids = set()
+        for item in all_hardware:
+            model_lower = item.model.lower()
+            model_clean = self._normalize_prompt(item.model)
+            brand_lower = item.brand.lower()
+            brand_clean = self._normalize_prompt(item.brand)
+
+            matched = False
+            if len(model_clean) > 4 and model_clean in prompt_clean:
+                matched = True
+            elif brand_lower in user_prompt_lower or (len(brand_clean) > 2 and brand_clean in prompt_clean):
+                model_segments = re.findall(r'[a-zA-Z0-9]{3,}', model_lower)
+                matched = any(seg in user_prompt_lower for seg in model_segments)
+            else:
+                matched = any(seg in model_lower for seg in prompt_segments if len(seg) >= 4)
+
+            if matched and item.id not in seen_ids:
+                forced_items.append(item)
+                seen_ids.add(item.id)
+
+        return forced_items
+
+    def _spec_value(self, specs: Dict[str, Any], *keys: str) -> Any:
+        for key in keys:
+            value = specs.get(key)
+            if value not in (None, ""):
+                return value
+        return None
 
     def retrieve_candidates(self, budget: int, usage: str, user_prompt: str = "") -> List[Dict]:
         """
@@ -57,36 +106,8 @@ class AiService:
         )
         all_hardware = self.session.exec(statement).all()
         
-        # 提取用户可能点名的硬件
-        user_prompt_lower = user_prompt.lower()
-        import re
-        # 提取用户输入中的“纯字母数字”片段作为强匹配因子
-        prompt_segments = set(re.findall(r'[a-zA-Z0-9]{3,}', user_prompt_lower))
-        
-        forced_items = []
-        for item in all_hardware:
-            model_lower = item.model.lower()
-            model_clean = model_lower.replace(" ", "").replace("-", "")
-            brand_lower = item.brand.lower()
-            
-            # 1. 完整型号名包含匹配
-            prompt_clean = user_prompt_lower.replace(" ", "").replace("-", "")
-            if len(model_clean) > 4 and model_clean in prompt_clean:
-                forced_items.append(item)
-                continue
-                
-            # 2. 品牌匹配 + 关键型号匹配
-            if brand_lower in user_prompt_lower or (len(brand_lower) > 2 and brand_lower in prompt_clean):
-                # 提取型号中的数字或英文核心代号
-                model_segments = re.findall(r'[a-zA-Z0-9]{3,}', model_lower)
-                # 如果这些代号出现在用户的提示词中，则认为命中（比如 5600X, 4060, A520）
-                if any(seg in user_prompt_lower for seg in model_segments):
-                    forced_items.append(item)
-                    continue
-            
-            # 3. 如果用户输入了极其具体的片段（如 Ti600），哪怕品牌没写对也算
-            if any(seg in model_lower for seg in prompt_segments if len(seg) >= 4):
-                forced_items.append(item)
+        forced_items = self._find_user_requested_items(all_hardware, user_prompt)
+        forced_ids = {item.id for item in forced_items}
 
         categories = {}
         for item in all_hardware:
@@ -125,8 +146,8 @@ class AiService:
             normal_cat_items = [i for i in items if i.id not in seen_ids]
             normal_cat_items.sort(key=lambda x: x.price)
             
-            # 每个类别最多 5 个候选项（减少上下文提升速度）
-            spots_left = 5 - len(forced_cat_items)
+            # 每个类别最多 8 个候选项：保留准确度，同时控制上下文长度
+            spots_left = 8 - len(forced_cat_items)
             selected = forced_cat_items.copy()
             
             if spots_left > 0 and normal_cat_items:
@@ -137,17 +158,22 @@ class AiService:
             
             for item in selected:
                 hw_specs = self._get_inferred_specs(item)
-                # 补充物理尺寸参数用于兼容性校验
-                important_keys = ['memoryType', 'socket', 'formFactor', 'maxGpuLength', 'maxCoolerHeight', 'length', 'height']
                 final_list.append({
                     "id": item.id,
                     "category": item.category,
                     "brand": item.brand,
                     "model": item.model,
                     "price": item.price,
-                    "socket": hw_specs.get('socket'),
-                    "memoryType": hw_specs.get('memoryType'),
-                    "formFactor": hw_specs.get('formFactor'),
+                    "socket": self._spec_value(hw_specs, 'socket', 'socket_type'),
+                    "memoryType": self._spec_value(hw_specs, 'memoryType', 'ram_type', 'type'),
+                    "formFactor": self._spec_value(hw_specs, 'formFactor', 'form_factor'),
+                    "length": self._spec_value(hw_specs, 'length'),
+                    "height": self._spec_value(hw_specs, 'height'),
+                    "maxGpuLength": self._spec_value(hw_specs, 'maxGpuLength'),
+                    "maxCoolerHeight": self._spec_value(hw_specs, 'maxCoolerHeight', 'maxCpuHeight'),
+                    "wattage": self._spec_value(hw_specs, 'wattage', 'power_draw', 'tdp', 'tgp', 'maxWattage'),
+                    "capacity": self._spec_value(hw_specs, 'capacity'),
+                    "isUserRequested": item.id in forced_ids
                 })
         return final_list
 
@@ -300,8 +326,35 @@ class AiService:
         
         usage = 'gaming'
         if any(kw in user_prompt for kw in ["办公", "生产力", "剪辑", "设计", "代码"]): usage = 'work'
-            
-        inventory = self.retrieve_candidates(budget, usage)
+
+        appearance = "black"
+        if any(kw in user_prompt for kw in ["白色", "纯白", "海景", "雪"]):
+            appearance = "white"
+        elif any(kw in user_prompt for kw in ["RGB", "灯", "光", "炫"]):
+            appearance = "rgb"
+
+        if any(kw in user_prompt for kw in ["不包含显示器", "不要显示器", "不带显示器", "不含显示器"]):
+            include_monitor = False
+        else:
+            include_monitor = any(kw in user_prompt for kw in ["需要包含显示器", "包含显示器", "带屏幕", "带显示器"])
+
+        inventory = self.retrieve_candidates(budget, usage, user_prompt)
+        requested_inventory = [item for item in inventory if item.get("isUserRequested")]
+        protected_ids: Set[str] = {item["id"] for item in requested_inventory}
+        requirement_summary = {
+            "budget": budget,
+            "usage": usage,
+            "appearance": appearance,
+            "includeMonitor": include_monitor,
+            "requestedItems": [
+                {
+                    "id": item["id"],
+                    "category": item["category"],
+                    "name": f"{item['brand']} {item['model']}"
+                }
+                for item in requested_inventory
+            ]
+        }
         best_template_data = self.find_reference_configs(budget, user_prompt)
         best_template, template_role = best_template_data if best_template_data else (None, 'admin')
         
@@ -457,15 +510,9 @@ class AiService:
 
                 hw = self.session.get(Hardware, item_id)
                 if hw:
-                    # 注入推断逻辑得到的 specs
-                    hw.specs = self._get_inferred_specs(hw)
-                    resolved_item = {
-                        "id": hw.id, "category": hw.category, "brand": hw.brand, "model": hw.model, 
-                        "price": hw.price, "specs": hw.specs, "image": hw.image
-                    }
+                    resolved_item = self._hardware_to_result(hw)
                     if cat == 'fan':
                         resolved_item['count'] = fan_count
-                        resolved_item['price'] = hw.price * fan_count
                     resolved_items[cat] = resolved_item
                 else:
                     resolved_items[cat] = None
@@ -502,6 +549,16 @@ class AiService:
                     resolved_items['ram'] = alt_ram
                     raw_result['description'] = raw_result.get('description', '') + f" (注意：主板支持 {target_type}，已自动将内存更换为兼容型号)"
 
+            # 电源冗余硬校验
+            required_power = self._estimate_required_power(resolved_items)
+            power = resolved_items.get('power')
+            power_watt = self._extract_number(self._spec_value(power.get('specs', {}) if power else {}, 'wattage', 'ratedPower'))
+            if required_power and (not power_watt or power_watt < required_power):
+                alt_power = self._find_compatible_hardware('power', {'minWattage': required_power}, budget * 0.1)
+                if alt_power:
+                    resolved_items['power'] = alt_power
+                    raw_result['description'] = raw_result.get('description', '') + f" (注意：为保证供电冗余，已自动更换为 {int(self._extract_number(self._spec_value(alt_power.get('specs', {}), 'wattage', 'ratedPower')) or 0)}W 电源)"
+
             # --- 物理尺寸兼容性硬校验 ---
             case_item = resolved_items.get('case')
             if case_item:
@@ -516,7 +573,7 @@ class AiService:
                     if 'ATX' in mb_ff and 'M-ATX' not in mb_ff and 'MICRO' not in mb_ff: 
                         if case_ff and 'ATX' not in case_ff.replace('M-ATX', '').replace('MICRO-ATX', ''):
                             # 主板太大，尝试换兼容的大机箱
-                            alt_case = self._find_compatible_hardware('case', {}, case_item['price'] * 1.2) # 只要是别的机箱就行，后端查找逻辑尽量放宽
+                            alt_case = self._find_compatible_hardware('case', self._case_criteria_from_items(resolved_items), case_item['price'] * 1.2)
                             if alt_case:
                                 resolved_items['case'] = alt_case
                                 desc_appends.append("主板板型较大，已自动更换为空间更充裕的机箱")
@@ -531,7 +588,7 @@ class AiService:
                         g_len = float(re.search(r'\d+', str(gpu['specs']['length'])).group())
                         c_max_g = float(re.search(r'\d+', str(c_specs['maxGpuLength'])).group())
                         if g_len > c_max_g:
-                            alt_case = self._find_compatible_hardware('case', {}, case_item['price'] * 1.2)
+                            alt_case = self._find_compatible_hardware('case', self._case_criteria_from_items(resolved_items), case_item['price'] * 1.2)
                             if alt_case:
                                 resolved_items['case'] = alt_case
                                 desc_appends.append(f"显卡长度({g_len}mm)超出原机箱限长，已自动更换大机箱")
@@ -548,7 +605,7 @@ class AiService:
                         c_height = float(re.search(r'\d+', str(cooler['specs']['height'])).group())
                         c_max_c = float(re.search(r'\d+', str(c_specs['maxCoolerHeight'])).group())
                         if c_height > c_max_c:
-                            alt_case = self._find_compatible_hardware('case', {}, case_item['price'] * 1.2)
+                            alt_case = self._find_compatible_hardware('case', self._case_criteria_from_items(resolved_items), case_item['price'] * 1.2)
                             if alt_case:
                                 resolved_items['case'] = alt_case
                                 desc_appends.append(f"散热器高度({c_height}mm)超出原机箱限高，已自动更换机箱")
@@ -571,10 +628,36 @@ class AiService:
                     if "pros" not in eval_data: eval_data["pros"] = []
                     if "cons" not in eval_data: eval_data["cons"] = []
             
-            # 重新计算并同步总价 (Ensuring frontend gets the real price after auto-fix)
-            actual_total = sum(i['price'] for i in resolved_items.values() if i)
+            budget_notes = self._trim_to_budget(resolved_items, budget, protected_ids)
+            if budget_notes:
+                raw_result['description'] = raw_result.get('description', '') + " (预算优化：" + "，".join(budget_notes) + ")"
+
+            final_checks = self._validate_resolved_build(resolved_items, budget)
+            requested_status = []
+            for requested in requirement_summary["requestedItems"]:
+                selected = next((item for item in resolved_items.values() if item and item.get("id") == requested["id"]), None)
+                requested_status.append({
+                    **requested,
+                    "kept": bool(selected)
+                })
+
+            final_checks["requestedItems"] = {
+                "ok": all(item["kept"] for item in requested_status),
+                "items": requested_status
+            }
+
+            if not final_checks["budget"]["ok"]:
+                raw_result['description'] = raw_result.get('description', '') + f" (预算提示：当前库存和点名条件下总价为 ¥{int(final_checks['budget']['actual'])}，高于预算 ¥{budget}，建议放宽点名配件或提高预算。)"
+                raw_result["evaluation"]["cons"].append("当前库存/点名约束下仍有超预算风险")
+
+            if not final_checks["compatibility"]["ok"]:
+                raw_result["evaluation"]["cons"].extend(final_checks["compatibility"]["issues"])
+
+            actual_total = self._calculate_total(resolved_items)
             raw_result["items"] = resolved_items
             raw_result["totalPrice"] = actual_total
+            raw_result["requirementSummary"] = requirement_summary
+            raw_result["checks"] = final_checks
             
         return raw_result
         
@@ -587,6 +670,14 @@ class AiService:
             except: specs = {}
         
         specs = {**specs}
+        if specs.get('socket_type') and not specs.get('socket'):
+            specs['socket'] = specs.get('socket_type')
+        if specs.get('ram_type') and not specs.get('memoryType'):
+            specs['memoryType'] = specs.get('ram_type')
+        if specs.get('form_factor') and not specs.get('formFactor'):
+            specs['formFactor'] = specs.get('form_factor')
+        if specs.get('maxCpuHeight') and not specs.get('maxCoolerHeight'):
+            specs['maxCoolerHeight'] = specs.get('maxCpuHeight')
         model_upper = hardware.model.upper()
         
         # 1. 插槽推断
@@ -618,7 +709,211 @@ class AiService:
 
         return specs
 
-    def _find_compatible_hardware(self, category: str, criteria: Dict[str, Any], max_price: float) -> Optional[Dict]:
+    def _extract_number(self, value: Any) -> Optional[float]:
+        if value in (None, ""):
+            return None
+        match = re.search(r'\d+(?:\.\d+)?', str(value))
+        return float(match.group()) if match else None
+
+    def _form_factor_fits(self, case_form_factor: Any, mainboard_form_factor: Any) -> bool:
+        if not case_form_factor or not mainboard_form_factor:
+            return True
+        case_text = str(case_form_factor).upper().replace("MICRO-ATX", "M-ATX").replace("MATX", "M-ATX")
+        mb_text = str(mainboard_form_factor).upper().replace("MICRO-ATX", "M-ATX").replace("MATX", "M-ATX")
+        case_supports_atx = bool(re.search(r'(?<!M-)ATX', case_text))
+        if "E-ATX" in mb_text:
+            return "E-ATX" in case_text
+        if re.search(r'(?<!M-)ATX', mb_text):
+            return case_supports_atx
+        if "M-ATX" in mb_text:
+            return "M-ATX" in case_text or "ATX" in case_text
+        if "ITX" in mb_text:
+            return True
+        return True
+
+    def _item_total_price(self, item: Optional[Dict]) -> float:
+        if not item:
+            return 0
+        count = item.get("count", 1) if item.get("category") == "fan" else 1
+        return float(item.get("price") or 0) * max(1, int(count or 1))
+
+    def _calculate_total(self, items: Dict[str, Optional[Dict]]) -> float:
+        return sum(self._item_total_price(item) for item in items.values() if item)
+
+    def _hardware_to_result(self, hardware: Hardware) -> Dict:
+        return {
+            "id": hardware.id,
+            "category": hardware.category,
+            "brand": hardware.brand,
+            "model": hardware.model,
+            "price": hardware.price,
+            "specs": self._get_inferred_specs(hardware),
+            "image": hardware.image
+        }
+
+    def _estimate_required_power(self, items: Dict[str, Optional[Dict]]) -> Optional[float]:
+        cpu = items.get("cpu")
+        gpu = items.get("gpu")
+        if not cpu and not gpu:
+            return None
+        cpu_power = self._extract_number(self._spec_value(cpu.get("specs", {}) if cpu else {}, "tdp", "wattage", "power_draw", "maxPower")) or 65
+        gpu_power = self._extract_number(self._spec_value(gpu.get("specs", {}) if gpu else {}, "tgp", "maxWattage", "power_draw", "wattage")) or 150
+        return (cpu_power + gpu_power) * 1.5 + 50
+
+    def _case_criteria_from_items(self, items: Dict[str, Optional[Dict]]) -> Dict[str, Any]:
+        criteria: Dict[str, Any] = {}
+        mb = items.get("mainboard")
+        gpu = items.get("gpu")
+        cooler = items.get("cooling")
+        if mb:
+            mb_ff = self._spec_value(mb.get("specs", {}), "formFactor", "form_factor")
+            if mb_ff:
+                criteria["supportsFormFactor"] = mb_ff
+        if gpu:
+            gpu_len = self._extract_number(self._spec_value(gpu.get("specs", {}), "length"))
+            if gpu_len:
+                criteria["minMaxGpuLength"] = gpu_len
+        if cooler:
+            cooler_height = self._extract_number(self._spec_value(cooler.get("specs", {}), "height"))
+            if cooler_height:
+                criteria["minMaxCoolerHeight"] = cooler_height
+        return criteria
+
+    def _validate_resolved_build(self, items: Dict[str, Optional[Dict]], budget: int) -> Dict[str, Any]:
+        issues = []
+        cpu = items.get("cpu")
+        mb = items.get("mainboard")
+        ram = items.get("ram")
+        case_item = items.get("case")
+        power = items.get("power")
+
+        if cpu and mb:
+            cpu_socket = self._spec_value(cpu.get("specs", {}), "socket", "socket_type")
+            mb_socket = self._spec_value(mb.get("specs", {}), "socket", "socket_type")
+            if cpu_socket and mb_socket and cpu_socket != mb_socket:
+                issues.append(f"CPU接口 {cpu_socket} 与主板接口 {mb_socket} 不匹配")
+
+        if ram and mb:
+            ram_type = self._spec_value(ram.get("specs", {}), "memoryType", "ram_type", "type")
+            mb_type = self._spec_value(mb.get("specs", {}), "memoryType", "ram_type", "type")
+            if ram_type and mb_type and str(ram_type).upper() != str(mb_type).upper():
+                issues.append(f"内存 {ram_type} 与主板内存类型 {mb_type} 不匹配")
+
+        if case_item:
+            c_specs = case_item.get("specs", {})
+            if mb:
+                if not self._form_factor_fits(self._spec_value(c_specs, "formFactor", "form_factor"), self._spec_value(mb.get("specs", {}), "formFactor", "form_factor")):
+                    issues.append("主板板型与机箱支持规格不匹配")
+
+            gpu = items.get("gpu")
+            gpu_len = self._extract_number(self._spec_value(gpu.get("specs", {}) if gpu else {}, "length"))
+            case_gpu_len = self._extract_number(self._spec_value(c_specs, "maxGpuLength"))
+            if gpu_len and case_gpu_len and gpu_len > case_gpu_len:
+                issues.append(f"显卡长度 {gpu_len:g}mm 超过机箱限长 {case_gpu_len:g}mm")
+
+            cooler = items.get("cooling")
+            cooler_height = self._extract_number(self._spec_value(cooler.get("specs", {}) if cooler else {}, "height"))
+            case_cooler_height = self._extract_number(self._spec_value(c_specs, "maxCoolerHeight", "maxCpuHeight"))
+            if cooler_height and case_cooler_height and cooler_height > case_cooler_height:
+                issues.append(f"散热器高度 {cooler_height:g}mm 超过机箱限高 {case_cooler_height:g}mm")
+
+        required_power = self._estimate_required_power(items)
+        power_watt = self._extract_number(self._spec_value(power.get("specs", {}) if power else {}, "wattage", "ratedPower"))
+        if required_power and power_watt and power_watt < required_power:
+            issues.append(f"电源额定功率 {power_watt:g}W 低于建议冗余 {required_power:g}W")
+
+        total = self._calculate_total(items)
+        return {
+            "budget": {"ok": total <= budget, "limit": budget, "actual": total},
+            "compatibility": {"ok": len(issues) == 0, "issues": issues}
+        }
+
+    def _budget_trim_criteria(self, category: str, items: Dict[str, Optional[Dict]]) -> Dict[str, Any]:
+        criteria: Dict[str, Any] = {}
+        mb = items.get("mainboard")
+        cpu = items.get("cpu")
+        ram = items.get("ram")
+
+        if category == "mainboard":
+            cpu_socket = self._spec_value(cpu.get("specs", {}) if cpu else {}, "socket", "socket_type")
+            ram_type = self._spec_value(ram.get("specs", {}) if ram else {}, "memoryType", "ram_type", "type")
+            if cpu_socket:
+                criteria["socket"] = cpu_socket
+            if ram_type:
+                criteria["memoryType"] = ram_type
+        elif category == "ram":
+            mb_type = self._spec_value(mb.get("specs", {}) if mb else {}, "memoryType", "ram_type", "type")
+            if mb_type:
+                criteria["memoryType"] = mb_type
+        elif category == "cpu":
+            mb_socket = self._spec_value(mb.get("specs", {}) if mb else {}, "socket", "socket_type")
+            if mb_socket:
+                criteria["socket"] = mb_socket
+        elif category == "case":
+            criteria.update(self._case_criteria_from_items(items))
+        elif category == "power":
+            required_power = self._estimate_required_power(items)
+            if required_power:
+                criteria["minWattage"] = required_power
+
+        return criteria
+
+    def _trim_to_budget(
+        self,
+        items: Dict[str, Optional[Dict]],
+        budget: int,
+        protected_ids: Set[str]
+    ) -> List[str]:
+        notes = []
+        if self._calculate_total(items) <= budget:
+            return notes
+
+        fan = items.get("fan")
+        if fan and fan.get("id") not in protected_ids:
+            if int(fan.get("count", 1) or 1) > 1:
+                fan["count"] = 1
+                notes.append("为控制预算，已将机箱风扇数量降为 1 把")
+            if self._calculate_total(items) <= budget:
+                return notes
+
+        downgrade_order = ["case", "cooling", "disk", "ram", "power", "mainboard", "cpu", "gpu"]
+        for _ in range(3):
+            changed = False
+            for category in downgrade_order:
+                current = items.get(category)
+                if not current or current.get("id") in protected_ids:
+                    continue
+
+                current_price = float(current.get("price") or 0)
+                if current_price <= 0:
+                    continue
+
+                alt = self._find_compatible_hardware(
+                    category,
+                    self._budget_trim_criteria(category, items),
+                    current_price,
+                    price_ceiling=current_price - 1,
+                    prefer_cheaper=True
+                )
+                if alt and alt.get("id") != current.get("id"):
+                    items[category] = alt
+                    notes.append(f"为压住预算，已将 {category} 从 {current.get('brand')} {current.get('model')} 调整为 {alt.get('brand')} {alt.get('model')}")
+                    changed = True
+                    if self._calculate_total(items) <= budget:
+                        return notes
+            if not changed:
+                break
+
+        return notes
+
+    def _find_compatible_hardware(
+        self,
+        category: str,
+        criteria: Dict[str, Any],
+        max_price: float,
+        price_ceiling: Optional[float] = None,
+        prefer_cheaper: bool = False
+    ) -> Optional[Dict]:
         """寻找满足特定条件的硬件"""
         # 获取所有该类别的激活硬件
         stmt = select(Hardware).where(Hardware.category == category, Hardware.status == "active")
@@ -630,21 +925,44 @@ class AiService:
             match = True
             for k, v in criteria.items():
                 if not v: continue # 假如某项标准是 None，不参与强杀
-                if cand_specs.get(k) != v:
+                if k == "supportsFormFactor":
+                    if not self._form_factor_fits(self._spec_value(cand_specs, "formFactor", "form_factor"), v):
+                        match = False
+                        break
+                    continue
+                if k == "minMaxGpuLength":
+                    max_len = self._extract_number(self._spec_value(cand_specs, "maxGpuLength"))
+                    if max_len and max_len < float(v):
+                        match = False
+                        break
+                    continue
+                if k == "minMaxCoolerHeight":
+                    max_height = self._extract_number(self._spec_value(cand_specs, "maxCoolerHeight", "maxCpuHeight"))
+                    if max_height and max_height < float(v):
+                        match = False
+                        break
+                    continue
+                if k == "minWattage":
+                    wattage = self._extract_number(self._spec_value(cand_specs, "wattage", "ratedPower"))
+                    if not wattage or wattage < float(v):
+                        match = False
+                        break
+                    continue
+                cand_value = self._spec_value(cand_specs, k, "socket_type" if k == "socket" else k, "ram_type" if k == "memoryType" else k)
+                if str(cand_value).upper() != str(v).upper():
                     match = False
                     break
-            if match:
+            if match and (price_ceiling is None or cand.price <= price_ceiling):
                 eligible.append(cand)
         
         if not eligible: return None
         
-        # 选个价格价格差距最小的
-        eligible.sort(key=lambda x: abs(x.price - max_price))
+        if prefer_cheaper:
+            eligible.sort(key=lambda x: (-x.price, x.sortOrder))
+        else:
+            eligible.sort(key=lambda x: abs(x.price - max_price))
         best = eligible[0]
-        return {
-            "id": best.id, "category": best.category, "brand": best.brand, "model": best.model, 
-            "price": best.price, "specs": self._get_inferred_specs(best), "image": best.image
-        }
+        return self._hardware_to_result(best)
 
     def suggest_specs(self, category: str, brand: str, model: str) -> Optional[str]:
         """Generate structured technical specifications for a product using AI"""

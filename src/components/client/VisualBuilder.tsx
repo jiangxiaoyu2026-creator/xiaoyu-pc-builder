@@ -146,7 +146,7 @@ function VisualBuilder({
         }
     }, [openAiModal, onAiModalClose]);
     const [aiActiveCategory, setAiActiveCategory] = useState<Category | null>(null);
-    const [aiResult, setAiResult] = useState<{ description: string } | null>(null);
+    const [aiResult, setAiResult] = useState<import('../../services/aiBuilder').AIBuildResult | null>(null);
 
     // Track row elements for ghost cursor target
     const rowRefs = useState<Record<string, HTMLDivElement | null>>({})[0];
@@ -409,7 +409,7 @@ function VisualBuilder({
 
             setAiActiveCategory(null);
             await new Promise(r => setTimeout(r, 400));
-            setAiResult({ description: result.description });
+            setAiResult(result);
 
         } catch (error) {
             console.error("AI Generation Failed:", error);
@@ -1028,6 +1028,28 @@ function VisualBuilder({
                 {aiResult && (
                     <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-3xl p-8 border border-indigo-100 relative overflow-hidden animate-fade-in mt-6 shadow-lg shadow-indigo-100/50">
                         <div className="relative z-10">
+                            {aiResult.checks && (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+                                    <div className={`rounded-xl border px-4 py-3 ${aiResult.checks.budget?.ok ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
+                                        <div className="text-[11px] font-black uppercase tracking-wider opacity-70">预算</div>
+                                        <div className="text-sm font-bold mt-1">
+                                            {aiResult.checks.budget?.ok ? '未超预算' : '需要调整'}
+                                        </div>
+                                    </div>
+                                    <div className={`rounded-xl border px-4 py-3 ${aiResult.checks.compatibility?.ok ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
+                                        <div className="text-[11px] font-black uppercase tracking-wider opacity-70">兼容</div>
+                                        <div className="text-sm font-bold mt-1">
+                                            {aiResult.checks.compatibility?.ok ? '全部通过' : '有风险'}
+                                        </div>
+                                    </div>
+                                    <div className={`rounded-xl border px-4 py-3 ${aiResult.checks.requestedItems?.ok ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                                        <div className="text-[11px] font-black uppercase tracking-wider opacity-70">点名配件</div>
+                                        <div className="text-sm font-bold mt-1">
+                                            {aiResult.checks.requestedItems?.items?.length ? (aiResult.checks.requestedItems.ok ? '已保留' : '未全部保留') : '未点名'}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             <div className="prose prose-indigo max-w-none">
                                 <p className="text-slate-700 leading-loose text-base font-medium whitespace-pre-wrap">
                                     {aiResult.description}

@@ -700,6 +700,25 @@ function StreamerWorkbench({
                                 </button>
                             </div>
                             <div className="p-6 space-y-5">
+                                {aiResult.checks && (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div className={`rounded-xl border px-4 py-3 ${aiResult.checks.budget?.ok ? 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300' : 'bg-amber-50 border-amber-100 text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300'}`}>
+                                            <div className="text-[11px] font-black uppercase tracking-wider opacity-70">预算</div>
+                                            <div className="text-sm font-bold mt-1">{aiResult.checks.budget?.ok ? '未超预算' : '需要调整'}</div>
+                                        </div>
+                                        <div className={`rounded-xl border px-4 py-3 ${aiResult.checks.compatibility?.ok ? 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300' : 'bg-amber-50 border-amber-100 text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300'}`}>
+                                            <div className="text-[11px] font-black uppercase tracking-wider opacity-70">兼容</div>
+                                            <div className="text-sm font-bold mt-1">{aiResult.checks.compatibility?.ok ? '全部通过' : '有风险'}</div>
+                                        </div>
+                                        <div className={`rounded-xl border px-4 py-3 ${aiResult.checks.requestedItems?.ok ? 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300' : 'bg-slate-50 border-slate-100 text-slate-600 dark:bg-slate-800/50 dark:border-slate-700/50 dark:text-slate-300'}`}>
+                                            <div className="text-[11px] font-black uppercase tracking-wider opacity-70">点名配件</div>
+                                            <div className="text-sm font-bold mt-1">
+                                                {aiResult.checks.requestedItems?.items?.length ? (aiResult.checks.requestedItems.ok ? '已保留' : '未全部保留') : '未点名'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Score + Description */}
                                 <div className="flex gap-5 items-start">
                                     {aiResult.evaluation && (

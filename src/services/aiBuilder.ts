@@ -28,6 +28,18 @@ export interface AIBuildResult {
     totalPrice: number;
     description: string;
     evaluation?: AIEvaluation;
+    requirementSummary?: {
+        budget: number;
+        usage: string;
+        appearance: string;
+        includeMonitor: boolean;
+        requestedItems: { id: string; category: string; name: string }[];
+    };
+    checks?: {
+        budget?: { ok: boolean; limit: number; actual: number };
+        compatibility?: { ok: boolean; issues: string[] };
+        requestedItems?: { ok: boolean; items: { id: string; category: string; name: string; kept: boolean }[] };
+    };
     logs: AIBuildLog[];
 }
 
@@ -121,20 +133,20 @@ export const aiBuilder = {
                 prompt: req.prompt || `预算${req.budget}元，用途${req.usage}，外观${req.appearance}`,
                 budget: req.budget,
                 usage: req.usage,
-                appearance: req.appearance
+                appearance: req.appearance,
+                includeMonitor: Boolean(req.includeMonitor)
             };
 
             // Call the new backend API
             const response = await ApiService.post('/ai/generate', payload);
 
-            // Backend returns { items: {...}, totalPrice: number, description: string }
-            // We generate fake logs to keep the UI animation happy and impressive
+            // Backend returns the verified build. Logs are UI progress labels, not claims about model internals.
             const logs: AIBuildLog[] = [
-                { type: 'analysis', step: '云端连接', detail: '[SYSTEM] Connecting to Neural Cloud... 正在握手远端 AI 算力节点。' },
-                { type: 'search', step: 'RAG 检索', detail: `[RAG] 正在检索 ${req.budget}元 档位实时库存与社区高分配置... (Top Candidates Loaded)` },
-                { type: 'match', step: '大模型推理', detail: '[LLM] DeepSeek 正在进行思维链(CoT)推演... 优化预算分配中。' },
-                { type: 'adjustment', step: '完整性校验', detail: '[VERIFY] 校验接口兼容性与功耗冗余... 通过。' },
-                { type: 'complete', step: '生成完毕', detail: '配置单已送达。' }
+                { type: 'analysis', step: '需求解析', detail: '正在提取预算、用途、外观偏好和点名配件。' },
+                { type: 'search', step: '库存召回', detail: `正在检索 ${req.budget} 元档位的可用硬件候选。` },
+                { type: 'match', step: '方案生成', detail: '正在组合满足预算和用途的配置方案。' },
+                { type: 'adjustment', step: '规则校验', detail: '正在校验接口、内存、机箱尺寸和电源冗余。' },
+                { type: 'complete', step: '生成完毕', detail: '配置单已生成。' }
             ];
 
             if (response.error) {
@@ -160,6 +172,8 @@ export const aiBuilder = {
                 totalPrice: response.totalPrice || 0,
                 description: response.description || "AI 未返回描述。",
                 evaluation: response.evaluation || undefined,
+                requirementSummary: response.requirementSummary || undefined,
+                checks: response.checks || undefined,
                 logs: logs
             };
 

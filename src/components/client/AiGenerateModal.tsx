@@ -2,6 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bot, Sparkles, X, RefreshCw, Activity, Zap } from 'lucide-react';
 import { aiBuilder, AIBuildResult, AIBuildLog } from '../../services/aiBuilder';
 import { storage } from '../../services/storage';
+import { ApiService } from '../../services/api';
+
+const DEFAULT_SUGGESTIONS = [
+    "3000元 办公主机",
+    "5000元 性价比游戏主机",
+    "8000元 直播主机",
+    "15000元 极致游戏主机",
+    "20000元 高端海景房主机"
+];
 
 export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, onSubmit: (prompt: string, result?: AIBuildResult) => void }) {
     const [prompt, setPrompt] = useState('');
@@ -10,21 +19,20 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
     const logEndRef = useRef<HTMLDivElement>(null);
 
     const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [isAiEnabled, setIsAiEnabled] = useState(false);
 
-    // 加载 AI 设置中的标签
+    // 只加载公开配置，避免 C 端触碰敏感 AI Key。
     useEffect(() => {
-        storage.getAISettings().then(s => {
-            if (s.suggestions && s.suggestions.length > 0) {
-                setSuggestions(s.suggestions);
+        ApiService.get('/ai/public-config').then(config => {
+            if (Array.isArray(config.suggestions) && config.suggestions.length > 0) {
+                setSuggestions(config.suggestions);
             } else {
-                setSuggestions([
-                    "3000元 办公主机",
-                    "5000元 性价比游戏主机",
-                    "8000元 直播主机",
-                    "15000元 极致游戏主机",
-                    "20000元 高端海景房主机"
-                ]);
+                setSuggestions(DEFAULT_SUGGESTIONS);
             }
+            setIsAiEnabled(Boolean(config.enabled));
+        }).catch(() => {
+            setSuggestions(DEFAULT_SUGGESTIONS);
+            setIsAiEnabled(false);
         });
     }, []);
 
@@ -53,7 +61,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!prompt.trim()) return;
+        if (!prompt.trim() || !isAiEnabled) return;
 
         setIsThinking(true);
         setThinkSteps([]);
@@ -99,14 +107,16 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                 <h2 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
                                     {isThinking ? 'AI 构建引擎运行中' : '小鱼 AI 助手'}
                                 </h2>
-                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/50 dark:border-emerald-500/20">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">Online</span>
+                                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${isAiEnabled ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200/50 dark:border-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                                    <div className={`w-1.5 h-1.5 rounded-full ${isAiEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></div>
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isAiEnabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                                        {isAiEnabled ? 'Ready' : 'Offline'}
+                                    </span>
                                 </div>
                             </div>
                             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 flex items-center gap-1.5 font-medium">
                                 <Sparkles size={14} className="text-indigo-500 dark:text-indigo-400" />
-                                极速为您匹配最佳硬件组合
+                                先校验预算与兼容，再生成可落地配置
                             </p>
                         </div>
                     </div>
@@ -143,7 +153,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                     </h3>
                                     <p className="text-slate-500 dark:text-slate-400 text-sm flex items-center justify-center gap-2 font-medium">
                                         <RefreshCw size={14} className="animate-spin text-indigo-500 dark:text-indigo-400" />
-                                        <span>AI 模型正在高速运算，请稍候</span>
+                                        <span>正在生成并校验配置，请稍候</span>
                                     </p>
                                 </div>
                                 
@@ -175,7 +185,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                 />
                                 <div className="absolute bottom-6 right-6 flex items-center gap-2 py-1.5 px-3 rounded-full bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 backdrop-blur-md pointer-events-none shadow-sm dark:shadow-xl group-focus-within/input:border-indigo-500/30 transition-colors">
                                     <Sparkles size={12} className="text-indigo-500 dark:text-indigo-400 animate-pulse" />
-                                    <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase">NEURAL CORE V4.2</span>
+                                    <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase">需求会先被预算和兼容规则校验</span>
                                 </div>
                             </div>
 
@@ -187,7 +197,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                         <div className="w-1 h-3 bg-indigo-500 rounded-full"></div>
                                     </div>
                                     <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] relative">
-                                        启发式快捷指令 <span className="opacity-50 ml-1 text-[10px]">HEURISTICS V2</span>
+                                        快捷需求 <span className="opacity-50 ml-1 text-[10px]">可直接点击填入</span>
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
@@ -219,7 +229,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
 
                             <button
                                 type="submit"
-                                disabled={!prompt.trim()}
+                                disabled={!prompt.trim() || !isAiEnabled}
                                 className="relative w-full py-5 group/btn overflow-hidden rounded-2xl transition-all active:scale-[0.98] disabled:opacity-40 disabled:grayscale shadow-lg shadow-indigo-500/30"
                             >
                                 {/* Gradient Background */}
@@ -229,7 +239,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
 
                                 <div className="relative z-10 flex items-center justify-center gap-3 text-white">
                                     <Activity className={`${prompt.trim() ? 'animate-pulse' : ''}`} size={20} />
-                                    <span className="text-lg font-black tracking-[0.2em] uppercase">启动智能构建引擎</span>
+                                    <span className="text-lg font-black tracking-[0.2em] uppercase">{isAiEnabled ? '生成可落地配置' : 'AI 服务未启用'}</span>
                                     <Zap size={18} className="text-amber-300 transition-transform group-hover/btn:scale-125" />
                                 </div>
 
@@ -242,4 +252,3 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
         </div>
     )
 }
-
