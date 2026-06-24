@@ -434,27 +434,34 @@ export default function BuilderPage() {
 
     const matchKey = (item: any, type: 'cpu' | 'gpu') => {
       if (!item) return null;
+      const rawModel = item.model.toUpperCase();
       const modelStr = `${item.brand} ${item.model}`.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      const modelOnly = item.model.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const modelOnly = rawModel.replace(/[^A-Z0-9]/g, '');
+      const canUseKey = (key: string) => {
+        const upperKey = key.toUpperCase();
+        if (type === 'gpu' && /\b[45]090D\b|RTX\s*[45]090D/.test(rawModel) && !/\b[45]090\s*D\b/.test(upperKey)) return false;
+        if (type === 'cpu' && /13400EF/.test(rawModel) && !/13400EF|13400F/.test(upperKey)) return false;
+        return true;
+      };
       
       for (const game of Object.keys(gamesFpsData)) {
           const entries = Object.keys(gamesFpsData[game][type] || {});
           for (const key of entries) {
               const cleanKey = key.toUpperCase().replace(/[^A-Z0-9]/g, '');
               if (modelStr.includes(cleanKey) || cleanKey.includes(modelStr) || modelOnly.includes(cleanKey) || cleanKey.includes(modelOnly)) {
-                  return key;
+                  if (canUseKey(key)) return key;
               }
           }
       }
       
       if (type === 'cpu') {
-          const match = item.model.toUpperCase().match(/\d{4,5}[A-Z]{0,3}/);
+          const match = rawModel.match(/\d{4,5}[A-Z]{0,3}/);
           if (match) {
               const identifier = match[0];
               for (const game of Object.keys(gamesFpsData)) {
                   const entries = Object.keys(gamesFpsData[game][type] || {});
                   for (const key of entries) {
-                      if (key.toUpperCase().includes(identifier)) return key;
+                      if (key.toUpperCase().includes(identifier) && canUseKey(key)) return key;
                   }
               }
               const numMatch = identifier.match(/\d+/);
@@ -462,7 +469,7 @@ export default function BuilderPage() {
                   for (const game of Object.keys(gamesFpsData)) {
                       const entries = Object.keys(gamesFpsData[game][type] || {});
                       for (const key of entries) {
-                          if (key.toUpperCase().includes(numMatch[0])) return key;
+                          if (key.toUpperCase().includes(numMatch[0]) && canUseKey(key)) return key;
                       }
                   }
               }
@@ -491,7 +498,7 @@ export default function BuilderPage() {
                           const keyGRE = /GRE/i.test(upperKey);
                           
                           if (isTi === keyTi && isSuper === keySuper && isXTX === keyXTX && isXT === keyXT && isGRE === keyGRE) {
-                              return key;
+                              if (canUseKey(key)) return key;
                           }
                       }
                   }
@@ -499,7 +506,7 @@ export default function BuilderPage() {
               for (const game of Object.keys(gamesFpsData)) {
                   const entries = Object.keys(gamesFpsData[game][type] || {});
                   for (const key of entries) {
-                      if (key.toUpperCase().includes(num)) return key;
+                      if (key.toUpperCase().includes(num) && canUseKey(key)) return key;
                   }
               }
           }
