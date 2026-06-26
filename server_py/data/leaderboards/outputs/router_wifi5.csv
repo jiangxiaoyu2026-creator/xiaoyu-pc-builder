@@ -1,0 +1,43 @@
+﻿排名,名称,跑分,规格,上市时间,详情页
+1,ASUS GT-AC9600,23120,Annapurna Labs Alpine AL5140 4C @ 1.7 GHz 1GiB,,https://www.topcpu.net/cpu/rog-rapture-gt-ac9600
+2,ASUS GT-AC5400,18400,IPQ8074 4C @ 2.0 GHz 1GiB,,https://www.topcpu.net/cpu/rog-rapture-gt-ac5400
+3,TP-LINK Archer A20,16560,BCM4908 4C @ 1.8 GHz 512MiB  - 2019.03,2019.03,https://www.topcpu.net/cpu/tplink-archer-a20
+4,ASUS GT-AC5300,16560,BCM4908 4C @ 1.8 GHz 1GiB  - 2017.04,2017.04,https://www.topcpu.net/cpu/rog-rapture-gt-ac5300
+5,ASUS RT-AC86U,8280,BCM4906 2C @ 1.8 GHz 512MiB  - 2017.08,2017.08,https://www.topcpu.net/cpu/asus-rt-ac86u
+6,ASUS GT-AC2900,8280,BCM4906 2C @ 1.8 GHz 512MiB  - 2019.01,2019.01,https://www.topcpu.net/cpu/rog-rapture-gt-ac2900
+7,ASUS RT-AC3100,7000,BCM47094 2C @ 1.4 GHz 512MiB  - 2015.10,2015.10,https://www.topcpu.net/cpu/asus-rt-ac3100
+8,ASUS RT-AC1900P,7000,BCM4709C0 2C @ 1.4 GHz 256MiB,,https://www.topcpu.net/cpu/asus-rt-ac1900p
+9,Xiaomi Mesh Router AC1300 (D01),5449,IPQ4019 4C @ 717 MHz 256MiB,,https://www.topcpu.net/cpu/xiaomi-mesh-router-ac1300
+10,ASUS RT-AC95U,5442,IPQ4019 4C @ 716 MHz 256MiB,,https://www.topcpu.net/cpu/asus-rt-ac95u
+11,ASUS RT-AC42U,5442,IPQ4019 4C @ 716 MHz 256MiB,,https://www.topcpu.net/cpu/asus-rt-ac42u
+12,ASUS RT-AC58U,5396,IPQ4018 4C @ 710 MHz 128MiB  - 2016.08,2016.08,https://www.topcpu.net/cpu/asus-rt-ac58u
+13,TP-LINK Archer A9 v5.x,5000,BCM4709A0 2C @ 1.0 GHz 256MiB,,https://www.topcpu.net/cpu/tplink-archer-a9-v5
+14,ASUS RT-AC3200,5000,BCM4709A0 2C @ 1.0 GHz 256MiB,,https://www.topcpu.net/cpu/asus-rt-ac3200
+15,ASUS RT-AC1900,5000,BCM4709A0 2C @ 1.0 GHz 256MiB  - 2016.06,2016.06,https://www.topcpu.net/cpu/asus-rt-ac1900
+16,ASUS RT-AC66U B1 rev A1,5000,BCM4708C0 2C @ 1.0 GHz 256MiB,,https://www.topcpu.net/cpu/asus-rt-ac66u-b1
+17,ASUS RT-AC67U,4000,BCM4708 2C @ 800 MHz 256MiB,,https://www.topcpu.net/cpu/asus-rt-ac67u
+18,Xiaomi Mi Router AC1200 (RB02),2816,MT7621DAT 2C @ 880 MHz 128MiB,,https://www.topcpu.net/cpu/xiaomi-router-ac1200
+19,Xiaomi Mi Router Redmi AC2100 (RM2100),2816,MT7621AT 2C @ 880 MHz 128MiB  - 2019.11,2019.11,https://www.topcpu.net/cpu/redmi-ac2100
+20,TP-LINK Archer A10,2816,MT7621AT 2C @ 880 MHz 256MiB,,https://www.topcpu.net/cpu/tplink-archer-a10
+21,TP-LINK Archer A6 v3.0,2816,MT7621DAT 2C @ 880 MHz 128MiB,,https://www.topcpu.net/cpu/tplink-archer-a6-v3
+22,ASUS RT-AC85U,2816,MT7621A 2C @ 880 MHz 128MiB  - 2016.09,2016.09,https://www.topcpu.net/cpu/asus-rt-ac85u
+23,ASUS RT-AC65U,2816,MT7621A 2C @ 880 MHz 128MiB  - 2017.04,2017.04,https://www.topcpu.net/cpu/asus-rt-ac65u
+24,ASUS RT-AC1200GU,2816,MT7621AT 2C @ 880 MHz 128MiB  - 2016.08,2016.08,https://www.topcpu.net/cpu/asus-rt-ac1200gu
+25,Ruijie Reyee RG-EW1200G PRO v1.1,2816,MT7621 2C @ 880 MHz 128MiB,,https://www.topcpu.net/cpu/ruijie-reyee-rg-ew1200g-pro
+26,GL.iNet GL-MT1300(Beryl),2816,MT7621AT 2C @ 880 MHz 256MiB  - 2020.11,2020.11,https://www.topcpu.net/cpu/gl.inet-gl-mt1300
+27,TP-LINK Archer A8,2280,TP1900BN 1C @ 1.2 GHz 64MiB,,https://www.topcpu.net/cpu/tplink-archer-a8
+28,ASUS RT-AC1200+,1710,BCM47189 1C @ 900 MHz 128MiB,,https://www.topcpu.net/cpu/asus-rt-ac1200-plus
+29,ASUS RT-AC1200G,1710,BCM47189 1C @ 900 MHz 128MiB,,https://www.topcpu.net/cpu/asus-rt-ac1200g
+30,ASUS RT-AC1200GP,1710,BCM47189 1C @ 900 MHz 128MiB  - 2016.01,2016.01,https://www.topcpu.net/cpu/asus-rt-ac1200gp
+31,Xiaomi Mi Router AIoT AC2350 (R2350),1496,QCA9563 1C @ 775 MHz 128MiB  - 2020.03,2020.03,https://www.topcpu.net/cpu/xiaomi-router-aiot-ac2350
+32,TP-LINK Archer A9 v6.x,1496,QCN5502 1C @ 775 MHz 128MiB  - 2019.03,2019.03,https://www.topcpu.net/cpu/tplink-archer-a9-v6
+33,ASUS RT-AC1200GE,1496,QCN5502 1C @ 775 MHz 128MiB,,https://www.topcpu.net/cpu/asus-rt-ac1200ge
+34,TP-LINK Archer A6 v2.x,1448,QCA9563 1C @ 750 MHz 128MiB  - 2019.03,2019.03,https://www.topcpu.net/cpu/tplink-archer-a6-v2
+35,TP-LINK Archer A7 v5.x,1448,QCA9563 1C @ 750 MHz 128MiB  - 2018.06,2018.06,https://www.topcpu.net/cpu/tplink-archer-a7-v5
+36,ASUS RT-AC1750,1158,BCM4706 1C @ 600 MHz 256MiB  - 2012.06,2012.06,https://www.topcpu.net/cpu/asus-rt-ac1750
+37,ASUS RT-AC53,928,MT7620A 1C @ 580 MHz 64MiB  - 2016.08,2016.08,https://www.topcpu.net/cpu/asus-rt-ac53
+38,ASUS RT-AC1200 v1,928,MT7628AN 1C @ 580 MHz 64MiB,,https://www.topcpu.net/cpu/asus-rt-ac1200-v1
+39,ASUS RT-AC1200 v2,928,MT7628DAN 1C @ 580 MHz 64MiB,,https://www.topcpu.net/cpu/asus-rt-ac1200-v2
+40,ASUS RT-AC1200HP,928,MT7620A 1C @ 580 MHz 128MiB,,https://www.topcpu.net/cpu/asus-rt-ac1200hp
+41,TP-LINK Archer A5 v4.x,920,MT7628A 1C @ 575 MHz,,https://www.topcpu.net/cpu/tplink-archer-a5-v4
+42,TP-LINK Archer A5 v5.x,920,MT7628A 1C @ 575 MHz 64MiB,,https://www.topcpu.net/cpu/tplink-archer-a5-v5

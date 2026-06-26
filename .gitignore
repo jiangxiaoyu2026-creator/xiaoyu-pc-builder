@@ -64,6 +64,7 @@ Gaming FPS_1/
 server_py/venv/
 server_py_clean.zip
 *.csv
+!server_py/data/leaderboards/outputs/*.csv
 order-*-keys.txt
 
 # Temporary test/deploy scripts (auto-generated)

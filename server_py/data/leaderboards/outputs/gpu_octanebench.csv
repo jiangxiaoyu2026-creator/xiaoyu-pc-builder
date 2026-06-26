@@ -1,0 +1,196 @@
+﻿排名,名称,跑分,显存容量,显存类型,上市时间,详情页
+1,NVIDIA GeForce RTX 4090,1274,24GB,GDDR6X,2022.09,https://www.topcpu.net/cpu/geforce-rtx-4090
+2,NVIDIA GeForce RTX 4090 D,1258,24GB,GDDR6X,2023.12,https://www.topcpu.net/cpu/geforce-rtx-4090-d
+3,NVIDIA RTX 6000 Ada Generation,1068,48GB,GDDR6,2022.12,https://www.topcpu.net/cpu/rtx-6000-ada-generation
+4,NVIDIA GeForce RTX 4080 SUPER,964,16GB,GDDR6X,2024.01,https://www.topcpu.net/cpu/geforce-rtx-4080-super
+5,NVIDIA GeForce RTX 4080 12 GB,938,12GB,GDDR6X,,https://www.topcpu.net/cpu/geforce-rtx-4080-12-gb
+6,NVIDIA GeForce RTX 4070 Ti SUPER,856,16GB,GDDR6X,2024.01,https://www.topcpu.net/cpu/geforce-rtx-4070-ti-super
+7,NVIDIA RTX 5000 Ada Generation,816,32GB,GDDR6,2023.08,https://www.topcpu.net/cpu/rtx-5000-ada-generation
+8,NVIDIA GeForce RTX 4090 Mobile,714,16GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4090-mobile
+9,NVIDIA GeForce RTX 4070 Ti,710,12GB,GDDR6X,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4070-ti
+10,NVIDIA GeForce RTX 4070 SUPER,707,12GB,GDDR6X,2024.01,https://www.topcpu.net/cpu/geforce-rtx-4070-super
+11,NVIDIA GeForce RTX 3090 Ti,649,24GB,GDDR6X,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3090-ti
+12,NVIDIA GeForce RTX 3080 Ti 20 GB,641,20GB,GDDR6X,,https://www.topcpu.net/cpu/geforce-rtx-3080-ti-20-gb
+13,NVIDIA GeForce RTX 4070,640,12GB,GDDR6X,2023.04,https://www.topcpu.net/cpu/geforce-rtx-4070
+14,NVIDIA RTX A6000,600,48GB,GDDR6,2020.10,https://www.topcpu.net/cpu/rtx-a6000
+15,NVIDIA RTX A5500,596,24GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a5500
+16,NVIDIA RTX A5000,573,24GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a5000
+17,NVIDIA GeForce RTX 4080 Mobile,572,12GB,GDDR6,2023.01,https://www.topcpu.net/cpu/nvidia-geforce-rtx-4080-mobile
+18,NVIDIA GeForce RTX 3080 12 GB,556,12GB,GDDR6X,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3080-12-gb
+19,NVIDIA A100 SXM4 80 GB,516,80GB,HBM2e,2020.11,https://www.topcpu.net/cpu/a100-sxm4-80-gb
+20,NVIDIA A100 SXM4 40 GB,505,40GB,HBM2e,2020.05,https://www.topcpu.net/cpu/a100-sxm4-40-gb
+21,NVIDIA RTX 4000 Ada Generation,492,20GB,GDDR6,2023.08,https://www.topcpu.net/cpu/rtx-4000-ada-generation
+22,NVIDIA RTX A4500 Embedded,482,16GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a4500-embedded
+23,NVIDIA RTX 4000 SFF Ada Generation,443,16GB,HBM2,2018.11,https://www.topcpu.net/cpu/rtx-4000-sff-ada-generation
+24,NVIDIA GeForce RTX 4060 Ti,413,8GB,GDDR6,2023.05,https://www.topcpu.net/cpu/geforce-rtx-4060-ti
+25,Intel Arc Pro A40,411,6GB,GDDR6,2022.08,https://www.topcpu.net/cpu/arc-pro-a40
+26,NVIDIA GeForce RTX 3080 Mobile,407,8GB,GDDR6,2021.01,https://www.topcpu.net/cpu/geforce-rtx-3080-mobile
+27,NVIDIA GeForce RTX 3070 Ti 16 GB,397,16GB,GDDR6X,,https://www.topcpu.net/cpu/geforce-rtx-3070-ti-16-gb
+28,NVIDIA RTX A5500 Mobile,389,16GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a5500-mobile
+29,NVIDIA GeForce RTX 4070 Mobile,370,8GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4070-mobile
+30,NVIDIA GeForce RTX 3060 Ti GA103,365,8GB,GDDR6,2022.02,https://www.topcpu.net/cpu/geforce-rtx-3060-ti-ga103
+31,NVIDIA Tesla V100S PCIe 32 GB,365,32GB,HBM2,2019.11,https://www.topcpu.net/cpu/tesla-v100s-pcie-32-gb
+32,NVIDIA TITAN RTX,363,24GB,GDDR6,2018.12,https://www.topcpu.net/cpu/titan-rtx
+33,NVIDIA GeForce RTX 3070 Mobile,358,8GB,GDDR6,2021.01,https://www.topcpu.net/cpu/geforce-rtx-3070-mobile
+34,NVIDIA Quadro RTX 6000 Mobile,355,24GB,GDDR6,2019.09,https://www.topcpu.net/cpu/quadro-rtx-6000-mobile
+35,NVIDIA Tesla V100 SXM2 16 GB,354,16GB,HBM2,2019.11,https://www.topcpu.net/cpu/tesla-v100-sxm2-16-gb
+36,NVIDIA GeForce RTX 3080 Ti Mobile,352,16GB,GDDR6,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3080-ti-mobile
+37,NVIDIA RTX A4000,352,16GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a4000
+38,NVIDIA GeForce RTX 4060,351,8GB,GDDR6,2023.05,https://www.topcpu.net/cpu/geforce-rtx-4060
+39,NVIDIA Tesla V100 PCIe 16 GB,344,16GB,HBM2,2017.06,https://www.topcpu.net/cpu/tesla-v100-pcie-16-gb
+40,NVIDIA Tesla V100 SXM2 32 GB,341,32GB,HBM2,2018.03,https://www.topcpu.net/cpu/tesla-v100-sxm2-32-gb
+41,NVIDIA GeForce RTX 4060 Mobile,340,8GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4060-mobile
+42,NVIDIA GeForce RTX 3070 Ti Mobile,339,8GB,GDDR6,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3070-ti-mobile
+43,NVIDIA Quadro RTX 8000,337,48GB,GDDR6,2018.08,https://www.topcpu.net/cpu/quadro-rtx-8000
+44,NVIDIA RTX A4500 Mobile,332,16GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a4500-mobile
+45,NVIDIA Tesla V100 PCIe 32 GB,326,32GB,HBM2,2018.03,https://www.topcpu.net/cpu/tesla-v100-pcie-32-gb
+46,NVIDIA TITAN V CEO Edition,313,32GB,HBM2,2018.06,https://www.topcpu.net/cpu/titan-v-ceo-edition
+47,NVIDIA A100 PCIe 80 GB,310,80GB,HBM2e,2021.06,https://www.topcpu.net/cpu/a100-pcie-80-gb
+48,NVIDIA RTX A5000 Mobile,305,16GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a5000-mobile
+49,NVIDIA RTX A4000 Mobile,300,8GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a4000-mobile
+50,NVIDIA RTX 2000 Ada Generation,295,16GB,GDDR6,2024.02,https://www.topcpu.net/cpu/rtx-2000-ada-generation
+51,NVIDIA GeForce RTX 3060 8 GB,282,8GB,GDDR6,2022.10,https://www.topcpu.net/cpu/geforce-rtx-3060-8-gb
+52,NVIDIA RTX A2000 Embedded,271,8GB,GDDR6,,https://www.topcpu.net/cpu/rtx-a2000-embedded
+53,NVIDIA GeForce RTX 3060 Mobile,266,6GB,GDDR6,2021.01,https://www.topcpu.net/cpu/geforce-rtx-3060-mobile
+54,NVIDIA GeForce RTX 4050 Mobile,258,6GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4050-mobile
+55,NVIDIA GeForce RTX 2080 Ti 12 GB,253,12GB,GDDR6,,https://www.topcpu.net/cpu/geforce-rtx-2080-ti-12-gb
+56,NVIDIA Quadro RTX 5000 Mobile Refresh,242,16GB,GDDR6,2020.06,https://www.topcpu.net/cpu/quadro-rtx-5000-mobile-refresh
+57,NVIDIA Quadro GP100,240,16GB,HBM2,2016.10,https://www.topcpu.net/cpu/quadro-gp100
+58,NVIDIA GeForce RTX 2060 SUPER,234,8GB,GDDR6,2019.07,https://www.topcpu.net/cpu/geforce-rtx-2060-super
+59,NVIDIA RTX A2000 12 GB,227,12GB,GDDR6,2021.11,https://www.topcpu.net/cpu/rtx-a2000-12-gb
+60,NVIDIA Tesla P100 PCIe 16 GB,221,16GB,HBM2,2016.06,https://www.topcpu.net/cpu/tesla-p100-pcie-16-gb
+61,NVIDIA RTX A3000 Mobile 12 GB,208,12GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a3000-mobile-12-gb
+62,NVIDIA GeForce RTX 2080 SUPER Max Q,206,8GB,GDDR6,2020.04,https://www.topcpu.net/cpu/geforce-rtx-2080-super-max-q
+63,NVIDIA TITAN Xp,201,12GB,GDDR5X,2017.04,https://www.topcpu.net/cpu/titan-xp
+64,NVIDIA GeForce RTX 2080 Max Q,197,8GB,GDDR6,2019.01,https://www.topcpu.net/cpu/geforce-rtx-2080-max-q
+65,NVIDIA GeForce RTX 2070 SUPER Max Q,192,8GB,GDDR6,2020.04,https://www.topcpu.net/cpu/geforce-rtx-2070-super-max-q
+66,NVIDIA Tesla T10 Processor,188,4GB,GDDR3,2009.04,https://www.topcpu.net/cpu/tesla-t10-processor
+67,NVIDIA GeForce RTX 2070 Max Q Refresh,186,8GB,GDDR6,2020.03,https://www.topcpu.net/cpu/geforce-rtx-2070-max-q-refresh
+68,NVIDIA P102 100,184,5GB,GDDR5X,2018.02,https://www.topcpu.net/cpu/p102-100
+69,NVIDIA GeForce RTX 3050 OEM,179,8GB,GDDR6,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3050-oem
+70,NVIDIA Quadro P6000,178,24GB,GDDR5X,2016.10,https://www.topcpu.net/cpu/quadro-p6000
+71,NVIDIA GeForce RTX 2060 12 GB,177,12GB,GDDR6,2021.12,https://www.topcpu.net/cpu/geforce-rtx-2060-12-gb
+72,NVIDIA GeForce RTX 3050 4 GB,175,4GB,GDDR6,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3050-4-gb
+73,NVIDIA Tesla P40,166,24GB,GDDR5,2016.09,https://www.topcpu.net/cpu/tesla-p40
+74,NVIDIA GeForce RTX 3050 Ti Mobile,162,4GB,GDDR6,2021.05,https://www.topcpu.net/cpu/geforce-rtx-3050-ti-mobile
+75,NVIDIA Tesla T4,155,16GB,GDDR6,2018.09,https://www.topcpu.net/cpu/tesla-t4
+76,NVIDIA GeForce RTX 3050 Mobile,148,4GB,GDDR6,2021.05,https://www.topcpu.net/cpu/geforce-rtx-3050-mobile
+77,NVIDIA RTX A1000 Mobile,147,4GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a1000-mobile
+78,NVIDIA GeForce RTX 2060 Max Q,146,6GB,GDDR6,2020.01,https://www.topcpu.net/cpu/geforce-rtx-2060-max-q
+79,NVIDIA GeForce GTX 980 Ti,133,6GB,GDDR5,2015.06,https://www.topcpu.net/cpu/geforce-gtx-980-ti
+80,NVIDIA GeForce GTX 1080 Ti 10 GB,130,10GB,GDDR5X,,https://www.topcpu.net/cpu/geforce-gtx-1080-ti-10-gb
+81,NVIDIA Tesla M40 24 GB,130,24GB,GDDR5,2015.11,https://www.topcpu.net/cpu/tesla-m40-24-gb
+82,NVIDIA GeForce GTX 1070 Ti,128,8GB,GDDR5,2017.11,https://www.topcpu.net/cpu/geforce-gtx-1070-ti
+83,NVIDIA GeForce GTX 1660 SUPER,127,6GB,GDDR6,2019.10,https://www.topcpu.net/cpu/geforce-gtx-1660-super
+84,NVIDIA Quadro P5200 Max Q,126,16GB,GDDR5,2018.02,https://www.topcpu.net/cpu/quadro-p5200-max-q
+85,NVIDIA GeForce GTX 1660 Ti,126,6GB,GDDR6,2019.02,https://www.topcpu.net/cpu/geforce-gtx-1660-ti
+86,NVIDIA P104 100,124,4GB,GDDR5X,2017.12,https://www.topcpu.net/cpu/p104-100
+87,NVIDIA Tesla M40,123,12GB,GDDR5,2015.11,https://www.topcpu.net/cpu/tesla-m40
+88,NVIDIA Quadro M6000 24 GB,122,24GB,GDDR5,2016.03,https://www.topcpu.net/cpu/quadro-m6000-24-gb
+89,NVIDIA Quadro P5000 Mobile,118,16GB,GDDR5,2017.01,https://www.topcpu.net/cpu/quadro-p5000-mobile
+90,NVIDIA Quadro RTX 5000 Max Q,117,16GB,GDDR6,2019.05,https://www.topcpu.net/cpu/quadro-rtx-5000-max-q
+91,NVIDIA GeForce GTX 1070 GDDR5X,115,8GB,GDDR5X,2018.12,https://www.topcpu.net/cpu/geforce-gtx-1070-gddr5x
+92,NVIDIA GeForce GTX 1070 Max Q,112,8GB,GDDR5,2017.06,https://www.topcpu.net/cpu/geforce-gtx-1070-max-q
+93,NVIDIA GeForce GTX 1660,112,6GB,GDDR5,2019.03,https://www.topcpu.net/cpu/geforce-gtx-1660
+94,NVIDIA GeForce GTX 1660 Ti Max Q,111,6GB,GDDR6,2019.04,https://www.topcpu.net/cpu/geforce-gtx-1660-ti-max-q
+95,NVIDIA GeForce GTX TITAN BLACK,103,6GB,GDDR5,2014.02,https://www.topcpu.net/cpu/geforce-gtx-titan-black
+96,NVIDIA GeForce GTX 780 Ti,103,3GB,GDDR5,2013.11,https://www.topcpu.net/cpu/geforce-gtx-780-ti
+97,NVIDIA Tesla P6,95,16GB,GDDR5,2017.03,https://www.topcpu.net/cpu/tesla-p6
+98,NVIDIA GeForce GTX 1650 SUPER,93,4GB,GDDR6,2019.11,https://www.topcpu.net/cpu/geforce-gtx-1650-super
+99,NVIDIA GeForce GTX TITAN X,88,12GB,GDDR5,2015.03,https://www.topcpu.net/cpu/geforce-gtx-titan-x
+100,NVIDIA GeForce GTX 780,88,3GB,GDDR5,2013.05,https://www.topcpu.net/cpu/geforce-gtx-780
+101,NVIDIA Quadro P4000,88,8GB,GDDR5,2017.02,https://www.topcpu.net/cpu/quadro-p4000
+102,NVIDIA Quadro M5000,87,8GB,GDDR5,2015.06,https://www.topcpu.net/cpu/quadro-m5000
+103,NVIDIA Tesla P4,85,8GB,GDDR5,2016.09,https://www.topcpu.net/cpu/tesla-p4
+104,NVIDIA Quadro P3200 Max Q,85,6GB,GDDR5,2018.02,https://www.topcpu.net/cpu/quadro-p3200-max-q
+105,NVIDIA RTX A2000 Mobile,84,4GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a2000-mobile
+106,NVIDIA Quadro K6000,82,12GB,GDDR5,2013.07,https://www.topcpu.net/cpu/quadro-k6000
+107,NVIDIA Tesla M60,81,8GB,GDDR5,2015.08,https://www.topcpu.net/cpu/tesla-m60
+108,NVIDIA GeForce GTX 970,77,4GB,GDDR5,2014.09,https://www.topcpu.net/cpu/geforce-gtx-970
+109,NVIDIA GeForce GTX 1060 3 GB,76,3GB,GDDR5,2016.08,https://www.topcpu.net/cpu/geforce-gtx-1060-3-gb
+110,NVIDIA GeForce GTX 1060 6 GB GDDR5X,75,6GB,GDDR5X,2018.10,https://www.topcpu.net/cpu/geforce-gtx-1060-6-gb-gddr5x
+111,NVIDIA GeForce GTX 1650 GDDR6,73,4GB,GDDR6,2020.04,https://www.topcpu.net/cpu/geforce-gtx-1650-gddr6
+112,NVIDIA T1000 8 GB,73,8GB,GDDR6,2021.05,https://www.topcpu.net/cpu/t1000-8-gb
+113,NVIDIA Quadro T2000 Max Q,71,4GB,GDDR5,2019.05,https://www.topcpu.net/cpu/quadro-t2000-max-q
+114,NVIDIA Quadro T1000 Mobile GDDR6,71,4GB,GDDR6,2020.06,https://www.topcpu.net/cpu/quadro-t1000-mobile-gddr6
+115,NVIDIA T1000,71,4GB,GDDR6,2021.05,https://www.topcpu.net/cpu/t1000
+116,NVIDIA RTX A500 Mobile,69,4GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a500-mobile
+117,NVIDIA Quadro M4000M,68,4GB,GDDR5,2015.08,https://www.topcpu.net/cpu/quadro-m4000m
+118,NVIDIA Tesla K40m,68,12GB,GDDR5,2013.11,https://www.topcpu.net/cpu/tesla-k40m
+119,NVIDIA GeForce GTX 1650 Max Q,67,4GB,GDDR6,2020.04,https://www.topcpu.net/cpu/geforce-gtx-1650-max-q
+120,NVIDIA GeForce GTX 980MX,64,8GB,GDDR5,2016.06,https://www.topcpu.net/cpu/geforce-gtx-980mx
+121,NVIDIA GeForce RTX 2050 Mobile,64,4GB,GDDR6,2021.12,https://www.topcpu.net/cpu/geforce-rtx-2050-mobile
+122,NVIDIA Tesla K20Xm,63,6GB,GDDR5,2012.11,https://www.topcpu.net/cpu/tesla-k20xm
+123,NVIDIA Quadro P2200,63,5GB,GDDR5X,2019.06,https://www.topcpu.net/cpu/quadro-p2200
+124,NVIDIA GeForce GTX 1650 Ti Max Q,62,4GB,GDDR6,2020.04,https://www.topcpu.net/cpu/geforce-gtx-1650-ti-max-q
+125,NVIDIA Tesla K80,62,12GB,GDDR5,2014.11,https://www.topcpu.net/cpu/tesla-k80
+126,NVIDIA Quadro M5000M,61,8GB,GDDR5,2015.08,https://www.topcpu.net/cpu/quadro-m5000m
+127,NVIDIA GeForce GTX 1060 Max Q,61,6GB,GDDR5,2017.06,https://www.topcpu.net/cpu/geforce-gtx-1060-max-q
+128,NVIDIA Quadro P3000 Mobile,56,6GB,GDDR5,2017.01,https://www.topcpu.net/cpu/quadro-p3000-mobile
+129,NVIDIA Quadro M4000,56,8GB,GDDR5,2015.06,https://www.topcpu.net/cpu/quadro-m4000
+130,NVIDIA Tesla K20c,55,5GB,GDDR5,2012.11,https://www.topcpu.net/cpu/tesla-k20c
+131,NVIDIA Quadro T1000 Max Q,55,4GB,GDDR5,2019.05,https://www.topcpu.net/cpu/quadro-t1000-max-q
+132,NVIDIA Quadro P2000 Mobile,54,75GB,GDDR5,2019.02,https://www.topcpu.net/cpu/quadro-p2000-mobile
+133,NVIDIA T600,53,4GB,GDDR6,2021.04,https://www.topcpu.net/cpu/t600
+134,NVIDIA GeForce GTX 970M,53,3GB,GDDR5,2014.10,https://www.topcpu.net/cpu/geforce-gtx-970m
+135,NVIDIA GeForce GTX 960,46,2GB,GDDR5,2015.01,https://www.topcpu.net/cpu/geforce-gtx-960
+136,NVIDIA T550 Mobile,46,4GB,GDDR6,2022.05,https://www.topcpu.net/cpu/t550-mobile
+137,NVIDIA GeForce GTX 1050 Ti Max Q,45,4GB,GDDR5,2018.01,https://www.topcpu.net/cpu/geforce-gtx-1050-ti-max-q
+138,NVIDIA GeForce GTX 950 Low Power,44,2GB,GDDR5,2016.03,https://www.topcpu.net/cpu/geforce-gtx-950-low-power
+139,NVIDIA Quadro RTX 4000 Max Q,42,8GB,GDDR6,2019.05,https://www.topcpu.net/cpu/quadro-rtx-4000-max-q
+140,NVIDIA GeForce GTX 680M,42,4GB,GDDR5,2012.06,https://www.topcpu.net/cpu/geforce-gtx-680m
+141,NVIDIA Quadro M2200 Mobile,42,4GB,GDDR5,2017.01,https://www.topcpu.net/cpu/quadro-m2200-mobile
+142,NVIDIA GeForce GTX 670,38,2GB,GDDR5,2012.05,https://www.topcpu.net/cpu/geforce-gtx-670
+143,NVIDIA GeForce GTX 1050 Mobile 3 GB,38,3GB,GDDR5,2019.02,https://www.topcpu.net/cpu/geforce-gtx-1050-mobile-3-gb
+144,NVIDIA GeForce GTX 770,38,2GB,GDDR5,2013.05,https://www.topcpu.net/cpu/geforce-gtx-770
+145,NVIDIA GeForce GTX 1050 Max Q,37,4GB,GDDR5,2018.01,https://www.topcpu.net/cpu/geforce-gtx-1050-max-q
+146,NVIDIA GeForce GTX 760 OEM,36,2GB,GDDR5,2016.11,https://www.topcpu.net/cpu/geforce-gtx-760-oem
+147,NVIDIA GeForce GTX 750 Ti,36,2GB,GDDR5,2014.02,https://www.topcpu.net/cpu/geforce-gtx-750-ti
+148,NVIDIA Quadro RTX 3000 Max Q,34,6GB,GDDR6,2019.05,https://www.topcpu.net/cpu/quadro-rtx-3000-max-q
+149,NVIDIA Quadro M1200 Mobile,34,4GB,GDDR5,2017.01,https://www.topcpu.net/cpu/quadro-m1200-mobile
+150,NVIDIA Quadro M2000M,34,4GB,GDDR5,2015.12,https://www.topcpu.net/cpu/quadro-m2000m
+151,NVIDIA Quadro K2200,34,4GB,GDDR5,2014.07,https://www.topcpu.net/cpu/quadro-k2200
+152,NVIDIA GeForce GTX 860M OEM,33,2GB,GDDR5,2015.02,https://www.topcpu.net/cpu/geforce-gtx-860m-oem
+153,NVIDIA GeForce GTX 960M,32,4GB,GDDR5,2015.03,https://www.topcpu.net/cpu/geforce-gtx-960m
+154,NVIDIA Quadro P1000,32,4GB,GDDR5,2017.02,https://www.topcpu.net/cpu/quadro-p1000
+155,NVIDIA T400 4 GB,32,4GB,GDDR6,2021.05,https://www.topcpu.net/cpu/t400-4-gb
+156,NVIDIA GeForce GTX 965M,32,2GB,GDDR5,2016.01,https://www.topcpu.net/cpu/geforce-gtx-965m
+157,NVIDIA Quadro K4200,32,4GB,GDDR5,2014.07,https://www.topcpu.net/cpu/quadro-k4200
+158,NVIDIA Quadro K5000,31,4GB,GDDR5,2012.08,https://www.topcpu.net/cpu/quadro-k5000
+159,NVIDIA GeForce GTX 750 GM206,29,2GB,GDDR5,2015.11,https://www.topcpu.net/cpu/geforce-gtx-750-gm206
+160,NVIDIA GeForce GTX 780M,29,4GB,GDDR5,2013.05,https://www.topcpu.net/cpu/geforce-gtx-780m
+161,NVIDIA GeForce MX350,28,2GB,GDDR5,2020.02,https://www.topcpu.net/cpu/geforce-mx350
+162,NVIDIA Quadro M2000,28,4GB,GDDR5,2016.04,https://www.topcpu.net/cpu/quadro-m2000
+163,NVIDIA Quadro M620 Mobile,27,2GB,GDDR5,2017.01,https://www.topcpu.net/cpu/quadro-m620-mobile
+164,NVIDIA GeForce GTX 950M,27,4GB,,2015.03,https://www.topcpu.net/cpu/geforce-gtx-950m
+165,NVIDIA GeForce GTX 660,27,2GB,GDDR5,2012.09,https://www.topcpu.net/cpu/geforce-gtx-660
+166,NVIDIA Quadro M1000M,26,2GB,GDDR5,2015.08,https://www.topcpu.net/cpu/quadro-m1000m
+167,NVIDIA Quadro P620,25,2GB,GDDR5,2018.02,https://www.topcpu.net/cpu/quadro-p620
+168,NVIDIA Quadro P600,23,2GB,GDDR5,2017.02,https://www.topcpu.net/cpu/quadro-p600
+169,NVIDIA GeForce GTX 650 Ti Boost,23,2GB,GDDR5,2013.03,https://www.topcpu.net/cpu/geforce-gtx-650-ti-boost
+170,NVIDIA GeForce GTX 850M,22,2GB,,2014.03,https://www.topcpu.net/cpu/geforce-gtx-850m
+171,NVIDIA GeForce MX250,22,2GB,GDDR5,,https://www.topcpu.net/cpu/geforce-mx250
+172,NVIDIA GeForce GTX 660 Ti,21,2GB,GDDR5,2012.08,https://www.topcpu.net/cpu/geforce-gtx-660-ti
+173,NVIDIA Quadro K4000M,20,4GB,GDDR5,2012.06,https://www.topcpu.net/cpu/quadro-k4000m
+174,NVIDIA GeForce GT 1030 DDR4,19,2GB,,2018.03,https://www.topcpu.net/cpu/geforce-gt-1030-ddr4
+175,NVIDIA Quadro P520 Mobile,19,2GB,GDDR5,2019.05,https://www.topcpu.net/cpu/quadro-p520-mobile
+176,NVIDIA GeForce MX130,19,2GB,GDDR5,2017.11,https://www.topcpu.net/cpu/geforce-mx130
+177,NVIDIA Quadro M520 Mobile,19,2GB,GDDR5,2017.01,https://www.topcpu.net/cpu/quadro-m520-mobile
+178,NVIDIA Quadro K620M,18,2GB,,2015.03,https://www.topcpu.net/cpu/quadro-k620m
+179,NVIDIA GeForce GTX 745 OEM,16,4GB,,2014.02,https://www.topcpu.net/cpu/geforce-gtx-745-oem
+180,NVIDIA GeForce GTX 650 Ti,16,,GDDR5,2012.10,https://www.topcpu.net/cpu/geforce-gtx-650-ti
+181,NVIDIA GeForce GT 1010,16,2GB,GDDR5,2021.01,https://www.topcpu.net/cpu/geforce-gt-1010
+182,NVIDIA GeForce MX110,14,2GB,GDDR5,2017.11,https://www.topcpu.net/cpu/geforce-mx110
+183,NVIDIA GeForce GTX 650,13,,GDDR5,2012.09,https://www.topcpu.net/cpu/geforce-gtx-650
+184,NVIDIA GeForce GT 740 OEM,13,,GDDR5,2015.04,https://www.topcpu.net/cpu/geforce-gt-740-oem
+185,NVIDIA GeForce MX230,13,2GB,GDDR5,2019.02,https://www.topcpu.net/cpu/geforce-mx230
+186,NVIDIA GeForce GT 730 OEM,12,,GDDR5,2015.04,https://www.topcpu.net/cpu/geforce-gt-730-oem
+187,NVIDIA Quadro K2000M,12,2GB,,2012.06,https://www.topcpu.net/cpu/quadro-k2000m
+188,NVIDIA GeForce 930MX,11,2GB,,2016.03,https://www.topcpu.net/cpu/geforce-930mx
+189,NVIDIA GeForce GTX 1080 Max Q,10,8GB,GDDR5X,2017.06,https://www.topcpu.net/cpu/geforce-gtx-1080-max-q
+190,NVIDIA GeForce 920MX,10,2GB,,2016.03,https://www.topcpu.net/cpu/geforce-920mx
+191,NVIDIA Quadro P400,9,2GB,GDDR5,2017.02,https://www.topcpu.net/cpu/quadro-p400
+192,NVIDIA GeForce GT 640,8,2GB,,2012.06,https://www.topcpu.net/cpu/geforce-gt-640
+193,NVIDIA GeForce GT 710,6,,,2016.01,https://www.topcpu.net/cpu/geforce-gt-710
+194,NVIDIA NVS 510,5,2GB,,2012.10,https://www.topcpu.net/cpu/nvs-510
+195,NVIDIA GeForce 940MX,4,2GB,,2016.01,https://www.topcpu.net/cpu/geforce-940mx

@@ -1,0 +1,62 @@
+﻿排名,名称,跑分,规格,上市时间,详情页
+1,Xiaomi BE10000,42240,IPQ9570 4C @ 2.2 GHz 2GiB  - 2022.12,2022.12,https://www.topcpu.net/cpu/xiaomi-be10000
+2,TP-LINK Archer BE800,42240,IPQ9574 4C @ 2.2 GHz 2GiB  - 2023.01,2023.01,https://www.topcpu.net/cpu/tplink-archer-be800
+3,TP-LINK TL-7TR13090,42240,IPQ9570 4C @ 2.2 GHz 2GiB  - 2024.07,2024.07,https://www.topcpu.net/cpu/tplink-tl-7tr13090
+4,H3C Magic BE18000,42240,IPQ9574 4C @ 2.2 GHz 1GiB  - 2022.07,2022.07,https://www.topcpu.net/cpu/h3c-magic-be18000
+5,TP-LINK Archer BE805,34560,MT7988AV 4C @ 1.8 GHz 1GiB  - 2024.02,2024.02,https://www.topcpu.net/cpu/tplink-archer-be805
+6,TP-LINK TL-7DR7299,34560,MT7988AV 4C @ 1.8 GHz 1GiB  - 2026.03,2026.03,https://www.topcpu.net/cpu/tplink-tl-7dr7299
+7,Xiaomi BE7000,28800,IPQ9554 4C @ 1.5 GHz 1GiB  - 2023.02,2023.02,https://www.topcpu.net/cpu/xiaomi-be7000
+8,TP-LINK TL-7DR7280,28800,IPQ9554 4C @ 1.5 GHz 2GiB  - 2024.05,2024.05,https://www.topcpu.net/cpu/tplink-tl-7dr7280
+9,TP-LINK TL-7DR7230,25920,MT7988DV 3C @ 1.8 GHz 512MiB,,https://www.topcpu.net/cpu/tplink-tl-7dr7230
+10,TP-LINK TL-7DR7260,25920,MT7988DV 3C @ 1.8 GHz 512MiB,,https://www.topcpu.net/cpu/tplink-tl-7dr7260
+11,TP-LINK TL-7DR7250,25920,MT7988DV 3C @ 1.8 GHz 512MiB  - 2024.09,2024.09,https://www.topcpu.net/cpu/tplink-tl-7dr7250
+12,Ruijie BE72 PRO,25920,MT7988DV 3C @ 1.8 GHz 1024MiB  - 2024.10,2024.10,https://www.topcpu.net/cpu/ruijie-be72-pro
+13,Ruijie BE68 Ultra,25920,MT7988DV 3C @ 1.8 GHz 1024MiB  - 2024.10,2024.10,https://www.topcpu.net/cpu/ruijie-be68-ultra
+14,ASUS RT-BE14000,25920,MT7988DV 3C @ 1.8 GHz 1GiB,,https://www.topcpu.net/cpu/asus-rt-be14000
+15,ROG Rapture GT BE98,23920,BCM4916 4C @ 2.6 GHz 2GiB  - 2023.01,2023.01,https://www.topcpu.net/cpu/rog-rapture-gt-be98
+16,ROG Rapture GT BE98 Pro,23920,BCM4916 4C @ 2.6 GHz 2GiB  - 2023.12,2023.12,https://www.topcpu.net/cpu/rog-rapture-gt-be98-pro
+17,ASUS RT-BE96U,23920,BCM4916 4C @ 2.6 GHz 2GiB  - 2023.08,2023.08,https://www.topcpu.net/cpu/asus-rt-be96u
+18,ASUS RT-BE88U,23920,BCM4916 4C @ 2.6 GHz 2GiB  - 2024.05,2024.05,https://www.topcpu.net/cpu/asus-rt-be88u
+19,Netgear Nighthawk RS700S,23920,BCM4916 4C @ 2.6 GHz 2GiB  - 2023.06,2023.06,https://www.topcpu.net/cpu/netgear-nighthawk-rs700s
+20,ASUS RT-BE86U,23920,BCM4916 4C @ 2.6 GHz 1GiB,,https://www.topcpu.net/cpu/asus-rt-be86u
+21,ASUS ROG Rapture GT BE19000,23920,BCM4916 4C @ 2.6 GHz 2GiB  - 2024.01,2024.01,https://www.topcpu.net/cpu/rog-rapture-gt-be19000
+22,Xiaomi BE10000 Pro,19440,IPQ5424 4C @ 1.8 GHz 2GiB  - 2025.09,2025.09,https://www.topcpu.net/cpu/xiaomi-be10000-pro
+23,Xiaomi BE7200 Pro,19440,IPQ5424 4C @ 1.8 GHz 1GiB  - 2026.05,2026.05,https://www.topcpu.net/cpu/xiaomi-be7200-pro
+24,ASUS RT-BE59,18400,MT7987AV 4C @ 2.0 GHz 1GiB  - 2025.11,2025.11,https://www.topcpu.net/cpu/asus-rt-be59
+25,GL.iNet GL-MT3600BE(Beryl 7),18400,MT7987A 4C @ 2.0 GHz 512MiB  - 2025.12,2025.12,https://www.topcpu.net/cpu/gl.inet-gl-mt3600be
+26,TP-LINK Archer BE230,15200,BCM6764 4C @ 2.0 GHz 512MiB  - 2024.06,2024.06,https://www.topcpu.net/cpu/tplink-archer-be230
+27,ASUS RT-BE92U,15200,BCM6765 4C @ 2.0 GHz 1GiB  - 2024.11,2024.11,https://www.topcpu.net/cpu/asus-rt-be92u
+28,ASUS TUF Gaming BE3600,15200,BCM6764L 4C @ 2.0 GHz 1GiB  - 2024.04,2024.04,https://www.topcpu.net/cpu/asus-tuf-be3600
+29,ASUS RT-BE82U,15200,BCM6764L 4C @ 2.0 GHz 1GiB  - 2025.06,2025.06,https://www.topcpu.net/cpu/asus-rt-be82u
+30,ASUS RT-BE58U,15200,BCM6764L 4C @ 2.0 GHz 1GiB  - 2024.06,2024.06,https://www.topcpu.net/cpu/asus-rt-be58u
+31,ASUS RT-BE55,15200,BCM6764 4C @ 2.0 GHz 512MiB  - 2025.11,2025.11,https://www.topcpu.net/cpu/asus-rt-be55
+32,ASUS ROG STRIX GS BE18000,15200,BCM6766 4C @ 2.0 GHz 2GiB  - 2025.05,2025.05,https://www.topcpu.net/cpu/rog-strix-gs-be18000
+33,ASUS RT-BE58 Go,15200,BCM6764 4C @ 2.0 GHz 1GiB  - 2025.11,2025.11,https://www.topcpu.net/cpu/asus-rt-be58-go
+34,Xiaomi BE6500 Pro,13800,IPQ5322 4C @ 1.5 GHz 1GiB  - 2023.10,2023.10,https://www.topcpu.net/cpu/xiaomi-be6500-pro
+35,TP-LINK TL-7DR6560,13800,IPQ5322 4C @ 1.5 GHz 1GiB  - 2024.01,2024.01,https://www.topcpu.net/cpu/tplink-tl-7dr6560
+36,Huawei BE7 Pro,13800,IPQ5322 4C @ 1.5 GHz 512MiB  - 2024.09,2024.09,https://www.topcpu.net/cpu/huawei-be7-pro
+37,Acer Predator Connect T7,13800,IPQ5322 4C @ 1.5 GHz 1GiB  - 2024.06,2024.06,https://www.topcpu.net/cpu/acer-predator-connect-t7
+38,ASUS TUF Gaming BE6500,13800,IPQ5322 4C @ 1.5 GHz 1GiB  - 2024.04,2024.04,https://www.topcpu.net/cpu/asus-tuf-be6500
+39,ASUS TUF Gaming BE9400,13800,IPQ5322 4C @ 1.5 GHz 1GiB  - 2025.05,2025.05,https://www.topcpu.net/cpu/asus-tuf-be9400
+40,GL.iNet GL-BE9300 (Flint 3),13800,IPQ5332 4C @ 1.5 GHz 1GiB  - 2025.08,2025.08,https://www.topcpu.net/cpu/gl.inet-gl-be9300
+41,GL.iNet GL-BE6500(Flint 3e),13800,IPQ5332 4C @ 1.5 GHz 1GiB  - 2025.11,2025.11,https://www.topcpu.net/cpu/gl.inet-gl-be6500
+42,Huawei BE3 Pro,12880,Hi5651T 4C @ 1.4 GHz 512MiB  - 2023.09,2023.09,https://www.topcpu.net/cpu/huawei-be3-pro
+43,Xiaomi BE3600,10120,IPQ5312 4C @ 1.1 GHz 256MiB  - 2024.01,2024.01,https://www.topcpu.net/cpu/xiaomi-be3600
+44,Xiaomi BE6500,10120,IPQ5312 4C @ 1.1 GHz 512MiB  - 2024.08,2024.08,https://www.topcpu.net/cpu/xiaomi-be6500
+45,Xiaomi BE3600 Pro,10120,IPQ5312 4C @ 1.1 GHz 512MiB  - 2024.10,2024.10,https://www.topcpu.net/cpu/xiaomi-be3600-pro
+46,ASUS RT-BE50,10120,IPQ5312 4C @ 1.1 GHz 256MiB,,https://www.topcpu.net/cpu/asus-rt-be50
+47,GL.iNet GL-BE3600(Slate 7),10120,IPQ5312 4C @ 1.1 GHz 1GiB  - 2025.03,2025.03,https://www.topcpu.net/cpu/gl.inet-gl-be3600
+48,TP-LINK TL-7DR6430,6480,RTL8198E 2C @ 1.2 GHz 512MiB  - 2025.07,2025.07,https://www.topcpu.net/cpu/tplink-tl-7dr6430
+49,TP-LINK TL-7DR7270,6480,RTL8198E 2C @ 1.2 GHz 512MiB  - 2025.10,2025.10,https://www.topcpu.net/cpu/tplink-tl-7dr7270
+50,TP-LINK TL-7DR7290,6480,RTL8198E 2C @ 1.2 GHz 1GiB  - 2025.10,2025.10,https://www.topcpu.net/cpu/tplink-tl-7dr7290
+51,ZTE BE5100,5520,ZX279133 2C @ 1.2 GHz 512MiB  - 2024.04,2024.04,https://www.topcpu.net/cpu/zte-be5100
+52,ZTE BE5100 Pro+,5520,ZX279133 2C @ 1.2 GHz 512MiB  - 2024.04,2024.04,https://www.topcpu.net/cpu/zte-be5100-pro
+53,ZTE BE7200 Pro+,5520,ZX279133 2C @ 1.2 GHz 1GiB  - 2023.12,2023.12,https://www.topcpu.net/cpu/zte-be7200-pro
+54,ZTE BE6800 Pro+,5520,ZX279133 2C @ 1.2 GHz 512MiB  - 2025.04,2025.04,https://www.topcpu.net/cpu/zte-be6800-pro
+55,ZTE BE3600 Pro,5520,ZX279129 2C @ 1.2 GHz 256MiB  - 2025.06,2025.06,https://www.topcpu.net/cpu/zte-be3600-pro
+56,ZTE BE7200 Max,5520,ZX279133 2C @ 1.2 GHz 1GiB  - 2026.01,2026.01,https://www.topcpu.net/cpu/zte-be7200-max
+57,ZTE BE3600 Pro+,5520,ZX279129 2C @ 1.2 GHz 256MiB  - 2026.05,2026.05,https://www.topcpu.net/cpu/zte-be3600-pro-plus
+58,Xiaomi BE5000,4600,AN7563PT 2C @ 1.0 GHz 512MiB  - 2024.05,2024.05,https://www.topcpu.net/cpu/xiaomi-be5000
+59,TP-LINK TL-7DR5130,4600,AN7563PT 2C @ 1.0 GHz 512MiB,,https://www.topcpu.net/cpu/tplink-tl-7dr5130
+60,TP-LINK TL-7DR3610,4600,AN7563PT 2C @ 1.0 GHz 512MiB,,https://www.topcpu.net/cpu/tplink-tl-7dr3610
+61,TP-LINK TL-7DR3630,4600,AN7563PT 2C @ 1.0 GHz 512MiB,,https://www.topcpu.net/cpu/tplink-tl-7dr3630

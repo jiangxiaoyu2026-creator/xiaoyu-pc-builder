@@ -1,0 +1,647 @@
+﻿排名,名称,跑分,核心数,线程数,频率,上市时间,详情页
+1,AMD EPYC 9754,2849,128,256,2.25GHz,2023.06,https://www.topcpu.net/cpu/amd-epyc-9754
+2,AMD Ryzen Threadripper PRO 7995WX,2133,96,192,2.5GHz,2023.10,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-7995wx
+3,AMD EPYC 9654P,2069,96,192,2.4GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9654p
+4,AMD EPYC 9554P,1820,64,128,3.1GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9554p
+5,AMD EPYC 9554,1777,64,128,3.1GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9554
+6,AMD EPYC 9474F,1496,48,96,3.6GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9474f
+7,AMD Ryzen Threadripper PRO 5995WX,1420,64,128,2.7GHz,2022.03,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-5995wx
+8,AMD EPYC 9454P,1281,48,96,2.75GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9454p
+9,AMD EPYC 9654,1182,96,192,2.4GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9654
+10,Intel Xeon w9-3495X,1159,56,112,1.9GHz,2023.02,https://www.topcpu.net/cpu/intel-xeon-w9-3495x
+11,AMD Ryzen Threadripper Pro 3995WX,1025,16,32,3.9GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-3995wx
+12,AMD EPYC 9354P,942,32,64,3.25GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9354p
+13,AMD EPYC 9354,926,32,64,3.25GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9354
+14,AMD Ryzen Threadripper PRO 5975WX,914,32,64,3.6GHz,2022.03,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-5975wx
+15,AMD EPYC 9374F,890,32,64,3.85GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9374f
+16,AMD Ryzen 9 9950X3D,808,16,32,4.3GHz,2025.03,https://www.topcpu.net/cpu/amd-ryzen-9-9950x3d
+17,AMD EPYC 9274F,803,24,48,4.05GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9274f
+18,AMD EPYC 75F3,799,32,64,2.95GHz,2021.03,https://www.topcpu.net/cpu/amd-epyc-75f3
+19,AMD EPYC 7543,722,32,64,2.8GHz,2021.03,https://www.topcpu.net/cpu/amd-epyc-7543
+20,AMD EPYC 7543P,698,32,64,2.8GHz,2021.03,https://www.topcpu.net/cpu/amd-epyc-7543p
+21,Intel Xeon Gold 6442Y,672,24,48,2.6GHz,2023.01,https://www.topcpu.net/cpu/intel-xeon-gold-6442y
+22,Intel Core i9 14900K,671,24,32,3.2GHz,2023.10,https://www.topcpu.net/cpu/intel-core-i9-14900k
+23,Intel Core i9 14900KF,670,24,32,3.2GHz,2023.10,https://www.topcpu.net/cpu/intel-core-i9-14900kf
+24,AMD Ryzen 9 7950X3D,663,16,32,4.2GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-9-7950x3d
+25,Intel Core Ultra 9 285K,656,24,24,3.7GHz,2024.10,https://www.topcpu.net/cpu/intel-core-ultra-9-285k
+26,AMD Ryzen Threadripper Pro 3975WX,653,32,64,3.5GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-3975wx
+27,Intel Core i9 13900K,632,24,32,3.0GHz,2022.09,https://www.topcpu.net/cpu/intel-core-i9-13900k
+28,Intel Core i9 13900KF,625,24,32,3.0GHz,2022.09,https://www.topcpu.net/cpu/intel-core-i9-13900kf
+29,Intel Core i9 14900KS,603,24,32,3.2GHz,2024.03,https://www.topcpu.net/cpu/intel-core-i9-14900ks
+30,AMD Ryzen Threadripper PRO 7955WX,588,16,32,4.5GHz,2023.10,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-7955wx
+31,Intel Core i7 14700K,580,20,28,3.4GHz,2023.10,https://www.topcpu.net/cpu/intel-core-i7-14700k
+32,AMD Ryzen 9 7940HX,575,16,32,2.4GHz,2024.01,https://www.topcpu.net/cpu/amd-ryzen-9-7940hx
+33,AMD Ryzen 9 9955HX3D,562,16,32,2.5GHz,2025.01,https://www.topcpu.net/cpu/amd-ryzen-9-9955hx3d
+34,Intel Core i7 14700KF,561,20,28,3.4GHz,2023.10,https://www.topcpu.net/cpu/intel-core-i7-14700kf
+35,Intel Core i9 13900KS,559,24,32,3.2GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i9-13900ks
+36,AMD Ryzen Threadripper PRO 5965WX,554,24,48,3.8GHz,2022.03,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-5965wx
+37,AMD Ryzen 9 9955HX,545,16,32,2.5GHz,2025.01,https://www.topcpu.net/cpu/amd-ryzen-9-9955hx
+38,AMD Ryzen 9 7945HX,544,16,32,2.5GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-9-7945hx
+39,Intel Core Ultra 9 285HX,526,24,24,2.8GHz,2025.01,https://www.topcpu.net/cpu/intel-core-ultra-9-285hx
+40,Intel Core i7 13700K,519,16,24,3.4GHz,2022.09,https://www.topcpu.net/cpu/intel-core-i7-13700k
+41,AMD Ryzen Threadripper 2990WX,516,32,64,3.0GHz,2018.08,https://www.topcpu.net/cpu/amd-ryzen-threadripper-2990wx
+42,AMD EPYC 7502P,512,32,64,2.5GHz,2019.08,https://www.topcpu.net/cpu/amd-epyc-7502p
+43,Intel Core Ultra 9 275HX,507,24,24,2.7GHz,2025.01,https://www.topcpu.net/cpu/intel-core-ultra-9-275hx
+44,Apple M2 Ultra,505,24,24,3.5GHz,2023.05,https://www.topcpu.net/cpu/apple-m2-ultra
+45,Intel Xeon w7-2495X,503,24,48,2.5GHz,2023.02,https://www.topcpu.net/cpu/intel-xeon-w7-2495x
+46,Intel Core i9 13900,493,24,32,2.0GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i9-13900
+47,Intel Core i7 13700KF,489,16,24,3.4GHz,2022.09,https://www.topcpu.net/cpu/intel-core-i7-13700kf
+48,Intel Core i9 14900F,489,24,32,2.0GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i9-14900f
+49,Intel Core Ultra 7 265K,489,20,20,3.9GHz,2024.10,https://www.topcpu.net/cpu/intel-core-ultra-7-265k
+50,Intel Core i9 13900HX,482,24,32,2.2GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i9-13900hx
+51,AMD Ryzen 9 7900X3D,481,12,24,4.4GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-9-7900x3d
+52,Intel Core i9 13900F,477,24,32,2.0GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i9-13900f
+53,Intel Core i9 14900,476,24,32,2.0GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i9-14900
+54,AMD Ryzen 9 7945HX3D,475,16,32,2.3GHz,2023.08,https://www.topcpu.net/cpu/amd-ryzen-9-7945hx3d
+55,Qualcomm Snapdragon X Elite,470,12,12,3.8GHz,2023.10,https://www.topcpu.net/cpu/qualcomm-snapdragon-x-elite
+56,AMD Ryzen 9 7900,463,12,24,3.7GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-9-7900
+57,Intel Core Ultra 7 265KF,460,20,20,3.9GHz,2024.10,https://www.topcpu.net/cpu/intel-core-ultra-7-265kf
+58,AMD EPYC 9124,457,16,32,3GHz,2022.11,https://www.topcpu.net/cpu/amd-epyc-9124
+59,Intel Core i7 14700,448,20,28,2.1GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i7-14700
+60,Intel Core i9 13980HX,447,24,32,2.2GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i9-13980hx
+61,Intel Core i9 14900HX,447,24,32,2.2GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i9-14900hx
+62,AMD EPYC 7402P,437,24,48,2.8GHz,2019.08,https://www.topcpu.net/cpu/amd-epyc-7402p
+63,Intel Core i7 14700F,437,20,28,2.1GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i7-14700f
+64,Intel Xeon Gold 6426Y,435,16,32,2.5GHz,2023.01,https://www.topcpu.net/cpu/intel-xeon-gold-6426y
+65,AMD EPYC 7551P,432,32,64,2GHz,2017.06,https://www.topcpu.net/cpu/amd-epyc-7551p
+66,Intel Core i9 12900KF,425,16,24,3.2GHz,2021.10,https://www.topcpu.net/cpu/intel-core-i9-12900kf
+67,Intel Core i9 12900K,422,16,24,"3,2GHz",2021.10,https://www.topcpu.net/cpu/intel-core-i9-12900k
+68,AMD EPYC 7551,420,32,64,2GHz,2017.06,https://www.topcpu.net/cpu/amd-epyc-7551
+69,Apple M1 Ultra,417,20,20,3.2GHz,2022.03,https://www.topcpu.net/cpu/apple-m1-ultra
+70,Intel Core i9 13950HX,416,24,32,2.2GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i9-13950hx
+71,Apple M3 Max,415,16,16,4.05GHz,2023.10,https://www.topcpu.net/cpu/apple-m3-max
+72,Intel Core i9 12900KS,410,16,24,3.4GHz,2022.04,https://www.topcpu.net/cpu/intel-core-i9-12900ks
+73,Intel Xeon w7-2475X,410,20,40,2.6GHz,2023.02,https://www.topcpu.net/cpu/intel-xeon-w7-2475x
+74,Intel Xeon w5-3435X,409,16,32,3.1GHz,2023.02,https://www.topcpu.net/cpu/intel-xeon-w5-3435x
+75,AMD Ryzen 9 7900X,406,12,24,4.7GHz,2022.09,https://www.topcpu.net/cpu/amd-ryzen-9-7900x
+76,AMD Ryzen 9 5900XT,402,16,32,3.3GHz,2024.07,https://www.topcpu.net/cpu/amd-ryzen-9-5900xt
+77,AMD Ryzen Threadripper Pro 3955WX,393,16,32,3.9GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-3955wx
+78,AMD EPYC 9115,389,16,32,2.6GHz,2024.10,https://www.topcpu.net/cpu/amd-epyc-9115
+79,Intel Core i5 13600K,386,14,20,3.5GHz,2022.09,https://www.topcpu.net/cpu/intel-core-i5-13600k
+80,Intel Core i7 13790F,385,16,24,2.1GHz,2023.02,https://www.topcpu.net/cpu/intel-core-i7-13790f
+81,Intel Xeon w5-2465X,384,16,32,3.1GHz,2023.02,https://www.topcpu.net/cpu/intel-xeon-w5-2465x
+82,AMD Ryzen Threadripper PRO 5955WX,383,16,32,4GHz,2022.03,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-5955wx
+83,Intel Core Ultra 5 245K,382,14,14,4.2GHz,2024.10,https://www.topcpu.net/cpu/intel-core-ultra-5-245k
+84,AMD Ryzen 9 PRO 7945,380,12,24,3.7GHz,2023.06,https://www.topcpu.net/cpu/amd-ryzen-9-pro-7945
+85,AMD EPYC 7313P,379,16,32,3GHz,2021.03,https://www.topcpu.net/cpu/amd-epyc-7313p
+86,Intel Core i5 14600K,379,14,20,3.5GHz,2023.10,https://www.topcpu.net/cpu/intel-core-i5-14600k
+87,Intel Core i7 13700F,379,16,24,2.1GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-13700f
+88,Intel Core i5 13600KF,379,14,20,3.5GHz,2022.09,https://www.topcpu.net/cpu/intel-core-i5-13600kf
+89,Intel Core i7 13700,377,16,24,2.1GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-13700
+90,Intel Xeon Gold 6416H,366,18,36,2.2GHz,2023.01,https://www.topcpu.net/cpu/intel-xeon-gold-6416h
+91,Intel Core i5 14600KF,366,14,20,3.5GHz,2023.10,https://www.topcpu.net/cpu/intel-core-i5-14600kf
+92,Intel Core i7 12700K,364,12,20,3.6GHz,2021.10,https://www.topcpu.net/cpu/intel-core-i7-12700k
+93,Qualcomm Snapdragon X Plus,360,10,10,3.4GHz,2024.04,https://www.topcpu.net/cpu/qualcomm-snapdragon-x-plus
+94,AMD Ryzen 9 7845HX,359,12,24,3.0GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-9-7845hx
+95,Intel Core i7 12700KF,349,12,20,3.6GHz,2021.10,https://www.topcpu.net/cpu/intel-core-i7-12700kf
+96,Intel Core i7 14700HX,347,20,28,2.1GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i7-14700hx
+97,Intel Core i9 10980XE,346,18,36,3.0GHz,2019.10,https://www.topcpu.net/cpu/intel-core-i9-10980xe
+98,AMD Ryzen 7 9800X3D,344,8,16,4.7GHz,2024.11,https://www.topcpu.net/cpu/amd-ryzen-7-9800x3d
+99,AMD Ryzen 7 7700,343,8,16,3.8GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-7-7700
+100,Intel Xeon W-3335,340,16,32,3.4GHz,2021.07,https://www.topcpu.net/cpu/intel-xeon-w-3335
+101,AMD Ryzen Threadripper 2970WX,338,24,48,3.0GHz,2018.10,https://www.topcpu.net/cpu/amd-ryzen-threadripper-2970wx
+102,AMD Ryzen 7 7800X3D,332,8,16,4.4GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-7-7800x3d
+103,AMD Ryzen 7 7700X,329,8,16,4.5GHz,2022.09,https://www.topcpu.net/cpu/amd-ryzen-7-7700x
+104,Intel Core i7 12700F,328,12,20,2.1GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i7-12700f
+105,Intel Core i7 14650HX,326,16,24,2.2GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i7-14650hx
+106,AMD EPYC 7302P,319,16,32,3GHz,2019.08,https://www.topcpu.net/cpu/amd-epyc-7302p
+107,Intel Core Ultra 9 185H,319,16,22,2.3GHz,2023.12,https://www.topcpu.net/cpu/intel-core-ultra-9-185h
+108,Intel Xeon w5-2455X,317,12,24,3.2GHz,2023.02,https://www.topcpu.net/cpu/intel-xeon-w5-2455x
+109,Intel Core Ultra 5 245KF,317,14,14,4.2GHz,2024.10,https://www.topcpu.net/cpu/intel-core-ultra-5-245kf
+110,AMD EPYC 4344P,316,8,16,3.8GHz,2024.05,https://www.topcpu.net/cpu/amd-epyc-4344p
+111,Intel Xeon W-2191B,309,18,36,2.3GHz,2017.12,https://www.topcpu.net/cpu/intel-xeon-w-2191b
+112,AMD Ryzen AI 9 HX 370,308,12,24,2.0GHz,2024.06,https://www.topcpu.net/cpu/amd-ryzen-ai-9-hx-370
+113,Intel Core i9 7980XE,305,18,36,2.6GHz,2017.09,https://www.topcpu.net/cpu/intel-core-i9-7980xe
+114,Intel Core i7 13700H,305,14,20,2.4GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-13700h
+115,Intel Core i7 13700HX,298,16,24,2.1GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-13700hx
+116,Intel Xeon w5-3425,296,12,24,3.2GHz,2023.02,https://www.topcpu.net/cpu/intel-xeon-w5-3425
+117,Intel Core i7 13650HX,294,14,20,2.6GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-13650hx
+118,Intel Core i9 12950HX,294,16,24,2.3GHz,2022.05,https://www.topcpu.net/cpu/intel-core-i9-12950hx
+119,Intel Xeon Silver 4314,294,16,32,2.4GHz,2021.04,https://www.topcpu.net/cpu/intel-xeon-silver-4314
+120,Intel Core i5 14600,293,14,20,2.7GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i5-14600
+121,Intel Core i7 13850HX,292,20,28,2.1GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-13850hx
+122,AMD Ryzen 9 PRO 5945,292,12,24,3GHz,2022.04,https://www.topcpu.net/cpu/amd-ryzen-9-pro-5945
+123,Intel Core i9 9980XE,290,18,36,3.0GHz,2018.10,https://www.topcpu.net/cpu/intel-core-i9-9980xe
+124,Intel Core i7 12700H,287,14,20,2.3GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i7-12700h
+125,AMD Ryzen 9 7940HS,286,8,16,4.0GHz,2023.04,https://www.topcpu.net/cpu/amd-ryzen-9-7940hs
+126,AMD Ryzen 9 5900,282,12,24,3.0GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-9-5900
+127,Intel Core i7 12700,281,12,20,2.1GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i7-12700
+128,AMD Ryzen 7 8700G,281,8,16,4.3GHz,2024.01,https://www.topcpu.net/cpu/amd-ryzen-7-8700g
+129,AMD Ryzen 7 8845HS,281,8,16,3.8GHz,2023.12,https://www.topcpu.net/cpu/amd-ryzen-7-8845hs
+130,Intel Core i9 12900HX,280,16,24,2.3GHz,2022.05,https://www.topcpu.net/cpu/intel-core-i9-12900hx
+131,Intel Core i5 12600K,278,10,16,3.7GHz,2021.10,https://www.topcpu.net/cpu/intel-core-i5-12600k
+132,Intel Core Ultra 7 255H,278,16,16,2.0GHz,2025.01,https://www.topcpu.net/cpu/intel-core-ultra-7-255h
+133,AMD Ryzen Threadripper PRO 5945WX,277,12,24,4.1GHz,2022.03,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-5945wx
+134,AMD Ryzen 7 7840HS,276,8,16,3.8GHz,2023.04,https://www.topcpu.net/cpu/amd-ryzen-7-7840hs
+135,Intel Core i5 12600KF,273,10,16,3.7GHz,2021.10,https://www.topcpu.net/cpu/intel-core-i5-12600kf
+136,Intel Core i5 14500,273,14,20,2.6GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i5-14500
+137,Intel Core i5 13500,272,14,20,2.5GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-13500
+138,Intel Core i9 10900K,271,10,20,3.7GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i9-10900k
+139,Intel Core i9 10900KF,271,10,20,3.7GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i9-10900kf
+140,Intel Core i9 12900F,269,16,24,2.4GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i9-12900f
+141,Intel Core Ultra 7 155H,265,16,22,1.4GHz,2023.12,https://www.topcpu.net/cpu/intel-core-ultra-7-155h
+142,AMD Ryzen 9 8945HS,265,8,16,4.0GHz,2023.12,https://www.topcpu.net/cpu/amd-ryzen-9-8945hs
+143,Intel Xeon Gold 5317,263,12,24,3GHz,2021.04,https://www.topcpu.net/cpu/intel-xeon-gold-5317
+144,AMD Ryzen 7 8745HS,263,8,16,3.8GHz,2024.07,https://www.topcpu.net/cpu/amd-ryzen-7-8745hs
+145,Intel Core i9 13900HK,262,14,20,2.6GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i9-13900hk
+146,AMD Ryzen 9 3900XT,261,12,24,3.8GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-9-3900xt
+147,Intel Core i7 12800HX,261,16,24,2.0GHz,2022.05,https://www.topcpu.net/cpu/intel-core-i7-12800hx
+148,Intel Core i9 10850K,260,10,20,3.6GHz,2020.07,https://www.topcpu.net/cpu/intel-core-i9-10850k
+149,AMD Ryzen 7 7745HX,258,8,16,3.6GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-7-7745hx
+150,AMD Ryzen 7 5800X3D,258,8,16,3.4GHz,2022.03,https://www.topcpu.net/cpu/amd-ryzen-7-5800x3d
+151,AMD Ryzen 5 7600,257,6,12,3.8GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-5-7600
+152,AMD Ryzen AI 9 365,257,10,20,2.0GHz,2024.06,https://www.topcpu.net/cpu/amd-ryzen-ai-9-365
+153,Apple M2 Max,255,12,12,3.5GHz,2023.01,https://www.topcpu.net/cpu/apple-m2-max
+154,Intel Xeon E5-2696 v3,253,18,36,2.3GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2696-v3
+155,Apple M3 Pro,253,12,12,4.05GHz,2023.10,https://www.topcpu.net/cpu/apple-m3-pro
+156,Apple M2 Pro,253,12,12,3.5GHz,2023.01,https://www.topcpu.net/cpu/apple-m2-pro
+157,Intel Core i9 12900HK,253,14,20,2.5GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i9-12900hk
+158,AMD Ryzen 5 7500F,252,6,12,3.7GHz,2023.07,https://www.topcpu.net/cpu/amd-ryzen-5-7500f
+159,AMD Ryzen 9 Pro 7940HS,250,8,16,4.0GHz,2023.06,https://www.topcpu.net/cpu/amd-ryzen-9-pro-7940hs
+160,AMD EPYC 7282,248,16,32,2.8GHz,2019.08,https://www.topcpu.net/cpu/amd-epyc-7282
+161,AMD Ryzen 9 PRO 8945HS,248,8,16,4GHz,2024.04,https://www.topcpu.net/cpu/amd-ryzen-9-pro-8945hs
+162,AMD Ryzen 7 5800XT,248,8,16,3.8GHz,2024.07,https://www.topcpu.net/cpu/amd-ryzen-7-5800xt
+163,Intel Xeon W-2195,247,18,36,2.3GHz,2017.08,https://www.topcpu.net/cpu/intel-xeon-w-2195
+164,Intel Core i7 12850HX,246,16,24,2.1GHz,2022.05,https://www.topcpu.net/cpu/intel-core-i7-12850hx
+165,Intel Core i5 13500HX,246,14,20,2.5GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-13500hx
+166,Intel Core i7 12800H,246,14,20,2.4GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i7-12800h
+167,Intel Xeon E5-2697 v3,241,14,28,2.6GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2697-v3
+168,AMD Ryzen 7 8700F,241,8,16,4.1GHz,2024.05,https://www.topcpu.net/cpu/amd-ryzen-7-8700f
+169,Intel Xeon W-1390P,239,8,16,3.5GHz,2021.05,https://www.topcpu.net/cpu/xeon-w-1390p
+170,AMD Ryzen 7 7840H,238,8,16,3.8GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-7-7840h
+171,Intel Core i7 13800H,235,14,20,2.5GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-13800h
+172,Intel Xeon w5-2445,234,10,20,3.1GHz,2023.02,https://www.topcpu.net/cpu/intel-xeon-w5-2445
+173,AMD Ryzen 7 5700X3D,234,8,16,3.0GHz,2024.01,https://www.topcpu.net/cpu/amd-ryzen-7-5700x3d
+174,Intel Core i9 13905H,233,14,20,2.6GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i9-13905h
+175,Intel Core i7 11700,232,8,16,2.5GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i7-11700
+176,Intel Core i5 13600,230,14,20,2.7GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-13600
+177,Intel Xeon E5-2699 v3,228,18,36,2.3GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2699-v3
+178,AMD Ryzen 7 5700G,228,8,16,3.8GHz,2021.04,https://www.topcpu.net/cpu/amd-ryzen-7-5700g
+179,Intel Core Ultra 7 165H,228,16,22,1.4GHz,2023.12,https://www.topcpu.net/cpu/intel-core-ultra-7-165h
+180,Intel Core i9 12900H,227,14,20,2.5GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i9-12900h
+181,AMD Ryzen 7 7840U,227,8,16,3.3GHz,2023.05,https://www.topcpu.net/cpu/amd-ryzen-7-7840u
+182,AMD Ryzen Threadripper Pro 3945WX,226,12,24,4GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-threadripper-pro-3945wx
+183,Intel Core i9 13900H,226,14,20,2.6GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i9-13900h
+184,Intel Core Ultra 5 225H,224,14,14,1.7GHz,2025.01,https://www.topcpu.net/cpu/intel-core-ultra-5-225h
+185,AMD Ryzen 5 8600G,223,6,12,4.3GHz,2024.01,https://www.topcpu.net/cpu/amd-ryzen-5-8600g
+186,AMD Ryzen 7 7435HS,223,8,16,3.1GHz,2024.04,https://www.topcpu.net/cpu/amd-ryzen-7-7435hs
+187,Intel Core Ultra 9 285H,223,16,16,2.9GHz,2025.01,https://www.topcpu.net/cpu/intel-core-ultra-9-285h
+188,Intel Xeon Silver 4310,222,12,24,2.1GHz,2021.04,https://www.topcpu.net/cpu/intel-xeon-silver-4310
+189,Intel Core i9 10900F,221,10,20,2.8GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i9-10900f
+190,AMD Ryzen 7 5700,219,8,16,3.7GHz,2022.04,https://www.topcpu.net/cpu/amd-ryzen-7-5700
+191,Intel Core i9 11900KF,218,8,16,3.5GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i9-11900kf
+192,Intel Core i9 11900F,217,8,16,2.5GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i9-11900f
+193,Intel Core i7 13620H,217,10,16,2.4GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-13620h
+194,Intel Core i7 11800H,216,8,16,1.9-2.3GHz,2021.05,https://www.topcpu.net/cpu/intel-core-i7-11800h
+195,Intel Core i7 11700K,215,8,16,3.6GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i7-11700k
+196,Intel Core i5 13400,215,10,16,2.5GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-13400
+197,Intel Core i7 14700T,215,20,28,1.3GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i7-14700t
+198,Intel Core i7 10700K,214,8,16,3.8GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i7-10700k
+199,AMD Ryzen 9 5900HX,214,8,16,3.3GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-9-5900hx
+200,AMD Ryzen 7 7735HS,213,8,16,3.2GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-7-7735hs
+201,AMD Ryzen 9 6900HS,213,8,16,3.3GHz,2022.01,https://www.topcpu.net/cpu/amd-ryzen-9-6900hs
+202,Apple M1 Max,212,10,10,3.2GHz,2021.10,https://www.topcpu.net/cpu/apple-m1-max
+203,Apple M1 Pro,211,10,10,2.0GHz,2021.10,https://www.topcpu.net/cpu/apple-m1-pro
+204,Intel Core i9 9900K,210,8,16,3.6GHz,2018.10,https://www.topcpu.net/cpu/intel-core-i9-9900k
+205,Intel Core i5 12400F,210,6,12,2.5GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i5-12400f
+206,Intel Core i5 13450HX,209,10,16,2.4GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-13450hx
+207,Intel Core i9 11950H,209,8,16,2.1-2.6GHz,2021.05,https://www.topcpu.net/cpu/intel-core-i9-11950h
+208,AMD Ryzen 7 PRO 7840U,209,8,16,3.3GHz,2023.06,https://www.topcpu.net/cpu/amd-ryzen-7-pro-7840u
+209,Intel Core i7 11850H,207,8,16,2.1-2.5GHz,2021.05,https://www.topcpu.net/cpu/intel-core-i7-11850h
+210,Intel Core i5 14400F,207,10,16,2.5GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i5-14400f
+211,Intel Xeon E-2388G,206,8,16,3.2GHz,2021.09,https://www.topcpu.net/cpu/intel-xeon-e-2388g
+212,AMD EPYC 74F3,206,24,48,2.8GHz,2021.03,https://www.topcpu.net/cpu/amd-epyc-74f3
+213,Intel Core i9 11900K,205,8,16,3.5GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i9-11900k
+214,AMD Ryzen 7 5800,205,8,16,3.4GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-7-5800
+215,Intel Core i5 13400F,205,10,16,2.5GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-13400f
+216,AMD Ryzen 9 6900HX,205,8,16,3.3GHz,2022.01,https://www.topcpu.net/cpu/amd-ryzen-9-6900hx
+217,Intel Core i5 12500H,204,12,16,2.5GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i5-12500h
+218,AMD Ryzen 7 5800H,204,8,16,3.2GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-7-5800h
+219,Intel Core i5 14400,204,10,16,2.5GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i5-14400
+220,AMD Ryzen 7 8840HS,204,8,16,3.3GHz,2023.12,https://www.topcpu.net/cpu/amd-ryzen-7-8840hs
+221,Intel Xeon W-2175,201,14,28,2.5GHz,2017.10,https://www.topcpu.net/cpu/intel-xeon-w-2175
+222,Intel Core i9 10900,201,10,20,2.8GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i9-10900
+223,AMD Ryzen Z1 Extreme,197,8,16,3.3GHz,2024.04,https://www.topcpu.net/cpu/amd-ryzen-z1-extreme
+224,Intel Xeon W-2150B,197,10,20,3GHz,2017.12,https://www.topcpu.net/cpu/intel-xeon-w-2150b
+225,Intel Core i7 11700KF,196,8,16,3.6GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i7-11700kf
+226,Intel Xeon W-11955M,196,8,16,2.1GHz,2021.05,https://www.topcpu.net/cpu/intel-xeon-w-11955m
+227,AMD Ryzen 5 8500G,195,6,12,3.5GHz,2024.01,https://www.topcpu.net/cpu/amd-ryzen-5-8500g
+228,Intel Core i5 12400,194,6,12,2.5GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i5-12400
+229,Intel Core i7 11700F,193,8,16,2.5GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i7-11700f
+230,Intel Core i7 6900K,192,8,16,3.2GHz,2016.05,https://www.topcpu.net/cpu/intel-core-i7-6900k
+231,Intel Core i7 13705H,190,14,20,2.4GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-13705h
+232,AMD Ryzen 7 Pro 7840HS,190,8,16,3.8GHz,2023.06,https://www.topcpu.net/cpu/amd-ryzen-7-pro-7840hs
+233,AMD Ryzen 5 8645HS,188,6,12,4.3GHz,2023.12,https://www.topcpu.net/cpu/amd-ryzen-5-8645hs
+234,AMD Ryzen AI 7 350,188,8,16,2.0GHz,2025.01,https://www.topcpu.net/cpu/amd-ryzen-ai-7-350
+235,Intel Core i5 13500H,187,12,16,2.6GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-13500h
+236,Intel Core i9 9900KF,187,8,16,3.6GHz,2019.01,https://www.topcpu.net/cpu/intel-core-i9-9900kf
+237,AMD Ryzen 7 Pro 4750G,186,8,16,3.6GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-7-pro-4750g
+238,Intel Xeon Gold 5315Y,186,8,16,3.2GHz,2021.04,https://www.topcpu.net/cpu/intel-xeon-gold-5315y
+239,AMD Ryzen 5 7600X3D,186,6,12,4.1GHz,2024.09,https://www.topcpu.net/cpu/amd-ryzen-5-7600x3d
+240,AMD Ryzen 5 5600,184,6,12,3.5GHz,2022.04,https://www.topcpu.net/cpu/amd-ryzen-5-5600
+241,Intel Xeon E-2378G,184,8,16,2.8GHz,2021.09,https://www.topcpu.net/cpu/intel-xeon-e-2378g
+242,AMD Ryzen 9 5980HX,184,8,16,3.3GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-9-5980hx
+243,AMD Ryzen 7 3800XT,183,8,16,3.9GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-7-3800xt
+244,Intel Core i7 12650H,183,10,16,2.3GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i7-12650h
+245,Intel Core i9 12900,183,16,24,2.4GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i9-12900
+246,Intel Core i9 11980HK,182,8,16,2.6-3.3GHz,2021.05,https://www.topcpu.net/cpu/intel-core-i9-11980hk
+247,Intel Xeon E5-2698 v3,181,16,32,2.3GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2698-v3
+248,Intel Xeon W-2155,181,10,20,3.3GHz,2017.08,https://www.topcpu.net/cpu/intel-xeon-w-2155
+249,AMD Ryzen 5 7640U,181,6,12,3.5GHz,2023.05,https://www.topcpu.net/cpu/amd-ryzen-5-7640u
+250,Intel Xeon E5-2678 v3,180,12,24,2.5GHz,2015.01,https://www.topcpu.net/cpu/intel-xeon-e5-2678-v3
+251,Intel Core i5 12600,180,6,12,3.3GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i5-12600
+252,Intel Xeon E5-2690 v3,178,12,24,2.6GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2690-v3
+253,Intel Core i5 11600K,178,6,12,3.9GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i5-11600k
+254,AMD Ryzen 7 Pro 6850U,178,8,16,2.7GHz,2022.04,https://www.topcpu.net/cpu/amd-ryzen-7-pro-6850u
+255,Intel Core i9 9900KS,177,8,16,4.0GHz,2019.10,https://www.topcpu.net/cpu/intel-core-i9-9900ks
+256,Intel Core i5 11500,177,6,12,2.7GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i5-11500
+257,Intel Xeon E5-2650 v4,177,12,24,2.2GHz,2016.03,https://www.topcpu.net/cpu/xeon-e5-2650-v4
+258,AMD Ryzen 7 6800H,176,8,16,3.2GHz,2022.01,https://www.topcpu.net/cpu/amd-ryzen-7-6800h
+259,Intel Core i7 10700,176,8,16,2.9GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i7-10700
+260,Intel Core Ultra 5 135U,176,12,14,1.6GHz,2023.12,https://www.topcpu.net/cpu/intel-core-ultra-5-135u
+261,AMD Ryzen 7 4700G,174,8,16,3.6GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-7-4700g
+262,Intel Core i9 11900H,174,8,16,2.1-2.5GHz,2021.05,https://www.topcpu.net/cpu/intel-core-i9-11900h
+263,Intel Core i7 10700KF,173,8,16,3.8GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i7-10700kf
+264,AMD Ryzen 7 6800HS,173,8,16,3.2GHz,2022.01,https://www.topcpu.net/cpu/amd-ryzen-7-6800hs
+265,Intel Xeon E5-2673 v3,173,12,24,2.4GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2673-v3
+266,Intel Core i5 11400,173,6,12,2.6GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i5-11400
+267,AMD Ryzen 9 5900HS,172,8,16,3.0GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-9-5900hs
+268,AMD Ryzen 5 5600G,172,6,12,3.9GHz,2021.04,https://www.topcpu.net/cpu/amd-ryzen-5-5600g
+269,Intel Core i5 13490F,171,10,16,2.5GHz,2023.02,https://www.topcpu.net/cpu/intel-core-i5-13490f
+270,AMD Ryzen 7 8840U,171,8,16,3.3GHz,2023.12,https://www.topcpu.net/cpu/amd-ryzen-7-8840u
+271,Intel Core i5 12450HX,171,8,12,2.4GHz,2022.05,https://www.topcpu.net/cpu/intel-core-i5-12450hx
+272,Intel Xeon E5-2680 v3,170,12,24,2.5GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2680-v3
+273,AMD Ryzen 7 4800HS,170,8,16,2.9GHz,2020.03,https://www.topcpu.net/cpu/amd-ryzen-7-4800hs
+274,Intel Xeon E-2386G,170,6,12,3.5GHz,2021.09,https://www.topcpu.net/cpu/intel-xeon-e-2386g
+275,Intel Core i7 10700F,169,8,16,2.9GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i7-10700f
+276,Apple M3,168,8,8,4.05GHz,2023.10,https://www.topcpu.net/cpu/apple-m3
+277,AMD Ryzen 5 7640HS,167,6,12,4.3GHz,2023.04,https://www.topcpu.net/cpu/amd-ryzen-5-7640hs
+278,AMD Ryzen 5 5500,166,6,12,3.6GHz,2022.03,https://www.topcpu.net/cpu/amd-ryzen-5-5500
+279,AMD Ryzen 7 PRO 8840U,165,8,16,3.3GHz,2024.04,https://www.topcpu.net/cpu/amd-ryzen-7-pro-8840u
+280,AMD Ryzen 5 5500GT,164,6,12,3.6GHz,2024.01,https://www.topcpu.net/cpu/amd-ryzen-5-5500gt
+281,Intel Xeon W-2140B,163,8,16,3.2GHz,2017.12,https://www.topcpu.net/cpu/intel-xeon-w-2140b
+282,AMD EPYC 7252,161,8,16,3.1GHz,2019.08,https://www.topcpu.net/cpu/amd-epyc-7252
+283,Intel Xeon E5-2687W v3,161,10,20,3.1GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2687w-v3
+284,Intel Core i5 11400F,160,6,12,2.6GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i5-11400f
+285,AMD Ryzen 7 5800HS,159,8,16,2.8GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-7-5800hs
+286,AMD Ryzen 7 5700U,158,8,16,1.8GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-7-5700u
+287,AMD Ryzen 7 7735U,157,8,16,2.7GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-7-7735u
+288,Intel Core Ultra 5 125H,157,14,18,1.2GHz,2023.12,https://www.topcpu.net/cpu/intel-core-ultra-5-125h
+289,Intel Core i7 8700K,156,6,12,3.7GHz,2017.10,https://www.topcpu.net/cpu/intel-core-i7-8700k
+290,Intel Core i5 12450H,156,8,12,2GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i5-12450h
+291,AMD Ryzen 5 3600,155,6,12,3.6GHz,2019.07,https://www.topcpu.net/cpu/amd-ryzen-5-3600
+292,AMD Ryzen 9 4900HS,155,8,16,3.0GHz,2020.03,https://www.topcpu.net/cpu/amd-ryzen-9-4900hs
+293,AMD Ryzen 5 5600X3D,154,6,12,3.3GHz,2024.01,https://www.topcpu.net/cpu/amd-ryzen-5-5600x3d
+294,AMD Ryzen 7 4800H,154,8,16,2.9GHz,2020.01,https://www.topcpu.net/cpu/amd-ryzen-7-4800h
+295,Intel Core i7 1360P,154,12,16,2.2GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-1360p
+296,Intel Core i5 10600KF,154,6,12,4.1GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i5-10600kf
+297,Intel Core i9 12900T,153,16,24,1.4GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i9-12900t
+298,Intel Core i5 11260H,152,6,12,2.1-2.6GHz,2021.05,https://www.topcpu.net/cpu/intel-core-i5-11260h
+299,Intel Core i5 13420H,152,8,12,2.1GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-13420h
+300,AMD Ryzen 5 5600H,151,6,12,3.3GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-5-5600h
+301,AMD Ryzen 7 5825U,150,8,16,2.0GHz,2022.01,https://www.topcpu.net/cpu/amd-ryzen-7-5825u
+302,Intel Xeon E5-2666 v3,149,10,20,2.9GHz,2014.11,https://www.topcpu.net/cpu/intel-xeon-e5-2666-v3
+303,Intel Core i7 1260P,149,12,16,2.1GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i7-1260p
+304,Intel Core i7 10870H,148,8,16,2.2GHz,2020.09,https://www.topcpu.net/cpu/intel-core-i7-10870h
+305,Intel Xeon E5-1660 v3,146,8,16,3GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-1660-v3
+306,AMD Ryzen 5 3600XT,146,6,12,3.8GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-5-3600xt
+307,Apple M2,146,8,8,3.5GHz,2022.06,https://www.topcpu.net/cpu/apple-m2
+308,AMD Ryzen 5 5625U,146,6,12,2.3GHz,2022.01,https://www.topcpu.net/cpu/amd-ryzen-5-5625u
+309,Intel Core i9 11900,145,8,16,2.5GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i9-11900
+310,Intel Core i5 11600KF,145,6,12,3.9GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i5-11600kf
+311,AMD Ryzen 5 4500,145,6,12,3.6GHz,2022.04,https://www.topcpu.net/cpu/amd-ryzen-5-4500
+312,Intel Core i5 10600K,144,6,12,4.1GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i5-10600k
+313,Intel Xeon w3-2423,144,6,12,2.1GHz,2023.02,https://www.topcpu.net/cpu/intel-xeon-w3-2423
+314,AMD Ryzen 5 5600GT,144,6,12,3.6GHz,2024.01,https://www.topcpu.net/cpu/amd-ryzen-5-5600gt
+315,AMD Ryzen 5 PRO 8640HS,144,6,12,3.5GHz,2024.04,https://www.topcpu.net/cpu/amd-ryzen-5-pro-8640hs
+316,AMD Ryzen 7 4700GE,143,8,16,3.6GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-7-4700ge
+317,Intel Core i5 10400F,143,6,12,2.9GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i5-10400f
+318,Intel Core i7 8700,143,6,12,3.2GHz,2017.10,https://www.topcpu.net/cpu/intel-core-i7-8700
+319,AMD Ryzen 5 7540U,142,6,12,3.2GHz,2023.05,https://www.topcpu.net/cpu/amd-ryzen-5-7540u
+320,Intel Core i9 9880H,142,8,16,2.3GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i9-9880h
+321,Intel Core i9 9980HK,142,8,16,2.4GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i9-9980hk
+322,Intel Xeon E5-2670 v3,141,12,24,2.3GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2670-v3
+323,AMD Ryzen 5 7535HS,141,6,12,3.3GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-5-7535hs
+324,Intel Core i7 9700K,141,8,8,3.6GHz,2018.10,https://www.topcpu.net/cpu/intel-core-i7-9700k
+325,Intel Core i7 8086K,141,6,12,4.0GHz,2018.06,https://www.topcpu.net/cpu/intel-core-i7-8086k
+326,Intel Core i9 10885H,140,8,16,2.4GHz,2020.04,https://www.topcpu.net/cpu/intel-core-i9-10885h
+327,Intel Core Ultra 7 155U,140,12,14,1.7GHz,2023.12,https://www.topcpu.net/cpu/intel-core-ultra-7-155u
+328,AMD EPYC 7763,139,64,128,2.45GHz,2021.03,https://www.topcpu.net/cpu/amd-epyc-7763
+329,AMD Ryzen 5 Pro 4650G,139,6,12,3.7GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-5-pro-4650g
+330,Intel Core i7 10875H,139,8,16,2.3GHz,2020.04,https://www.topcpu.net/cpu/intel-core-i7-10875h
+331,Intel Core i5 10500,138,6,12,3.1GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i5-10500
+332,Intel Core Ultra 9 288V,138,8,8,3.3GHz,2024.09,https://www.topcpu.net/cpu/intel-core-ultra-9-288v
+333,Intel Xeon E5-2650 v3,137,10,20,2.3GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2650-v3
+334,Intel Core i5 12500,136,6,12,3.0GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i5-12500
+335,Intel Xeon E5-2683 v3,136,14,28,2GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2683-v3
+336,Intel Core i5 10600,136,6,12,3.3GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i5-10600
+337,AMD Ryzen 5 7530U,136,6,12,2.0GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-5-7530u
+338,Intel Core i5 1235U,136,10,12,1.3GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i5-1235u
+339,AMD Ryzen 5 4600G,135,6,12,3.7GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-5-4600g
+340,Intel Core i7 9700,135,8,8,3.0GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i7-9700
+341,Intel Core Ultra 7 258V,135,8,8,2.2GHz,2024.09,https://www.topcpu.net/cpu/intel-core-ultra-7-258v
+342,Intel Core i9 10980HK,134,8,16,2.4GHz,2020.04,https://www.topcpu.net/cpu/intel-core-i9-10980hk
+343,AMD Ryzen 5 Pro 4650GE,134,6,12,3.3GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-5-pro-4650ge
+344,AMD Ryzen 7 5800U,133,8,16,1.9GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-7-5800u
+345,AMD Ryzen 7 6800U​,133,8,16,2.7GHz,2022.01,https://www.topcpu.net/cpu/amd-ryzen-7-6800u
+346,Intel Xeon E5-2697 v2,133,12,24,2.7GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2697-v2
+347,Intel Core Ultra 5 125U,133,12,14,1.3GHz,2023.12,https://www.topcpu.net/cpu/intel-core-ultra-5-125u
+348,Intel Core i5 11400H,131,6,12,2.2-2.7GHz,2021.05,https://www.topcpu.net/cpu/intel-core-i5-11400h
+349,Apple M1,130,8,8,2.1GHz,2020.11,https://www.topcpu.net/cpu/apple-m1
+350,Intel Core i5 1340P,129,12,16,1.9GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-1340p
+351,Intel Core i9 9900,129,8,16,3.1GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i9-9900
+352,AMD Ryzen 5 6600H,129,6,12,3.3GHz,2022.01,https://www.topcpu.net/cpu/amd-ryzen-5-6600h
+353,AMD Ryzen 5 2600,129,6,12,3.4GHz,2018.09,https://www.topcpu.net/cpu/amd-ryzen-5-2600
+354,Intel Core i5 1335U,129,10,12,1.3GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-1335u
+355,Intel Core i7 1280P,128,14,20,1.8GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i7-1280p
+356,Intel Xeon W-2145,128,8,16,3.7GHz,2017.08,https://www.topcpu.net/cpu/intel-xeon-w-2145
+357,Intel Xeon Silver 4116,128,12,24,2.1GHz,2017.07,https://www.topcpu.net/cpu/intel-xeon-silver-4116
+358,Intel Core i5 10400,127,6,12,2.9GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i5-10400
+359,Intel Core i7 9750H,126,6,12,2.6GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i7-9750h
+360,Intel Core i5 11600,125,6,12,2.8GHz,2021.03,https://www.topcpu.net/cpu/intel-core-i5-11600
+361,AMD Ryzen 7 7730U,125,8,16,2.0GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-7-7730u
+362,Intel Core i3 12100F,125,4,8,3.3GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i3-12100f
+363,Intel Core i7 1255U,125,10,12,1.7GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i7-1255u
+364,Intel Xeon W-11855M,125,6,12,3.2GHz,2021.05,https://www.topcpu.net/cpu/intel-xeon-w-11855m
+365,AMD Ryzen 5 8540U,124,6,12,3.2GHz,2023.12,https://www.topcpu.net/cpu/amd-ryzen-5-8540u
+366,AMD Ryzen 7 PRO 4750U,124,8,16,1.7GHz,2020.05,https://www.topcpu.net/cpu/amd-ryzen-7-pro-4750u
+367,AMD Ryzen 5 7545U,124,6,12,3.2GHz,2023.11,https://www.topcpu.net/cpu/amd-ryzen-5-7545u
+368,Intel Core i7 1270P,123,12,16,2.2GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i7-1270p
+369,Intel Core Ultra 7 165U,123,12,14,1.7GHz,2023.12,https://www.topcpu.net/cpu/intel-core-ultra-7-165u
+370,Intel Core i5 9600K,122,6,6,3.7GHz,2018.10,https://www.topcpu.net/cpu/intel-core-i5-9600k
+371,Intel Core i5 1240P,122,12,16,1.7GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i5-1240p
+372,AMD Ryzen 5 Pro 5650U,122,6,12,2.3GHz,2021.03,https://www.topcpu.net/cpu/amd-ryzen-5-pro-5650u
+373,Intel Core i7 1355U,120,10,12,1.7GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-1355u
+374,Intel Core i7 6850K,119,6,12,3.6GHz,2016.05,https://www.topcpu.net/cpu/intel-core-i7-6850k
+375,AMD Ryzen 7 Pro 5850U,118,8,16,1.9GHz,2021.03,https://www.topcpu.net/cpu/amd-ryzen-7-pro-5850u
+376,AMD Ryzen 5 Pro 6650U,118,6,12,2.9GHz,2023.04,https://www.topcpu.net/cpu/amd-ryzen-5-pro-6650u
+377,AMD Ryzen 5 Pro 7540U,118,6,12,3.2GHz,2023.06,https://www.topcpu.net/cpu/amd-ryzen-5-pro-7540u
+378,Intel Xeon W-2133,117,6,12,3.6GHz,2017.08,https://www.topcpu.net/cpu/intel-xeon-w-2133
+379,AMD Ryzen 5 6600HS,116,6,12,3.3GHz,2022.01,https://www.topcpu.net/cpu/amd-ryzen-5-6600hs
+380,Intel Xeon E-2286M,116,8,16,2.4GHz,2019.05,https://www.topcpu.net/cpu/xeon-e-2286m
+381,AMD Ryzen 5 4600H,115,6,12,3.0GHz,2020.01,https://www.topcpu.net/cpu/amd-ryzen-5-4600h
+382,AMD Ryzen 5 1600,115,6,12,3.2GHz,2017.04,https://www.topcpu.net/cpu/amd-ryzen-5-1600
+383,Intel Xeon E5-2640 v3,112,8,16,2.6GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2640-v3
+384,Intel Xeon E5-1680 v2,112,8,16,3GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-1680-v2
+385,AMD Ryzen 7 4700U,111,8,8,2.0GHz,2020.01,https://www.topcpu.net/cpu/amd-ryzen-7-4700u
+386,AMD Ryzen 7 PRO 8840HS,111,8,16,3.3GHz,2024.04,https://www.topcpu.net/cpu/amd-ryzen-7-pro-8840hs
+387,AMD Ryzen 5 4600HS,111,6,12,3.0GHz,2020.01,https://www.topcpu.net/cpu/amd-ryzen-5-4600hs
+388,Intel Xeon W-2135,110,6,12,3.7GHz,2017.08,https://www.topcpu.net/cpu/intel-xeon-w-2135
+389,Intel Core i5 8600K,110,6,6,3.6GHz,2017.10,https://www.topcpu.net/cpu/intel-core-i5-8600k
+390,Intel Core i7 10750H,110,6,12,2.6GHz,2020.04,https://www.topcpu.net/cpu/intel-core-i7-10750h
+391,Intel Xeon E5-1650 v3,109,6,12,3.5GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-1650-v3
+392,Intel Core i7 11600H,109,6,12,2.5-2.9GHz,2021.06,https://www.topcpu.net/cpu/intel-core-i7-11600h
+393,Intel Core i7 6700K,107,4,8,4.0GHz,2015.08,https://www.topcpu.net/cpu/intel-core-i7-6700k
+394,Intel Core i5 10400T,107,6,12,2.0GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i5-10400t
+395,Intel Xeon D-1541,106,8,16,2.1GHz,2015.11,https://www.topcpu.net/cpu/intel-xeon-d-1541
+396,Intel Core i5 1245U,106,10,12,1.6GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i5-1245u
+397,Intel Core i7 1370P,105,14,20,1.9GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-1370p
+398,Intel Core i3 13100,105,4,8,3.4GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i3-13100
+399,Intel Core i3 13100F,105,4,8,3.4GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i3-13100f
+400,AMD Ryzen 5 5600U,104,6,12,2.3GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-5-5600u
+401,Intel Xeon E5-2690 v2,104,10,20,3GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2690-v2
+402,Intel Core i5 9500,104,6,6,3.0GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i5-9500
+403,Intel Core i3 12100,103,4,8,3.3GHz,2022.01,https://www.topcpu.net/cpu/intel-core-i3-12100
+404,Intel Core i3 14100F,103,4,8,3.5GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i3-14100f
+405,Intel Core i7 7700K,102,4,8,4.2GHz,2017.01,https://www.topcpu.net/cpu/intel-core-i7-7700k
+406,Intel Core i7 9850H,102,6,12,2.6GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i7-9850h
+407,Intel Core i3 14100,102,4,8,3.5GHz,2024.01,https://www.topcpu.net/cpu/intel-core-i3-14100
+408,AMD Ryzen 5 4600U,102,6,12,2.1GHz,2020.01,https://www.topcpu.net/cpu/amd-ryzen-5-4600u
+409,Intel Core i7 9700KF,100,8,8,3.6GHz,2019.01,https://www.topcpu.net/cpu/intel-core-i7-9700kf
+410,Intel Core i9 8950HK,100,6,12,2.9GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i9-8950hk
+411,Intel Core 5 120U,99,10,12,1.4GHz,2024.01,https://www.topcpu.net/cpu/intel-core-5-120u
+412,Intel Core i7 10850H,98,6,12,2.7GHz,2020.04,https://www.topcpu.net/cpu/intel-core-i7-10850h
+413,Intel Core i5 8500,98,6,6,3.0GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i5-8500
+414,Intel Core 7 150U,98,10,12,1.8GHz,2024.01,https://www.topcpu.net/cpu/intel-core-7-150u
+415,Intel Core i7 10700T,98,8,16,2.0GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i7-10700t
+416,Intel Xeon E5-2630L v3,96,8,16,1.8GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2630l-v3
+417,AMD Ryzen 5 5500U,95,6,12,2.1GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-5-5500u
+418,Intel Core i9 9900T,95,8,16,2.1GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i9-9900t
+419,Intel Core i7 8750H,94,6,12,2.2GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i7-8750h
+420,Intel Core i7 1165G7,94,4,8,1.2-2.8GHz,2020.09,https://www.topcpu.net/cpu/intel-core-i7-1165g7
+421,Intel Core i7 6800K,93,6,12,3.4GHz,2016.05,https://www.topcpu.net/cpu/intel-core-i7-6800k
+422,Intel Core i7 1365U,92,10,12,1.8GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i7-1365u
+423,Intel Core i5 10500H,92,6,12,2.5GHz,2020.04,https://www.topcpu.net/cpu/intel-core-i5-10500h
+424,Intel Xeon E5-2670 v2,92,10,20,2.5GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2670-v2
+425,Intel Xeon E5-2470 v2,92,10,20,2.4GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2470-v2
+426,Intel Core i5 1250P,92,12,16,1.7GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i5-1250p
+427,Intel Core i7 7700,90,4,8,3.6GHz,2017.01,https://www.topcpu.net/cpu/intel-core-i7-7700
+428,Intel Core i3 10105F,90,4,8,3.7GHz,2021.02,https://www.topcpu.net/cpu/intel-core-i3-10105f
+429,AMD Ryzen 7 4800U,90,8,16,1.8GHz,2020.01,https://www.topcpu.net/cpu/amd-ryzen-7-4800u
+430,Intel Core i7 8850H,89,6,12,2.6GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i7-8850h
+431,Intel Xeon E5-2650 v2,89,8,16,2.6GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2650-v2
+432,Intel Xeon E-2276M,89,6,12,2.8GHz,2019.05,https://www.topcpu.net/cpu/xeon-e-2276m
+433,Intel Core i5 9600KF,88,6,6,3.7GHz,2019.01,https://www.topcpu.net/cpu/intel-core-i5-9600kf
+434,Intel Core i3 10100F,88,4,8,3.6GHz,2020.10,https://www.topcpu.net/cpu/intel-core-i3-10100f
+435,Intel Core i7 6700,88,4,8,3.4GHz,2015.09,https://www.topcpu.net/cpu/intel-core-i7-6700
+436,Intel Core i5 1135G7,88,4,8,0.9-2.4GHz,2020.09,https://www.topcpu.net/cpu/intel-core-i5-1135g7
+437,Intel Core i5 8300H,87,4,8,2.3GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i5-8300h
+438,AMD Ryzen 5 7430U,87,6,12,2.3GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-5-7430u
+439,Intel Core i3 13100T,86,4,8,2.5GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i3-13100t
+440,Intel Core i5 1345U,85,10,12,1.6GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i5-1345u
+441,AMD EPYC 7401P,85,24,48,2GHz,2017.06,https://www.topcpu.net/cpu/amd-epyc-7401p
+442,Intel Core i5 9400F,84,6,6,2.9GHz,2019.01,https://www.topcpu.net/cpu/intel-core-i5-9400f
+443,Intel Core i5 9400,84,6,6,2.9GHz,2019.01,https://www.topcpu.net/cpu/intel-core-i5-9400
+444,AMD Ryzen 5 3400G,84,4,8,3.7GHz,2019.07,https://www.topcpu.net/cpu/amd-ryzen-5-3400g
+445,Intel Core i7 1185G7,84,4,8,1.2-3.0GHz,2020.09,https://www.topcpu.net/cpu/intel-core-i7-1185g7
+446,AMD Ryzen 3 5300U,84,4,8,2.6GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-3-5300u
+447,Intel Xeon E5-2643 v3,84,6,12,3.4GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2643-v3
+448,Intel Core i7 9700F,83,8,8,3.0GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i7-9700f
+449,Intel Core i5 8400,83,6,6,2.8GHz,2017.10,https://www.topcpu.net/cpu/intel-core-i5-8400
+450,Intel Core i5 9600T,83,6,6,2.3GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i5-9600t
+451,Intel Core i5 1145G7,82,4,8,1.1-2.6GHz,2020.09,https://www.topcpu.net/cpu/intel-core-i5-1145g7
+452,Intel Core i5 9500F,82,6,6,3.0GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i5-9500f
+453,AMD Ryzen 3 5300G,81,4,8,4.0GHz,2021.04,https://www.topcpu.net/cpu/amd-ryzen-3-5300g
+454,Intel Core i7 11370H,80,4,8,3.0-3.3GHz,2021.01,https://www.topcpu.net/cpu/intel-core-i7-11370h
+455,AMD Ryzen 5 PRO 2400G,80,4,8,3.6GHz,2018.05,https://www.topcpu.net/cpu/amd-ryzen-5-pro-2400g
+456,Intel Core i7 1065G7,79,4,8,1.3GHz,2019.08,https://www.topcpu.net/cpu/intel-core-i7-1065g7
+457,AMD Ryzen 5 2400G,78,4,8,3.6GHz,2018.02,https://www.topcpu.net/cpu/amd-ryzen-5-2400g
+458,Intel Xeon E5-2680 v2,78,10,20,2.8GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2680-v2
+459,Intel Xeon E-2176M,78,6,12,2.7GHz,2018.04,https://www.topcpu.net/cpu/xeon-e-2176m
+460,AMD Ryzen 5 7535U,77,6,12,2.9GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-5-7535u
+461,AMD Ryzen 3 3100,77,4,8,3.6GHz,2020.04,https://www.topcpu.net/cpu/amd-ryzen-3-3100
+462,Intel Xeon E5-2667 v2,77,8,16,3.3GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2667-v2
+463,Intel Core i3 1215U,77,6,8,1.2GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i3-1215u
+464,Intel Core i7 7700HQ,77,4,8,2.8GHz,2017.01,https://www.topcpu.net/cpu/intel-core-i7-7700hq
+465,Intel Core i5 10300H,77,4,8,2.5GHz,2020.04,https://www.topcpu.net/cpu/intel-core-i5-10300h
+466,AMD Ryzen 3 4100,77,4,8,3.8GHz,2022.04,https://www.topcpu.net/cpu/amd-ryzen-3-4100
+467,Intel Core i3 10320,76,4,8,3.8GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i3-10320
+468,Intel Core i5 8600,75,6,6,3.1GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i5-8600
+469,Intel Xeon W-2125,75,4,8,4GHz,2017.08,https://www.topcpu.net/cpu/intel-xeon-w-2125
+470,Intel Core i5 10400H,75,4,8,2.6GHz,2020.04,https://www.topcpu.net/cpu/intel-core-i5-10400h
+471,Intel Xeon E3-1280 v5,75,4,8,3.7GHz,2015.10,https://www.topcpu.net/cpu/intel-xeon-e3-1280-v5
+472,Intel Core i5 11300H,75,4,8,2.6-3.1GHz,2021.01,https://www.topcpu.net/cpu/intel-core-i5-11300h
+473,Intel Core i7 6820HQ,75,4,8,2.7GHz,2015.09,https://www.topcpu.net/cpu/intel-core-i7-6820hq
+474,Intel Core i3 1220P,75,10,12,1.5GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i3-1220p
+475,Intel Xeon E3-1240 v3,74,4,8,3.4GHz,2013.06,https://www.topcpu.net/cpu/intel-xeon-e3-1240-v3
+476,Intel Core i7 1068NG7,73,4,8,2.3GHz,2020.01,https://www.topcpu.net/cpu/intel-core-i7-1068ng7
+477,Intel Xeon E5-1650 v2,73,6,12,3.5GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-1650-v2
+478,Intel Xeon E5-2660 v2,72,10,20,2.2GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2660-v2
+479,Intel Core i5 1038NG7,72,4,8,2.0GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i5-1038ng7
+480,Intel Core i5 10200H,72,4,8,2.4GHz,2020.09,https://www.topcpu.net/cpu/intel-core-i5-10200h
+481,Intel Xeon E3-1240 v5,72,4,8,3.5GHz,2015.10,https://www.topcpu.net/cpu/intel-xeon-e3-1240-v5
+482,Intel Core i3 1315U,72,6,8,1.2GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i3-1315u
+483,Intel Xeon E3-1230 v3,71,4,8,3.3GHz,2013.06,https://www.topcpu.net/cpu/intel-xeon-e3-1230-v3
+484,Intel Core i7 6700HQ,71,4,8,2.6GHz,2015.09,https://www.topcpu.net/cpu/intel-core-i7-6700hq
+485,Intel Xeon E3-1270 v5,71,4,8,3.6GHz,2015.10,https://www.topcpu.net/cpu/intel-xeon-e3-1270-v5
+486,AMD Ryzen 3 4300GE,71,4,8,3.5GHz,2020.07,https://www.topcpu.net/cpu/amd-ryzen-3-4300ge
+487,Intel Xeon E3-1245 v3,71,4,8,3.4GHz,2013.06,https://www.topcpu.net/cpu/intel-xeon-e3-1245-v3
+488,Intel Core i3 10100,70,4,8,3.6GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i3-10100
+489,Intel Xeon E5-2630 v3,70,8,16,2.4GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2630-v3
+490,AMD Ryzen 5 7235HS,70,4,8,3.2GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-5-7235hs
+491,Intel Xeon E5-1660 v2,70,6,12,3.7GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-1660-v2
+492,Intel Xeon E5-2620 v3,69,6,12,2.4GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2620-v3
+493,Intel Xeon E3-1230 v5,69,4,8,3.4GHz,2015.10,https://www.topcpu.net/cpu/intel-xeon-e3-1230-v5
+494,Intel Xeon E3-1231 v3,69,4,8,3.4GHz,2014.05,https://www.topcpu.net/cpu/intel-xeon-e3-1231-v3
+495,Intel Core i7 8559U,69,4,8,2.7GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i7-8559u
+496,AMD Ryzen 5 4500U,68,6,6,2.3GHz,2020.01,https://www.topcpu.net/cpu/amd-ryzen-5-4500u
+497,Intel Core i5 9300H,68,4,8,2.4GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i5-9300h
+498,Intel Core i7 8569U,68,4,8,2.8GHz,2019.05,https://www.topcpu.net/cpu/intel-core-i7-8569u
+499,Intel Core i7 11375H,68,4,8,3.0-3.3GHz,2021.01,https://www.topcpu.net/cpu/intel-core-i7-11375h
+500,Intel Core i5 10500T,67,6,12,2.3GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i5-10500t
+501,Intel Core i5 11320H,67,4,8,2.5-3.2GHz,2021.06,https://www.topcpu.net/cpu/intel-core-i5-11320h
+502,Intel Xeon E3-1245 v5,67,4,8,3.5GHz,2015.10,https://www.topcpu.net/cpu/intel-xeon-e3-1245-v5
+503,Intel Xeon E3-1275 v5,67,4,8,3.6GHz,2015.10,https://www.topcpu.net/cpu/intel-xeon-e3-1275-v5
+504,Intel Xeon E3-1270 v3,66,4,8,3.5GHz,2013.06,https://www.topcpu.net/cpu/intel-xeon-e3-1270-v3
+505,Intel Core i5 8259U,65,4,8,2.3GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i5-8259u
+506,AMD Ryzen 5 7520U,64,4,8,2.8GHz,2022.09,https://www.topcpu.net/cpu/amd-ryzen-5-7520u
+507,Intel Core i7 8650U,64,4,8,1.9GHz,2017.08,https://www.topcpu.net/cpu/intel-core-i7-8650u
+508,Intel Core i7 7700T,63,4,8,2.9GHz,2017.01,https://www.topcpu.net/cpu/intel-core-i7-7700t
+509,Intel Core i5 7600K,63,4,4,3.8GHz,2017.01,https://www.topcpu.net/cpu/intel-core-i5-7600k
+510,Intel Core i5 6600K,63,4,4,3.5GHz,2015.08,https://www.topcpu.net/cpu/intel-core-i5-6600k
+511,Intel Xeon W-2123,62,4,8,3.6GHz,2017.08,https://www.topcpu.net/cpu/intel-xeon-w-2123
+512,Intel Core i3 N305,62,8,8,0GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i3-n305
+513,Intel Core i3 8100,62,4,4,3.6GHz,2017.10,https://www.topcpu.net/cpu/intel-core-i3-8100
+514,Intel Xeon E5-2450 v2,62,8,16,2.5GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2450-v2
+515,AMD Ryzen 3 5400U,62,4,8,2.6GHz,2021.01,https://www.topcpu.net/cpu/amd-ryzen-3-5400u
+516,Intel Xeon E5-2650L v2,61,10,20,1.7GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2650l-v2
+517,Intel Core i5 8500T,61,6,6,2.1GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i5-8500t
+518,Intel Core i5 9400H,61,4,8,2.5GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i5-9400h
+519,AMD Ryzen 5 3550H,61,4,8,2.1GHz,2019.01,https://www.topcpu.net/cpu/amd-ryzen-5-3550h
+520,AMD Ryzen 3 4300U,61,4,4,2.7GHz,2020.01,https://www.topcpu.net/cpu/amd-ryzen-3-4300u
+521,Intel Xeon E5-1630 v3,60,4,8,3.7GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-1630-v3
+522,AMD Ryzen 5 PRO 2400GE,60,4,8,3.2GHz,2018.05,https://www.topcpu.net/cpu/amd-ryzen-5-pro-2400ge
+523,Intel Core i7 1265U,59,10,12,1.8GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i7-1265u
+524,Intel Core i5 8279U,59,4,8,2.4GHz,2019.05,https://www.topcpu.net/cpu/intel-core-i5-8279u
+525,Intel Core i5 7400,59,4,4,3.0GHz,2017.01,https://www.topcpu.net/cpu/intel-core-i5-7400
+526,Intel Core i5 1035G1,59,4,8,1.0GHz,2019.08,https://www.topcpu.net/cpu/intel-core-i5-1035g1
+527,AMD Ryzen 5 3450U,59,4,8,2.1GHz,2020.01,https://www.topcpu.net/cpu/amd-ryzen-5-3450u
+528,Intel Xeon E5-1620 v3,59,4,8,3.5GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-1620-v3
+529,AMD Ryzen 7 3750H,58,4,8,2.3GHz,2019.01,https://www.topcpu.net/cpu/amd-ryzen-7-3750h
+530,Intel Core i7 1250U,58,10,12,1.1GHz,2022.02,https://www.topcpu.net/cpu/intel-core-i7-1250u
+531,Intel Core i5 1155G7,58,4,8,1.0-2.5GHz,2021.06,https://www.topcpu.net/cpu/intel-core-i5-1155g7
+532,Intel Core i5 10210U,58,4,8,1.6GHz,2019.08,https://www.topcpu.net/cpu/intel-core-i5-10210u
+533,Intel Core i7 10810U,58,6,12,0.8-1.6GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i7-10810u
+534,Intel Core i5 9500T,57,6,6,2.2GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i5-9500t
+535,Intel Xeon E3-1535M v5,56,4,8,2.9GHz,2015.10,https://www.topcpu.net/cpu/intel-xeon-e3-1535m-v5
+536,Intel Core i5 7500,56,4,4,3.4GHz,2017.01,https://www.topcpu.net/cpu/intel-core-i5-7500
+537,Intel Core i7 8550U,56,4,8,1.8GHz,2017.08,https://www.topcpu.net/cpu/intel-core-i7-8550u
+538,AMD Ryzen 3 2200G,56,4,4,3.5GHz,2018.02,https://www.topcpu.net/cpu/amd-ryzen-3-2200g
+539,Intel Core i7-6700T,56,4,8,2.8GHz,2015.09,https://www.topcpu.net/cpu/intel-core-i7-6700t
+540,AMD Ryzen 7 PRO 2700U,56,4,8,2.2GHz,2019.01,https://www.topcpu.net/cpu/amd-ryzen-7-pro-2700u
+541,Intel Core i5 7600,55,4,4,3.5GHz,2017.01,https://www.topcpu.net/cpu/intel-core-i5-7600
+542,Intel Core i7 10510U,55,4,8,1.8GHz,2019.08,https://www.topcpu.net/cpu/intel-core-i7-10510u
+543,AMD Ryzen 5 1400,54,4,8,3.2GHz,2017.04,https://www.topcpu.net/cpu/amd-ryzen-5-1400
+544,Intel Core i7 8665U,54,4,8,1.9GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i7-8665u
+545,Intel Core i3 8100T,54,4,4,3.1GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i3-8100t
+546,Intel Xeon E-2224G,54,4,4,3.5GHz,2019.05,https://www.topcpu.net/cpu/xeon-e-2224g
+547,Intel Xeon E3-1220 v3,53,4,4,3.1GHz,2013.06,https://www.topcpu.net/cpu/intel-xeon-e3-1220-v3
+548,Intel Core i7 10610U,53,4,8,0.8-2.3GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i7-10610u
+549,Intel Core i5 6500,53,4,4,3.2GHz,2015.09,https://www.topcpu.net/cpu/intel-core-i5-6500
+550,Intel Core i5 8250U,53,4,8,1.6GHz,2017.08,https://www.topcpu.net/cpu/intel-core-i5-8250u
+551,Intel Core i3 9100,52,4,4,3.6GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i3-9100
+552,AMD Opteron 6380,52,16,16,2.5GHz,2012.11,https://www.topcpu.net/cpu/opteron-6380
+553,Intel Core i7 8565U,52,4,8,1.8GHz,2018.08,https://www.topcpu.net/cpu/intel-core-i7-8565u
+554,Intel Core i5 8365U,52,4,8,1.6GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i5-8365u
+555,Intel Core i7 8557U,52,4,8,1.7GHz,2019.07,https://www.topcpu.net/cpu/intel-core-i7-8557u
+556,Intel Xeon E5-1607 v3,52,4,4,3.1GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-1607-v3
+557,Intel Xeon Gold 6154,51,18,36,3GHz,2017.07,https://www.topcpu.net/cpu/intel-xeon-gold-6154
+558,Intel Xeon E3-1270 v2,51,4,8,3.5GHz,2012.05,https://www.topcpu.net/cpu/intel-xeon-e3-1270-v2
+559,Intel Core i5 9400T,50,6,6,1.8GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i5-9400t
+560,Intel Core i3 9100F,50,4,4,3.6GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i3-9100f
+561,Intel Core i5 6400,49,4,4,2.7GHz,2015.09,https://www.topcpu.net/cpu/intel-core-i5-6400
+562,AMD Ryzen 5 3500U,49,4,8,2.1GHz,2019.01,https://www.topcpu.net/cpu/amd-ryzen-5-3500u
+563,AMD Ryzen 7 3700U,49,4,8,2.3GHz,2019.01,https://www.topcpu.net/cpu/amd-ryzen-7-3700u
+564,Intel Xeon E3-1245 v2,49,4,8,3.4GHz,2012.05,https://www.topcpu.net/cpu/intel-xeon-e3-1245-v2
+565,Intel Core i7 11390H,49,4,8,2.9-3.4GHz,2021.06,https://www.topcpu.net/cpu/intel-core-i7-11390h
+566,AMD Ryzen 7 2700U,49,4,8,2.2GHz,2017.10,https://www.topcpu.net/cpu/amd-ryzen-7-2700u
+567,Intel Core i3 1125G4,48,4,8,0.9-2.0GHz,2020.09,https://www.topcpu.net/cpu/intel-core-i3-1125g4
+568,Intel Xeon E3-1545M v5,48,4,8,2.9GHz,2016.01,https://www.topcpu.net/cpu/intel-xeon-e3-1545m-v5
+569,Intel Core i7 10710U,48,6,12,1.1GHz,2019.08,https://www.topcpu.net/cpu/intel-core-i7-10710u
+570,Intel Core i5 8400H,48,4,8,2.5GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i5-8400h
+571,Intel Core i5 9300HF,48,4,8,2.4GHz,2019.04,https://www.topcpu.net/cpu/intel-core-i5-9300hf
+572,Intel Core i7 1180G7,48,4,8,0.9-2.2GHz,2020.09,https://www.topcpu.net/cpu/intel-core-i7-1180g7
+573,Intel Core i7 1195G7,47,4,8,1.3-2.9GHz,2021.06,https://www.topcpu.net/cpu/intel-core-i7-1195g7
+574,Intel Xeon E3-1505M v5,46,4,8,2.8GHz,2015.10,https://www.topcpu.net/cpu/intel-xeon-e3-1505m-v5
+575,AMD Ryzen 3 3200G,45,4,4,3.6GHz,2019.09,https://www.topcpu.net/cpu/amd-ryzen-3-3200g
+576,Intel Core i5 10310U,45,4,8,0.8-2.2GHz,2020.05,https://www.topcpu.net/cpu/intel-core-i5-10310u
+577,Intel Xeon E5-2667 v3,45,8,16,3.2GHz,2014.09,https://www.topcpu.net/cpu/intel-xeon-e5-2667-v3
+578,Intel Xeon E5-2620 v2,45,6,12,2.1GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-2620-v2
+579,Intel Core i5 8265U,44,4,8,1.6GHz,2018.08,https://www.topcpu.net/cpu/intel-core-i5-8265u
+580,Intel Core i5 8350U,44,4,8,1.7GHz,2017.08,https://www.topcpu.net/cpu/intel-core-i5-8350u
+581,Intel Core i5 7300HQ,44,4,4,2.5GHz,2017.01,https://www.topcpu.net/cpu/intel-core-i5-7300hq
+582,AMD Ryzen 3 7320U,43,4,8,2.4GHz,2023.01,https://www.topcpu.net/cpu/amd-ryzen-3-7320u
+583,AMD Ryzen 3 1200,43,4,4,3.1GHz,2017.07,https://www.topcpu.net/cpu/amd-ryzen-3-1200
+584,Intel Xeon E5-1620 v2,42,4,8,3.7GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-1620-v2
+585,Intel Core i5 6600,41,4,4,3.3GHz,2015.09,https://www.topcpu.net/cpu/intel-core-i5-6600
+586,AMD Ryzen 5 2500U,41,4,8,2.0GHz,2017.10,https://www.topcpu.net/cpu/amd-ryzen-5-2500u
+587,AMD Ryzen 3 5425U,41,4,8,2.7GHz,2022.01,https://www.topcpu.net/cpu/amd-ryzen-3-5425u
+588,Intel Core i3 6100,40,2,4,3.7GHz,2015.09,https://www.topcpu.net/cpu/intel-core-i3-6100
+589,Intel Processor N100,40,4,4,,2023.01,https://www.topcpu.net/cpu/intel-processor-n100
+590,Intel Core i3 1115G4,40,2,4,1.7-3.0GHz,2020.09,https://www.topcpu.net/cpu/intel-core-i3-1115g4
+591,Intel Core i7 1060NG7,40,4,8,1.2GHz,2020.03,https://www.topcpu.net/cpu/intel-core-i7-1060ng7
+592,AMD Ryzen 3 Pro 5450U,38,4,8,2.6GHz,2021.03,https://www.topcpu.net/cpu/amd-ryzen-3-pro-5450u
+593,Intel Core i3 10110U,38,2,4,2.1GHz,2019.08,https://www.topcpu.net/cpu/intel-core-i3-10110u
+594,AMD Ryzen 5 PRO 2500U,38,4,8,2GHz,2019.01,https://www.topcpu.net/cpu/amd-ryzen-5-pro-2500u
+595,AMD Ryzen 3 3300U,37,4,4,2.1GHz,2019.01,https://www.topcpu.net/cpu/amd-ryzen-3-3300u
+596,Intel Core i5 1035G4,36,4,8,1.1GHz,2019.08,https://www.topcpu.net/cpu/intel-core-i5-1035g4
+597,Intel Processor N95,36,4,4,,2023.01,https://www.topcpu.net/cpu/intel-processor-n95
+598,Intel Core i5 8400T,35,6,6,1.7GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i5-8400t
+599,Intel Core i3 7100,34,2,4,3.9GHz,2017.01,https://www.topcpu.net/cpu/intel-core-i3-7100
+600,Intel Processor N97,33,4,4,0GHz,2023.01,https://www.topcpu.net/cpu/intel-processor-n97
+601,Intel Core i7 7500U,32,2,4,2.7GHz,2016.08,https://www.topcpu.net/cpu/intel-core-i7-7500u
+602,Intel Xeon E3-1230 v2,32,4,8,3.3GHz,2012.05,https://www.topcpu.net/cpu/intel-xeon-e3-1230-v2
+603,Intel Core i5 8257U,30,4,8,1.4GHz,2019.07,https://www.topcpu.net/cpu/intel-core-i5-8257u
+604,Intel Pentium Gold G6400,29,2,4,4.0GHz,2020.05,https://www.topcpu.net/cpu/intel-pentium-gold-g6400
+605,Intel Xeon E3-1220 v2,29,4,4,3.1GHz,2012.05,https://www.topcpu.net/cpu/intel-xeon-e3-1220-v2
+606,Intel Core i3 1005G1,28,2,4,1.2GHz,2019.08,https://www.topcpu.net/cpu/intel-core-i3-1005g1
+607,Intel Core i3 4170,28,2,4,3.7GHz,2015.03,https://www.topcpu.net/cpu/intel-core-i3-4170
+608,Intel Core i5 7200U,28,2,4,2.5GHz,2016.08,https://www.topcpu.net/cpu/intel-core-i5-7200u
+609,Intel Xeon E5-1607 v2,28,4,4,3GHz,2013.09,https://www.topcpu.net/cpu/intel-xeon-e5-1607-v2
+610,Intel Xeon E3-1225 v5,28,4,4,3.3GHz,2015.10,https://www.topcpu.net/cpu/intel-xeon-e3-1225-v5
+611,Intel Pentium Gold G5400,27,2,4,3.7GHz,2018.04,https://www.topcpu.net/cpu/intel-pentium-gold-g5400
+612,Intel Core i3 7100U,26,2,4,2.4GHz,2016.08,https://www.topcpu.net/cpu/intel-core-i3-7100u
+613,Intel Core i3 1305U,26,5,6,1.6GHz,2023.01,https://www.topcpu.net/cpu/intel-core-i3-1305u
+614,Intel Core i5 1030NG7,25,4,8,1.1GHz,2020.03,https://www.topcpu.net/cpu/intel-core-i5-1030ng7
+615,Intel Core i3 8130U,25,2,4,2.2GHz,2018.02,https://www.topcpu.net/cpu/intel-core-i3-8130u
+616,Intel Pentium Gold 7505,24,2,4,2.0GHz,2020.10,https://www.topcpu.net/cpu/intel-pentium-gold-7505
+617,Intel Core i3 8145U,24,2,4,2.1GHz,2018.08,https://www.topcpu.net/cpu/intel-core-i3-8145u
+618,Intel Core i5 6200U,23,2,4,2.3GHz,2015.09,https://www.topcpu.net/cpu/intel-core-i5-6200u
+619,Intel Core i5 5200U,23,2,4,2.2GHz,2015.01,https://www.topcpu.net/cpu/intel-core-i5-5200u
+620,Intel Core i3 7020U,22,2,4,2.3GHz,2018.04,https://www.topcpu.net/cpu/intel-core-i3-7020u
+621,Intel Core i7 6500U,22,2,4,2.5GHz,2015.09,https://www.topcpu.net/cpu/intel-core-i7-6500u
+622,Intel Core i5 8210Y,22,2,4,1.6GHz,2018.10,https://www.topcpu.net/cpu/intel-core-i5-8210y
+623,Intel Pentium Silver N6000,22,4,4,1.1GHz,2021.01,https://www.topcpu.net/cpu/intel-pentium-silver-n6000
+624,Intel Pentium G4600,22,2,4,3.6GHz,2017.01,https://www.topcpu.net/cpu/intel-pentium-g4600
+625,AMD Ryzen 3 2200U,22,2,4,2.5GHz,2018.01,https://www.topcpu.net/cpu/amd-ryzen-3-2200u
+626,Intel Celeron G6900,22,2,2,3.4GHz,2022.01,https://www.topcpu.net/cpu/intel-celeron-g6900
+627,Intel Pentium G4560,20,2,4,3.5GHz,2017.01,https://www.topcpu.net/cpu/intel-pentium-g4560
+628,AMD Ryzen 3 3250U,18,2,4,2.6GHz,2020.01,https://www.topcpu.net/cpu/amd-ryzen-3-3250u
+629,Intel Pentium G4400,18,2,2,3.3GHz,2015.09,https://www.topcpu.net/cpu/intel-pentium-g4400
+630,AMD EPYC 7443P,17,24,48,2.85GHz,2021.03,https://www.topcpu.net/cpu/amd-epyc-7443p
+631,Intel Pentium Gold G5420T,16,2,4,3.2GHz,2019.04,https://www.topcpu.net/cpu/intel-pentium-gold-g5420t
+632,Intel Core i3 5005U,13,2,4,2.0GHz,2015.01,https://www.topcpu.net/cpu/intel-core-i3-5005u
+633,Intel Celeron G3930,13,2,2,2.9GHz,2017.01,https://www.topcpu.net/cpu/intel-celeron-g3930
+634,Intel Celeron N5095,13,4,4,2.0GHz,2021.01,https://www.topcpu.net/cpu/intel-celeron-n5095
+635,AMD Ryzen 3 3200U,12,2,4,2.6GHz,2019.01,https://www.topcpu.net/cpu/amd-ryzen-3-3200u
+636,Intel Celeron J4125,12,4,4,2.0GHz,2019.11,https://www.topcpu.net/cpu/intel-celeron-j4125
+637,Intel Celeron N5100,12,4,4,1.1GHz,2021.01,https://www.topcpu.net/cpu/intel-celeron-n5100
+638,Intel Pentium Silver N5030,12,4,4,1.1GHz,2019.11,https://www.topcpu.net/cpu/intel-pentium-silver-n5030
+639,Intel Pentium Silver N5000,12,4,4,1.1GHz,2017.12,https://www.topcpu.net/cpu/intel-pentium-silver-n5000
+640,Intel Core i3 6006U,11,2,4,2.0GHz,2016.11,https://www.topcpu.net/cpu/intel-core-i3-6006u
+641,Intel Celeron N4120,9,4,4,1.1GHz,2019.11,https://www.topcpu.net/cpu/intel-celeron-n4120
+642,Intel Core i3 1000NG4,8,2,4,1.1GHz,2020.03,https://www.topcpu.net/cpu/intel-core-i3-1000ng4
+643,Intel Celeron N4000,7,2,2,1.1GHz,2017.12,https://www.topcpu.net/cpu/intel-celeron-n4000
+644,Intel Celeron N4500,7,2,2,1.1GHz,2021.01,https://www.topcpu.net/cpu/intel-celeron-n4500
+645,Intel Celeron 4205U,6,2,2,1.8GHz,2019.01,https://www.topcpu.net/cpu/intel-celeron-4205u
+646,Intel Celeron N4020,2,2,2,1.1GHz,2019.11,https://www.topcpu.net/cpu/intel-celeron-n4020

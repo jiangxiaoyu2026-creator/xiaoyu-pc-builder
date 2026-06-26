@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon, Gamepad2, TrendingUp } from 'lucide-react';
+import { Share2, User, Save, Menu, X, Monitor, Zap, LayoutGrid, ShoppingBag, Info, Trash2, ArrowRight, ChevronDown, Check, Sparkles, BookOpen, RefreshCw, ChevronRight, Sun, Moon, Gamepad2, TrendingUp, Trophy } from 'lucide-react';
 import { BuildEntry, ConfigTemplate, Category, UserItem, StreamerLiveMeta } from '../types/clientTypes';
 import { DEFAULT_BUILD_TEMPLATE, HARDWARE_DB } from '../data/clientData';
 import { storage } from '../services/storage';
@@ -26,6 +26,7 @@ const SellModal = lazy(() => import('../components/client/SellModal'));
 const RecycleEstimator = lazy(() => import('../components/client/RecycleEstimator'));
 const UsedItemDetail = lazy(() => import('../components/client/UsedItemDetail'));
 const PriceTrendChart = lazy(() => import('../components/admin/PriceTrendChart'));
+const LeaderboardCenter = lazy(() => import('../components/client/LeaderboardCenter'));
 
 // ...
 import { useTheme } from '../hooks/useTheme';
@@ -37,13 +38,14 @@ export default function ClientApp() {
         customerName: '',
         scenarios: []
     };
-    const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'gamefps' | 'trends'>(() => {
+    const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'gamefps' | 'trends' | 'leaderboard'>(() => {
         const path = window.location.pathname.toLowerCase();
         if (path === '/vip' || path === '/vip/') return 'streamer';
         const params = new URLSearchParams(window.location.search);
         const tab = params.get('tab');
         if (tab === 'gamefps' || tab === 'headlines') return 'gamefps';
         if (tab === 'trends') return 'trends';
+        if (tab === 'leaderboard') return 'leaderboard';
         if (params.get('config') || tab === 'square') return 'square';
         if (tab === 'used') return 'used';
         if (tab === 'about') return 'about';
@@ -705,6 +707,7 @@ export default function ClientApp() {
                         />
                         <TabButton active={viewMode === 'visual'} onClick={() => setViewMode('visual')} icon={<LayoutGrid />} label="AI装机台" />
                         <TabButton active={viewMode === 'trends'} onClick={() => setViewMode('trends')} icon={<TrendingUp />} label="行情分析" />
+                        <TabButton active={viewMode === 'leaderboard'} onClick={() => setViewMode('leaderboard')} icon={<Trophy />} label="天梯图" />
                         <TabButton active={viewMode === 'square'} onClick={() => setViewMode('square')} icon={<Share2 />} label="配置广场" />
                         <TabButton active={viewMode === 'gamefps'} onClick={() => setViewMode('gamefps')} icon={<Gamepad2 />} label="游戏FPS" />
                         <TabButton active={viewMode === 'used'} onClick={() => setViewMode('used')} icon={<ShoppingBag />} label="二手闲置" />
@@ -840,6 +843,20 @@ export default function ClientApp() {
                                         iconBg: 'bg-white dark:bg-slate-800',
                                         iconColor: 'text-amber-500',
                                         chevronBg: 'bg-amber-100/30 dark:bg-amber-500/20 text-amber-400'
+                                    },
+                                    {
+                                        id: 'leaderboard',
+                                        icon: Trophy,
+                                        label: '硬件天梯图',
+                                        desc: 'CPU / GPU / SoC / 路由器排行',
+                                        onClick: () => {
+                                            setViewMode('leaderboard');
+                                            setShowMobileMenu(false);
+                                        },
+                                        customBg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100/50 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400',
+                                        iconBg: 'bg-white dark:bg-slate-800',
+                                        iconColor: 'text-emerald-600 dark:text-emerald-400',
+                                        chevronBg: 'bg-emerald-100/30 dark:bg-emerald-500/20 text-emerald-500'
                                     }
                                 ].map((item) => {
                                     const Icon = item.icon;
@@ -895,7 +912,8 @@ export default function ClientApp() {
                     ].map((tab) => {
                         const Icon = tab.icon;
                         const isMore = tab.id === 'more';
-                        const isActive = isMore ? showMobileMenu : viewMode === tab.id && !showMobileMenu;
+                        const isHiddenTabActive = ['streamer', 'trends', 'leaderboard', 'about'].includes(viewMode);
+                        const isActive = isMore ? showMobileMenu || isHiddenTabActive : viewMode === tab.id && !showMobileMenu;
                         
                         return (
                             <button
@@ -1000,6 +1018,7 @@ export default function ClientApp() {
 
                     {viewMode === 'gamefps' && <GameFPSViewer />}
                     {viewMode === 'about' && <AboutUs />}
+                    {viewMode === 'leaderboard' && <LeaderboardCenter />}
                     {viewMode === 'trends' && (
                         <div className="min-h-full bg-slate-50/70 dark:bg-slate-950/60 px-2 py-4 md:px-4 md:py-6">
                             <PriceTrendChart />
@@ -1285,7 +1304,7 @@ export default function ClientApp() {
                 initialMessage={chatInitialMessage}
                 onInitialMessageSent={() => setChatInitialMessage('')}
             />
-            <DailyPopup />
+            {viewMode !== 'leaderboard' && <DailyPopup />}
 
             {/* Footer - About Us link */}
             {viewMode !== 'streamer' && (

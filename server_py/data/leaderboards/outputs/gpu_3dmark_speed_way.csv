@@ -1,0 +1,224 @@
+﻿排名,名称,跑分,显存容量,显存类型,上市时间,详情页
+1,NVIDIA RTX PRO 6000 Blackwell,15642,96GB,GDDR7,2025.03,https://www.topcpu.net/cpu/rtx-pro-6000-blackwell
+2,NVIDIA GeForce RTX 5090 D,14790,32GB,GDDR7,2025.01,https://www.topcpu.net/cpu/geforce-rtx-5090-d
+3,NVIDIA GeForce RTX 5090,14614,32GB,GDDR7,2025.01,https://www.topcpu.net/cpu/geforce-rtx-5090
+4,NVIDIA GeForce RTX 5090 D V2,14023,24GB,GDDR7,2025.08,https://www.topcpu.net/cpu/geforce-rtx-5090-d-v2
+5,NVIDIA RTX PRO 6000 Blackwell Max-Q,11056,96GB,GDDR7,2025.03,https://www.topcpu.net/cpu/rtx-pro-6000-blackwell-max-q
+6,NVIDIA GeForce RTX 4090,10074,24GB,GDDR6X,2022.09,https://www.topcpu.net/cpu/geforce-rtx-4090
+7,NVIDIA GeForce RTX 4090 D,9726,24GB,GDDR6X,2023.12,https://www.topcpu.net/cpu/geforce-rtx-4090-d
+8,NVIDIA RTX PRO 5000 Blackwell,9504,48GB,GDDR7,2025.03,https://www.topcpu.net/cpu/rtx-pro-5000-blackwell
+9,NVIDIA GeForce RTX 5080,9320,16GB,GDDR7,2025.01,https://www.topcpu.net/cpu/geforce-rtx-5080
+10,NVIDIA RTX 6000 Ada,8028,48GB,GDDR6,2022.12,https://www.topcpu.net/cpu/rtx-6000-ada
+11,NVIDIA RTX 6000 Ada Generation,8028,48GB,GDDR6,2022.12,https://www.topcpu.net/cpu/rtx-6000-ada-generation
+12,NVIDIA GeForce RTX 5070 Ti,7859,16GB,GDDR7,2025.02,https://www.topcpu.net/cpu/geforce-rtx-5070-ti
+13,NVIDIA RTX PRO 4500 Blackwell,7458,32GB,GDDR7,2025.03,https://www.topcpu.net/cpu/rtx-pro-4500-blackwell
+14,NVIDIA GeForce RTX 4080 SUPER,7450,16GB,GDDR6X,2024.01,https://www.topcpu.net/cpu/geforce-rtx-4080-super
+15,NVIDIA GeForce RTX 4080,7254,16GB,GDDR6X,2022.09,https://www.topcpu.net/cpu/geforce-rtx-4080
+16,NVIDIA RTX 5000 Ada Generation,6473,32GB,GDDR6,2023.08,https://www.topcpu.net/cpu/rtx-5000-ada-generation
+17,AMD Radeon RX 9070 XT,6403,16GB,GDDR6,2025.03,https://www.topcpu.net/cpu/radeon-rx-9070-xt
+18,NVIDIA GeForce RTX 4070 Ti SUPER,6396,16GB,GDDR6X,2024.01,https://www.topcpu.net/cpu/geforce-rtx-4070-ti-super
+19,AMD Radeon RX 7900 XTX,6363,24GB,GDDR6,2022.11,https://www.topcpu.net/cpu/radeon-rx-7900-xtx
+20,NVIDIA GeForce RTX 5090 Mobile,6345,24GB,GDDR7,2025.03,https://www.topcpu.net/cpu/geforce-rtx-5090-mobile
+21,AMD Radeon AI PRO R9700,6056,32GB,GDDR6,2025.07,https://www.topcpu.net/cpu/radeon-ai-pro-r9700
+22,NVIDIA RTX PRO 5000 Blackwell Mobile,6005,24GB,GDDR7,,https://www.topcpu.net/cpu/rtx-pro-5000-blackwell-mobile
+23,NVIDIA GeForce RTX 5070,5944,12GB,GDDR7,2025.03,https://www.topcpu.net/cpu/geforce-rtx-5070
+24,NVIDIA GeForce RTX 3090 Ti,5903,24GB,GDDR6X,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3090-ti
+25,AMD Radeon RX 9070,5844,16GB,GDDR6,2025.03,https://www.topcpu.net/cpu/radeon-rx-9070
+26,NVIDIA GeForce RTX 5080 Mobile,5722,16GB,GDDR7,2025.04,https://www.topcpu.net/cpu/geforce-rtx-5080-mobile
+27,NVIDIA GeForce RTX 4090 Mobile,5604,16GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4090-mobile
+28,NVIDIA GeForce RTX 4070,5508,12GB,GDDR6X,2023.04,https://www.topcpu.net/cpu/geforce-rtx-4070
+29,NVIDIA GeForce RTX 4070 Ti,5508,12GB,GDDR6X,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4070-ti
+30,NVIDIA GeForce RTX 3090,5383,24GB,GDDR6X,2020.09,https://www.topcpu.net/cpu/geforce-rtx-3090
+31,AMD Radeon RX 7900 XT,5364,20GB,GDDR6,2022.11,https://www.topcpu.net/cpu/radeon-rx-7900-xt
+32,NVIDIA GeForce RTX 3080 Ti,5330,12GB,GDDR6X,2021.05,https://www.topcpu.net/cpu/geforce-rtx-3080-ti
+33,NVIDIA GeForce RTX 4070 SUPER,5241,12GB,GDDR6X,2024.01,https://www.topcpu.net/cpu/geforce-rtx-4070-super
+34,NVIDIA RTX PRO 4000 Blackwell,5217,24GB,GDDR7,2025.03,https://www.topcpu.net/cpu/rtx-pro-4000-blackwell
+35,NVIDIA GeForce RTX 3080 12 GB,5089,12GB,GDDR6X,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3080-12-gb
+36,NVIDIA RTX 4500 Ada Generation,5002,24GB,GDDR6,2023.08,https://www.topcpu.net/cpu/rtx-4500-ada-generation
+37,NVIDIA RTX A6000,4965,48GB,GDDR6,2020.10,https://www.topcpu.net/cpu/rtx-a6000
+38,NVIDIA GeForce RTX 3080 Ti 20 GB,4926,20GB,GDDR6X,,https://www.topcpu.net/cpu/geforce-rtx-3080-ti-20-gb
+39,NVIDIA RTX PRO 4000 Blackwell Mobile,4794,16GB,GDDR7,,https://www.topcpu.net/cpu/rtx-pro-4000-blackwell-mobile
+40,NVIDIA GeForce RTX 4080 Mobile,4728,12GB,GDDR6,2023.01,https://www.topcpu.net/cpu/nvidia-geforce-rtx-4080-mobile
+41,AMD Radeon PRO W7900,4674,48GB,GDDR6,2023.04,https://www.topcpu.net/cpu/radeon-pro-w7900
+42,NVIDIA GeForce RTX 3080,4633,10GB,GDDR6X,2020.09,https://www.topcpu.net/cpu/geforce-rtx-3080
+43,NVIDIA RTX 5000 Mobile Ada Generation,4577,16GB,GDDR6,2023.03,https://www.topcpu.net/cpu/rtx-5000-mobile-ada-generation
+44,NVIDIA RTX A5500,4462,24GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a5500
+45,AMD Radeon RX 7900 GRE,4417,16GB,GDDR6,2023.07,https://www.topcpu.net/cpu/radeon-rx-7900-gre
+46,NVIDIA GeForce RTX 5070 Ti Mobile,4408,12GB,GDDR7,2025.03,https://www.topcpu.net/cpu/geforce-rtx-5070-ti-mobile
+47,AMD Radeon RX 9070 GRE,4300,12GB,GDDR6,2025.05,https://www.topcpu.net/cpu/radeon-rx-9070-gre
+48,NVIDIA GeForce RTX 5060 Ti 16 GB,4152,16GB,GDDR7,2025.04,https://www.topcpu.net/cpu/geforce-rtx-5060-ti-16-gb
+49,NVIDIA GeForce RTX 5060 Ti 8 GB,4152,8GB,GDDR7,2025.04,https://www.topcpu.net/cpu/geforce-rtx-5060-ti-8-gb
+50,NVIDIA GeForce RTX 5060 Ti,4152,8GB,GDDR7,2025.04,https://www.topcpu.net/cpu/geforce-rtx-5060-ti
+51,NVIDIA RTX 4000 Mobile Ada Generation,4118,12GB,GDDR6,2023.03,https://www.topcpu.net/cpu/rtx-4000-mobile-ada-generation
+52,AMD Radeon RX 6950 XT,4087,16GB,GDDR6,2022.05,https://www.topcpu.net/cpu/radeon-rx-6950-xt
+53,NVIDIA RTX A5000,4022,24GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a5000
+54,AMD Radeon RX 7800 XT,3978,16GB,GDDR6,2023.08,https://www.topcpu.net/cpu/radeon-rx-7800-xt
+55,AMD Radeon RX 7900M,3943,16GB,GDDR6,2023.10,https://www.topcpu.net/cpu/radeon-rx-7900m
+56,AMD Radeon RX 6900 XT,3920,16GB,GDDR6,2020.10,https://www.topcpu.net/cpu/radeon-rx-6900-xt
+57,AMD Radeon PRO W7800,3818,32GB,GDDR6,2023.04,https://www.topcpu.net/cpu/radeon-pro-w7800
+58,NVIDIA GeForce RTX 3070 Ti,3761,8GB,GDDR6X,2021.05,https://www.topcpu.net/cpu/geforce-rtx-3070-ti
+59,NVIDIA GeForce RTX 3070 Ti 16 GB,3761,16GB,GDDR6X,,https://www.topcpu.net/cpu/geforce-rtx-3070-ti-16-gb
+60,NVIDIA GeForce RTX 3070 Ti GA102,3761,8GB,GDDR6X,2022.10,https://www.topcpu.net/cpu/geforce-rtx-3070-ti-ga102
+61,NVIDIA RTX 4000 Ada Generation,3666,20GB,GDDR6,2023.08,https://www.topcpu.net/cpu/rtx-4000-ada-generation
+62,AMD Radeon RX 6800 XT,3653,16GB,GDDR6,2020.10,https://www.topcpu.net/cpu/radeon-rx-6800-xt
+63,NVIDIA GeForce RTX 5060,3553,8GB,GDDR7,2025.05,https://www.topcpu.net/cpu/geforce-rtx-5060
+64,NVIDIA GeForce RTX 3070,3453,8GB,GDDR6,2020.09,https://www.topcpu.net/cpu/geforce-rtx-3070
+65,NVIDIA RTX 3500 Mobile Ada Generation,3448,12GB,GDDR6,2023.03,https://www.topcpu.net/cpu/rtx-3500-mobile-ada-generation
+66,NVIDIA RTX PRO 3000 Blackwell Mobile,3440,12GB,GDDR7,,https://www.topcpu.net/cpu/rtx-pro-3000-blackwell-mobile
+67,NVIDIA RTX A4500,3422,20GB,GDDR6,2021.11,https://www.topcpu.net/cpu/rtx-a4500
+68,NVIDIA GeForce RTX 5070 Mobile,3402,8GB,GDDR7,2025.04,https://www.topcpu.net/cpu/geforce-rtx-5070-mobile
+69,NVIDIA TITAN RTX,3224,24GB,GDDR6,2018.12,https://www.topcpu.net/cpu/titan-rtx
+70,AMD Radeon PRO W7700,3224,16GB,GDDR6,2023.11,https://www.topcpu.net/cpu/radeon-pro-w7700
+71,NVIDIA GeForce RTX 4060 Ti,3222,8GB,GDDR6,2023.05,https://www.topcpu.net/cpu/geforce-rtx-4060-ti
+72,NVIDIA GeForce RTX 4060 Ti 8 GB,3222,8GB,GDDR6,2023.05,https://www.topcpu.net/cpu/geforce-rtx-4060-ti-8-gb
+73,NVIDIA GeForce RTX 4060 Ti 16 GB,3216,16GB,GDDR6,2023.05,https://www.topcpu.net/cpu/geforce-rtx-4060-ti-16-gb
+74,Intel Arc Pro B70,3201,32GB,GDDR6,2026.03,https://www.topcpu.net/cpu/intel-arc-pro-b70
+75,NVIDIA RTX PRO 4000 Blackwell SFF,3189,24GB,GDDR7,2025.08,https://www.topcpu.net/cpu/rtx-pro-4000-blackwell-sff
+76,AMD Radeon RX 7700 XT,3181,12GB,GDDR6,2023.08,https://www.topcpu.net/cpu/radeon-rx-7700-xt
+77,NVIDIA GeForce RTX 3080 Ti Mobile,3147,16GB,GDDR6,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3080-ti-mobile
+78,NVIDIA Quadro RTX 8000,3121,48GB,GDDR6,2018.08,https://www.topcpu.net/cpu/quadro-rtx-8000
+79,NVIDIA GeForce RTX 3060 Ti GDDR6X,3097,8GB,GDDR6X,2022.10,https://www.topcpu.net/cpu/geforce-rtx-3060-ti-gddr6x
+80,AMD Radeon RX 6800,3062,16GB,GDDR6,2020.10,https://www.topcpu.net/cpu/radeon-rx-6800
+81,NVIDIA GeForce RTX 2080 Ti 12 GB,3042,12GB,GDDR6,,https://www.topcpu.net/cpu/geforce-rtx-2080-ti-12-gb
+82,NVIDIA GeForce RTX 2080 Ti,3042,11GB,GDDR6,2018.09,https://www.topcpu.net/cpu/geforce-rtx-2080-ti
+83,AMD Radeon Pro W6800,3041,32GB,GDDR6,2021.06,https://www.topcpu.net/cpu/radeon-pro-w6800
+84,NVIDIA Quadro RTX 6000,3006,24GB,GDDR6,2018.08,https://www.topcpu.net/cpu/quadro-rtx-6000
+85,AMD Radeon RX 9060 XT 8 GB,3005,8GB,GDDR6,2025.06,https://www.topcpu.net/cpu/radeon-rx-9060-xt-8-gb
+86,NVIDIA GeForce RTX 3080 Mobile,2995,8GB,GDDR6,2021.01,https://www.topcpu.net/cpu/geforce-rtx-3080-mobile
+87,AMD Radeon RX 9060 XT 16 GB,2995,16GB,GDDR6,2025.06,https://www.topcpu.net/cpu/radeon-rx-9060-xt-16-gb
+88,NVIDIA GeForce RTX 3080 Mobile 16 GB,2981,16GB,GDDR6,2021.01,https://www.topcpu.net/cpu/geforce-rtx-3080-mobile-16-gb
+89,NVIDIA GeForce RTX 3060 Ti GA103,2965,8GB,GDDR6,2022.02,https://www.topcpu.net/cpu/geforce-rtx-3060-ti-ga103
+90,NVIDIA GeForce RTX 3060 Ti,2965,8GB,GDDR6,2020.12,https://www.topcpu.net/cpu/geforce-rtx-3060-ti
+91,NVIDIA GeForce RTX 4070 Mobile,2945,8GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4070-mobile
+92,NVIDIA GeForce RTX 5060 Mobile,2919,8GB,GDDR7,2025.05,https://www.topcpu.net/cpu/geforce-rtx-5060-mobile
+93,NVIDIA GeForce RTX 3070 Ti Mobile,2840,8GB,GDDR6,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3070-ti-mobile
+94,NVIDIA RTX A4000,2838,16GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a4000
+95,AMD Radeon RX 7800M,2750,12GB,GDDR6,2024.09,https://www.topcpu.net/cpu/radeon-rx-7800m
+96,NVIDIA GeForce RTX 4060,2659,8GB,GDDR6,2023.05,https://www.topcpu.net/cpu/geforce-rtx-4060
+97,NVIDIA GeForce RTX 3070 Mobile,2653,8GB,GDDR6,2021.01,https://www.topcpu.net/cpu/geforce-rtx-3070-mobile
+98,NVIDIA RTX 3000 Mobile Ada Generation,2652,8GB,GDDR6,2023.03,https://www.topcpu.net/cpu/rtx-3000-mobile-ada-generation
+99,AMD Radeon RX 9060,2620,8GB,GDDR6,2025.08,https://www.topcpu.net/cpu/radeon-rx-9060
+100,NVIDIA GeForce RTX 4060 Mobile,2591,8GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4060-mobile
+101,NVIDIA GeForce RTX 5050,2556,8GB,GDDR6,2025.06,https://www.topcpu.net/cpu/geforce-rtx-5050
+102,NVIDIA RTX 4000 SFF Ada Generation,2542,16GB,HBM2,2018.11,https://www.topcpu.net/cpu/rtx-4000-sff-ada-generation
+103,NVIDIA RTX PRO 2000 Blackwell Mobile,2540,8GB,GDDR7,,https://www.topcpu.net/cpu/rtx-pro-2000-blackwell-mobile
+104,Intel Arc B580,2478,12GB,GDDR6,2024.12,https://www.topcpu.net/cpu/arc-b580
+105,Intel Arc A770,2442,16GB,GDDR6,2022.10,https://www.topcpu.net/cpu/arc-a770
+106,AMD Radeon RX 6750 XT,2376,12GB,GDDR6,2022.03,https://www.topcpu.net/cpu/radeon-rx-6750-xt
+107,Intel Arc A750,2355,8GB,GDDR6,2022.10,https://www.topcpu.net/cpu/arc-a750
+108,NVIDIA GeForce RTX 5050 Mobile,2346,8GB,GDDR7,2025.06,https://www.topcpu.net/cpu/geforce-rtx-5050-mobile
+109,AMD Radeon RX 6700 XT,2282,12GB,GDDR6,2021.03,https://www.topcpu.net/cpu/radeon-rx-6700-xt
+110,NVIDIA GeForce RTX 3060 GA104,2228,12GB,GDDR6,2021.09,https://www.topcpu.net/cpu/geforce-rtx-3060-ga104
+111,NVIDIA GeForce RTX 2080 SUPER,2221,8GB,GDDR6,2019.07,https://www.topcpu.net/cpu/geforce-rtx-2080-super
+112,AMD Radeon RX 6750 GRE,2219,12GB,GDDR6,2023.10,https://www.topcpu.net/cpu/radeon-rx-6750-gre
+113,AMD Radeon RX 6750 GRE 12 GB,2219,12GB,GDDR6,2023.10,https://www.topcpu.net/cpu/radeon-rx-6750-gre-12-gb
+114,NVIDIA GeForce RTX 3060 12 GB,2192,12GB,GDDR6,2021.01,https://www.topcpu.net/cpu/nvidia-geforce-rtx-3060-12-gb
+115,NVIDIA GeForce RTX 3060,2181,12GB,GDDR6,2021.01,https://www.topcpu.net/cpu/geforce-rtx-3060
+116,AMD Radeon RX 6850M XT,2177,12GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-rx-6850m-xt
+117,NVIDIA GeForce RTX 2080,2171,8GB,GDDR6,2018.09,https://www.topcpu.net/cpu/geforce-rtx-2080
+118,NVIDIA Quadro RTX 5000,2159,16GB,GDDR6,2018.08,https://www.topcpu.net/cpu/quadro-rtx-5000
+119,Intel Arc Pro B60,2158,24GB,GDDR6,2025.09,https://www.topcpu.net/cpu/intel-arc-pro-b60
+120,NVIDIA RTX A4000 Mobile,2142,8GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a4000-mobile
+121,NVIDIA RTX 2000 Mobile Ada Generation,2142,8GB,GDDR6,2023.03,https://www.topcpu.net/cpu/rtx-2000-mobile-ada-generation
+122,NVIDIA RTX PRO 1000 Blackwell Mobile,2120,8GB,GDDR7,,https://www.topcpu.net/cpu/rtx-pro-1000-blackwell-mobile
+123,NVIDIA GeForce RTX 2080 SUPER Mobile,2116,8GB,GDDR6,2020.04,https://www.topcpu.net/cpu/geforce-rtx-2080-super-mobile
+124,NVIDIA RTX A3000 Mobile 12 GB,2105,12GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a3000-mobile-12-gb
+125,NVIDIA RTX A3000 Mobile,2105,6GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a3000-mobile
+126,AMD Radeon RX 6800M,2096,12GB,GDDR6,2021.05,https://www.topcpu.net/cpu/radeon-rx-6800m
+127,NVIDIA GeForce RTX 2080 Mobile,2095,8GB,GDDR6,2019.01,https://www.topcpu.net/cpu/geforce-rtx-2080-mobile
+128,NVIDIA GeForce RTX 2070 SUPER,2070,8GB,GDDR6,2019.07,https://www.topcpu.net/cpu/geforce-rtx-2070-super
+129,Intel Arc A580,2058,8GB,GDDR6,2023.10,https://www.topcpu.net/cpu/arc-a580
+130,AMD Radeon RX 7650 GRE,2054,8GB,GDDR6,2025.02,https://www.topcpu.net/cpu/radeon-rx-7650-gre
+131,AMD Radeon RX 7600 XT,2044,16GB,GDDR6,2024.01,https://www.topcpu.net/cpu/radeon-rx-7600-xt
+132,Intel Arc A770M,2025,16GB,GDDR6,2022.01,https://www.topcpu.net/cpu/arc-a770m
+133,AMD Radeon RX 7600,2024,8GB,GDDR6,2023.05,https://www.topcpu.net/cpu/radeon-rx-7600
+134,NVIDIA RTX 2000 Ada Generation,1970,16GB,GDDR6,2024.02,https://www.topcpu.net/cpu/rtx-2000-ada-generation
+135,AMD Radeon RX 6700,1955,10GB,GDDR6,2021.06,https://www.topcpu.net/cpu/radeon-rx-6700
+136,Intel Arc B570,1948,10GB,GDDR6,2025.01,https://www.topcpu.net/cpu/arc-b570
+137,AMD Radeon RX 6750 GRE 10 GB,1928,10GB,GDDR6,2023.10,https://www.topcpu.net/cpu/radeon-rx-6750-gre-10-gb
+138,AMD Radeon RX 7700S,1902,8GB,GDDR6,2023.01,https://www.topcpu.net/cpu/radeon-rx-7700s
+139,NVIDIA GeForce RTX 2070,1896,8GB,GDDR6,2018.10,https://www.topcpu.net/cpu/geforce-rtx-2070
+140,NVIDIA GeForce RTX 4050 Mobile,1893,6GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4050-mobile
+141,NVIDIA GeForce RTX 3060 Mobile,1892,6GB,GDDR6,2021.01,https://www.topcpu.net/cpu/geforce-rtx-3060-mobile
+142,AMD Radeon 8060S,1882,,,2025.01,https://www.topcpu.net/cpu/radeon-8060s
+143,AMD Radeon PRO W7600,1858,8GB,GDDR6,2023.08,https://www.topcpu.net/cpu/radeon-pro-w7600
+144,NVIDIA GeForce RTX 2070 SUPER Mobile,1840,8GB,GDDR6,2020.04,https://www.topcpu.net/cpu/geforce-rtx-2070-super-mobile
+145,NVIDIA GeForce RTX 2060 SUPER,1838,8GB,GDDR6,2019.07,https://www.topcpu.net/cpu/geforce-rtx-2060-super
+146,AMD Radeon 8050S,1807,,,2025.01,https://www.topcpu.net/cpu/radeon-8050s
+147,AMD Radeon RX 7600M XT,1794,8GB,GDDR6,2023.01,https://www.topcpu.net/cpu/radeon-rx-7600m-xt
+148,AMD Radeon RX 7600M,1792,8GB,GDDR6,2023.01,https://www.topcpu.net/cpu/amd-radeon-rx-7600m
+149,AMD Radeon RX 6700M,1778,10GB,GDDR6,2021.05,https://www.topcpu.net/cpu/radeon-rx-6700m
+150,NVIDIA Quadro RTX 4000,1743,8GB,GDDR6,2018.11,https://www.topcpu.net/cpu/quadro-rtx-4000
+151,AMD Radeon RX 7600S,1724,8GB,GDDR6,2023.01,https://www.topcpu.net/cpu/radeon-rx-7600s
+152,NVIDIA GeForce RTX 2070 Mobile,1701,8GB,GDDR6,2019.01,https://www.topcpu.net/cpu/geforce-rtx-2070-mobile
+153,AMD Radeon RX 6650 XT,1699,8GB,GDDR6,2022.05,https://www.topcpu.net/cpu/radeon-rx-6650-xt
+154,AMD Radeon RX 6600 XT,1675,8GB,GDDR6,2021.07,https://www.topcpu.net/cpu/radeon-rx-6600-xt
+155,NVIDIA Quadro RTX 4000 Max Q,1668,8GB,GDDR6,2019.05,https://www.topcpu.net/cpu/quadro-rtx-4000-max-q
+156,NVIDIA GeForce RTX 2080 SUPER Max Q,1664,8GB,GDDR6,2020.04,https://www.topcpu.net/cpu/geforce-rtx-2080-super-max-q
+157,NVIDIA Quadro RTX 4000 Mobile,1664,8GB,GDDR6,2019.05,https://www.topcpu.net/cpu/quadro-rtx-4000-mobile
+158,NVIDIA GeForce RTX 3060 8 GB,1621,8GB,GDDR6,2022.10,https://www.topcpu.net/cpu/geforce-rtx-3060-8-gb
+159,NVIDIA GeForce RTX 3050 8 GB GA107,1621,8GB,GDDR6,2022.12,https://www.topcpu.net/cpu/geforce-rtx-3050-8-gb-ga107
+160,AMD Radeon RX 6650M XT,1613,8GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-rx-6650m-xt
+161,NVIDIA GeForce RTX 2070 Mobile Refresh,1574,8GB,GDDR6,2020.03,https://www.topcpu.net/cpu/geforce-rtx-2070-mobile-refresh
+162,AMD Radeon RX 6800S,1572,8GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-rx-6800s
+163,NVIDIA GeForce RTX 2060 12 GB,1572,12GB,GDDR6,2021.12,https://www.topcpu.net/cpu/geforce-rtx-2060-12-gb
+164,NVIDIA GeForce RTX 2070 SUPER Max Q,1562,8GB,GDDR6,2020.04,https://www.topcpu.net/cpu/geforce-rtx-2070-super-max-q
+165,NVIDIA RTX A2000,1480,6GB,GDDR6,2021.08,https://www.topcpu.net/cpu/rtx-a2000
+166,AMD Radeon RX 6650M,1473,8GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-rx-6650m
+167,NVIDIA RTX A2000 12 GB,1460,12GB,GDDR6,2021.11,https://www.topcpu.net/cpu/rtx-a2000-12-gb
+168,NVIDIA GeForce RTX 2070 Max Q Refresh,1451,8GB,GDDR6,2020.03,https://www.topcpu.net/cpu/geforce-rtx-2070-max-q-refresh
+169,Intel Arc A730M,1447,12GB,GDDR6,2022.01,https://www.topcpu.net/cpu/arc-a730m
+170,NVIDIA GeForce RTX 2060 Max Q,1432,6GB,GDDR6,2020.01,https://www.topcpu.net/cpu/geforce-rtx-2060-max-q
+171,NVIDIA GeForce RTX 2080 Max Q,1432,8GB,GDDR6,2019.01,https://www.topcpu.net/cpu/geforce-rtx-2080-max-q
+172,AMD Radeon RX 6600,1418,8GB,GDDR6,2021.10,https://www.topcpu.net/cpu/radeon-rx-6600
+173,AMD Radeon RX 6600M,1414,8GB,GDDR6,2021.05,https://www.topcpu.net/cpu/radeon-rx-6600m
+174,NVIDIA GeForce RTX 2070 Max Q,1410,8GB,GDDR6,2019.01,https://www.topcpu.net/cpu/geforce-rtx-2070-max-q
+175,NVIDIA GeForce RTX 2060,1397,6GB,GDDR6,2019.01,https://www.topcpu.net/cpu/geforce-rtx-2060
+176,NVIDIA RTX A2000 Mobile 8 GB,1397,8GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a2000-mobile-8-gb
+177,AMD Radeon RX 6700S,1379,8GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-rx-6700s
+178,NVIDIA Quadro RTX 5000 Max Q,1375,16GB,GDDR6,2019.05,https://www.topcpu.net/cpu/quadro-rtx-5000-max-q
+179,AMD Radeon Pro W6600,1370,8GB,GDDR6,2021.06,https://www.topcpu.net/cpu/radeon-pro-w6600
+180,Intel Arc Pro A60,1340,12GB,GDDR6,2023.06,https://www.topcpu.net/cpu/arc-pro-a60
+181,Intel Arc Pro B50,1326,16GB,GDDR6,2025.09,https://www.topcpu.net/cpu/intel-arc-pro-b50
+182,NVIDIA Tesla T4,1304,16GB,GDDR6,2018.09,https://www.topcpu.net/cpu/tesla-t4
+183,NVIDIA RTX A2000 Mobile,1290,4GB,GDDR6,2021.04,https://www.topcpu.net/cpu/rtx-a2000-mobile
+184,NVIDIA GeForce RTX 2060 Mobile,1262,6GB,GDDR6,2019.01,https://www.topcpu.net/cpu/geforce-rtx-2060-mobile
+185,AMD Radeon Pro W6600M,1254,8GB,GDDR6,2021.06,https://www.topcpu.net/cpu/radeon-pro-w6600m
+186,NVIDIA GeForce RTX 2060 Mobile Refresh,1217,6GB,GDDR6,2019.01,https://www.topcpu.net/cpu/geforce-rtx-2060-mobile-refresh
+187,NVIDIA Quadro RTX 3000 Mobile,1214,6GB,GDDR6,2019.05,https://www.topcpu.net/cpu/quadro-rtx-3000-mobile
+188,AMD Radeon PRO W7500,1157,8GB,GDDR6,2023.08,https://www.topcpu.net/cpu/radeon-pro-w7500
+189,NVIDIA RTX A1000 Mobile 6 GB,1135,6GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a1000-mobile-6-gb
+190,NVIDIA GeForce RTX 3050 6 GB,1123,6GB,GDDR6,2024.02,https://www.topcpu.net/cpu/geforce-rtx-3050-6-gb
+191,Intel Arc A550M,954,8GB,GDDR6,2022.01,https://www.topcpu.net/cpu/arc-a550m
+192,Intel Arc B370,902,,,2026.01,https://www.topcpu.net/cpu/intel-arc-b370
+193,Intel Arc B390,895,,,2026.01,https://www.topcpu.net/cpu/intel-arc-b390
+194,NVIDIA Quadro RTX 3000 Max Q,723,6GB,GDDR6,2019.05,https://www.topcpu.net/cpu/quadro-rtx-3000-max-q
+195,Intel Arc 140T Mobile,646,,,2025.01,https://www.topcpu.net/cpu/arc-140t-mobile
+196,Intel Arc A380,554,6GB,GDDR6,2022.06,https://www.topcpu.net/cpu/arc-a380
+197,AMD Radeon 880M,544,,,2024.07,https://www.topcpu.net/cpu/radeon-880m
+198,AMD Radeon 890M,544,,,2024.07,https://www.topcpu.net/cpu/amd-radeon-890m
+199,Intel Arc 130T Mobile,488,,,2025.01,https://www.topcpu.net/cpu/arc-130t-mobile
+200,NVIDIA RTX A500 Mobile,476,4GB,GDDR6,2022.03,https://www.topcpu.net/cpu/rtx-a500-mobile
+201,AMD Radeon 780M,458,,,2023.12,https://www.topcpu.net/cpu/amd-radeon-780m
+202,NVIDIA GeForce RTX 3050 Mobile,448,4GB,GDDR6,2021.05,https://www.topcpu.net/cpu/geforce-rtx-3050-mobile
+203,NVIDIA GeForce RTX 3050 Ti Mobile,444,4GB,GDDR6,2021.05,https://www.topcpu.net/cpu/geforce-rtx-3050-ti-mobile
+204,AMD ROG Ally Extreme GPU,398,16GB,,2023.06,https://www.topcpu.net/cpu/rog-ally-extreme-gpu
+205,AMD Radeon 860M,396,,,2025.03,https://www.topcpu.net/cpu/radeon-860m
+206,AMD Radeon 680M,344,,,2022.01,https://www.topcpu.net/cpu/radeon-680m
+207,AMD Radeon 760M,343,,,2024.01,https://www.topcpu.net/cpu/radeon-760m
+208,NVIDIA GeForce RTX 2050 Mobile,339,4GB,GDDR6,2021.12,https://www.topcpu.net/cpu/geforce-rtx-2050-mobile
+209,NVIDIA RTX A400,308,4GB,GDDR6,2024.04,https://www.topcpu.net/cpu/rtx-a400
+210,AMD Radeon 740M,290,,,2023.12,https://www.topcpu.net/cpu/radeon-740m
+211,Intel Arc A310,232,4GB,GDDR6,2022.10,https://www.topcpu.net/cpu/arc-a310
+212,AMD ROG Ally GPU,229,16GB,,2023.01,https://www.topcpu.net/cpu/rog-ally-gpu
+213,AMD Radeon RX 6550M,209,4GB,GDDR6,2023.01,https://www.topcpu.net/cpu/radeon-rx-6550m
+214,AMD Radeon 660M,204,,,2022.01,https://www.topcpu.net/cpu/radeon-660m
+215,AMD Radeon Pro W6400,184,4GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-pro-w6400
+216,AMD Radeon RX 6500 XT,180,4GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-rx-6500-xt
+217,AMD Radeon 840M,174,,,2025.03,https://www.topcpu.net/cpu/amd-radeon-840m
+218,Intel Arc A370M,170,4GB,GDDR6,2022.03,https://www.topcpu.net/cpu/arc-a370m
+219,AMD Radeon RX 6500M,110,4GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-rx-6500m
+220,AMD Radeon RX 6400,103,4GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-rx-6400
+221,AMD Radeon RX 6300,52,2GB,GDDR6,,https://www.topcpu.net/cpu/radeon-rx-6300
+222,AMD Radeon 610M,48,,,2023.01,https://www.topcpu.net/cpu/radeon-610m
+223,NVIDIA NVS 810,0,2GB,,2015.11,https://www.topcpu.net/cpu/nvs-810

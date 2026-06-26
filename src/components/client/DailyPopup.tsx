@@ -18,13 +18,24 @@ export default function DailyPopup() {
                 return;
             }
 
-            // 2. Check Date
             const today = new Date().toISOString().split('T')[0];
+            if (popupSettings.startDate && today < popupSettings.startDate) {
+                console.log('[DailyPopup] Popup has not started');
+                return;
+            }
+            if (popupSettings.endDate && today > popupSettings.endDate) {
+                console.log('[DailyPopup] Popup has expired');
+                return;
+            }
+
+            // 2. Check frequency
+            const frequency = popupSettings.frequency || 'daily';
             const lastPopupDate = localStorage.getItem('xiaoyu_last_popup_date');
+            const seenOnce = localStorage.getItem('xiaoyu_popup_seen_once') === 'true';
 
-            console.log('[DailyPopup] Date check:', { today, lastPopupDate });
+            console.log('[DailyPopup] Frequency check:', { today, frequency, lastPopupDate, seenOnce });
 
-            if (lastPopupDate !== today) {
+            if (frequency === 'always' || (frequency === 'once' ? !seenOnce : lastPopupDate !== today)) {
                 console.log('[DailyPopup] Conditions met, showing popup...');
                 setSettings(popupSettings);
                 // Delay slightly for smoother entry
@@ -39,9 +50,14 @@ export default function DailyPopup() {
 
     const handleClose = () => {
         setIsOpen(false);
-        // Save today's date to prevent showing again
         const today = new Date().toISOString().split('T')[0];
-        localStorage.setItem('xiaoyu_last_popup_date', today);
+        const frequency = settings?.frequency || 'daily';
+        if (frequency === 'once') {
+            localStorage.setItem('xiaoyu_popup_seen_once', 'true');
+        }
+        if (frequency !== 'always') {
+            localStorage.setItem('xiaoyu_last_popup_date', today);
+        }
     };
 
     if (!isOpen || !settings) return null;

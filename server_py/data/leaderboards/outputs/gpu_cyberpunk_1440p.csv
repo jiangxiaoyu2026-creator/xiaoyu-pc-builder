@@ -1,0 +1,59 @@
+﻿排名,名称,跑分,显存容量,显存类型,上市时间,详情页
+1,NVIDIA GeForce RTX 4090,185,24GB,GDDR6X,2022.09,https://www.topcpu.net/cpu/geforce-rtx-4090
+2,NVIDIA GeForce RTX 4080 SUPER,130,16GB,GDDR6X,2024.01,https://www.topcpu.net/cpu/geforce-rtx-4080-super
+3,NVIDIA GeForce RTX 4080,121,16GB,GDDR6X,2022.09,https://www.topcpu.net/cpu/geforce-rtx-4080
+4,NVIDIA GeForce RTX 4070 Ti SUPER,118,16GB,GDDR6X,2024.01,https://www.topcpu.net/cpu/geforce-rtx-4070-ti-super
+5,NVIDIA GeForce RTX 4070 Ti,115,12GB,GDDR6X,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4070-ti
+6,AMD Radeon RX 7900 XTX,108,24GB,GDDR6,2022.11,https://www.topcpu.net/cpu/radeon-rx-7900-xtx
+7,NVIDIA GeForce RTX 4070 SUPER,108,12GB,GDDR6X,2024.01,https://www.topcpu.net/cpu/geforce-rtx-4070-super
+8,AMD Radeon RX 7900 XT,94,20GB,GDDR6,2022.11,https://www.topcpu.net/cpu/radeon-rx-7900-xt
+9,NVIDIA GeForce RTX 4070,93,12GB,GDDR6X,2023.04,https://www.topcpu.net/cpu/geforce-rtx-4070
+10,AMD Radeon RX 7900 GRE,88,16GB,GDDR6,2023.07,https://www.topcpu.net/cpu/radeon-rx-7900-gre
+11,NVIDIA GeForce RTX 3090 Ti,87,24GB,GDDR6X,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3090-ti
+12,AMD Radeon RX 7800 XT,82,16GB,GDDR6,2023.08,https://www.topcpu.net/cpu/radeon-rx-7800-xt
+13,NVIDIA GeForce RTX 3090,79,24GB,GDDR6X,2020.09,https://www.topcpu.net/cpu/geforce-rtx-3090
+14,NVIDIA GeForce RTX 3080 Ti,77,12GB,GDDR6X,2021.05,https://www.topcpu.net/cpu/geforce-rtx-3080-ti
+15,AMD Radeon RX 6900 XT,77,16GB,GDDR6,2020.10,https://www.topcpu.net/cpu/radeon-rx-6900-xt
+16,AMD Radeon RX 6950 XT,76,16GB,GDDR6,2022.05,https://www.topcpu.net/cpu/radeon-rx-6950-xt
+17,NVIDIA GeForce RTX 3080,72,10GB,GDDR6X,2020.09,https://www.topcpu.net/cpu/geforce-rtx-3080
+18,NVIDIA GeForce RTX 3080 12 GB,72,12GB,GDDR6X,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3080-12-gb
+19,NVIDIA GeForce RTX 4060 Ti 8 GB,72,8GB,GDDR6,2023.05,https://www.topcpu.net/cpu/geforce-rtx-4060-ti-8-gb
+20,NVIDIA GeForce RTX 4060 Ti 16 GB,70,16GB,GDDR6,2023.05,https://www.topcpu.net/cpu/geforce-rtx-4060-ti-16-gb
+21,AMD Radeon RX 6800 XT,69,16GB,GDDR6,2020.10,https://www.topcpu.net/cpu/radeon-rx-6800-xt
+22,AMD Radeon RX 7700 XT,68,12GB,GDDR6,2023.08,https://www.topcpu.net/cpu/radeon-rx-7700-xt
+23,NVIDIA GeForce RTX 3070 Ti,65,8GB,GDDR6X,2021.05,https://www.topcpu.net/cpu/geforce-rtx-3070-ti
+24,Intel Arc B580,63,12GB,GDDR6,2024.12,https://www.topcpu.net/cpu/arc-b580
+25,NVIDIA GeForce RTX 2080 Ti,62,11GB,GDDR6,2018.09,https://www.topcpu.net/cpu/geforce-rtx-2080-ti
+26,AMD Radeon RX 6800,60,16GB,GDDR6,2020.10,https://www.topcpu.net/cpu/radeon-rx-6800
+27,NVIDIA GeForce RTX 4090 Mobile,58,16GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4090-mobile
+28,NVIDIA GeForce RTX 3070,56,8GB,GDDR6,2020.09,https://www.topcpu.net/cpu/geforce-rtx-3070
+29,NVIDIA GeForce RTX 2080 SUPER,52,8GB,GDDR6,2019.07,https://www.topcpu.net/cpu/geforce-rtx-2080-super
+30,NVIDIA GeForce RTX 4060,52,8GB,GDDR6,2023.05,https://www.topcpu.net/cpu/geforce-rtx-4060
+31,AMD Radeon RX 6750 XT,50,12GB,GDDR6,2022.03,https://www.topcpu.net/cpu/radeon-rx-6750-xt
+32,NVIDIA GeForce RTX 3060 Ti GDDR6X,50,8GB,GDDR6X,2022.10,https://www.topcpu.net/cpu/geforce-rtx-3060-ti-gddr6x
+33,AMD Radeon RX 7600 XT,50,16GB,GDDR6,2024.01,https://www.topcpu.net/cpu/radeon-rx-7600-xt
+34,AMD Radeon RX 6700 XT,49,12GB,GDDR6,2021.03,https://www.topcpu.net/cpu/radeon-rx-6700-xt
+35,NVIDIA GeForce RTX 3060 Ti,48,8GB,GDDR6,2020.12,https://www.topcpu.net/cpu/geforce-rtx-3060-ti
+36,AMD Radeon RX 7600,48,8GB,GDDR6,2023.05,https://www.topcpu.net/cpu/radeon-rx-7600
+37,NVIDIA GeForce RTX 2080,47,8GB,GDDR6,2018.09,https://www.topcpu.net/cpu/geforce-rtx-2080
+38,NVIDIA GeForce RTX 4080 Mobile,44,12GB,GDDR6,2023.01,https://www.topcpu.net/cpu/nvidia-geforce-rtx-4080-mobile
+39,AMD Radeon RX 6700,43,10GB,GDDR6,2021.06,https://www.topcpu.net/cpu/radeon-rx-6700
+40,NVIDIA GeForce RTX 2070 SUPER,43,8GB,GDDR6,2019.07,https://www.topcpu.net/cpu/geforce-rtx-2070-super
+41,NVIDIA GeForce RTX 3050 4 GB,39,4GB,GDDR6,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3050-4-gb
+42,AMD Radeon RX 6650 XT,37,8GB,GDDR6,2022.05,https://www.topcpu.net/cpu/radeon-rx-6650-xt
+43,NVIDIA GeForce RTX 2070,37,8GB,GDDR6,2018.10,https://www.topcpu.net/cpu/geforce-rtx-2070
+44,NVIDIA GeForce RTX 2060 SUPER,36,8GB,GDDR6,2019.07,https://www.topcpu.net/cpu/geforce-rtx-2060-super
+45,NVIDIA GeForce RTX 3060,36,12GB,GDDR6,2021.01,https://www.topcpu.net/cpu/geforce-rtx-3060
+46,AMD Radeon RX 6600 XT,36,8GB,GDDR6,2021.07,https://www.topcpu.net/cpu/radeon-rx-6600-xt
+47,AMD Radeon RX 5700 XT,35,8GB,GDDR6,2019.07,https://www.topcpu.net/cpu/radeon-rx-5700-xt
+48,NVIDIA GeForce RTX 3060 8 GB,35,8GB,GDDR6,2022.10,https://www.topcpu.net/cpu/geforce-rtx-3060-8-gb
+49,NVIDIA GeForce RTX 2060 12 GB,34,12GB,GDDR6,2021.12,https://www.topcpu.net/cpu/geforce-rtx-2060-12-gb
+50,NVIDIA GeForce RTX 4070 Mobile,34,8GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4070-mobile
+51,NVIDIA GeForce RTX 2060,32,6GB,GDDR6,2019.01,https://www.topcpu.net/cpu/geforce-rtx-2060
+52,AMD Radeon RX 6600,31,8GB,GDDR6,2021.10,https://www.topcpu.net/cpu/radeon-rx-6600
+53,AMD Radeon RX 5700,31,8GB,GDDR6,2019.07,https://www.topcpu.net/cpu/radeon-rx-5700
+54,NVIDIA GeForce RTX 3050 8 GB,28,8GB,GDDR6,2022.01,https://www.topcpu.net/cpu/geforce-rtx-3050-8-gb
+55,NVIDIA GeForce RTX 4060 Mobile,28,8GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4060-mobile
+56,NVIDIA GeForce RTX 4050 Mobile,24,6GB,GDDR6,2023.01,https://www.topcpu.net/cpu/geforce-rtx-4050-mobile
+57,AMD Radeon RX 6500 XT,19,4GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-rx-6500-xt
+58,AMD Radeon RX 6400,11,4GB,GDDR6,2022.01,https://www.topcpu.net/cpu/radeon-rx-6400
