@@ -437,13 +437,8 @@ export default function ClientApp() {
                 return item;
             }));
 
-            // Update admin config storage (count only)
-            const allConfigs = await storage.getConfigs();
-            const adminConfig = allConfigs.items.find((c: any) => c.id === id);
-            if (adminConfig) {
-                adminConfig.likes = isLiked ? adminConfig.likes + 1 : adminConfig.likes - 1;
-                await storage.saveConfig(adminConfig);
-            }
+            // The backend /like endpoint already persists the count. Do not POST the
+            // whole config again here, or a like creates a duplicate config card.
         }
     };
 

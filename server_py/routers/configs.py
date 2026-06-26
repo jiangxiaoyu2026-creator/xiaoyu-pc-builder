@@ -34,6 +34,40 @@ def _parse_config(config: Config, current_user: Optional[User] = None, session: 
         
     return c_dict
 
+def _json_value(value, fallback):
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except Exception:
+            return fallback
+    return value if value is not None else fallback
+
+def _stable_json(value):
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+def _dedupe_key(config: Config):
+    items = _json_value(config.items, {})
+    images = _json_value(config.showcaseImages, [])
+    title = (config.title or "").strip()
+    items_key = _stable_json(items)
+
+    if config.showcaseStatus == "approved" and images:
+        return ("showcase", title, items_key, _stable_json(images))
+
+    author_key = config.userId or config.userName or ""
+    return ("config", author_key, title, items_key)
+
+def _dedupe_configs(configs: List[Config]):
+    seen = set()
+    deduped = []
+    for config in configs:
+        key = _dedupe_key(config)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(config)
+    return deduped
+
 @router.get("/", response_model=dict)
 @router.get("", response_model=dict)
 async def get_configs(
@@ -104,35 +138,13 @@ async def get_configs(
         # Recommended first, then by date, with sortOrder taking highest precedence
         query = query.order_by(Config.sortOrder.desc(), Config.isRecommended.desc(), Config.createdAt.desc())
 
-    # Count total
-    from sqlalchemy import func
-    count_query = select(func.count()).select_from(Config)
-    if status != "all":
-        count_query = count_query.where(Config.status == status)
-    
-    if cpu_id: count_query = count_query.where(Config.cpuId == cpu_id)
-    if gpu_id: count_query = count_query.where(Config.gpuId == gpu_id)
-    if min_price is not None: count_query = count_query.where(Config.totalPrice >= min_price)
-    if max_price is not None: count_query = count_query.where(Config.totalPrice <= max_price)
-    if is_recommended is not None: count_query = count_query.where(Config.isRecommended == is_recommended)
-    if tag: 
-        if tag == "showcase":
-            count_query = count_query.where(Config.showcaseStatus == "approved")
-        else:
-            escaped_tag = json.dumps(tag, ensure_ascii=True).strip('"')
-            count_query = count_query.where(
-                (Config.tags.like(f'%"{tag}"%')) | 
-                (Config.tags.like(f'%"{escaped_tag}"%'))
-            )
-    if search_condition is not None:
-        count_query = count_query.where(search_condition)
-    total = session.scalar(count_query)
-
     offset = (page - 1) * page_size
-    configs = session.exec(query.offset(offset).limit(page_size)).all()
+    configs = _dedupe_configs(session.exec(query).all())
+    total = len(configs)
+    page_configs = configs[offset:offset + page_size]
     
     return {
-        "items": [_parse_config(c, current_user, session) for c in configs],
+        "items": [_parse_config(c, current_user, session) for c in page_configs],
         "total": total,
         "page": page,
         "page_size": page_size
