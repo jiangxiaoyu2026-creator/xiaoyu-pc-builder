@@ -1,0 +1,18 @@
+{
+  "version": "2026-06-26",
+  "generatedAt": "2026-06-26T10:02:21.092Z",
+  "index": "public/data/howmanyfps/2026-06-26/index.json",
+  "gamesDir": "public/data/howmanyfps/2026-06-26/games",
+  "officialImagesDir": "public/data/howmanyfps/2026-06-26/official-images",
+  "files": 101,
+  "officialImages": 50,
+  "counts": {
+    "games": 50,
+    "cpus": 1326,
+    "gpus": 421,
+    "expectedRows": 262050,
+    "processedRows": 262050,
+    "skippedRows": 0
+  },
+  "perGameRows": 5241
+}
