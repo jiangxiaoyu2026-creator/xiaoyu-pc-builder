@@ -693,7 +693,7 @@ function useCategoryCompare(category: CompareKind, firstName: string, secondName
 
 export default function LeaderboardCenter() {
     const { categories, boards, status: catalogStatus, errorMessage: catalogError } = useCatalog();
-    const [surfaceMode, setSurfaceMode] = useState<SurfaceMode>('ladder');
+    const [surfaceMode, setSurfaceMode] = useState<SurfaceMode>('compare');
     const [category, setCategory] = useState<LeaderboardCategoryId>('cpu');
     const [selectedId, setSelectedId] = useState(OVERALL_BOARD_ID);
     const [searchTerm, setSearchTerm] = useState('');
@@ -1387,11 +1387,19 @@ export default function LeaderboardCenter() {
         };
 
         return (
-            <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:p-5">
+            <section className={`rounded-lg border border-t-4 border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:p-5 ${
+                kind === 'cpu'
+                    ? 'border-t-cyan-400 dark:border-t-cyan-400/70'
+                    : 'border-t-amber-400 dark:border-t-amber-400/70'
+            }`}>
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-950 text-white dark:bg-white dark:text-slate-950">
+                            <span className={`flex h-10 w-10 items-center justify-center rounded-lg text-slate-950 ${
+                                kind === 'cpu'
+                                    ? 'bg-cyan-300'
+                                    : 'bg-amber-300'
+                            }`}>
                                 <Icon size={20} />
                             </span>
                             <div>
@@ -1516,49 +1524,60 @@ export default function LeaderboardCenter() {
             <div className="mx-auto flex max-w-7xl flex-col gap-4">
                 <section className="overflow-hidden rounded-lg border border-slate-900/10 bg-[#080B10] text-white shadow-[0_18px_60px_rgba(15,23,42,0.18)] dark:border-white/10">
                     <div className="pointer-events-none h-1 bg-[linear-gradient(90deg,#22d3ee,#a3e635,#facc15,#fb7185)]" />
-                    <div className="grid gap-3 p-3 [background-image:linear-gradient(rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] [background-size:34px_34px] md:grid-cols-[minmax(0,1fr)_360px] md:items-center md:gap-4 md:p-4">
+                    <div className="grid gap-3 p-3 [background-image:linear-gradient(rgba(255,255,255,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.055)_1px,transparent_1px)] [background-size:34px_34px] md:grid-cols-[minmax(0,1fr)_390px] md:items-center md:gap-4 md:p-4">
                         <div className="min-w-0">
-                            {!isCompareMode && (
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <div className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/10 px-2.5 py-1 text-xs font-black text-cyan-200">
-                                        <Trophy size={14} />
-                                        综合优先
-                                    </div>
-                                    <div className="rounded-md border border-white/10 bg-black/20 px-2.5 py-1 text-xs font-bold text-slate-400">
-                                        细分榜单下钻
-                                    </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/10 px-2.5 py-1 text-xs font-black text-cyan-200">
+                                    {isCompareMode ? <ArrowRightLeft size={14} /> : <Trophy size={14} />}
+                                    {isCompareMode ? '默认对比首页' : '综合优先'}
                                 </div>
-                            )}
+                                <div className="rounded-md border border-white/10 bg-black/20 px-2.5 py-1 text-xs font-bold text-slate-400">
+                                    {isCompareMode ? 'CPU / GPU 双型号' : '细分榜单下钻'}
+                                </div>
+                            </div>
                             <div className="mt-3 flex flex-wrap items-end gap-x-4 gap-y-2">
                                 <h1 className="text-2xl font-black tracking-tight md:text-3xl">
                                     {isCompareMode ? '硬件对比' : '硬件天梯图'}
                                 </h1>
-                                {!isCompareMode && (
-                                    <div className="flex flex-wrap gap-2 pb-0.5 text-xs font-black">
-                                        <span className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.06] px-2.5 py-1 text-white">
-                                            <ActiveCategoryIcon size={14} className="text-cyan-400" />
-                                            {selectedCategory?.label ?? '-'}
-                                        </span>
-                                        <span className="rounded-md border border-white/10 bg-white/[0.06] px-2.5 py-1 text-slate-300">
-                                            {categoryBoards.length} 个细分榜
-                                        </span>
-                                        <span className="rounded-md border border-white/10 bg-white/[0.06] px-2.5 py-1 text-slate-300">
-                                            {ladderData.total || selectedBoard?.rows || 0} 个型号
-                                        </span>
-                                    </div>
-                                )}
+                                <div className="flex flex-wrap gap-2 pb-0.5 text-xs font-black">
+                                    {isCompareMode ? (
+                                        <>
+                                            <span className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.06] px-2.5 py-1 text-white">
+                                                <Cpu size={14} className="text-cyan-400" />
+                                                CPU {cpuMetricCount || 14} 项
+                                            </span>
+                                            <span className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.06] px-2.5 py-1 text-white">
+                                                <Gamepad2 size={14} className="text-amber-300" />
+                                                GPU {gpuMetricCount || 22} 项
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.06] px-2.5 py-1 text-white">
+                                                <ActiveCategoryIcon size={14} className="text-cyan-400" />
+                                                {selectedCategory?.label ?? '-'}
+                                            </span>
+                                            <span className="rounded-md border border-white/10 bg-white/[0.06] px-2.5 py-1 text-slate-300">
+                                                {categoryBoards.length} 个细分榜
+                                            </span>
+                                            <span className="rounded-md border border-white/10 bg-white/[0.06] px-2.5 py-1 text-slate-300">
+                                                {ladderData.total || selectedBoard?.rows || 0} 个型号
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                             <p className="mt-2 hidden max-w-3xl text-sm font-bold leading-6 text-slate-400 sm:block">
                                 {isCompareMode
-                                    ? '输入 CPU 或 GPU 型号，自动汇总共同指标并给出逐项胜负。'
+                                    ? '先选两款硬件，再看综合胜负、单项跑分和功耗差异。'
                                     : '先看当前分类的综合排名，再进入 Cinebench、Geekbench、游戏帧率等细分榜单。'}
                             </p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 rounded-lg border border-white/10 bg-white/[0.07] p-1.5">
                             {[
-                                { id: 'ladder' as SurfaceMode, label: '天梯图', icon: Trophy },
-                                { id: 'compare' as SurfaceMode, label: '双硬件对比', icon: ArrowRightLeft }
+                                { id: 'compare' as SurfaceMode, label: '硬件对比', icon: ArrowRightLeft },
+                                { id: 'ladder' as SurfaceMode, label: '天梯图', icon: Trophy }
                             ].map(item => {
                                 const Icon = item.icon;
                                 const active = surfaceMode === item.id;
@@ -1886,6 +1905,44 @@ export default function LeaderboardCenter() {
 
                 {surfaceMode === 'compare' && (
                     <div className="grid gap-4">
+                        <section className="grid gap-2 md:grid-cols-3">
+                            <button
+                                type="button"
+                                onClick={() => document.getElementById('cpu-first-name')?.focus()}
+                                className="flex items-center justify-between gap-3 rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-left transition-colors hover:border-cyan-300 hover:bg-cyan-100/70 dark:border-cyan-300/25 dark:bg-cyan-300/10 dark:hover:bg-cyan-300/15"
+                            >
+                                <span>
+                                    <span className="block text-sm font-black text-cyan-800 dark:text-cyan-100">CPU 对比</span>
+                                    <span className="mt-0.5 block text-xs font-bold text-cyan-700/70 dark:text-cyan-200/70">{cpuMetricCount || 14} 个指标</span>
+                                </span>
+                                <Cpu size={22} className="text-cyan-700 dark:text-cyan-200" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    document.getElementById('gpu-first-name')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                    window.setTimeout(() => document.getElementById('gpu-first-name')?.focus(), 260);
+                                }}
+                                className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-100/70 dark:border-amber-300/25 dark:bg-amber-300/10 dark:hover:bg-amber-300/15"
+                            >
+                                <span>
+                                    <span className="block text-sm font-black text-amber-800 dark:text-amber-100">GPU 对比</span>
+                                    <span className="mt-0.5 block text-xs font-bold text-amber-700/70 dark:text-amber-200/70">{gpuMetricCount || 22} 个指标</span>
+                                </span>
+                                <Gamepad2 size={22} className="text-amber-700 dark:text-amber-200" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSurfaceMode('ladder')}
+                                className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+                            >
+                                <span>
+                                    <span className="block text-sm font-black text-slate-950 dark:text-white">天梯图</span>
+                                    <span className="mt-0.5 block text-xs font-bold text-slate-500 dark:text-slate-400">切换排行榜</span>
+                                </span>
+                                <Trophy size={22} className="text-slate-500 dark:text-slate-300" />
+                            </button>
+                        </section>
                         {renderComparePanel(
                             'cpu',
                             'CPU 双型号对比',
