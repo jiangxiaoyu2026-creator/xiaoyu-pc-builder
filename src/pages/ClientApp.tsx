@@ -30,8 +30,10 @@ const LeaderboardCenter = lazy(() => import('../components/client/LeaderboardCen
 
 // ...
 import { useTheme } from '../hooks/useTheme';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function ClientApp() {
+    const isMobile = useIsMobile();
     const LIVE_SCENARIO_OPTIONS = ['实用', '颜值', '游戏', '直播', '生产力', '海景房'];
     const DEFAULT_LIVE_META: StreamerLiveMeta = {
         budget: '',
@@ -241,6 +243,9 @@ export default function ClientApp() {
     // Chat control for consult purchase
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [chatInitialMessage, setChatInitialMessage] = useState('');
+    const hideChatWidget = isMobile && viewMode === 'gamefps';
+    const hideDailyPopup = isMobile && viewMode === 'gamefps';
+    const compactGameFpsHeader = isMobile && viewMode === 'gamefps';
 
 
 
@@ -683,12 +688,18 @@ export default function ClientApp() {
     return (
         <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#FAFAFA] dark:bg-[#0B0B10] font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800 dark:text-slate-200 transition-colors duration-300">
             <header className="relative md:sticky top-0 z-40 bg-white/70 dark:bg-[#0B0B10]/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-[#1E293B]/50 transition-all duration-300">
-                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className={`max-w-7xl mx-auto px-4 flex items-center justify-between ${compactGameFpsHeader ? 'h-12' : 'h-16'}`}>
                     <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] rounded-xl flex items-center justify-center shadow-sm dark:shadow-none">
-                            <Monitor className="text-indigo-600 dark:text-indigo-400" size={20} />
+                        <div className={`${compactGameFpsHeader ? 'h-8 w-8 rounded-lg' : 'w-9 h-9 rounded-xl'} bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] flex items-center justify-center shadow-sm dark:shadow-none`}>
+                            {compactGameFpsHeader ? (
+                                <Gamepad2 className="text-indigo-600 dark:text-indigo-400" size={18} />
+                            ) : (
+                                <Monitor className="text-indigo-600 dark:text-indigo-400" size={20} />
+                            )}
                         </div>
-                        <span className="text-xl font-display font-bold text-slate-900 dark:text-white tracking-tight">蒋小鱼装机平台</span>
+                        <span className={`${compactGameFpsHeader ? 'text-base' : 'text-xl'} font-display font-bold text-slate-900 dark:text-white tracking-tight`}>
+                            {compactGameFpsHeader ? '游戏 FPS' : '蒋小鱼装机平台'}
+                        </span>
                     </div>
                     {/* Navigation Tabs - Hidden on mobile, visible on tablet/desktop */}
                     <div className="hidden md:flex bg-slate-100/50 dark:bg-[#1A1A24]/50 p-1.5 rounded-xl border border-slate-200/50 dark:border-[#2D3748]/50 backdrop-blur-xl gap-1">
@@ -712,7 +723,7 @@ export default function ClientApp() {
                         {/* Theme Toggle */}
                         <button
                             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                            className="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2D3748] transition-colors"
+                            className={`flex items-center justify-center ${compactGameFpsHeader ? 'h-9 w-9 rounded-lg' : 'w-10 h-10 rounded-xl'} bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2D3748] transition-colors`}
                             title="切换深浅色主题"
                         >
                             {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
@@ -741,7 +752,7 @@ export default function ClientApp() {
                         ) : (
                             <button
                                 onClick={() => setShowLoginModal(true)}
-                                className="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2D3748] transition-colors"
+                                className={`flex items-center justify-center ${compactGameFpsHeader ? 'h-9 w-9 rounded-lg' : 'w-10 h-10 rounded-xl'} bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2D3748] transition-colors`}
                             >
                                 <User size={20} />
                             </button>
@@ -1293,13 +1304,15 @@ export default function ClientApp() {
             </div>
 
             {/* Global Chat Widget */}
-            <ChatWidget
-                isOpen={isChatOpen}
-                onToggle={setIsChatOpen}
-                initialMessage={chatInitialMessage}
-                onInitialMessageSent={() => setChatInitialMessage('')}
-            />
-            {viewMode !== 'leaderboard' && <DailyPopup />}
+            {!hideChatWidget && (
+                <ChatWidget
+                    isOpen={isChatOpen}
+                    onToggle={setIsChatOpen}
+                    initialMessage={chatInitialMessage}
+                    onInitialMessageSent={() => setChatInitialMessage('')}
+                />
+            )}
+            {!hideDailyPopup && viewMode !== 'leaderboard' && <DailyPopup />}
 
             {/* Footer - About Us link */}
             {viewMode !== 'streamer' && (

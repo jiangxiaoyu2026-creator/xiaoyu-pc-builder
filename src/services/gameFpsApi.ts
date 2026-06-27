@@ -106,6 +106,14 @@ export interface BuildGameFpsRow {
 const DATA_VERSION = '2026-06-26';
 const DATA_BASE_PATH = `/data/howmanyfps/${DATA_VERSION}`;
 
+const gameDataFileNames: Record<string, string> = {
+    'god-of-war-ragnarök': 'god-of-war-ragnarok',
+};
+
+const gameOfficialImagePaths: Record<string, string> = {
+    'god-of-war-ragnarök': `${DATA_BASE_PATH}/official-images/38-god-of-war-ragnarok-steam_library_hero.jpg`,
+};
+
 const gameDisplayNames: Record<string, string> = {
     'fortnite': '堡垒之夜',
     'minecraft': '我的世界',
@@ -247,7 +255,8 @@ export function getGameFpsIndex() {
 
 export function getGameFpsGame(queryName: string) {
     if (!gameDataPromises.has(queryName)) {
-        gameDataPromises.set(queryName, fetchJson<GameFpsGameData>(`${DATA_BASE_PATH}/games/${queryName}.json`));
+        const fileName = gameDataFileNames[queryName] || queryName;
+        gameDataPromises.set(queryName, fetchJson<GameFpsGameData>(`${DATA_BASE_PATH}/games/${encodeURIComponent(fileName)}.json`));
     }
     return gameDataPromises.get(queryName)!;
 }
@@ -256,7 +265,7 @@ export function getGameVisual(game: Pick<GameFpsGameSummary, 'name' | 'queryName
     const displayName = gameDisplayNames[game.queryName] || game.name;
     const hasLocalizedName = displayName !== game.name;
     const iconPath = availableIconNames.has(displayName) ? `/images/games/icons/${displayName}.png` : null;
-    const coverPath = game.officialImagePath || (availableCoverNames.has(displayName) ? `/images/games/covers/${displayName}.jpg` : null);
+    const coverPath = gameOfficialImagePaths[game.queryName] || game.officialImagePath || (availableCoverNames.has(displayName) ? `/images/games/covers/${displayName}.jpg` : null);
 
     return {
         displayName,
