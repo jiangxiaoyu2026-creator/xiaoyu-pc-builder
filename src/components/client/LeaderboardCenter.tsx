@@ -1905,44 +1905,6 @@ export default function LeaderboardCenter() {
 
                 {surfaceMode === 'compare' && (
                     <div className="grid gap-4">
-                        <section className="grid gap-2 md:grid-cols-3">
-                            <button
-                                type="button"
-                                onClick={() => document.getElementById('cpu-first-name')?.focus()}
-                                className="flex items-center justify-between gap-3 rounded-lg border border-cyan-200 bg-cyan-50 p-3 text-left transition-colors hover:border-cyan-300 hover:bg-cyan-100/70 dark:border-cyan-300/25 dark:bg-cyan-300/10 dark:hover:bg-cyan-300/15"
-                            >
-                                <span>
-                                    <span className="block text-sm font-black text-cyan-800 dark:text-cyan-100">CPU 对比</span>
-                                    <span className="mt-0.5 block text-xs font-bold text-cyan-700/70 dark:text-cyan-200/70">{cpuMetricCount || 14} 个指标</span>
-                                </span>
-                                <Cpu size={22} className="text-cyan-700 dark:text-cyan-200" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    document.getElementById('gpu-first-name')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                                    window.setTimeout(() => document.getElementById('gpu-first-name')?.focus(), 260);
-                                }}
-                                className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-left transition-colors hover:border-amber-300 hover:bg-amber-100/70 dark:border-amber-300/25 dark:bg-amber-300/10 dark:hover:bg-amber-300/15"
-                            >
-                                <span>
-                                    <span className="block text-sm font-black text-amber-800 dark:text-amber-100">GPU 对比</span>
-                                    <span className="mt-0.5 block text-xs font-bold text-amber-700/70 dark:text-amber-200/70">{gpuMetricCount || 22} 个指标</span>
-                                </span>
-                                <Gamepad2 size={22} className="text-amber-700 dark:text-amber-200" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setSurfaceMode('ladder')}
-                                className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
-                            >
-                                <span>
-                                    <span className="block text-sm font-black text-slate-950 dark:text-white">天梯图</span>
-                                    <span className="mt-0.5 block text-xs font-bold text-slate-500 dark:text-slate-400">切换排行榜</span>
-                                </span>
-                                <Trophy size={22} className="text-slate-500 dark:text-slate-300" />
-                            </button>
-                        </section>
                         {renderComparePanel(
                             'cpu',
                             'CPU 双型号对比',
