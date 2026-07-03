@@ -805,8 +805,8 @@ export default function ClientApp() {
                                     {
                                         id: 'ai',
                                         icon: Sparkles,
-                                        label: 'AI 智能装机',
-                                        desc: '智能算法推荐最佳配置方案',
+                                        label: 'AI 配单',
+                                        desc: '输入客户需求，检查预算、库存和兼容',
                                         onClick: () => {
                                             if (!handleAiPermission()) return;
                                             setViewMode('visual');
@@ -831,6 +831,20 @@ export default function ClientApp() {
                                         iconBg: 'bg-white dark:bg-slate-800',
                                         iconColor: 'text-slate-900 dark:text-slate-200',
                                         chevronBg: 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-500'
+                                    },
+                                    {
+                                        id: 'gamefps',
+                                        icon: Gamepad2,
+                                        label: '游戏 FPS',
+                                        desc: '查看热门游戏帧率表现',
+                                        onClick: () => {
+                                            setViewMode('gamefps');
+                                            setShowMobileMenu(false);
+                                        },
+                                        customBg: 'bg-blue-50 dark:bg-blue-500/10 border-blue-100/50 dark:border-blue-500/20 text-blue-700 dark:text-blue-400',
+                                        iconBg: 'bg-white dark:bg-slate-800',
+                                        iconColor: 'text-blue-600 dark:text-blue-400',
+                                        chevronBg: 'bg-blue-100/30 dark:bg-blue-500/20 text-blue-500'
                                     },
                                     {
                                         id: 'streamer',
@@ -911,21 +925,27 @@ export default function ClientApp() {
                 <div className="flex justify-around items-center h-[56px] px-2 relative">
                     {[
                         { id: 'visual', icon: LayoutGrid, label: '装机' },
+                        { id: 'ai', icon: Sparkles, label: 'AI配单' },
                         { id: 'square', icon: Share2, label: '广场' },
                         { id: 'used', icon: ShoppingBag, label: '二手' },
-                        { id: 'gamefps', icon: Gamepad2, label: '游戏FPS' },
                         { id: 'more', icon: Menu, label: '更多' },
                     ].map((tab) => {
                         const Icon = tab.icon;
                         const isMore = tab.id === 'more';
-                        const isHiddenTabActive = ['streamer', 'trends', 'leaderboard', 'about'].includes(viewMode);
-                        const isActive = isMore ? showMobileMenu || isHiddenTabActive : viewMode === tab.id && !showMobileMenu;
+                        const isAiTab = tab.id === 'ai';
+                        const isHiddenTabActive = ['streamer', 'trends', 'leaderboard', 'about', 'gamefps'].includes(viewMode);
+                        const isActive = isAiTab ? triggerAiModal : (isMore ? showMobileMenu || isHiddenTabActive : viewMode === tab.id && !showMobileMenu);
                         
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => {
-                                    if (isMore) {
+                                    if (isAiTab) {
+                                        if (!handleAiPermission()) return;
+                                        setShowMobileMenu(false);
+                                        setViewMode('visual');
+                                        setTriggerAiModal(true);
+                                    } else if (isMore) {
                                         setShowMobileMenu(!showMobileMenu);
                                     } else {
                                         setShowMobileMenu(false);
@@ -959,7 +979,7 @@ export default function ClientApp() {
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     className="flex-1 min-h-0 w-full max-w-7xl mx-auto overflow-hidden pb-[calc(56px+env(safe-area-inset-bottom)+10px)] md:pb-0"
                 >
-                    <div className="h-full overflow-y-auto custom-scrollbar pb-0" id="main-scroll-container" onScroll={handleScroll}>
+                    <div className={`h-full custom-scrollbar pb-0 ${viewMode === 'streamer' ? 'streamer-center-grid-bg overflow-auto' : 'overflow-y-auto'}`} id="main-scroll-container" onScroll={handleScroll}>
                     <Suspense fallback={<div className="flex items-center justify-center h-64"><RefreshCw size={24} className="animate-spin text-indigo-500" /></div>}>
                     {viewMode === 'streamer' && (
                         <StreamerWorkbench
@@ -1212,46 +1232,50 @@ export default function ClientApp() {
                             </div>
                         </div>
 
-                        {/* Desktop: Single-row layout */}
-                        <div className="hidden md:flex h-12 items-center justify-between gap-2">
-                            {/* Price Info */}
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-[11px] text-slate-400 line-through">¥{Math.floor(pricing.standardPrice)}</span>
-                                    <span className="bg-emerald-50 text-emerald-700 text-[9px] px-1.5 py-0.5 rounded-md border border-emerald-100 font-bold">省¥{pricing.savedAmount}</span>
-                                </div>
-                                <div className="flex items-baseline gap-0.5">
-                                    <span className="text-base font-bold text-slate-900">¥</span>
-                                    <span className="text-[22px] font-extrabold text-slate-900 font-mono tracking-tight">{pricing.finalPrice}</span>
-                                </div>
-                                {/* Discount selector */}
-                                <div className="relative group">
-                                    <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="appearance-none bg-slate-50 border border-slate-200 hover:border-indigo-300 text-slate-700 text-[10px] font-bold py-1 pl-2 pr-6 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer">
+                        {/* Desktop: price/action bar */}
+                        <div className="hidden md:grid h-14 grid-cols-[minmax(260px,1fr)_auto_auto] items-center gap-4">
+                            <div className="flex min-w-0 items-center gap-2.5">
+                                <span className="shrink-0 text-[11px] font-black text-slate-500 dark:text-slate-400">优惠方案</span>
+                                <div className="relative shrink-0">
+                                    <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="h-8 w-[156px] appearance-none truncate rounded-lg border border-slate-200 bg-slate-50 pl-3 pr-7 text-[11px] font-black text-slate-700 outline-none transition-all hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500/20 dark:border-[#2D3748] dark:bg-[#1A1A24] dark:text-slate-200">
                                         {settings.discountTiers.map(opt => (
                                             <option key={opt.id} value={opt.multiplier}>
                                                 {opt.name.replace(/\s*\(.*?\)/g, '')}
                                             </option>
                                         ))}
                                     </select>
+                                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+                                </div>
+                                {(pricing.savedAmount || 0) > 0 && (
+                                    <span className="shrink-0 rounded-md border border-emerald-100 bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">已优惠 ¥{pricing.savedAmount}</span>
+                                )}
+                                <span className="hidden min-w-0 truncate text-[10px] font-bold text-slate-400 xl:inline">含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机服务费</span>
+                            </div>
+
+                            <div className="flex min-w-[300px] justify-self-end items-center justify-end gap-3 text-slate-900 dark:text-white">
+                                <div className="min-w-[96px] text-right leading-tight">
+                                    <div className="whitespace-nowrap text-[9px] font-black text-slate-400">优惠前</div>
+                                    <div className="whitespace-nowrap font-mono text-[15px] font-black text-slate-400 line-through">¥{Math.floor(pricing.standardPrice)}</div>
+                                </div>
+                                <div className="h-8 w-px bg-slate-200 dark:bg-[#2D3748]" />
+                                <div className="min-w-[132px] text-right leading-tight">
+                                    <div className="whitespace-nowrap text-[9px] font-black text-indigo-500 dark:text-indigo-300">优惠后实付</div>
+                                    <div className="flex items-baseline justify-end gap-0.5">
+                                        <span className="text-base font-black">¥</span>
+                                        <span className="font-mono text-[26px] font-black leading-none tracking-tight">{pricing.finalPrice}</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                                <span className="text-[9px] font-medium text-slate-400 bg-slate-50/80 px-2.5 py-0.5 rounded-md border border-slate-100 whitespace-nowrap">
-                                    标准价格含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机售后服务费
-                                </span>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-2">
-                                <button onClick={clearBuild} className="flex items-center gap-1 px-2.5 py-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all text-xs font-bold">
+                            <div className="flex shrink-0 items-center justify-end gap-2">
+                                <button onClick={clearBuild} className="flex h-8 shrink-0 items-center gap-1 rounded-lg px-2.5 text-xs font-black text-slate-400 transition-all hover:bg-red-50 hover:text-red-600">
                                     <Trash2 size={14} /><span>清空</span>
                                 </button>
-                                <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-md shadow-sm transition-all">
+                                <button onClick={handleSave} className="flex h-8 shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 text-xs font-black text-slate-700 shadow-sm transition-all hover:bg-slate-50 dark:border-[#2D3748] dark:bg-[#1A1A24] dark:text-slate-200">
                                     <Save size={14} /><span>保存</span>
                                 </button>
-                                <button onClick={handleShareTrigger} disabled={isSharing} className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 hover:bg-black disabled:bg-slate-700 text-white text-xs font-bold rounded-md shadow-sm transition-all min-w-[94px] justify-center">
-                                    {isSharing ? <RefreshCw size={14} className="animate-spin" /> : <Share2 size={14} />}<span>{isSharing ? '...' : '分享'}</span>
+                                <button onClick={handleShareTrigger} disabled={isSharing} className="flex h-8 min-w-[96px] shrink-0 items-center justify-center gap-1 rounded-lg bg-slate-900 px-3 text-xs font-black text-white shadow-sm transition-all hover:bg-black disabled:bg-slate-700 dark:bg-white dark:text-slate-900">
+                                    {isSharing ? <RefreshCw size={14} className="animate-spin" /> : <Share2 size={14} />}<span>{isSharing ? '分享中' : '分享'}</span>
                                 </button>
                             </div>
                         </div>

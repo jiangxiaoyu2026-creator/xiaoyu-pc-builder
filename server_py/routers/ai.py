@@ -22,6 +22,7 @@ class AIGenerateRequest(BaseModel):
     usage: str = 'gaming' # gaming, work, streaming
     appearance: str = 'black' # black, white, rgb
     includeMonitor: bool = False
+    discountRate: float = 1.0
 
 @router.get("/public-config")
 def get_public_ai_config(session: Session = Depends(get_session)):
@@ -46,9 +47,15 @@ def get_public_ai_config(session: Session = Depends(get_session)):
         suggestions = DEFAULT_PUBLIC_SUGGESTIONS
 
     return {
-        "enabled": bool(config.get("enabled") and config.get("apiKey")),
+        "enabled": bool(config.get("enabled")),
         "suggestions": [str(item) for item in suggestions if str(item).strip()]
     }
+
+@router.get("/data-health")
+def get_ai_data_health(session: Session = Depends(get_session)):
+    """Return product-data readiness for the deterministic build planner."""
+    service = AiService(session)
+    return service.get_build_data_health()
 
 @router.post("/generate")
 def generate_build_endpoint(
@@ -56,12 +63,17 @@ def generate_build_endpoint(
     session: Session = Depends(get_session)
 ):
     service = AiService(session)
-    monitor_text = "需要包含显示器" if req.includeMonitor else "不包含显示器"
-    full_prompt = f"{req.prompt}。预算约{req.budget}元，用于{req.usage}，偏好{req.appearance}风格，{monitor_text}。"
     print(f"DEBUG: [AI] Request received for prompt: {str(req.prompt)[:50]}... budget: {req.budget}")
     
     try:
-        result = service.generate_build(full_prompt)
+        result = service.generate_build(
+            req.prompt,
+            budget=req.budget,
+            usage=req.usage,
+            appearance=req.appearance,
+            include_monitor=req.includeMonitor,
+            discount_rate=req.discountRate,
+        )
         
         # Check for service-level errors that might be returned as dicts (legacy or specific checks)
         if hasattr(result, "get") and result.get("error"):

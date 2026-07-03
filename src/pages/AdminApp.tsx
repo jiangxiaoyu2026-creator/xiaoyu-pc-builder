@@ -18,6 +18,7 @@ import {
     FileSpreadsheet,
     Home,
     Link2,
+    Box,
 } from 'lucide-react';
 import { NavButton } from '../components/admin/Shared';
 import { PricingStrategy, UserItem } from '../types/adminTypes';
@@ -43,9 +44,10 @@ const MarketingManager = lazy(() => import('../components/admin/MarketingManager
 const PriceTrendChart = lazy(() => import('../components/admin/PriceTrendChart'));
 const RecyclingPriceManager = lazy(() => import('../components/admin/RecyclingPriceManager'));
 const JDAffiliateCenter = lazy(() => import('../components/admin/JDAffiliateCenter'));
+const PC3DMappingReview = lazy(() => import('../components/admin/PC3DMappingReview'));
 
 export default function AdminApp() {
-    const [currentTab, setCurrentTab] = useState<'dashboard' | 'price_trends' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'recycling_prices' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles' | 'marketing' | 'jd_affiliate'>('dashboard');
+    const [currentTab, setCurrentTab] = useState<'dashboard' | 'price_trends' | 'products' | 'configs' | 'settings' | 'ai' | 'users' | 'comments' | 'streamers' | 'chat' | 'used_items' | 'recycle_requests' | 'recycling_prices' | 'payment' | 'about_us' | 'verifications' | 'invitations' | 'articles' | 'marketing' | 'jd_affiliate' | 'pc3d_mapping'>('dashboard');
 
     const [pricingStrategy, setPricingStrategy] = useState<PricingStrategy>({
         serviceFeeRate: 0.06,
@@ -133,7 +135,7 @@ export default function AdminApp() {
         price_trends: '价格趋势分析',
         products: '硬件库与价格库',
         settings: '全局系统设置 (价格/弹窗/备份)',
-        ai: 'AI 配置中枢',
+        ai: '智能配单规则',
         users: '系统权限管理',
         comments: '评论与留言',
         chat: '在线客服反馈',
@@ -145,6 +147,7 @@ export default function AdminApp() {
         invitations: '注册邀请码管理',
         marketing: '今日自动化大盘与营销中心',
         jd_affiliate: '京东带货极速绑定',
+        pc3d_mapping: '3D 模型对应审核',
     }), []);
 
     if (!currentUser || !['admin', 'sub_admin'].includes(currentUser.role)) {
@@ -194,6 +197,7 @@ export default function AdminApp() {
                     <NavButton active={currentTab === 'dashboard'} onClick={() => setCurrentTab('dashboard')} icon={<LayoutDashboard size={18} />} label="数据概览" />
                     <NavButton active={currentTab === 'price_trends'} onClick={() => setCurrentTab('price_trends')} icon={<BarChart3 size={18} />} label="价格趋势分析" />
                     <NavButton active={currentTab === 'products'} onClick={() => setCurrentTab('products')} icon={<Package size={18} />} label="硬件价格管理" />
+                    <NavButton active={currentTab === 'pc3d_mapping'} onClick={() => setCurrentTab('pc3d_mapping')} icon={<Box size={18} />} label="3D模型对应" />
                     <NavButton active={currentTab === 'configs'} onClick={() => setCurrentTab('configs')} icon={<ListFilter size={18} />} label="配置单管理" />
                     <NavButton active={currentTab === 'comments'} onClick={() => setCurrentTab('comments')} icon={<MessageSquare size={18} />} label="评论管理" />
                     <NavButton active={currentTab === 'chat'} onClick={() => setCurrentTab('chat')} icon={<MessageCircle size={18} />} label="客户咨询" />
@@ -209,7 +213,7 @@ export default function AdminApp() {
                         <>
                             <div className="text-xs font-bold text-zinc-500 px-4 py-2 mt-6 uppercase">系统管理</div>
                             <NavButton active={currentTab === 'users'} onClick={() => setCurrentTab('users')} icon={<Users size={18} />} label="用户与权限" />
-                            <NavButton active={currentTab === 'ai'} onClick={() => setCurrentTab('ai')} icon={<Bot size={18} />} label="AI 大脑中枢" />
+                            <NavButton active={currentTab === 'ai'} onClick={() => setCurrentTab('ai')} icon={<Bot size={18} />} label="配单规则" />
                             <NavButton active={currentTab === 'settings'} onClick={() => setCurrentTab('settings')} icon={<Settings size={18} />} label="全局系统设置" />
                             <NavButton active={currentTab === 'about_us'} onClick={() => setCurrentTab('about_us')} icon={<Info size={18} />} label="关于我们" />
                             <NavButton active={currentTab === 'payment'} onClick={() => setCurrentTab('payment')} icon={<CreditCard size={18} />} label="支付设置" />
@@ -300,6 +304,7 @@ export default function AdminApp() {
                                     {currentTab === 'dashboard' && <DashboardView />}
                                     {currentTab === 'price_trends' && <PriceTrendChart />}
                                     {currentTab === 'products' && <ProductManager />}
+                                    {currentTab === 'pc3d_mapping' && <PC3DMappingReview />}
                                     {currentTab === 'configs' && <ConfigManager />}
                                     {currentTab === 'used_items' && <UsedManager />}
                                     {currentTab === 'recycling_prices' && <RecyclingPriceManager />}

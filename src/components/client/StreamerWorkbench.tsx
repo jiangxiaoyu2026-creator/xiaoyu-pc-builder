@@ -40,6 +40,20 @@ const LIVE_STYLE_SWATCHES: Record<LiveStyleKey, string> = {
     redline: 'linear-gradient(135deg, #0f172a, #dc2626, #fb7185)',
 };
 
+// The live config sheet is used for capture/layout workflows. Keep this canvas fixed.
+const LIVE_CONFIG_SHEET_WIDTH = 964;
+const LIVE_CONFIG_SHEET_HEIGHT = 790;
+const LIVE_CONFIG_SHEET_FRAME_STYLE = {
+    width: `${LIVE_CONFIG_SHEET_WIDTH}px`,
+    minWidth: `${LIVE_CONFIG_SHEET_WIDTH}px`,
+    maxWidth: `${LIVE_CONFIG_SHEET_WIDTH}px`,
+} satisfies React.CSSProperties;
+const LIVE_CONFIG_SHEET_SHELL_STYLE = {
+    height: `${LIVE_CONFIG_SHEET_HEIGHT}px`,
+    minHeight: `${LIVE_CONFIG_SHEET_HEIGHT}px`,
+    maxHeight: `${LIVE_CONFIG_SHEET_HEIGHT}px`,
+} satisfies React.CSSProperties;
+
 // Components extracted to StreamerRow.tsx and StreamerPerformanceSidebar.tsx
 
 // Helper for sound effect (simulated ticker)
@@ -234,6 +248,11 @@ function StreamerWorkbench({
             }
 
             setShowAiModal(false);
+            setAiResult(result);
+            if (result.status === 'blocked') {
+                setIsAiTyping(false);
+                return;
+            }
             clearBuild();
             setIsAiTyping(true); // Enable Ghost
 
@@ -318,7 +337,6 @@ function StreamerWorkbench({
             await new Promise(r => setTimeout(r, 400)); // Finish hesitation
 
             setIsAiTyping(false);
-            setAiResult(result);
         } catch (error) {
             console.error(error);
             setIsAiTyping(false);
@@ -328,6 +346,8 @@ function StreamerWorkbench({
 
     const validPosterItems = buildList.filter(b => b.item || b.customName);
     const visibleBuildList = buildList;
+    const aiStatus = aiResult?.status || 'ready';
+    const aiStatusLabel = aiStatus === 'blocked' ? '不可直接采用' : aiStatus === 'needs_confirmation' ? '需要确认' : '可直接采用';
     const serviceFeeRate = pricingStrategy?.serviceFeeRate ?? pricing?.serviceFeeRate ?? 0.06;
     const serviceFeePercent = (serviceFeeRate * 100).toFixed(0);
     const updateLiveMeta = (updates: Partial<StreamerLiveMeta>) => {
@@ -354,8 +374,8 @@ function StreamerWorkbench({
     const liveCheckText = isPixelLiveStyle ? 'text-gray-950' : isLightLiveStyle ? 'text-white' : 'text-gray-950';
     const liveShellClass = isLiveMode
         ? isPixelLiveStyle
-            ? `h-[790px] rounded-none flex flex-col border-4 ${liveStyleConfig.stampBorder} shadow-[8px_8px_0_#050505]`
-            : `h-[790px] rounded-lg flex flex-col border shadow-xl ${theme.borderColor}`
+            ? `rounded-none flex flex-col border-4 ${liveStyleConfig.stampBorder} shadow-[8px_8px_0_#050505]`
+            : `rounded-lg flex flex-col border shadow-xl ${theme.borderColor}`
         : `rounded-xl shadow-xl border ${theme.borderColor}`;
     const liveTableShellClass = isPixelLiveStyle
         ? `max-w-none flex flex-col h-full relative overflow-hidden rounded-none border-4 ${liveStyleConfig.stampBorder} shadow-[5px_5px_0_#050505]`
@@ -368,8 +388,8 @@ function StreamerWorkbench({
     const liveBadgeRadius = isPixelLiveStyle ? 'rounded-none' : 'rounded-[4px]';
 
     return (
-        <div className={isLiveMode ? 'w-[964px] max-w-full mx-auto' : 'w-full'}>
-        <div className={`${theme.cardBg} ${liveShellClass} overflow-hidden relative transition-colors duration-300`}>
+        <div className={isLiveMode ? 'mx-auto shrink-0' : 'w-full'} style={isLiveMode ? LIVE_CONFIG_SHEET_FRAME_STYLE : undefined}>
+        <div className={`${theme.cardBg} ${liveShellClass} overflow-hidden relative transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
             
             {/* Hidden Poster Template */}
             <StreamerPosterTemplate 
@@ -688,12 +708,10 @@ function StreamerWorkbench({
                             <div className={`bg-gradient-to-r ${theme.gradient} px-6 py-4 flex items-center justify-between`}>
                                 <div className="flex items-center gap-3 text-white">
                                     <Sparkles size={18} className="animate-pulse" />
-                                    <h3 className="font-bold text-lg tracking-wide">AI 装机评测报告</h3>
-                                    {aiResult.evaluation && (
-                                        <span className="ml-2 px-2.5 py-0.5 bg-white/20 rounded-full text-sm font-bold backdrop-blur-sm">
-                                            {aiResult.evaluation.verdict}
-                                        </span>
-                                    )}
+                                    <h3 className="font-bold text-lg tracking-wide">配单引擎结果</h3>
+                                    <span className="ml-2 px-2.5 py-0.5 bg-white/20 rounded-full text-sm font-bold backdrop-blur-sm">
+                                        {aiStatusLabel}
+                                    </span>
                                 </div>
                                 <button onClick={() => setAiResult(null)} className="text-white/80 hover:text-white transition-colors">
                                     <X size={18} />
@@ -718,6 +736,11 @@ function StreamerWorkbench({
                                         </div>
                                     </div>
                                 )}
+                                {aiResult.checks?.requestedItems?.unmatched?.length ? (
+                                    <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+                                        未找到点名型号：{aiResult.checks.requestedItems.unmatched.map((item: any) => item.term).join('、')}
+                                    </div>
+                                ) : null}
 
                                 {/* Score + Description */}
                                 <div className="flex gap-5 items-start">

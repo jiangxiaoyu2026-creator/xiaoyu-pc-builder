@@ -1,10 +1,8 @@
 import json
-import random
 import re
-from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional, Set
-from sqlmodel import Session, select, col
-from server_py.models import Hardware, Config, Setting, ChatSettings
+from typing import List, Dict, Any, Optional, Set, Tuple
+from sqlmodel import Session, select
+from server_py.models import Hardware, Setting, ChatSettings
 from server_py.db import engine
 from openai import OpenAI
 import os
@@ -46,40 +44,225 @@ class AiService:
             except Exception as e:
                 print(f"Error loading AI settings: {e}")
 
+    def _load_pricing_strategy(self) -> Dict[str, Any]:
+        setting = self.session.get(Setting, "pricingStrategy")
+        if not setting:
+            return {"serviceFeeRate": 0.06, "discountTiers": []}
+        try:
+            value = json.loads(setting.value)
+            if isinstance(value, dict):
+                return value
+        except Exception:
+            pass
+        return {"serviceFeeRate": 0.06, "discountTiers": []}
+
+    def _parse_budget_from_prompt(self, prompt: str) -> Optional[int]:
+        text = prompt or ""
+        explicit = re.search(r'(?:预算|budget|控制在|不超过|以内|花)\s*(\d{2,6})', text, re.I)
+        if explicit:
+            return int(explicit.group(1))
+        explicit = re.search(r'(\d{2,6})\s*(?:元|块|左右|以内|上下|预算)', text)
+        if explicit:
+            return int(explicit.group(1))
+        chinese_numbers = {
+            "三千": 3000, "四千": 4000, "五千": 5000, "六千": 6000,
+            "七千": 7000, "八千": 8000, "九千": 9000,
+            "一万": 10000, "两万": 20000, "三万": 30000
+        }
+        for word, value in chinese_numbers.items():
+            if word in text:
+                return value
+        return None
+
+    def _parse_usage(self, prompt: str, fallback: Optional[str]) -> str:
+        text = prompt or ""
+        if any(kw in text for kw in ["直播", "推流", "录制", "OBS", "obs"]):
+            return "streaming"
+        if any(kw in text for kw in ["办公", "设计", "剪辑", "渲染", "生产力", "代码", "编程", "工作"]):
+            return "work"
+        if fallback in {"gaming", "work", "streaming"}:
+            return fallback
+        return "gaming"
+
+    def _parse_appearance(self, prompt: str, fallback: Optional[str]) -> str:
+        text = prompt or ""
+        if any(kw in text for kw in ["白", "海景", "雪", "纯白"]):
+            return "white"
+        if any(kw in text for kw in ["RGB", "rgb", "灯", "光", "炫", "跑马灯"]):
+            return "rgb"
+        if fallback in {"black", "white", "rgb"}:
+            return fallback
+        return "black"
+
+    def _parse_include_monitor(self, prompt: str, fallback: bool) -> bool:
+        text = prompt or ""
+        if any(kw in text for kw in ["不要显示器", "不带显示器", "不含显示器", "不包含显示器", "只要主机"]):
+            return False
+        if any(kw in text for kw in ["带显示器", "含显示器", "包含显示器", "显示器", "屏幕", "带屏"]):
+            return True
+        return bool(fallback)
+
+    def _budget_numbers(self, prompt: str) -> Set[str]:
+        numbers = set()
+        for match in re.finditer(r'(?:预算|budget|控制在|不超过|以内|花)\s*(\d{2,6})', prompt or "", re.I):
+            numbers.add(match.group(1))
+        for match in re.finditer(r'(\d{2,6})\s*(?:元|块|左右|以内|上下|预算)', prompt or ""):
+            numbers.add(match.group(1))
+        return numbers
+
+    def _model_signatures(self, item: Hardware) -> Set[str]:
+        model = self._normalize_prompt(item.model)
+        signatures = set()
+        for pattern in [
+            r'(?:RTX|GTX)\d{3,4}(?:TI|TIS|SUPER)?',
+            r'RX\d{3,4}(?:XT|XTX)?',
+            r'I[3579]\d{4,5}[A-Z]{0,3}',
+            r'R[3579]\d{4}[A-Z0-9]{0,4}',
+            r'\d{4,5}(?:X3D|KF|K|F|XT|XTX|TI|TIS|SUPER)?',
+        ]:
+            for match in re.finditer(pattern, model, re.I):
+                token = match.group(0).lower()
+                if len(token) >= 4:
+                    signatures.add(token)
+        if len(model) >= 8:
+            signatures.add(model)
+        return signatures
+
+    def _find_user_requested_map(self, all_hardware: List[Hardware], user_prompt: str) -> Dict[str, List[Hardware]]:
+        prompt_clean = self._normalize_prompt(user_prompt)
+        budget_numbers = self._budget_numbers(user_prompt)
+        requested: Dict[str, List[Hardware]] = {}
+        seen: Set[str] = set()
+
+        for item in all_hardware:
+            matched = False
+            for sig in self._model_signatures(item):
+                if sig.isdigit() and sig in budget_numbers:
+                    continue
+                if sig.isdigit():
+                    if item.category not in {"cpu", "gpu"}:
+                        continue
+                    if re.search(rf'(?<!\d){re.escape(sig)}(?!\d)', user_prompt or ""):
+                        matched = True
+                        break
+                    continue
+                if sig and sig in prompt_clean:
+                    matched = True
+                    break
+            if matched and item.id not in seen:
+                requested.setdefault(item.category, []).append(item)
+                seen.add(item.id)
+
+        return requested
+
+    def _extract_requested_terms(self, user_prompt: str) -> List[Dict[str, str]]:
+        terms: List[Dict[str, str]] = []
+        text = user_prompt or ""
+        budget_numbers = self._budget_numbers(text)
+        patterns = [
+            ("gpu", r'\b(?:RTX|GTX)\s*\d{3,4}\s*(?:TI\s*SUPER|TI|SUPER|TIS)?\b'),
+            ("gpu", r'\bRX\s*\d{3,4}\s*(?:XT|XTX)?\b'),
+            ("gpu", r'(?<!\d)(?:30|40|50|60|70|90)\d{2}\s*(?:TI\s*SUPER|TI|SUPER|TIS)?(?!\d)'),
+            ("cpu", r'\bI[3579]\s*-?\s*\d{4,5}[A-Z]{0,3}\b'),
+            ("cpu", r'\bR[3579]\s*-?\s*\d{4}[A-Z0-9]{0,4}\b'),
+            ("cpu", r'\b(?:RYZEN|锐龙)\s*[3579]\s*\d{4}[A-Z0-9]{0,4}\b'),
+        ]
+        seen = set()
+        for category, pattern in patterns:
+            for match in re.finditer(pattern, text, re.I):
+                label = re.sub(r'\s+', ' ', match.group(0).strip())
+                normalized = self._normalize_prompt(label)
+                if len(normalized) < 4:
+                    continue
+                if normalized.isdigit() and normalized in budget_numbers:
+                    continue
+                key = (category, normalized)
+                if key not in seen:
+                    terms.append({"category": category, "term": label, "normalized": normalized})
+                    seen.add(key)
+        filtered = []
+        for term in terms:
+            if term["normalized"].isdigit():
+                has_prefixed = any(
+                    other["category"] == term["category"]
+                    and other["normalized"] != term["normalized"]
+                    and term["normalized"] in other["normalized"]
+                    for other in terms
+                )
+                if has_prefixed:
+                    continue
+            filtered.append(term)
+        return filtered
+
+    def _active_sellable_hardware(self, include_monitor: bool) -> List[Hardware]:
+        categories = ["cpu", "mainboard", "gpu", "ram", "disk", "power", "cooling", "case", "fan"]
+        if include_monitor:
+            categories.append("monitor")
+        statement = select(Hardware).where(
+            Hardware.status == "active",
+            Hardware.price > 0,
+            Hardware.category.in_(categories)
+        )
+        return self.session.exec(statement).all()
+
+    def _critical_missing_reasons(self, item: Hardware) -> List[str]:
+        specs = self._get_inferred_specs(item)
+        missing = []
+        category_keys = {
+            "cpu": ["socket"],
+            "mainboard": ["socket", "memoryType", "formFactor"],
+            "ram": ["memoryType"],
+            "gpu": ["length"],
+            "case": ["formFactor", "maxGpuLength", "maxCoolerHeight"],
+            "power": ["wattage"],
+            "monitor": ["resolution"],
+        }
+        for key in category_keys.get(item.category, []):
+            if self._spec_value(specs, key, "ram_type" if key == "memoryType" else key) in (None, ""):
+                missing.append(key)
+        if item.category == "cooling":
+            cooler_type = str(self._spec_value(specs, "type", "coolerType") or "")
+            if "水" not in cooler_type and "aio" not in cooler_type.lower():
+                if self._spec_value(specs, "height") in (None, ""):
+                    missing.append("height")
+        return missing
+
+    def _is_auto_usable(self, item: Hardware) -> bool:
+        return len(self._critical_missing_reasons(item)) == 0
+
+    def get_build_data_health(self) -> Dict[str, Any]:
+        categories = ["cpu", "mainboard", "gpu", "ram", "disk", "power", "cooling", "case", "fan", "monitor"]
+        rows = self.session.exec(select(Hardware).where(Hardware.status == "active", Hardware.price > 0)).all()
+        result = []
+        for category in categories:
+            items = [item for item in rows if item.category == category]
+            missing: Dict[str, int] = {}
+            usable = 0
+            for item in items:
+                reasons = self._critical_missing_reasons(item)
+                if not reasons:
+                    usable += 1
+                for reason in reasons:
+                    missing[reason] = missing.get(reason, 0) + 1
+            result.append({
+                "category": category,
+                "total": len(items),
+                "usable": usable,
+                "blocked": len(items) - usable,
+                "missing": missing
+            })
+        return {
+            "categories": result,
+            "rules": [
+                "只使用 active 且价格大于 0 的商品",
+                "预算按最终成交价反推硬件预算",
+                "点名配件只从用户原始输入识别",
+                "CPU/主板/内存/机箱/电源按硬规则校验"
+            ]
+        }
+
     def _normalize_prompt(self, text: str) -> str:
         return (text or "").lower().replace(" ", "").replace("-", "").replace("_", "")
-
-    def _find_user_requested_items(self, all_hardware: List[Hardware], user_prompt: str) -> List[Hardware]:
-        """
-        Find products explicitly mentioned by the user. These items must remain in the candidate set
-        and are protected during later budget trimming unless they create a hard incompatibility.
-        """
-        user_prompt_lower = (user_prompt or "").lower()
-        prompt_clean = self._normalize_prompt(user_prompt)
-        prompt_segments = set(re.findall(r'[a-zA-Z0-9]{3,}', user_prompt_lower))
-
-        forced_items = []
-        seen_ids = set()
-        for item in all_hardware:
-            model_lower = item.model.lower()
-            model_clean = self._normalize_prompt(item.model)
-            brand_lower = item.brand.lower()
-            brand_clean = self._normalize_prompt(item.brand)
-
-            matched = False
-            if len(model_clean) > 4 and model_clean in prompt_clean:
-                matched = True
-            elif brand_lower in user_prompt_lower or (len(brand_clean) > 2 and brand_clean in prompt_clean):
-                model_segments = re.findall(r'[a-zA-Z0-9]{3,}', model_lower)
-                matched = any(seg in user_prompt_lower for seg in model_segments)
-            else:
-                matched = any(seg in model_lower for seg in prompt_segments if len(seg) >= 4)
-
-            if matched and item.id not in seen_ids:
-                forced_items.append(item)
-                seen_ids.add(item.id)
-
-        return forced_items
 
     def _spec_value(self, specs: Dict[str, Any], *keys: str) -> Any:
         for key in keys:
@@ -88,586 +271,492 @@ class AiService:
                 return value
         return None
 
-    def retrieve_candidates(self, budget: int, usage: str, user_prompt: str = "") -> List[Dict]:
-        """
-        根据预算和用途从数据库中检索相关的硬件候选列表。
-        """
-        ratios = {
-            'gpu': (0.3, 0.5), 'cpu': (0.15, 0.3), 'mainboard': (0.08, 0.15),
-            'ram': (0.05, 0.1), 'disk': (0.05, 0.1), 'power': (0.05, 0.1),
-            'cooling': (0.03, 0.08), 'case': (0.03, 0.08)
-        }
-        
-        # 仅检索已激活且属于核心类别的硬件，避免全表扫描
-        target_categories = list(ratios.keys())
-        statement = select(Hardware).where(
-            Hardware.status == "active",
-            Hardware.category.in_(target_categories)
-        )
-        all_hardware = self.session.exec(statement).all()
-        
-        forced_items = self._find_user_requested_items(all_hardware, user_prompt)
-        forced_ids = {item.id for item in forced_items}
-
-        categories = {}
-        for item in all_hardware:
-            cat = item.category
-            if cat not in categories: categories[cat] = []
-            
-            # 如果是用户点名的，直接跳过预算限制纳入候选
-            if item in forced_items:
-                categories[cat].append(item)
-                continue
-                
-            if cat in ratios:
-                min_ratio, max_ratio = ratios[cat]
-                # 稍微放宽容差以支持更高预算
-                tolerance = 1.8 if cat in ['gpu', 'cpu'] else 1.5
-                if item.price > (budget * max_ratio * tolerance): continue
-                if item.price < (budget * min_ratio * 0.2): continue
-                
-            categories[cat].append(item)
-            
-        final_list = []
-        for cat, items in categories.items():
-            if not items:
-                all_cat_items = [i for i in all_hardware if i.category == cat]
-                all_cat_items.sort(key=lambda x: x.price)
-                items = all_cat_items[:2]
-
-            # 分离出用户强制点名的和普通的
-            forced_cat_items = []
-            seen_ids = set()
-            for i in items:
-                if i in forced_items and i.id not in seen_ids:
-                    forced_cat_items.append(i)
-                    seen_ids.add(i.id)
-            
-            normal_cat_items = [i for i in items if i.id not in seen_ids]
-            normal_cat_items.sort(key=lambda x: x.price)
-            
-            # 每个类别最多 8 个候选项：保留准确度，同时控制上下文长度
-            spots_left = 8 - len(forced_cat_items)
-            selected = forced_cat_items.copy()
-            
-            if spots_left > 0 and normal_cat_items:
-                # 均匀采样
-                step = max(1, len(normal_cat_items) // spots_left)
-                sampled_normals = normal_cat_items[::step][:spots_left]
-                selected.extend(sampled_normals)
-            
-            for item in selected:
-                hw_specs = self._get_inferred_specs(item)
-                final_list.append({
-                    "id": item.id,
-                    "category": item.category,
-                    "brand": item.brand,
-                    "model": item.model,
-                    "price": item.price,
-                    "socket": self._spec_value(hw_specs, 'socket', 'socket_type'),
-                    "memoryType": self._spec_value(hw_specs, 'memoryType', 'ram_type', 'type'),
-                    "formFactor": self._spec_value(hw_specs, 'formFactor', 'form_factor'),
-                    "length": self._spec_value(hw_specs, 'length'),
-                    "height": self._spec_value(hw_specs, 'height'),
-                    "maxGpuLength": self._spec_value(hw_specs, 'maxGpuLength'),
-                    "maxCoolerHeight": self._spec_value(hw_specs, 'maxCoolerHeight', 'maxCpuHeight'),
-                    "wattage": self._spec_value(hw_specs, 'wattage', 'power_draw', 'tdp', 'tgp', 'maxWattage'),
-                    "capacity": self._spec_value(hw_specs, 'capacity'),
-                    "isUserRequested": item.id in forced_ids
-                })
-        return final_list
-
-    def find_reference_configs(self, budget: int, user_prompt: str) -> tuple:
-        from ..models import User
-        """
-        寻找匹配的最佳单套配置作为模板（包含推荐配置和主播配置）
-        """
-        # 1. 标签映射
-        mapped_tags = []
-        prompt_lower = user_prompt.lower()
-        if any(kw in prompt_lower for kw in ["实用", "便宜", "划算", "有限", "性价比"]):
-            mapped_tags.extend(["性价比", "性价比策略"])
-        if any(kw in prompt_lower for kw in ["小钢炮", "桌面台式机", "小主机", "占空间", "itx"]):
-            mapped_tags.extend(["ITX", "办公"])
-        if any(kw in prompt_lower for kw in ["生产力", "视频剪辑", "编程", "设计", "工作"]):
-            mapped_tags.extend(["设计", "剪辑", "工作"])
-        if any(kw in prompt_lower for kw in ["海景房", "好看", "发光", "白"]):
-            mapped_tags.extend(["海景房", "白色"])
-        if any(kw in prompt_lower for kw in ["游戏", "吃鸡", "fps", "帧数"]):
-            mapped_tags.extend(["游戏", "电竞"])
-
-        min_price, max_price = budget * 0.7, budget * 1.3
-        now = datetime.utcnow()
-        thirty_days_ago = now - timedelta(days=30)
-
-        # 2. 查询范围扩大：同时包含官方推荐配置 + 主播用户发布的配置
-        # 第一优先级：官方推荐配置（最近30天内）
-        stmt_recommended = select(Config, User.role).join(User, Config.userId == User.id, isouter=True).where(
-            Config.status == "published",
-            Config.isRecommended == True,
-            Config.totalPrice >= min_price,
-            Config.totalPrice <= max_price,
-            Config.createdAt >= thirty_days_ago
-        ).order_by(Config.likes.desc()).limit(30)
-        recommended_results = self.session.exec(stmt_recommended).all()
-
-        # 第二优先级：主播(streamer)角色用户的配置（最近30天内）
-        from sqlmodel import or_
-        stmt_streamer = select(Config, User.role).join(User, Config.userId == User.id).where(
-            Config.status == "published",
-            Config.totalPrice >= min_price,
-            Config.totalPrice <= max_price,
-            Config.createdAt >= thirty_days_ago,
-            User.role == "streamer"
-        ).order_by(Config.likes.desc()).limit(20)
-        streamer_results = self.session.exec(stmt_streamer).all()
-        
-        # 合并候选，去重并记录 role
-        seen_ids = set()
-        all_candidates = []
-        config_roles = {} # Map config.id -> authorRole
-        
-        for c, role in recommended_results:
-            if c.id not in seen_ids:
-                seen_ids.add(c.id)
-                all_candidates.append(c)
-                config_roles[c.id] = role or 'admin'
-        
-        for c, role in streamer_results:
-            if c.id not in seen_ids:
-                seen_ids.add(c.id)
-                all_candidates.append(c)
-                config_roles[c.id] = role or 'user'
-
-        if not all_candidates:
-            return None, 'admin'
-
-        # 评分机制挑选最符合的模板
-        best_config = None
-        best_score = -1
-
-        for c in all_candidates:
-            score = c.likes * 2  # 点赞权重加倍  
-            config_text = f"{c.title} {c.tags} {c.description or ''}".lower()
-
-            # 官方推荐配置额外加分
-            if c.isRecommended:
-                score += 80
-            # 主播配置额外加分
-            if config_roles.get(c.id) == 'streamer':
-                score += 60
-
-            for tag in mapped_tags:
-                if tag.lower() in config_text:
-                    score += 50
-
-            for word in user_prompt.split():
-                if len(word) > 1 and word.lower() in config_text:
-                    score += 30
-
-            # 加上一个很小的随机数避免分数一模一样的时候总是固定的那个
-            score += random.uniform(0, 5)
-
-            if score > best_score:
-                best_score = score
-                best_config = c
-
-        if not best_config:
-            return None, 'admin'
-        
-        role = config_roles.get(best_config.id, 'admin')
-
-        # 解析配置骨架
-        comp_details = []
-        fan_count = 0
-        config_items = best_config.items
-        if isinstance(config_items, str):
-            try:
-                config_items = json.loads(config_items)
-            except:
-                config_items = {}
-        if isinstance(config_items, dict):
-            for cat, item_data in config_items.items():
-                if cat == 'fan':
-                    if isinstance(item_data, dict) and 'count' in item_data:
-                        fan_count = item_data['count']
-                    elif isinstance(item_data, list):
-                        fan_count = sum(i.get('count', 1) if isinstance(i, dict) else 1 for i in item_data)
-
-                item_id = item_data.get('id') if isinstance(item_data, dict) else item_data
-                if item_id and isinstance(item_id, str):
-                    hw = self.session.get(Hardware, item_id)
-                    if hw:
-                        hw_specs = self._get_inferred_specs(hw)
-                        spec_str = f"({hw_specs.get('socket', '')}, {hw_specs.get('memoryType', '')})" if hw_specs else ""
-                        comp_details.append(f"{cat}: {hw.brand} {hw.model} {spec_str}")
-
-        source_label = "主播推荐配置" if role == 'streamer' else "官方推荐配置"
-        
-        result_metadata = {
-            "title": best_config.title,
-            "price": best_config.totalPrice,
-            "tags": best_config.tags,
-            "logic": "; ".join(comp_details) if comp_details else "通用搭配",
-            "fan_count": fan_count,
-            "source": source_label,
-            "author": best_config.userName or ""
-        }
-        
-        return result_metadata, role
-
-    def generate_build(self, user_prompt: str) -> Dict:
-        if not self.client:
-            return {"error": "AI Service not configured or disabled"}
-
-        import re
-        budget_match = re.search(r'(\d{4,6})', user_prompt)
-        budget = int(budget_match.group(1)) if budget_match else 6000
-        
-        usage = 'gaming'
-        if any(kw in user_prompt for kw in ["办公", "生产力", "剪辑", "设计", "代码"]): usage = 'work'
-
-        appearance = "black"
-        if any(kw in user_prompt for kw in ["白色", "纯白", "海景", "雪"]):
-            appearance = "white"
-        elif any(kw in user_prompt for kw in ["RGB", "灯", "光", "炫"]):
-            appearance = "rgb"
-
-        if any(kw in user_prompt for kw in ["不包含显示器", "不要显示器", "不带显示器", "不含显示器"]):
-            include_monitor = False
+    def _ratio_plan(self, usage: str, include_monitor: bool) -> Dict[str, float]:
+        if usage == "work":
+            ratios = {
+                "cpu": 0.24, "gpu": 0.25, "mainboard": 0.11, "ram": 0.11,
+                "disk": 0.09, "power": 0.07, "cooling": 0.05, "case": 0.06, "fan": 0.02
+            }
+        elif usage == "streaming":
+            ratios = {
+                "cpu": 0.22, "gpu": 0.34, "mainboard": 0.10, "ram": 0.09,
+                "disk": 0.07, "power": 0.07, "cooling": 0.05, "case": 0.04, "fan": 0.02
+            }
         else:
-            include_monitor = any(kw in user_prompt for kw in ["需要包含显示器", "包含显示器", "带屏幕", "带显示器"])
+            ratios = {
+                "cpu": 0.18, "gpu": 0.40, "mainboard": 0.10, "ram": 0.08,
+                "disk": 0.07, "power": 0.07, "cooling": 0.04, "case": 0.04, "fan": 0.02
+            }
+        if include_monitor:
+            monitor_share = 0.16
+            ratios = {k: v * (1 - monitor_share) for k, v in ratios.items()}
+            ratios["monitor"] = monitor_share
+        return ratios
 
-        inventory = self.retrieve_candidates(budget, usage, user_prompt)
-        requested_inventory = [item for item in inventory if item.get("isUserRequested")]
-        protected_ids: Set[str] = {item["id"] for item in requested_inventory}
+    def _performance_value(self, item: Hardware) -> float:
+        specs = self._get_inferred_specs(item)
+        return (
+            self._extract_number(self._spec_value(specs, "master_lu_score", "ludashiScore", "score"))
+            or self._extract_number(self._spec_value(specs, "wattage", "power_draw"))
+            or float(item.price or 0)
+        )
+
+    def _appearance_bonus(self, item: Hardware, appearance: str) -> float:
+        text = f"{item.brand} {item.model}".lower()
+        if appearance == "white" and any(kw in text for kw in ["白", "雪", "ice", "white"]):
+            return 16
+        if appearance == "rgb" and any(kw in text for kw in ["rgb", "argb", "灯", "光"]):
+            return 10
+        return 0
+
+    def _candidate_matches_criteria(self, item: Hardware, criteria: Dict[str, Any]) -> bool:
+        specs = self._get_inferred_specs(item)
+        for key, expected in criteria.items():
+            if expected in (None, ""):
+                continue
+            if key == "supportsFormFactor":
+                if not self._form_factor_fits(self._spec_value(specs, "formFactor", "form_factor"), expected):
+                    return False
+            elif key == "minMaxGpuLength":
+                value = self._extract_number(self._spec_value(specs, "maxGpuLength"))
+                if value and value < float(expected):
+                    return False
+            elif key == "minMaxCoolerHeight":
+                value = self._extract_number(self._spec_value(specs, "maxCoolerHeight", "maxCpuHeight"))
+                if value and value < float(expected):
+                    return False
+            elif key == "minWattage":
+                value = self._extract_number(self._spec_value(specs, "wattage", "ratedPower"))
+                if not value or value < float(expected):
+                    return False
+            else:
+                if key == "memoryType":
+                    value = self._spec_value(specs, "memoryType", "ram_type", "type")
+                else:
+                    value = self._spec_value(specs, key, "socket_type" if key == "socket" else key)
+                if str(value).upper() != str(expected).upper():
+                    return False
+        return True
+
+    def _select_best_item(
+        self,
+        items_by_category: Dict[str, List[Hardware]],
+        category: str,
+        target_price: float,
+        criteria: Optional[Dict[str, Any]],
+        usage: str,
+        appearance: str,
+        requested: Optional[List[Hardware]] = None,
+        max_price: Optional[float] = None
+    ) -> Optional[Dict]:
+        requested_ids = {item.id for item in (requested or [])}
+        source = requested if requested else items_by_category.get(category, [])
+        candidates = [
+            item for item in source
+            if self._is_auto_usable(item)
+            and (max_price is None or item.price <= max_price or item.id in requested_ids)
+            and self._candidate_matches_criteria(item, criteria or {})
+        ]
+        if not candidates and requested:
+            candidates = [
+                item for item in items_by_category.get(category, [])
+                if self._is_auto_usable(item)
+                and (max_price is None or item.price <= max_price)
+                and self._candidate_matches_criteria(item, criteria or {})
+            ]
+        if not candidates:
+            return None
+
+        max_perf = max(self._performance_value(item) for item in candidates) or 1
+        max_value = max(self._performance_value(item) / max(float(item.price or 1), 1) for item in candidates) or 1
+        strategy = self.strategy if self.strategy in {"performance", "budget", "balanced", "aesthetic"} else "balanced"
+
+        def score(item: Hardware) -> float:
+            price = float(item.price or 0)
+            perf_norm = self._performance_value(item) / max_perf
+            value_norm = (self._performance_value(item) / max(price, 1)) / max_value
+            price_fit = max(0.0, 1 - abs(price - target_price) / max(target_price, 1))
+            if strategy == "budget":
+                base = value_norm * 46 + price_fit * 30 + perf_norm * 12
+            elif strategy == "performance":
+                base = perf_norm * 44 + price_fit * 24 + value_norm * 16
+            else:
+                base = perf_norm * 28 + value_norm * 26 + price_fit * 28
+            if item.id in requested_ids:
+                base += 120
+            if item.isRecommended:
+                base += 12
+            if item.isDiscount:
+                base += 8
+            if strategy == "aesthetic" or appearance in {"white", "rgb"}:
+                base += self._appearance_bonus(item, appearance)
+            return base
+
+        best = max(candidates, key=score)
+        return self._hardware_to_result(best)
+
+    def _repair_platform_if_needed(
+        self,
+        selected: Dict[str, Optional[Dict]],
+        items_by_category: Dict[str, List[Hardware]],
+        requested_by_category: Dict[str, List[Hardware]],
+        hardware_budget: float,
+        usage: str,
+        appearance: str,
+        ratios: Dict[str, float]
+    ) -> List[str]:
+        if selected.get("ram"):
+            return []
+        if requested_by_category.get("cpu") or requested_by_category.get("mainboard"):
+            return []
+
+        best_platform: Optional[Tuple[float, Dict, Dict, Dict]] = None
+        cpu_candidates = [
+            item for item in items_by_category.get("cpu", [])
+            if self._is_auto_usable(item) and item.price <= hardware_budget * 0.28
+        ]
+        cpu_candidates.sort(key=lambda item: (item.price, -self._performance_value(item)))
+
+        for cpu_item in cpu_candidates[:18]:
+            cpu = self._hardware_to_result(cpu_item)
+            socket = self._spec_value(cpu.get("specs", {}), "socket", "socket_type")
+            mb = self._select_best_item(
+                items_by_category,
+                "mainboard",
+                hardware_budget * ratios.get("mainboard", 0.1),
+                {"socket": socket},
+                usage,
+                appearance,
+                max_price=hardware_budget * 0.18,
+            )
+            if not mb:
+                continue
+            memory_type = self._spec_value(mb.get("specs", {}), "memoryType", "ram_type", "type")
+            ram = self._select_best_item(
+                items_by_category,
+                "ram",
+                hardware_budget * ratios.get("ram", 0.08),
+                {"memoryType": memory_type},
+                usage,
+                appearance,
+                max_price=hardware_budget * 0.16,
+            )
+            if not ram:
+                continue
+            total = float(cpu["price"]) + float(mb["price"]) + float(ram["price"])
+            if best_platform is None or total < best_platform[0]:
+                best_platform = (total, cpu, mb, ram)
+
+        if not best_platform:
+            return []
+
+        _, cpu, mb, ram = best_platform
+        selected["cpu"] = cpu
+        selected["mainboard"] = mb
+        selected["ram"] = ram
+        return ["为保证 CPU、主板和内存能成套购买，已切换到更稳的同预算平台"]
+
+    def _items_by_category(self, all_items: List[Hardware]) -> Dict[str, List[Hardware]]:
+        result: Dict[str, List[Hardware]] = {}
+        for item in all_items:
+            result.setdefault(item.category, []).append(item)
+        for items in result.values():
+            items.sort(key=lambda item: (float(item.price or 0), item.sortOrder, item.id))
+        return result
+
+    def _minimum_needed_for_remaining(self, items_by_category: Dict[str, List[Hardware]], categories: List[str]) -> float:
+        total = 0.0
+        for category in categories:
+            usable = [item for item in items_by_category.get(category, []) if self._is_auto_usable(item)]
+            if usable:
+                total += min(float(item.price or 0) for item in usable)
+        return total
+
+    def _build_result_text(
+        self,
+        status: str,
+        items: Dict[str, Optional[Dict]],
+        checks: Dict[str, Any],
+        requirement_summary: Dict[str, Any],
+        budget_notes: List[str],
+        missing_core: List[str],
+    ) -> str:
+        selected = [item for item in items.values() if item]
+        core_names = "、".join(f"{item['brand']} {item['model']}" for item in selected[:4])
+        budget = int(requirement_summary["budget"])
+        final_price = int(checks["budget"]["finalPrice"])
+        lines = []
+        if status == "blocked":
+            lines.append("这次没有直接给出可成交配置，因为当前库存、预算或点名条件下存在硬性风险。")
+        else:
+            lines.append(f"按最终成交价预算 ¥{budget} 反推硬件预算后，已从真实库存里选出这套方案。")
+        if core_names:
+            lines.append(f"核心组合：{core_names}。")
+        lines.append(f"当前硬件合计 ¥{int(checks['budget']['hardwareTotal'])}，含服务费后的预计成交价约 ¥{final_price}。")
+        if requirement_summary["requestedItems"]:
+            kept = [item["name"] for item in checks["requestedItems"]["items"] if item["kept"]]
+            missed = [item["name"] for item in checks["requestedItems"]["items"] if not item["kept"]]
+            if kept:
+                lines.append("已保留点名配件：" + "、".join(kept) + "。")
+            if missed:
+                lines.append("未能保留：" + "、".join(missed) + "，需要确认库存/预算或接受平替。")
+        unmatched = requirement_summary.get("unmatchedRequestedTerms") or []
+        if unmatched:
+            lines.append("当前库存未找到点名型号：" + "、".join(item["term"] for item in unmatched) + "，已按预算做平替候选。")
+        if budget_notes:
+            lines.append("预算优化：" + "；".join(budget_notes) + "。")
+        if missing_core:
+            lines.append("缺少关键品类：" + "、".join(missing_core) + "。")
+        issues = checks["compatibility"]["issues"]
+        if issues:
+            lines.append("兼容风险：" + "；".join(issues) + "。")
+        if status == "ready":
+            lines.append("预算、点名配件和基础兼容校验均已通过，可以直接作为成交草案。")
+        elif status == "needs_confirmation":
+            lines.append("这套可以先填入，但建议在成交前确认上面的取舍点。")
+        return "\n".join(lines)
+
+    def generate_build(
+        self,
+        user_prompt: str,
+        budget: Optional[int] = None,
+        usage: Optional[str] = None,
+        appearance: Optional[str] = None,
+        include_monitor: bool = False,
+        discount_rate: float = 1.0
+    ) -> Dict:
+        raw_prompt = user_prompt or ""
+        parsed_budget = self._parse_budget_from_prompt(raw_prompt)
+        budget = int(parsed_budget or budget or 6000)
+        usage = self._parse_usage(raw_prompt, usage)
+        appearance = self._parse_appearance(raw_prompt, appearance)
+        include_monitor = self._parse_include_monitor(raw_prompt, include_monitor)
+
+        pricing = self._load_pricing_strategy()
+        service_fee_rate = float(pricing.get("serviceFeeRate") or 0.06)
+        safe_discount_rate = float(discount_rate or 1.0)
+        if safe_discount_rate <= 0:
+            safe_discount_rate = 1.0
+        hardware_budget = max(0, budget / ((1 + service_fee_rate) * safe_discount_rate))
+
+        all_hardware = self._active_sellable_hardware(include_monitor)
+        items_by_category = self._items_by_category(all_hardware)
+        requested_by_category = self._find_user_requested_map(all_hardware, raw_prompt)
+        requested_terms = self._extract_requested_terms(raw_prompt)
+        unmatched_terms = []
+        for term in requested_terms:
+            candidates = requested_by_category.get(term["category"], [])
+            matched = False
+            for item in candidates:
+                for sig in self._model_signatures(item):
+                    if term["normalized"] in sig or sig in term["normalized"]:
+                        matched = True
+                        break
+                if matched:
+                    break
+            if not matched:
+                unmatched_terms.append({"category": term["category"], "term": term["term"]})
+        requested_ids = {item.id for items in requested_by_category.values() for item in items}
+        ratios = self._ratio_plan(usage, include_monitor)
+
+        selected: Dict[str, Optional[Dict]] = {
+            "cpu": None, "mainboard": None, "gpu": None, "ram": None, "disk": None,
+            "power": None, "cooling": None, "case": None, "fan": None, "monitor": None
+        }
+
+        order = ["cpu", "gpu", "mainboard", "ram", "disk", "cooling", "case", "power"]
+        if include_monitor:
+            order.append("monitor")
+
+        for category in order:
+            criteria: Dict[str, Any] = {}
+            if category == "mainboard" and selected["cpu"]:
+                criteria["socket"] = self._spec_value(selected["cpu"].get("specs", {}), "socket", "socket_type")
+            elif category == "ram" and selected["mainboard"]:
+                criteria["memoryType"] = self._spec_value(selected["mainboard"].get("specs", {}), "memoryType", "ram_type", "type")
+            elif category == "case":
+                criteria.update(self._case_criteria_from_items(selected))
+            elif category == "power":
+                required_power = self._estimate_required_power(selected)
+                if required_power:
+                    criteria["minWattage"] = required_power
+
+            target = hardware_budget * ratios.get(category, 0.05)
+            remaining_categories = [c for c in order if c not in selected or selected.get(c) is None]
+            min_remaining = self._minimum_needed_for_remaining(items_by_category, [c for c in remaining_categories if c != category])
+            max_price = max(target * 1.9, hardware_budget - self._calculate_total(selected) - min_remaining)
+            requested = requested_by_category.get(category)
+            selected[category] = self._select_best_item(
+                items_by_category,
+                category,
+                target,
+                criteria,
+                usage,
+                appearance,
+                requested=requested,
+                max_price=max_price,
+            )
+
+        platform_notes = self._repair_platform_if_needed(
+            selected,
+            items_by_category,
+            requested_by_category,
+            hardware_budget,
+            usage,
+            appearance,
+            ratios,
+        )
+
+        fan_requested = requested_by_category.get("fan")
+        fan_should_exist = bool(fan_requested or appearance in {"white", "rgb"} or hardware_budget >= 6500)
+        if fan_should_exist:
+            fan = self._select_best_item(
+                items_by_category,
+                "fan",
+                hardware_budget * ratios.get("fan", 0.02),
+                {},
+                usage,
+                appearance,
+                requested=fan_requested,
+                max_price=hardware_budget * 0.05,
+            )
+            if fan:
+                fan["count"] = 3 if appearance in {"white", "rgb"} and hardware_budget >= 6500 else 1
+                selected["fan"] = fan
+
+        protected_ids = requested_ids
+        budget_notes = self._trim_to_budget(selected, hardware_budget, protected_ids)
+        budget_notes = platform_notes + budget_notes
+        final_checks = self._validate_resolved_build(selected, hardware_budget)
+
+        hardware_total = self._calculate_total(selected)
+        final_price = hardware_total * (1 + service_fee_rate) * safe_discount_rate
+        final_checks["budget"] = {
+            "ok": final_price <= budget,
+            "limit": budget,
+            "hardwareLimit": hardware_budget,
+            "hardwareTotal": hardware_total,
+            "actual": hardware_total,
+            "finalPrice": final_price,
+            "serviceFeeRate": service_fee_rate,
+            "discountRate": safe_discount_rate
+        }
+
+        requested_summary = []
+        for category, items in requested_by_category.items():
+            if not items:
+                continue
+            names = " / ".join(f"{item.brand} {item.model}" for item in items[:3])
+            requested_summary.append({
+                "id": items[0].id,
+                "category": category,
+                "name": names,
+                "candidateIds": [item.id for item in items]
+            })
+        requested_status = []
+        for requested in requested_summary:
+            selected_item = selected.get(requested["category"])
+            kept = bool(selected_item and selected_item.get("id") in requested.get("candidateIds", []))
+            requested_status.append({**requested, "kept": kept})
+        final_checks["requestedItems"] = {
+            "ok": all(item["kept"] for item in requested_status) and not unmatched_terms,
+            "items": requested_status,
+            "unmatched": unmatched_terms
+        }
+
+        required_categories = ["cpu", "mainboard", "gpu", "ram", "disk", "power", "cooling", "case"]
+        if include_monitor:
+            required_categories.append("monitor")
+        missing_core = [category for category in required_categories if not selected.get(category)]
+        final_checks["completeness"] = {
+            "ok": len(missing_core) == 0,
+            "missing": missing_core
+        }
+
+        if missing_core or not final_checks["compatibility"]["ok"] or not final_checks["budget"]["ok"]:
+            status = "blocked"
+        elif not final_checks["requestedItems"]["ok"] or budget_notes:
+            status = "needs_confirmation"
+        else:
+            status = "ready"
+
+        alternatives = []
+        if not final_checks["budget"]["ok"]:
+            alternatives.extend([
+                f"把最终预算提高到约 ¥{int(final_price)}",
+                "降低显卡/CPU 档位",
+                "取消部分外观或显示器要求"
+            ])
+        if not final_checks["requestedItems"]["ok"]:
+            alternatives.append("接受未保留点名配件的同级平替")
+        if missing_core:
+            alternatives.append("补齐缺失品类的可售商品或关键规格数据")
+
         requirement_summary = {
             "budget": budget,
+            "hardwareBudget": hardware_budget,
             "usage": usage,
             "appearance": appearance,
             "includeMonitor": include_monitor,
-            "requestedItems": [
-                {
-                    "id": item["id"],
-                    "category": item["category"],
-                    "name": f"{item['brand']} {item['model']}"
-                }
-                for item in requested_inventory
-            ]
+            "requestedItems": requested_summary,
+            "unmatchedRequestedTerms": unmatched_terms,
         }
-        best_template_data = self.find_reference_configs(budget, user_prompt)
-        best_template, template_role = best_template_data if best_template_data else (None, 'admin')
-        
-        # Build persona instruction
-        persona_instructions = {
-            'toxic': '你说话风格犀利毒舌，带有幽默讽刺感。敢于吐槽用户的不合理需求，但最终会给出靠谱方案。评价中大胆指出不足，不要说废话套话。',
-            'professional': '你说话风格专业严谨，像一个资深硬件评测编辑。用数据和参数说话，给出客观冷静的分析。评价要有理有据。',
-            'enthusiastic': '你说话风格热情活泼，像一个真心帮忙的朋友。多用感叹号和语气词，让用户感受到你的热心。评价积极正面但也要说真话。',
-            'balanced': '你说话风格温和理性，用通俗易懂的语言解释专业内容。评价要公允中立，优缺点都要提到。'
-        }
-        
-        strategy_instructions = {
-            'performance': '配单策略：【性能至上】。在预算范围内最大化硬件性能，优先选择跑分更高、性能更强的配件。CPU和显卡占预算比例可以适当调高。',
-            'budget': '配单策略：【极致省钱】。在满足基本需求的前提下尽可能压低总价。优先选择性价比高的型号，可以选择稍旧一代但性价比更高的配件。',
-            'aesthetic': '配单策略：【颜值优先】。优先选择全白、RGB、海景房风格的配件。在预算允许的情况下选择外观设计出色的型号。',
-            'balanced': '配单策略：【均衡配置】。在性能、价格、品牌和散热之间取得平衡。优先选择大品牌、口碑好的型号。'
-        }
-        
-        persona_text = persona_instructions.get(self.persona, persona_instructions['balanced'])
-        strategy_text = strategy_instructions.get(self.strategy, strategy_instructions['balanced'])
-        
-        system_prompt = f"""你是一个顶级的电脑装机大师（小鱼装机AI）。
-你的任务是根据用户的需求，从【库存清单】中精准挑选硬件，组成一台电脑主机。
 
-**【当前配单匹配策略】：**
-**最高优先级绝对红线：无条件服从点名！** 如果客户在需求里明确点名了某个在【库存清单】中存在的硬件型号（如指定要“玩嘉 风琴 黑”机箱、“七彩虹 战斧5050”显卡或具体的内存主板等），你**必须100%原封不动地选用该库存硬件**，绝对不允许以任何理由（如性价比、品牌偏好、预算）替换成其他型号！哪怕搭配很奇怪也要按照用户的来！
+        description = self._build_result_text(
+            status,
+            selected,
+            final_checks,
+            requirement_summary,
+            budget_notes,
+            missing_core,
+        )
 
-"""
-        if best_template:
-            system_prompt += f"""除用户强制点名的配件外，我已经在【高级装机库】中找到了最符合用户需求的满分模板配置单：
-模板来源：{best_template['source']} ({best_template['author']})
-模板名称：{best_template['title']}
-骨架组合：{best_template['logic']}
-模板风扇数：{best_template['fan_count']} 把。
+        cons = []
+        if not final_checks["budget"]["ok"]:
+            cons.append("最终成交价超过预算")
+        cons.extend(final_checks["compatibility"]["issues"])
+        if not final_checks["requestedItems"]["ok"]:
+            cons.append("部分点名配件未能保留")
+        if missing_core:
+            cons.append("关键品类未选齐")
 
-**你必须将这套模板作为基础骨架（优先抄作业）：**
-1. **最高优先级冲突解决**：你的首要任务是满足用户点名的配件。只有在用户没有点名该部位配件时，才去参考这个模板！如果模板是13400F，用户点名5600X，你必须换成5600X。
-2. 平替寻找：如果模板中的某个配件在当前的【库存清单】中找不到原型号，请在库存中寻找同级别的平替。
-3. 补全风扇：如果模板包含明确的风扇数量，请你在库存中选一款合适的机箱风扇并将数量设为 {best_template['fan_count']}。
-4. **一致性检查**：你输出的 `description` 描述文字中提到的型号，必须和你 `items` JSON 字段中返回的 `id` 对应的型号**完全一致**。禁止说一套做一套！
-"""
-        else:
-            system_prompt += "没有找到任何相似的完美模板，请遵循下方的【专家级装机规则】，在满足用户点名配件的前提下，自行从库存中搭配出最优解。"
+        score = 96
+        if status == "needs_confirmation":
+            score = 82
+        if status == "blocked":
+            score = 55
 
-        system_prompt += f"""
-
-**你的说话风格：**
-{persona_text}
-
-**你的配单策略：**
-{strategy_text}
-
-**⚠️ 专家级装机指令（强制红线规则）：**
-0. **绝对预算红线（生死攸关）**：你最终给出的配置总价（总和）绝对、绝对不能超过用户的【预算上限】！如果挑选的显卡或 CPU 导致总价超标，必须无条件降级配置，哪怕达不到最佳性能！超预算 = 零分！
-1. **精准解读客户配置单**：客户的发文可能是一段杂乱且连词成句的配件清单文本（如："CPUi5-14600kf盒装 主板华硕重炮手IID5显卡万丽5070硬盘宏碁GM71T..."）。你需要极其敏锐地拆解出每一项配件的真实型号，并在【库存清单】中寻找最匹配的商品。如果客户给的型号在库存中实在找不到，请寻找同级别平替，并在 description 中向客户说明。
-2. **基础兼容**：CPU 的 socket 必须与主板的 socket 匹配。主板支持 DDR4 就必须搭 DDR4 内存，DDR5 同理。
-3. **物理尺寸兼容（极度重要）**：
-   - **主板与机箱**：ATX 主板绝对不能装进只支持 M-ATX/ITX 的机箱！如果主板是 ATX (formFactor)，机箱必须支持 ATX。如果机箱只写了 M-ATX，则不能选 ATX 主板。
-   - **显卡限长**：显卡的 length (如 336mm) 绝对不能大于机箱的 maxGpuLength (如 330mm)！
-   - **风冷限高**：风冷散热器的 height (如 165mm) 绝对不能大于机箱的 maxCoolerHeight (如 160mm)！
-4. **严禁机械硬盘**：禁止使用机械硬盘(HDD)做系统主盘。预算 > 3000 元必须优先选择 1TB 及以上的 NVMe PCIe 固态硬盘(SSD)。
-5. **电源冗余底线**：电源额定功率必须大于 `(CPU TDP功耗 + GPU TDP功耗) * 1.5 + 50W`，绝不选刚好压线的电源！不确定具体数值就往上多留 100W。
-6. **散热器精准化**：中低端 CPU（如 i3/i5/i7非K/R5非X）强制首选【风冷散热器】以节省预算；只有遇到高端高发热 CPU（i7-K/i9/R9），或是客户明确要求“海景房/全白/必须上水冷”时，才可使用【240/360 水冷】。
-7. **显示器去留**：默认情况**绝对不选显示器**(将 monitor 返回 null)。唯一的例外是用户在需求里明确说出“包含一台电脑屏幕”之类的需求。
-
-【库存清单】：
-{json.dumps(inventory, ensure_ascii=False)}
-
-输出严格 JSON 格式：
-{{
-  "items": {{ "cpu": "id", "mainboard": "id", "gpu": "id", "ram": "id", "disk": "id", "power": "id", "cooling": "id", "case": "id", "fan": {{ "id": "fan_id_or_null", "count": 数字 }}, "monitor": "id_or_null" }},
-  "totalPrice": (数字),
-  "description": "200字配单详细思路。必须向用户解释清楚【为什么】这样选。如果用户有点名需求，请在描述开头明确表示‘已按照您的要求选择了XXX’。如果使用了配置广场的骨架，也提一嘴参考了高分作业。体现你的专业性。如果是为了兼容性做了自动替换（如主板插槽不匹配），也请详细说明。",
-  "evaluation": {{ "score": 90, "verdict": "神评总结词", "pros": [], "cons": [], "summary": "一句话点评" }}
-}}
-"""
-
-        user_msg = f"用户需求：{user_prompt}\n预算上限：{budget} 元"
-
-        try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_msg}
-                ],
-                temperature=0.3,
-                response_format={"type": "json_object"},
-                timeout=60.0
-            )
-        except Exception as e:
-            # Handle timeout specifically for OpenAI
-            if "timeout" in str(e).lower():
-                print(f"ERROR: AI Timeout after 60s. Query: {user_prompt[:50]}...")
-                raise Exception("AI Error: 云端算力节点响应超时（60s），请稍后再试。")
-            raise e
-            
-        content = response.choices[0].message.content
-        print(f"DEBUG: AI Output: {content[:200]}...") # Log start of output
-            
-        raw_result = None
-        try:
-            raw_result = json.loads(content)
-        except json.JSONDecodeError:
-                import re
-                # Try Markdown code block first
-                json_match = re.search(r"```(?:json)?\s*(.*?)\s*```", content, re.DOTALL)
-                if json_match:
-                    try:
-                        raw_result = json.loads(json_match.group(1))
-                    except json.JSONDecodeError:
-                        pass
-                
-                # If still failed, try raw curly brace extraction
-                if not raw_result:
-                    json_match = re.search(r"(\{.*\})", content, re.DOTALL)
-                    if json_match:
-                        try:
-                            raw_result = json.loads(json_match.group(1))
-                        except json.JSONDecodeError:
-                            pass
-            
-        if not raw_result:
-            print(f"ERROR: Failed to parse JSON from AI. Raw content: {content}")
-            raise Exception("AI Error: Failed to parse LLM output as JSON.")
-            
-            
-        # --- 后端自动修正逻辑 (Auto-Fix) ---
-        actual_total = 0
-        resolved_items = {}
-        
-        # Ensure description exists
-        if "description" not in raw_result:
-            raw_result["description"] = "配置详情生成中..."
-            
-        if "items" in raw_result:
-            # 1. 第一遍解析
-            for cat, item_data in raw_result["items"].items():
-                if not item_data:
-                    resolved_items[cat] = None
-                    continue
-                    
-                item_id = item_data
-                fan_count = 1
-                
-                if cat == 'fan' and isinstance(item_data, dict):
-                    item_id = item_data.get('id')
-                    fan_count = item_data.get('count', 1)
-                    
-                if not item_id or not isinstance(item_id, str):
-                    resolved_items[cat] = None
-                    continue
-
-                hw = self.session.get(Hardware, item_id)
-                if hw:
-                    resolved_item = self._hardware_to_result(hw)
-                    if cat == 'fan':
-                        resolved_item['count'] = fan_count
-                    resolved_items[cat] = resolved_item
-                else:
-                    resolved_items[cat] = None
-
-            # 2. 兼容性校验与自动替换
-            cpu = resolved_items.get('cpu')
-            mb = resolved_items.get('mainboard')
-            ram = resolved_items.get('ram')
-            
-            # 检查插槽 - 优先换主板适配CPU（用户通常更关心CPU的选择）
-            if cpu and mb and cpu['specs'].get('socket') and mb['specs'].get('socket') and cpu['specs'].get('socket') != mb['specs'].get('socket'):
-                target_socket = cpu['specs'].get('socket')
-                # 先尝试换主板来适配CPU
-                alt_mb = self._find_compatible_hardware('mainboard', {'socket': target_socket}, mb['price'] * 1.3)
-                if alt_mb:
-                    resolved_items['mainboard'] = alt_mb
-                    mb = alt_mb  # 更新引用
-                    raw_result['description'] += f" (注意：原选主板接口不匹配 {target_socket}，已自动更换为兼容主板)"
-                else:
-                    # 找不到匹配主板才换CPU
-                    alt_cpu = self._find_compatible_hardware('cpu', {'socket': mb['specs'].get('socket')}, budget*0.3)
-                    if alt_cpu: 
-                        resolved_items['cpu'] = alt_cpu
-                        cpu = alt_cpu
-                        raw_result['description'] += " (注意：原选 CPU 接口不匹配，已自动更换为兼容型号)"
-
-            # 检查内存 (用户主要痛点) - 先刷新mb引用
-            mb = resolved_items.get('mainboard')
-            if ram and mb and ram['specs'].get('memoryType') and mb['specs'].get('memoryType') and ram['specs'].get('memoryType') != mb['specs'].get('memoryType'):
-                # 尝试寻找兼容当前主板的备选内存
-                target_type = mb['specs'].get('memoryType')
-                alt_ram = self._find_compatible_hardware('ram', {'memoryType': target_type}, budget*0.1)
-                if alt_ram:
-                    resolved_items['ram'] = alt_ram
-                    raw_result['description'] = raw_result.get('description', '') + f" (注意：主板支持 {target_type}，已自动将内存更换为兼容型号)"
-
-            # 电源冗余硬校验
-            required_power = self._estimate_required_power(resolved_items)
-            power = resolved_items.get('power')
-            power_watt = self._extract_number(self._spec_value(power.get('specs', {}) if power else {}, 'wattage', 'ratedPower'))
-            if required_power and (not power_watt or power_watt < required_power):
-                alt_power = self._find_compatible_hardware('power', {'minWattage': required_power}, budget * 0.1)
-                if alt_power:
-                    resolved_items['power'] = alt_power
-                    raw_result['description'] = raw_result.get('description', '') + f" (注意：为保证供电冗余，已自动更换为 {int(self._extract_number(self._spec_value(alt_power.get('specs', {}), 'wattage', 'ratedPower')) or 0)}W 电源)"
-
-            # --- 物理尺寸兼容性硬校验 ---
-            case_item = resolved_items.get('case')
-            if case_item:
-                c_specs = case_item['specs']
-                desc_appends = []
-
-                # 1. 主板板型校验
-                if mb:
-                    mb_ff = mb['specs'].get('formFactor', '').upper()
-                    case_ff = c_specs.get('formFactor', '').upper()
-                    # 简化逻辑：如果主板是ATX，但机箱规格里没有明确写支持ATX（比如只写了M-ATX/ITX），则换机箱
-                    if 'ATX' in mb_ff and 'M-ATX' not in mb_ff and 'MICRO' not in mb_ff: 
-                        if case_ff and 'ATX' not in case_ff.replace('M-ATX', '').replace('MICRO-ATX', ''):
-                            # 主板太大，尝试换兼容的大机箱
-                            alt_case = self._find_compatible_hardware('case', self._case_criteria_from_items(resolved_items), case_item['price'] * 1.2)
-                            if alt_case:
-                                resolved_items['case'] = alt_case
-                                desc_appends.append("主板板型较大，已自动更换为空间更充裕的机箱")
-                                case_item = alt_case
-                                c_specs = alt_case['specs']
-
-                # 2. 显卡限长校验
-                gpu = resolved_items.get('gpu')
-                if gpu and gpu['specs'].get('length') and c_specs.get('maxGpuLength'):
-                    import re
-                    try:
-                        g_len = float(re.search(r'\d+', str(gpu['specs']['length'])).group())
-                        c_max_g = float(re.search(r'\d+', str(c_specs['maxGpuLength'])).group())
-                        if g_len > c_max_g:
-                            alt_case = self._find_compatible_hardware('case', self._case_criteria_from_items(resolved_items), case_item['price'] * 1.2)
-                            if alt_case:
-                                resolved_items['case'] = alt_case
-                                desc_appends.append(f"显卡长度({g_len}mm)超出原机箱限长，已自动更换大机箱")
-                                case_item = alt_case
-                                c_specs = alt_case['specs']
-                    except Exception:
-                        pass # 无法解析数字就算了
-
-                # 3. 散热限高校验
-                cooler = resolved_items.get('cooling')
-                if cooler and cooler['specs'].get('height') and c_specs.get('maxCoolerHeight'):
-                    import re
-                    try:
-                        c_height = float(re.search(r'\d+', str(cooler['specs']['height'])).group())
-                        c_max_c = float(re.search(r'\d+', str(c_specs['maxCoolerHeight'])).group())
-                        if c_height > c_max_c:
-                            alt_case = self._find_compatible_hardware('case', self._case_criteria_from_items(resolved_items), case_item['price'] * 1.2)
-                            if alt_case:
-                                resolved_items['case'] = alt_case
-                                desc_appends.append(f"散热器高度({c_height}mm)超出原机箱限高，已自动更换机箱")
-                    except Exception:
-                        pass
-                
-                if desc_appends:
-                    raw_result['description'] = raw_result.get('description', '') + " (兼容性修正：" + "，".join(desc_appends) + ")"
-
-            # 确保 evaluation 结构完整
-            if "evaluation" not in raw_result:
-                raw_result["evaluation"] = {"score": 85, "verdict": "完成", "pros": [], "cons": [], "summary": "AI 自动生成"}
-            else:
-                eval_data = raw_result["evaluation"]
-                if not isinstance(eval_data, dict):
-                    raw_result["evaluation"] = {"score": 85, "verdict": "完成", "pros": [], "cons": [], "summary": "AI 自动生成"}
-                else:
-                    # 补齐缺字段
-                    if "score" not in eval_data: eval_data["score"] = 85
-                    if "pros" not in eval_data: eval_data["pros"] = []
-                    if "cons" not in eval_data: eval_data["cons"] = []
-            
-            budget_notes = self._trim_to_budget(resolved_items, budget, protected_ids)
-            if budget_notes:
-                raw_result['description'] = raw_result.get('description', '') + " (预算优化：" + "，".join(budget_notes) + ")"
-
-            final_checks = self._validate_resolved_build(resolved_items, budget)
-            requested_status = []
-            for requested in requirement_summary["requestedItems"]:
-                selected = next((item for item in resolved_items.values() if item and item.get("id") == requested["id"]), None)
-                requested_status.append({
-                    **requested,
-                    "kept": bool(selected)
-                })
-
-            final_checks["requestedItems"] = {
-                "ok": all(item["kept"] for item in requested_status),
-                "items": requested_status
+        return {
+            "status": status,
+            "items": {} if status == "blocked" else selected,
+            "totalPrice": hardware_total,
+            "finalPrice": final_price,
+            "description": description,
+            "alternatives": alternatives,
+            "requirementSummary": requirement_summary,
+            "checks": final_checks,
+            "evaluation": {
+                "score": score,
+                "verdict": "可直接采用" if status == "ready" else ("需确认" if status == "needs_confirmation" else "不可直接采用"),
+                "pros": ["真实库存选件", "按最终成交价控预算", "已执行基础兼容校验"],
+                "cons": cons,
+                "summary": description.split("\n")[0]
             }
-
-            if not final_checks["budget"]["ok"]:
-                raw_result['description'] = raw_result.get('description', '') + f" (预算提示：当前库存和点名条件下总价为 ¥{int(final_checks['budget']['actual'])}，高于预算 ¥{budget}，建议放宽点名配件或提高预算。)"
-                raw_result["evaluation"]["cons"].append("当前库存/点名约束下仍有超预算风险")
-
-            if not final_checks["compatibility"]["ok"]:
-                raw_result["evaluation"]["cons"].extend(final_checks["compatibility"]["issues"])
-
-            actual_total = self._calculate_total(resolved_items)
-            raw_result["items"] = resolved_items
-            raw_result["totalPrice"] = actual_total
-            raw_result["requirementSummary"] = requirement_summary
-            raw_result["checks"] = final_checks
-            
-        return raw_result
+        }
         
 
     def _get_inferred_specs(self, hardware: Hardware) -> Dict:
         """Helper to get specs with name-based inference"""
         specs = hardware.specs or {}
-        if isinstance(specs, str):
-            try: specs = json.loads(specs)
-            except: specs = {}
+        for _ in range(2):
+            if isinstance(specs, str):
+                try:
+                    specs = json.loads(specs)
+                except:
+                    specs = {}
+                    break
+        if not isinstance(specs, dict):
+            specs = {}
         
         specs = {**specs}
         if specs.get('socket_type') and not specs.get('socket'):
@@ -876,7 +965,7 @@ class AiService:
             if self._calculate_total(items) <= budget:
                 return notes
 
-        downgrade_order = ["case", "cooling", "disk", "ram", "power", "mainboard", "cpu", "gpu"]
+        downgrade_order = ["fan", "case", "cooling", "disk", "monitor", "ram", "power", "mainboard", "cpu", "gpu"]
         for _ in range(3):
             changed = False
             for category in downgrade_order:
@@ -958,7 +1047,7 @@ class AiService:
         if not eligible: return None
         
         if prefer_cheaper:
-            eligible.sort(key=lambda x: (-x.price, x.sortOrder))
+            eligible.sort(key=lambda x: (x.price, x.sortOrder))
         else:
             eligible.sort(key=lambda x: abs(x.price - max_price))
         best = eligible[0]

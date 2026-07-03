@@ -38,11 +38,11 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
 
     const loadingTips = [
         "正在解析装机需求...",
-        "深度检索硬件数据库...",
-        "执行物理兼容性校验...",
-        "计算供电与散热拓扑...",
-        "优化性价比模型...",
-        "生成最终配置清单..."
+        "检索真实可售库存...",
+        "反推硬件可用预算...",
+        "匹配 CPU、主板和内存平台...",
+        "校验机箱、电源和散热余量...",
+        "生成可成交配置清单..."
     ];
     const [loadingTipIdx, setLoadingTipIdx] = useState(0);
 
@@ -77,7 +77,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
             onSubmit(prompt, result);
         } catch (error) {
             console.error(error);
-            setThinkSteps(prev => [...prev, { type: 'analysis', step: '错误', detail: '[严重错误] 神经核心溢出，强制恢复失败。' }]);
+            setThinkSteps(prev => [...prev, { type: 'analysis', step: '错误', detail: '[ERROR] 配单引擎返回失败，请稍后重试。' }]);
             setIsThinking(false);
         }
     };
@@ -105,7 +105,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                         <div>
                             <div className="flex items-center gap-3">
                                 <h2 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
-                                    {isThinking ? 'AI 构建引擎运行中' : '小鱼 AI 助手'}
+                                    {isThinking ? '配单引擎运行中' : '智能配单引擎'}
                                 </h2>
                                 <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${isAiEnabled ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200/50 dark:border-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
                                     <div className={`w-1.5 h-1.5 rounded-full ${isAiEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></div>
@@ -116,7 +116,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                             </div>
                             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 flex items-center gap-1.5 font-medium">
                                 <Sparkles size={14} className="text-indigo-500 dark:text-indigo-400" />
-                                先校验预算与兼容，再生成可落地配置
+                                真实库存、最终价和兼容规则先过一遍
                             </p>
                         </div>
                     </div>
@@ -153,7 +153,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                     </h3>
                                     <p className="text-slate-500 dark:text-slate-400 text-sm flex items-center justify-center gap-2 font-medium">
                                         <RefreshCw size={14} className="animate-spin text-indigo-500 dark:text-indigo-400" />
-                                        <span>正在生成并校验配置，请稍候</span>
+                                        <span>正在计算可成交方案，请稍候</span>
                                     </p>
                                 </div>
                                 
@@ -180,12 +180,12 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                     value={prompt}
                                     onChange={e => setPrompt(e.target.value)}
                                     className="relative w-full h-44 pl-8 pr-8 py-7 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl font-medium text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all resize-none text-lg placeholder-slate-400 dark:placeholder-slate-500 shadow-sm dark:shadow-2xl backdrop-blur-sm"
-                                    placeholder="请描述您的装机需求，例如：&#10;“我想配一台白色海景房主机，主要玩3A大作，预算1万元左右...”"
+                                    placeholder="请描述客户需求，例如：&#10;“i5-14600KF + RTX4070，预算8000，不带显示器”&#10;“白色海景房，主要玩3A，预算1万元左右”"
                                     autoFocus
                                 />
                                 <div className="absolute bottom-6 right-6 flex items-center gap-2 py-1.5 px-3 rounded-full bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 backdrop-blur-md pointer-events-none shadow-sm dark:shadow-xl group-focus-within/input:border-indigo-500/30 transition-colors">
                                     <Sparkles size={12} className="text-indigo-500 dark:text-indigo-400 animate-pulse" />
-                                    <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase">需求会先被预算和兼容规则校验</span>
+                                    <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase">先算最终价，再验兼容</span>
                                 </div>
                             </div>
 
@@ -209,7 +209,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
                                     >
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-200/50 dark:via-indigo-400/20 to-transparent -translate-x-full group-hover/chip:translate-x-full transition-transform duration-700"></div>
                                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 group-hover/chip:bg-indigo-600 dark:group-hover/chip:bg-indigo-300 transition-colors shadow-[0_0_10px_transparent] group-hover/chip:shadow-indigo-300 dark:group-hover/chip:shadow-indigo-400 animate-pulse"></div>
-                                        <span className="font-bold tracking-wide relative z-10">📋 粘贴客户配置单</span>
+                                        <span className="font-bold tracking-wide relative z-10">粘贴客户配置单</span>
                                     </button>
                                     
                                     {suggestions.map((s, i) => (
@@ -239,7 +239,7 @@ export function AiGenerateModal({ onClose, onSubmit }: { onClose: () => void, on
 
                                 <div className="relative z-10 flex items-center justify-center gap-3 text-white">
                                     <Activity className={`${prompt.trim() ? 'animate-pulse' : ''}`} size={20} />
-                                    <span className="text-lg font-black tracking-[0.2em] uppercase">{isAiEnabled ? '生成可落地配置' : 'AI 服务未启用'}</span>
+                                    <span className="text-lg font-black tracking-[0.2em] uppercase">{isAiEnabled ? '计算可成交配置' : '配单服务未启用'}</span>
                                     <Zap size={18} className="text-amber-300 transition-transform group-hover/btn:scale-125" />
                                 </div>
 

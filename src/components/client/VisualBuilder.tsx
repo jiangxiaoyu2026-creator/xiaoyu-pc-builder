@@ -1,22 +1,46 @@
 
-import { useState, useMemo, useCallback, useEffect, useRef, type UIEvent } from 'react';
-import { Sparkles, X, Download, Share2, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Trash2, Plus, CreditCard, ChevronUp, Monitor, Info, Activity, Gamepad2, Bell } from 'lucide-react';
+import { useState, useMemo, useCallback, useEffect, type UIEvent } from 'react';
+import { Sparkles, X, Search, Zap, CheckCircle2, AlertCircle, RefreshCw, FileText, ChevronDown, ArrowRight, Plus, ChevronUp, Info, Activity, Gamepad2, Bell } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import html2canvas from 'html2canvas';
 import { BuildEntry, HardwareItem, Category, SystemAnnouncementSettings } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
 import { aiBuilder } from '../../services/aiBuilder';
 import { getIconByCategory } from './Shared';
 import { AiGenerateModal } from './AiGenerateModal';
+import PC3DViewer from './PC3DViewer';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { gamesFpsData, gamesList, Resolution } from '../../data/gameFpsData';
 
 const MODAL_ITEM_BATCH_SIZE = 40;
+const DESKTOP_VISUAL_COLUMN_HEIGHT = 'lg:h-[clamp(720px,calc(100dvh-196px),860px)]';
 
 type MonitorResolutionFilter = 'all' | '1K' | '2K' | '4K' | '5K';
 type MonitorRefreshFilter = 'all' | '60' | '75' | '100' | '144' | '180' | '240' | '300';
 type MonitorSizeFilter = 'all' | '22' | '24' | '25' | '27' | '32' | '34' | '49';
+type Pc3dMatchKind = 'exact' | 'similar' | 'none';
+
+interface Pc3dProductMatch {
+    product_id: string;
+    match_kind: Pc3dMatchKind | string;
+    match_label?: string;
+    review_status?: string;
+    confidence?: number;
+    asset_id?: string;
+    asset_label?: string;
+    asset_model_url?: string;
+}
+
+const CUSTOMER_VISIBLE_PC3D_STATUSES = new Set(['auto_exact', 'manual_approved']);
+
+function isCustomerVisiblePc3dMatch(match?: Pc3dProductMatch | null) {
+    return Boolean(
+        match &&
+        match.match_kind === 'exact' &&
+        CUSTOMER_VISIBLE_PC3D_STATUSES.has(String(match.review_status || '')) &&
+        (match.asset_id || match.asset_model_url)
+    );
+}
 
 const parseSpecsObject = (rawSpecs: unknown): Record<string, any> => {
     let parsed = rawSpecs;
@@ -96,10 +120,7 @@ function VisualBuilder({
     pricing,
     onAiCheck,
     openAiModal,
-    onAiModalClose,
-    onSave,
-    onShare,
-    onReset
+    onAiModalClose
 }: {
     buildList: BuildEntry[],
     onUpdate: (id: string, d: Partial<BuildEntry>) => void,
@@ -123,6 +144,7 @@ function VisualBuilder({
     const [cpuTypeFilter, setCpuTypeFilter] = useState<'all' | 'X3D'>('all');
     const [mbPlatformFilter, setMbPlatformFilter] = useState<'all' | 'AMD' | 'Intel'>('all');
     const [coolingTypeFilter, setCoolingTypeFilter] = useState<'all' | 'air' | '240' | '360'>('all');
+    const [modalPc3dFilter, setModalPc3dFilter] = useState<'all' | 'with3d'>('all');
     const [monitorResolutionFilter, setMonitorResolutionFilter] = useState<MonitorResolutionFilter>('all');
     const [monitorRefreshFilter, setMonitorRefreshFilter] = useState<MonitorRefreshFilter>('all');
     const [monitorSizeFilter, setMonitorSizeFilter] = useState<MonitorSizeFilter>('all');
@@ -130,13 +152,43 @@ function VisualBuilder({
     const [isBrandsExpanded, setIsBrandsExpanded] = useState(false);
     const [showAiModal, setShowAiModal] = useState(false);
 
-    const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
-    const posterRef = useRef<HTMLDivElement>(null);
-
     // Category-specific items for the selector
     const [modalItems, setModalItems] = useState<HardwareItem[]>([]);
     const [isModalLoading, setIsModalLoading] = useState(false);
     const [visibleItemCount, setVisibleItemCount] = useState(MODAL_ITEM_BATCH_SIZE);
+    const [pc3dProductMatches, setPc3dProductMatches] = useState<Record<string, Pc3dProductMatch>>({});
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadPc3dMapping = async () => {
+            let data: { products?: Pc3dProductMatch[] } | null = null;
+            for (const url of ['/api/pc3d/mapping', '/data/pc3d/product-model-mapping.json']) {
+                try {
+                    const res = await fetch(url, { cache: 'no-store' });
+                    if (!res.ok) continue;
+                    data = await res.json();
+                    break;
+                } catch {
+                    // Fall through to the static mapping file.
+                }
+            }
+            if (cancelled || !Array.isArray(data?.products)) return;
+            const nextMatches = data.products.reduce((acc: Record<string, Pc3dProductMatch>, item: Pc3dProductMatch) => {
+                if (item.product_id) acc[String(item.product_id)] = item;
+                return acc;
+            }, {});
+            setPc3dProductMatches(nextMatches);
+        };
+
+        loadPc3dMapping().catch(() => {
+            if (!cancelled) setPc3dProductMatches({});
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     // Handle external trigger for AI Modal
     useEffect(() => {
@@ -147,6 +199,16 @@ function VisualBuilder({
     }, [openAiModal, onAiModalClose]);
     const [aiActiveCategory, setAiActiveCategory] = useState<Category | null>(null);
     const [aiResult, setAiResult] = useState<import('../../services/aiBuilder').AIBuildResult | null>(null);
+    const [isAiApplying, setIsAiApplying] = useState(false);
+
+    useEffect(() => {
+        const hasConfiguredItem = buildList.some(entry => entry.item || entry.customName || entry.customPrice);
+        if (!hasConfiguredItem && aiResult && aiResult.status !== 'blocked') {
+            setAiResult(null);
+            setAiActiveCategory(null);
+            setIsAiApplying(false);
+        }
+    }, [buildList, aiResult]);
 
     // Track row elements for ghost cursor target
     const rowRefs = useState<Record<string, HTMLDivElement | null>>({})[0];
@@ -155,7 +217,6 @@ function VisualBuilder({
 
 
     const [sysAnnouncement, setSysAnnouncement] = useState<SystemAnnouncementSettings | null>(null);
-    const [pricingStrategy, setPricingStrategy] = useState<import('../../types/adminTypes').PricingStrategy | null>(null);
 
     // Simulator Widgets States
     const [simResult, setSimResult] = useState<{
@@ -172,7 +233,6 @@ function VisualBuilder({
 
     useEffect(() => {
         storage.getSystemAnnouncement().then(setSysAnnouncement);
-        storage.getPricingStrategy().then(setPricingStrategy);
 
         const handleUpdate = () => {
             storage.getSystemAnnouncement().then(setSysAnnouncement);
@@ -345,6 +405,7 @@ function VisualBuilder({
         setCpuTypeFilter('all');
         setMbPlatformFilter('all');
         setCoolingTypeFilter('all');
+        setModalPc3dFilter('all');
         setMonitorResolutionFilter('all');
         setMonitorRefreshFilter('all');
         setMonitorSizeFilter('all');
@@ -371,7 +432,7 @@ function VisualBuilder({
 
     useEffect(() => {
         setVisibleItemCount(MODAL_ITEM_BATCH_SIZE);
-    }, [modalCategory, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter, monitorResolutionFilter, monitorRefreshFilter, monitorSizeFilter]);
+    }, [modalCategory, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter, modalPc3dFilter, monitorResolutionFilter, monitorRefreshFilter, monitorSizeFilter]);
 
     const handleSelect = (item: HardwareItem) => {
         if (modalEntryId) {
@@ -391,70 +452,41 @@ function VisualBuilder({
             }
 
             setShowAiModal(false);
+            setAiResult(result);
 
-            // 仪式感：逐个类别依次填入，每个间隔 250ms（没有混乱光标，干净利落）
-            await new Promise(r => setTimeout(r, 200));
+            if (result.status === 'blocked') {
+                setAiActiveCategory(null);
+                return;
+            }
+
+            setIsAiApplying(true);
+            await new Promise(r => setTimeout(r, 220));
 
             for (const entry of buildList) {
                 const cat = entry.category;
                 const targetItem = result.items[cat as keyof typeof result.items];
 
                 if (targetItem && typeof targetItem === 'object' && typeof targetItem.model === 'string') {
-                    // 短暂高亮当前类别
-                    setAiActiveCategory(entry.category);
-                    await new Promise(r => setTimeout(r, 200));
-
-                    // 填入配置 - fan items with count need quantity update
                     const updateData: any = { item: targetItem, customPrice: undefined, customName: undefined };
                     if (cat === 'fan' && (targetItem as any).count) {
                         updateData.quantity = (targetItem as any).count;
                     }
                     onUpdate(entry.id, updateData);
-                    await new Promise(r => setTimeout(r, 150));
                 }
             }
 
             setAiActiveCategory(null);
-            await new Promise(r => setTimeout(r, 400));
-            setAiResult(result);
+            await new Promise(r => setTimeout(r, 260));
+            setIsAiApplying(false);
 
         } catch (error) {
             console.error("AI Generation Failed:", error);
             setShowAiModal(false);
             setAiActiveCategory(null);
+            setIsAiApplying(false);
             alert("AI 生成失败，请重试");
         }
     }, [buildList, onUpdate, rowRefs, modalSearchInputRef, modalItemRefs]);
-
-    const handleShareClick = () => {
-        // Execute external checks/hooks before proceeding
-        if (onShare) onShare();
-    };
-
-    const handleGeneratePoster = async () => {
-        if (!posterRef.current || isGeneratingPoster) return;
-        setIsGeneratingPoster(true);
-        try {
-            await new Promise(resolve => setTimeout(resolve, 100)); // allow DOM refresh
-            const canvas = await html2canvas(posterRef.current, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: null,
-            });
-            const dataUrl = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = `小鱼装机单_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '')}.png`;
-            link.click();
-        } catch (error) {
-            console.error('Failed to generate poster:', error);
-            alert('生成图片失败，请稍后重试');
-        } finally {
-            setIsGeneratingPoster(false);
-        }
-    };
-
-    const validPosterItems = buildList.filter(b => b.item || b.customName);
 
     const filteredItems = useMemo(() => {
         if (!modalCategory) return [];
@@ -465,6 +497,10 @@ function VisualBuilder({
         let items = modalItems.filter(i => {
             if (i.category !== modalCategory) return false;
             if (modalBrand !== 'all' && i.brand !== modalBrand) return false;
+            if (modalPc3dFilter === 'with3d') {
+                const pc3dMatch = pc3dProductMatches[String(i.id)];
+                if (!isCustomerVisiblePc3dMatch(pc3dMatch)) return false;
+            }
             if (searchStr) {
                 const searchableText = `${i.brand} ${i.model} ${CATEGORY_MAP[i.category] || i.category}`.toLowerCase();
                 if (!searchTerms.every(term => searchableText.includes(term))) return false;
@@ -570,7 +606,7 @@ function VisualBuilder({
         });
 
         return items;
-    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter, monitorResolutionFilter, monitorRefreshFilter, monitorSizeFilter]);
+    }, [modalCategory, modalItems, modalBrand, modalSearch, sortOrder, ramTypeFilter, diskCapFilter, cpuTypeFilter, mbPlatformFilter, coolingTypeFilter, modalPc3dFilter, pc3dProductMatches, monitorResolutionFilter, monitorRefreshFilter, monitorSizeFilter]);
 
     const visibleModalItems = useMemo(
         () => filteredItems.slice(0, visibleItemCount),
@@ -593,14 +629,203 @@ function VisualBuilder({
         const brands = new Set(modalItems.filter(i => i.category === modalCategory).map(i => i.brand));
         return ['all', ...Array.from(brands)];
     }, [modalCategory, modalItems]);
+    const pc3dAvailableCount = useMemo(() => {
+        if (!modalCategory) return 0;
+        return modalItems.filter(item => {
+            if (item.category !== modalCategory) return false;
+            const match = pc3dProductMatches[String(item.id)];
+            return isCustomerVisiblePc3dMatch(match);
+        }).length;
+    }, [modalCategory, modalItems, pc3dProductMatches]);
+    const modalCategoryLabel = modalCategory ? (CATEGORY_MAP[modalCategory] || modalCategory) : '当前分类';
 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const simErrors = simResult?.errors ?? [];
+    const simWarnings = simResult?.warnings ?? [];
+    const allBuildIssues = [...health.issues, ...simErrors, ...simWarnings];
+    const issueCount = allBuildIssues.length;
+    const selectedItemCount = buildList.filter(entry => entry.item || entry.customName).length;
+    const hasSelectedItems = selectedItemCount > 0;
+    const isBuildHealthy = hasSelectedItems && health.status === 'perfect' && simErrors.length === 0 && simWarnings.length === 0;
+    const recommendedPower = simResult?.recommendedPower || (simResult?.totalPowerDraw ? Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50 : 0);
+    const desktopAnnouncementItems = useMemo(() => {
+        const items = sysAnnouncement?.enabled ? (sysAnnouncement.items ?? []) : [];
+        return [...items]
+            .filter(item => item.content?.trim())
+            .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
+    }, [sysAnnouncement]);
+    const hasDesktopAnnouncements = desktopAnnouncementItems.length > 0;
+    const primaryAnnouncement = desktopAnnouncementItems[0];
+    const announcementText = primaryAnnouncement?.content?.trim() || '暂无系统公告，当前页面以装机配置、3D 预览和价格为主。';
+    const announcementToneClass = primaryAnnouncement?.type === 'warning'
+        ? 'border-amber-200 bg-amber-50/90 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200'
+        : primaryAnnouncement?.type === 'promo'
+            ? 'border-indigo-200 bg-indigo-50/90 text-indigo-900 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-200'
+            : 'border-slate-200 bg-white/90 text-slate-800 dark:border-[#1E293B] dark:bg-[#121218]/90 dark:text-slate-200';
+    const announcementIconClass = primaryAnnouncement?.type === 'warning'
+        ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200'
+        : primaryAnnouncement?.type === 'promo'
+            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200'
+            : 'bg-slate-100 text-slate-500 dark:bg-[#1A1A24] dark:text-slate-300';
+    const getPc3dMatch = useCallback((item?: HardwareItem | null) => {
+        if (!item) return null;
+        return pc3dProductMatches[String(item.id)] || null;
+    }, [pc3dProductMatches]);
+    const renderPc3dBadge = (match: Pc3dProductMatch | null, compact = false) => {
+        if (!isCustomerVisiblePc3dMatch(match)) return null;
+        const title = match?.asset_label || match?.match_label || undefined;
+        return (
+            <span
+                className={`${compact ? 'px-1.5 py-0.5 text-[8px]' : 'px-2 py-0.5 text-[9px]'} shrink-0 rounded-md bg-emerald-50 font-black text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20`}
+                title={title}
+            >
+                {compact ? '有3D' : '有3D模型'}
+            </span>
+        );
+    };
+    const aiStatus = aiResult?.status || 'ready';
+    const aiStatusLabel = aiStatus === 'blocked' ? '不可直接采用' : aiStatus === 'needs_confirmation' ? '需要确认' : '可直接采用';
+    const aiStatusClass = aiStatus === 'blocked'
+        ? 'bg-rose-50 border-rose-100 text-rose-700'
+        : aiStatus === 'needs_confirmation'
+            ? 'bg-amber-50 border-amber-100 text-amber-700'
+            : 'bg-emerald-50 border-emerald-100 text-emerald-700';
+    const aiStatusHint = aiStatus === 'blocked'
+        ? '不要直接发给客户'
+        : aiStatus === 'needs_confirmation'
+            ? '先确认取舍点'
+            : '可作为成交方案';
+    const aiFinalPrice = Math.round(aiResult?.checks?.budget?.finalPrice || aiResult?.finalPrice || aiResult?.totalPrice || 0);
+    const aiUnmatchedTerms = aiResult?.checks?.requestedItems?.unmatched || [];
+
+    const renderAiResultSummary = () => {
+        if (!aiResult) return null;
+
+        return (
+            <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-[#1E293B] dark:bg-[#121218] dark:shadow-none">
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">配单结论</span>
+                            <span className={`rounded-lg border px-2.5 py-1 text-[12px] font-black ${aiStatusClass}`}>
+                                {aiStatusLabel}
+                            </span>
+                            <span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-black text-slate-500 dark:border-[#2D3748] dark:bg-[#0B0B10] dark:text-slate-300">
+                                {aiStatusHint}
+                            </span>
+                        </div>
+                        <div className="mt-2 text-sm font-bold leading-6 text-slate-700 dark:text-slate-200">
+                            {aiUnmatchedTerms.length ? (
+                                <span className="text-amber-700 dark:text-amber-300">
+                                    未找到点名型号：{aiUnmatchedTerms.map(item => item.term).join('、')}
+                                </span>
+                            ) : aiStatus === 'blocked' ? (
+                                <span className="text-rose-700 dark:text-rose-300">当前条件下不能生成可成交配置。</span>
+                            ) : (
+                                <span>真实库存、最终价和兼容校验已完成。</span>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 md:min-w-[420px]">
+                        <div className={`rounded-lg border px-2.5 py-2 ${aiResult.checks?.budget?.ok ? 'border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300' : 'border-amber-100 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300'}`}>
+                            <div className="text-[9px] font-black uppercase opacity-70">最终价</div>
+                            <div className="mt-1 truncate text-[13px] font-black">¥{aiFinalPrice}</div>
+                        </div>
+                        <div className={`rounded-lg border px-2.5 py-2 ${aiResult.checks?.compatibility?.ok ? 'border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300' : 'border-amber-100 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300'}`}>
+                            <div className="text-[9px] font-black uppercase opacity-70">兼容</div>
+                            <div className="mt-1 truncate text-[13px] font-black">{aiResult.checks?.compatibility?.ok ? '通过' : '有风险'}</div>
+                        </div>
+                        <div className={`rounded-lg border px-2.5 py-2 ${aiResult.checks?.requestedItems?.ok ? 'border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300' : 'border-amber-100 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300'}`}>
+                            <div className="text-[9px] font-black uppercase opacity-70">点名</div>
+                            <div className="mt-1 truncate text-[13px] font-black">
+                                {aiResult.checks?.requestedItems?.items?.length || aiUnmatchedTerms.length ? (aiResult.checks?.requestedItems?.ok ? '已满足' : '有平替') : '未点名'}
+                            </div>
+                        </div>
+                        <div className={`rounded-lg border px-2.5 py-2 ${aiResult.checks?.completeness?.ok !== false ? 'border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300' : 'border-amber-100 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300'}`}>
+                            <div className="text-[9px] font-black uppercase opacity-70">完整度</div>
+                            <div className="mt-1 truncate text-[13px] font-black">{aiResult.checks?.completeness?.ok === false ? '缺关键项' : '已选齐'}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                    <p className="max-h-20 overflow-y-auto whitespace-pre-wrap text-xs font-medium leading-5 text-slate-600 dark:text-slate-300">
+                        {aiResult.description}
+                    </p>
+                    {aiResult.alternatives?.length ? (
+                        <div className="flex flex-wrap gap-2 lg:max-w-[360px] lg:justify-end">
+                            {aiResult.alternatives.slice(0, 3).map((item, index) => (
+                                <span key={index} className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-black text-slate-600 dark:border-[#2D3748] dark:bg-[#0B0B10] dark:text-slate-300">
+                                    {item}
+                                </span>
+                            ))}
+                        </div>
+                    ) : null}
+                </div>
+            </div>
+        );
+    };
+
+    const renderBuildSummarySection = () => (
+        <div className="hidden lg:flex shrink-0 flex-col gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-[#1E293B] dark:bg-[#121218] dark:shadow-none">
+            <div className="grid grid-cols-4 gap-2">
+                <div className="min-w-0 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5 dark:border-[#1E293B] dark:bg-[#0B0B10]">
+                    <div className="text-[9px] font-black text-slate-400">已选配件</div>
+                    <div className="mt-1 flex items-baseline gap-1 text-slate-900 dark:text-white">
+                        <span className="text-[16px] font-black leading-none">{selectedItemCount}</span>
+                        <span className="text-[10px] font-bold text-slate-400">/{buildList.length}</span>
+                    </div>
+                </div>
+                <div className={`min-w-0 rounded-lg border px-2.5 py-1.5 ${isBuildHealthy ? 'border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300' : hasSelectedItems ? 'border-amber-100 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300' : 'border-slate-100 bg-slate-50 text-slate-500 dark:border-[#1E293B] dark:bg-[#0B0B10] dark:text-slate-300'}`}>
+                    <div className="flex items-center gap-1 text-[9px] font-black opacity-80">
+                        <CheckCircle2 size={11} />
+                        兼容状态
+                    </div>
+                    <div className="mt-1 truncate text-[13px] font-black">{isBuildHealthy ? '通过' : hasSelectedItems ? `${issueCount || 0} 项提示` : '待配置'}</div>
+                </div>
+                <div className="min-w-0 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5 dark:border-[#1E293B] dark:bg-[#0B0B10]">
+                    <div className="flex items-center gap-1 text-[9px] font-black text-slate-400">
+                        <Activity size={11} className="text-indigo-500" />
+                        鲁大师跑分
+                    </div>
+                    <div className="mt-1 truncate text-[13px] font-black text-indigo-600 dark:text-indigo-400">
+                        {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
+                    </div>
+                </div>
+                <div className="min-w-0 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5 dark:border-[#1E293B] dark:bg-[#0B0B10]">
+                    <div className="flex items-center gap-1 text-[9px] font-black text-slate-400">
+                        <Zap size={11} className="text-amber-500" />
+                        整机功耗
+                    </div>
+                    <div className="mt-1 truncate text-[13px] font-black text-slate-900 dark:text-slate-100">
+                        {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} />W</> : '---'}
+                    </div>
+                </div>
+            </div>
+
+            <div className={`flex min-h-[36px] items-center justify-between gap-3 rounded-lg border px-2.5 py-1.5 ${isBuildHealthy ? 'border-emerald-100 bg-emerald-50/80 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200' : issueCount > 0 ? 'border-amber-100 bg-amber-50/90 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200' : 'border-slate-100 bg-slate-50 text-slate-600 dark:border-[#1E293B] dark:bg-[#0B0B10] dark:text-slate-300'}`}>
+                <div className="flex min-w-0 items-center gap-2">
+                    {isBuildHealthy ? <CheckCircle2 size={15} className="shrink-0" /> : issueCount > 0 ? <AlertCircle size={15} className="shrink-0" /> : <Info size={15} className="shrink-0" />}
+                    <div className="min-w-0">
+                        <div className="text-[10px] font-black leading-none">{isBuildHealthy ? '兼容检查通过' : issueCount > 0 ? `${issueCount} 项需要确认` : '等待兼容检查'}</div>
+                        <div className="mt-0.5 truncate text-[11px] font-bold opacity-75">
+                            {isBuildHealthy ? 'CPU、主板、内存与功耗状态暂无风险' : issueCount > 0 ? allBuildIssues[0] : '选择 CPU、主板、内存后会显示具体提示'}
+                        </div>
+                    </div>
+                </div>
+                <div className="shrink-0 rounded-md border border-current/10 bg-white/45 px-2 py-1 text-[10px] font-black dark:bg-black/10">
+                    {recommendedPower > 0 ? `推荐电源 ${recommendedPower}W+` : '功耗待测'}
+                </div>
+            </div>
+        </div>
+    );
 
     const renderGameFpsSection = () => (
         <div className="bg-[#F6F6FD] dark:bg-[#121218] lg:bg-white lg:dark:bg-[#121218] lg:rounded-xl lg:border lg:border-slate-200 lg:dark:border-[#1E293B] p-4 lg:p-3 relative overflow-hidden lg:shadow-sm lg:dark:shadow-none">
             <div className="absolute right-0 top-0 w-48 h-48 bg-indigo-500/10 lg:bg-indigo-500/[0.04] rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2"></div>
             
-            <div className="flex items-center justify-between mb-5 lg:mb-3 relative z-10">
+            <div className="flex items-center justify-between mb-5 lg:mb-2.5 relative z-10">
                 <h3 className="font-extrabold text-slate-900 dark:text-white text-[14px] lg:text-[12px] flex items-center gap-1.5 tracking-wide">
                     <Gamepad2 size={16} className="text-indigo-500 lg:w-3.5 lg:h-3.5" />
                     游戏试玩体验
@@ -617,14 +842,14 @@ function VisualBuilder({
                     ))}
                 </div>
             </div>
-            <div className="space-y-3.5 lg:space-y-2.5 relative z-10 min-h-[140px] lg:min-h-[120px]">
+            <div className="space-y-3.5 lg:space-y-2 relative z-10 min-h-[140px] lg:min-h-[96px]">
                 {loadingFps ? (
                     <div className="py-12 lg:py-8 flex flex-col items-center justify-center text-indigo-400 gap-3 lg:gap-2">
                         <RefreshCw size={24} className="animate-spin opacity-80 lg:w-5 lg:h-5" />
                         <div className="text-xs lg:text-[10px] font-black tracking-widest uppercase opacity-80">测算帧率数据中...</div>
                     </div>
                 ) : fpsData.length > 0 ? (
-                    fpsData.slice(0, 8).map((item, idx) => (
+                    fpsData.slice(0, 6).map((item, idx) => (
                             <div key={idx} className="group/item">
                                 <div className="flex justify-between items-center text-[11px] lg:text-[10px] mb-2 lg:mb-1.5">
                                     <span className="font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2">
@@ -677,68 +902,7 @@ function VisualBuilder({
     );
 
     return (
-        <div className="flex flex-col lg:flex-row gap-3 relative">
-
-            {/* Hidden Poster Template */}
-            <div style={{ position: 'fixed', top: -9999, left: -9999, zIndex: -9999 }}>
-                <div ref={posterRef} className="bg-white text-slate-900 w-[600px] rounded-[24px] overflow-hidden font-sans border border-slate-200 shadow-xl relative">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/60 rounded-full blur-3xl pointer-events-none"></div>
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-50/60 rounded-full blur-3xl pointer-events-none"></div>
-                    <div className="flex items-center gap-4 px-8 py-8 border-b border-indigo-50/50 relative z-10 bg-gradient-to-r from-white to-slate-50">
-                        <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg shadow-slate-900/20">
-                            <Monitor size={28} />
-                        </div>
-                        <div>
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">小鱼高端定制方案</h2>
-                            <p className="text-indigo-600 font-bold opacity-80 uppercase tracking-widest text-[10px] mt-1">XIAOYU PC BUILDER</p>
-                        </div>
-                    </div>
-                    <div className="px-8 py-6 flex flex-col gap-4 relative z-10">
-                        {validPosterItems.map(row => {
-                            const name = row.item ? `${row.item.brand} ${row.item.model}` : row.customName;
-                            const prc = row.customPrice ?? (row.item?.price ?? 0);
-                            return (
-                                <div key={row.id} className="flex items-center gap-4 py-2 border-b border-slate-100 last:border-0 last:pb-0">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm relative overflow-hidden ${row.item ? 'bg-indigo-50 text-indigo-500 border border-indigo-100' : 'bg-slate-50 text-slate-400 border border-slate-200'}`}>
-                                        {row.item?.image ? (
-                                            <img src={row.item.image} alt="" className="w-full h-full object-cover" />
-                                        ) : (
-                                            getIconByCategory(row.category)
-                                        )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                                            {CATEGORY_MAP[row.category]}
-                                            {row.quantity > 1 ? ` × ${row.quantity}` : ''}
-                                        </div>
-                                        <div className="text-[14px] font-bold text-slate-800 leading-relaxed pb-1 truncate">
-                                            {name}
-                                        </div>
-                                    </div>
-                                    <div className="text-right pl-4">
-                                        <div className="font-mono text-lg font-black text-slate-900 leading-relaxed pb-1">¥{(prc * (row.quantity || 1)).toLocaleString()}</div>
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
-                    <div className="bg-slate-900 p-8 flex items-end justify-between relative z-10">
-                        <div className="flex flex-col gap-1 text-white/50 text-[10px] uppercase font-bold tracking-widest">
-                            <p>Powered by</p>
-                            <p className="text-white/80">小鱼装机平台智能引擎</p>
-                            <p className="text-white/40 text-[9px] mt-0.5 whitespace-nowrap tracking-wider">含 {((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}% 装机售后服务费</p>
-                            <p className="mt-2 font-mono">{new Date().toLocaleDateString('zh-CN')} 生成</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-white/50 text-xs font-bold mb-1">整机预算预估</p>
-                            <div className="flex items-baseline gap-1 text-white">
-                                <span className="text-2xl font-bold">¥</span>
-                                <span className="text-5xl font-black font-mono tracking-tighter"><BouncyNumber value={Math.floor(pricing.finalPrice)} /></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="grid grid-cols-1 gap-3 xl:gap-4 relative lg:grid-cols-[minmax(390px,0.9fr)_minmax(0,1.1fr)] lg:items-stretch">
 
             {/* Image Preview Modal */}
             {previewImage && typeof document !== 'undefined' && createPortal((
@@ -757,6 +921,74 @@ function VisualBuilder({
                     </div>
                 </div>
             ), document.body)}
+
+            {isAiApplying && typeof document !== 'undefined' && createPortal((
+                <div className="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/35 backdrop-blur-sm">
+                    <div className="rounded-2xl border border-white/60 bg-white/95 px-5 py-4 shadow-2xl dark:border-white/10 dark:bg-[#121218]/95">
+                        <div className="flex items-center gap-3">
+                            <RefreshCw size={18} className="animate-spin text-indigo-600 dark:text-indigo-400" />
+                            <div>
+                                <div className="text-sm font-black text-slate-900 dark:text-white">正在应用整套配置</div>
+                                <div className="mt-0.5 text-xs font-bold text-slate-500 dark:text-slate-400">已完成库存、预算和兼容校验，正在一次性写入工作台。</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ), document.body)}
+
+            <div className={`hidden lg:grid lg:col-span-2 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl border px-3 py-2 shadow-sm backdrop-blur-xl dark:shadow-none ${announcementToneClass}`}>
+                <button
+                    type="button"
+                    onClick={() => primaryAnnouncement?.linkUrl && window.open(primaryAnnouncement.linkUrl, '_blank')}
+                    className={`flex min-w-0 items-center gap-2 text-left ${primaryAnnouncement?.linkUrl ? 'cursor-pointer hover:opacity-85' : 'cursor-default'}`}
+                >
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${announcementIconClass}`}>
+                        {primaryAnnouncement?.type === 'warning' ? <AlertCircle size={15} /> : primaryAnnouncement?.type === 'promo' ? <Sparkles size={15} /> : <Bell size={15} />}
+                    </div>
+                    <div className="shrink-0">
+                        <div className="text-[11px] font-black leading-none">系统公告</div>
+                        <div className="mt-1 text-[9px] font-black uppercase opacity-55">
+                            {hasDesktopAnnouncements ? `${desktopAnnouncementItems.length} 条` : '暂无'}
+                        </div>
+                    </div>
+                    <div className="min-w-0 flex-1 truncate text-[12px] font-bold leading-5">
+                        {announcementText}
+                    </div>
+                    {hasDesktopAnnouncements && desktopAnnouncementItems.length > 1 && (
+                        <div className="shrink-0 rounded-md border border-current/10 bg-white/45 px-1.5 py-0.5 text-[9px] font-black opacity-80 dark:bg-black/10">
+                            +{desktopAnnouncementItems.length - 1}
+                        </div>
+                    )}
+                </button>
+
+                <div className="flex shrink-0 items-center justify-end gap-2">
+                    <motion.button
+                        type="button"
+                        whileHover={{ y: -1 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                            if (onAiCheck && !onAiCheck()) return;
+                            setShowAiModal(true);
+                        }}
+                        className="group flex h-9 items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-600 px-3 text-[11px] font-black text-white shadow-sm shadow-indigo-500/15 transition-colors hover:bg-indigo-500 dark:border-indigo-500/20"
+                    >
+                        <Sparkles size={13} className="animate-pulse" />
+                        <span className="whitespace-nowrap">AI 装机</span>
+                    </motion.button>
+                    <motion.button
+                        type="button"
+                        whileHover={{ y: -1 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={onOpenLibrary}
+                        className="group flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-black text-slate-700 shadow-sm transition-colors hover:bg-slate-50 dark:border-[#2D3748] dark:bg-[#1A1A24] dark:text-slate-200"
+                    >
+                        <FileText size={13} />
+                        <span className="whitespace-nowrap">快速装机</span>
+                    </motion.button>
+                </div>
+            </div>
+
+            {renderAiResultSummary()}
 
 
 
@@ -805,8 +1037,11 @@ function VisualBuilder({
                                             onClick={(e) => e.stopPropagation()}
                                         />
                                     ) : entry.item ? (
-                                        <div className="text-[11px] font-bold text-slate-800 truncate leading-tight">
-                                            {entry.item.brand}_{entry.item.model}
+                                        <div className="flex min-w-0 items-center gap-1.5">
+                                            <div className="min-w-0 truncate text-[11px] font-bold text-slate-800 leading-tight">
+                                                {entry.item.brand}_{entry.item.model}
+                                            </div>
+                                            {renderPc3dBadge(getPc3dMatch(entry.item), true)}
                                         </div>
                                     ) : (
                                         <div className="text-[10px] text-slate-400 flex items-center gap-1">
@@ -877,82 +1112,10 @@ function VisualBuilder({
             </div>
 
             {/* Desktop List View (Hidden on mobile) */}
-            <div className="hidden lg:flex flex-1 min-w-0 max-w-[820px] mx-auto flex-col pb-16 relative">
-                {/* Top Bar: Announcement + AI Build + Quick Build in one row */}
-                <div className="flex gap-2 mb-2.5 items-stretch">
-                    {/* System Announcement - takes most space */}
-                    {sysAnnouncement?.enabled && sysAnnouncement.items && sysAnnouncement.items.length > 0 && (
-                        <div className="flex-1 relative overflow-hidden bg-white/80 dark:bg-[#121218]/80 backdrop-blur-xl border border-slate-200 dark:border-[#1E293B] rounded-xl py-1.5 px-2.5 shadow-sm dark:shadow-none flex items-center gap-2 group">
-                            <div className="shrink-0 relative z-20 flex items-center justify-center w-6 h-6 rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                                 <Bell size={13} className="animate-[wiggle_3s_ease-in-out_infinite]" />
-                            </div>
-                            <div className="flex-1 overflow-hidden relative h-5">
-                                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10 pointer-events-none"></div>
-                                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent z-10 pointer-events-none"></div>
-                                <style>{`
-                                    @keyframes marquee-rtl {
-                                        0% { transform: translateX(100%); }
-                                        100% { transform: translateX(-100%); }
-                                    }
-                                    @keyframes wiggle {
-                                        0%, 100% { transform: rotate(-10deg); }
-                                        50% { transform: rotate(10deg); }
-                                    }
-                                    .animate-marquee-rtl {
-                                        display: inline-block;
-                                        animation: marquee-rtl 18s linear infinite;
-                                        white-space: nowrap;
-                                    }
-                                `}</style>
-                                <div className="animate-marquee-rtl text-[12px] font-bold text-slate-700 dark:text-slate-300 flex gap-16 leading-5">
-                                    {sysAnnouncement.items.map((item: any) => (
-                                        <span key={item.id} className="flex items-center gap-1.5 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap" onClick={() => item.linkUrl && window.open(item.linkUrl, '_blank')}>
-                                            {item.type === 'promo' && <Sparkles size={13} className="text-amber-500" />}
-                                            {item.type === 'warning' && <AlertCircle size={13} className="text-red-500" />}
-                                            {item.type === 'info' && <Info size={13} className="text-indigo-500 dark:text-indigo-400" />}
-                                            {item.content}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* AI Smart Build - compact */}
-                    <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={() => {
-                        if (onAiCheck && !onAiCheck()) return;
-                        setShowAiModal(true);
-                    }} className="group relative cursor-pointer shrink-0">
-                        <div className="absolute -inset-px bg-indigo-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition duration-300"></div>
-                        <div className="relative flex items-center gap-2 bg-white/90 dark:bg-[#121218]/90 backdrop-blur-xl rounded-xl px-3 py-1.5 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none h-10">
-                            <div className="w-7 h-7 rounded-md bg-indigo-600 text-white flex items-center justify-center shrink-0 group-hover:bg-indigo-500 transition-colors duration-300 shadow-sm shadow-indigo-500/20">
-                                <Sparkles size={13} className="animate-pulse" />
-                            </div>
-                            <div className="min-w-0">
-                                <div className="flex items-center gap-1">
-                                    <span className="font-extrabold text-[11px] text-slate-900 dark:text-white whitespace-nowrap">AI 装机</span>
-                                    <span className="text-[7px] font-black bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 px-1 py-0.5 rounded uppercase tracking-wider">Pro</span>
-                                </div>
-                            </div>
-                            <ArrowRight size={11} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0" />
-                        </div>
-                    </motion.div>
-
-                    {/* Quick Build - compact */}
-                    <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={onOpenLibrary} className="group relative cursor-pointer shrink-0">
-                        <div className="relative flex items-center gap-2 bg-white/80 dark:bg-[#121218]/80 backdrop-blur-xl rounded-xl px-3 py-1.5 border border-slate-200 dark:border-[#2D3748] shadow-sm dark:shadow-none group-hover:border-slate-300 dark:group-hover:border-slate-600 transition-all h-10">
-                            <div className="w-7 h-7 bg-slate-100 text-slate-500 rounded-md flex items-center justify-center shrink-0 transition-colors duration-300 group-hover:bg-slate-200 group-hover:text-slate-700">
-                                <FileText size={13} />
-                            </div>
-                            <span className="font-extrabold text-slate-800 dark:text-white text-[11px] whitespace-nowrap">快速装机</span>
-                            <ArrowRight size={11} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0" />
-                        </div>
-                    </motion.div>
-                </div>
-
+            <div className={`hidden min-h-0 min-w-0 flex-col overflow-y-auto pr-1 custom-scrollbar lg:flex ${DESKTOP_VISUAL_COLUMN_HEIGHT} relative`}>
                 <motion.div 
                     initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.035 } } }}
-                    className="flex flex-col space-y-1.5"
+                    className="flex flex-col space-y-1"
                 >
                     {buildList.map((entry) => (
                         <motion.div
@@ -963,13 +1126,13 @@ function VisualBuilder({
                             key={entry.id}
                             ref={(el: any) => { if (el) rowRefs[entry.id] = el; }}
                             onClick={() => openSelector(entry)}
-                            className={`relative rounded-lg px-3 py-2 border transition-all duration-200 cursor-pointer group flex items-center gap-3 min-h-[58px] ${entry.item || entry.customName
+                            className={`relative rounded-lg px-2 py-1 border transition-all duration-200 cursor-pointer group flex items-center gap-2 min-h-[40px] ${entry.item || entry.customName
                                 ? 'bg-white dark:bg-[#121218] border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none hover:bg-slate-50/80 dark:hover:bg-[#15151d] hover:border-slate-300 dark:hover:border-slate-600'
                                 : 'bg-white/50 dark:bg-[#121218]/50 border-dashed border-slate-300/70 dark:border-[#2D3748] hover:bg-white dark:hover:bg-[#121218] hover:border-indigo-300 dark:hover:border-indigo-500/30'
                                 }`}
                         >
                             <div 
-                                className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0 transition-all duration-300 relative overflow-hidden ${entry.item ? 'bg-indigo-600 text-white group-hover:bg-indigo-500' : 'bg-slate-100 dark:bg-[#1A1A24] text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-500'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
+                                className={`w-7 h-7 rounded-md flex items-center justify-center text-sm shrink-0 transition-all duration-300 relative overflow-hidden ${entry.item ? 'bg-indigo-600 text-white group-hover:bg-indigo-500' : 'bg-slate-100 dark:bg-[#1A1A24] text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-500'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
                                 onClick={(e) => {
                                     if (entry.item?.image) {
                                         e.stopPropagation();
@@ -980,20 +1143,23 @@ function VisualBuilder({
                                 {entry.item && <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>}
                                 {getIconByCategory(entry.category)}
                             </div>
-                            <div className={`text-[12px] font-black w-12 tracking-wider ${entry.item ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 group-hover:text-slate-500'}`}>{CATEGORY_MAP[entry.category]}</div>
+                            <div className={`text-[10px] font-black w-9 tracking-wider ${entry.item ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 group-hover:text-slate-500'}`}>{CATEGORY_MAP[entry.category]}</div>
 
                             <div className="flex-1 min-w-0 flex flex-col justify-center">
                                 {entry.category === 'accessory' ? (
                                     <input
                                         type="text"
-                                        className="w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-bold placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 truncate text-[13px]"
+                                        className="w-full bg-transparent border-none p-0 text-slate-800 dark:text-slate-200 font-bold placeholder-slate-300 dark:placeholder-slate-600 focus:ring-0 truncate text-[11px]"
                                         placeholder="快捷输入附件..."
                                         value={entry.customName || ''}
                                         onChange={(e) => onUpdate(entry.id, { customName: e.target.value })}
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : entry.item ? (
-                                    <div className="font-bold text-slate-800 dark:text-slate-100 text-[13px] group-hover:text-slate-950 dark:group-hover:text-white transition-colors leading-snug tracking-tight truncate">{entry.item.brand} {entry.item.model}</div>
+                                    <div className="flex min-w-0 items-center gap-1.5">
+                                        <div className="min-w-0 truncate font-bold text-slate-800 dark:text-slate-100 text-[11px] group-hover:text-slate-950 dark:group-hover:text-white transition-colors leading-snug tracking-tight">{entry.item.brand} {entry.item.model}</div>
+                                        {renderPc3dBadge(getPc3dMatch(entry.item), true)}
+                                    </div>
                                 ) : entry.category === aiActiveCategory ? (
                                     <div className="text-indigo-500 text-xs font-bold flex items-center gap-2 animate-pulse bg-indigo-50 w-max px-2.5 py-1 rounded-md">
                                         <Sparkles size={13} className="animate-spin-slow" />
@@ -1003,19 +1169,19 @@ function VisualBuilder({
                                     <div className="text-slate-300/80 text-xs font-bold tracking-wide">未挑选 {CATEGORY_MAP[entry.category]}</div>
                                 )}
                             </div>
-                            <div className="flex items-center gap-3 w-36 justify-end shrink-0">
+                            <div className="flex items-center gap-1.5 w-28 justify-end shrink-0">
                                 <div className="hidden md:flex" onClick={e => e.stopPropagation()}>
                                     {entry.category === 'accessory' ? null : (
                                         !entry.isLockedQty ? (
-                                            <div className="flex items-center bg-slate-100/80 rounded-lg p-0.5 border border-slate-200/80">
-                                                <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded-md text-slate-500 font-black hover:shadow-sm transition-all">-</button>
-                                                <span className="w-6 text-center text-xs font-black text-slate-700">{entry.quantity}</span>
-                                                <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-6 h-6 flex items-center justify-center hover:bg-white rounded-md text-slate-500 font-black hover:shadow-sm transition-all">+</button>
+                                            <div className="flex items-center bg-slate-100/80 rounded-md p-0.5 border border-slate-200/80">
+                                                <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-[18px] h-5 flex items-center justify-center hover:bg-white rounded text-slate-500 font-black hover:shadow-sm transition-all">-</button>
+                                                <span className="w-4 text-center text-[10px] font-black text-slate-700">{entry.quantity}</span>
+                                                <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-[18px] h-5 flex items-center justify-center hover:bg-white rounded text-slate-500 font-black hover:shadow-sm transition-all">+</button>
                                             </div>
                                         ) : null
                                     )}
                                 </div>
-                                <div className="text-right font-black text-slate-900 dark:text-slate-200 text-[13px] font-mono tracking-tight min-w-[56px]">
+                                <div className="text-right font-black text-slate-900 dark:text-slate-200 text-[11px] font-mono tracking-tight min-w-[46px]">
                                     {entry.item || entry.customName ? `¥${(entry.customPrice ?? entry.item?.price ?? 0) * (entry.quantity || 1)}` : <span className="text-slate-200">-</span>}
                                 </div>
                             </div>
@@ -1031,184 +1197,22 @@ function VisualBuilder({
                     ))}
                 </motion.div>
 
-                {/* AI Analysis Report Card - Moved to Bottom & Enlarged */}
-                {aiResult && (
-                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-3xl p-8 border border-indigo-100 relative overflow-hidden animate-fade-in mt-6 shadow-lg shadow-indigo-100/50">
-                        <div className="relative z-10">
-                            {aiResult.checks && (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
-                                    <div className={`rounded-xl border px-4 py-3 ${aiResult.checks.budget?.ok ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
-                                        <div className="text-[11px] font-black uppercase tracking-wider opacity-70">预算</div>
-                                        <div className="text-sm font-bold mt-1">
-                                            {aiResult.checks.budget?.ok ? '未超预算' : '需要调整'}
-                                        </div>
-                                    </div>
-                                    <div className={`rounded-xl border px-4 py-3 ${aiResult.checks.compatibility?.ok ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
-                                        <div className="text-[11px] font-black uppercase tracking-wider opacity-70">兼容</div>
-                                        <div className="text-sm font-bold mt-1">
-                                            {aiResult.checks.compatibility?.ok ? '全部通过' : '有风险'}
-                                        </div>
-                                    </div>
-                                    <div className={`rounded-xl border px-4 py-3 ${aiResult.checks.requestedItems?.ok ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
-                                        <div className="text-[11px] font-black uppercase tracking-wider opacity-70">点名配件</div>
-                                        <div className="text-sm font-bold mt-1">
-                                            {aiResult.checks.requestedItems?.items?.length ? (aiResult.checks.requestedItems.ok ? '已保留' : '未全部保留') : '未点名'}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            <div className="prose prose-indigo max-w-none">
-                                <p className="text-slate-700 leading-loose text-base font-medium whitespace-pre-wrap">
-                                    {aiResult.description}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <div className="mt-auto hidden lg:block">
+                    {renderGameFpsSection()}
+                </div>
 
             </div>
             {/* Merged Sidebar */}
-            <div className="w-full lg:w-[306px] xl:w-[320px] shrink-0 flex flex-col gap-3 mt-2 lg:mt-0 mb-28 lg:mb-0 relative z-10">
-                {/* Box 1: Price Details (Hidden on Mobile) */}
-                <div className="hidden lg:block bg-white dark:bg-[#121218] rounded-xl border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none p-4 overflow-hidden relative">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/[0.04] rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                    
-                    <h3 className="font-extrabold text-slate-800 dark:text-white mb-2.5 flex items-center gap-2 text-[13px] relative z-10"><CreditCard size={16} className="text-indigo-500" /> 价格明细</h3>
-                    <div className="space-y-1.5 mb-2.5 relative z-10">
-                        <div className="flex justify-between items-center text-[11px] font-medium px-1">
-                            <span className="text-slate-500">基础总价</span>
-                            <span className="font-black text-slate-700">¥{pricing.totalHardware || 0}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-[11px] font-medium px-1">
-                            <span className="text-slate-500">优惠前金额</span>
-                            <span className="font-black text-slate-400 line-through decoration-slate-300">¥{Math.floor(pricing.standardPrice || 0)}</span>
-                        </div>
-                        <div className="flex flex-col gap-1 bg-slate-50 dark:bg-[#1A1A24] rounded-lg border border-slate-200 dark:border-[#2D3748] p-3 relative overflow-hidden mt-1">
-                            <div className="flex items-center gap-2 justify-between">
-                                <span className="text-slate-600 dark:text-slate-300 font-extrabold text-[12px]">实付预估</span>
-                                {(pricing.savedAmount || 0) > 0 && (
-                                    <div className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-md font-bold self-start">
-                                        已省 ¥{pricing.savedAmount}
-                                    </div>
-                                )}
-                            </div>
-                            <span className="text-[30px] font-black text-indigo-600 dark:text-indigo-400 font-display tracking-tight leading-none">¥<BouncyNumber value={pricing.finalPrice || 0} /></span>
-                        </div>
-                    </div>
-
-                    <div className="mb-3 relative z-10">
-                        <div className="relative">
-                            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
-                                <div className="bg-orange-50 text-orange-600 text-[10px] font-black px-1.5 py-0.5 rounded border border-orange-100">优惠</div>
-                            </div>
-                            <select
-                                value={pricing.discountRate}
-                                onChange={(e) => pricing.onDiscountChange?.(parseFloat(e.target.value))}
-                                className="w-full appearance-none bg-slate-50 dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg pl-12 pr-8 py-2 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer"
-                            >
-                                {pricing.discountTiers?.map((tier: any) => (
-                                    <option key={tier.id} value={tier.multiplier}>
-                                        {tier.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
-                        </div>
-                        <div className="text-[9px] text-slate-400 font-bold mt-1.5 text-center uppercase tracking-wide">
-                            标准价格包含 {((pricingStrategy?.serviceFeeRate ?? 0.06) * 100).toFixed(0)}% 装机售后服务费
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 h-9 shrink-0 relative z-10">
-                        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }} onClick={onReset} className="h-full aspect-square flex items-center justify-center bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition-all border border-rose-100" title="清空配置">
-                            <Trash2 size={16} />
-                        </motion.button>
-                        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.97 }} onClick={handleGeneratePoster} disabled={isGeneratingPoster} className="h-full aspect-square flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg transition-all border border-indigo-100" title="生成海报">
-                            {isGeneratingPoster ? <RefreshCw size={17} className="animate-spin" /> : <Download size={17} />}
-                        </motion.button>
-                        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={onSave} className="h-full px-4 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-all text-xs border border-slate-200">
-                            保存
-                        </motion.button>
-                        <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={handleShareClick} className="h-full flex-1 flex items-center justify-center bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-200 text-white dark:text-slate-900 font-bold rounded-lg shadow-sm dark:shadow-none transition-all text-xs">
-                            <Share2 size={14} className="mr-1.5 opacity-80" /> 分享
-                        </motion.button>
-                    </div>
-                </div>
-
-                {/* Box 2: Health Check */}
-                <div className={`relative p-4 rounded-xl border transition-all duration-500 overflow-hidden shadow-sm dark:shadow-none ${(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0)))
-                    ? 'bg-white dark:bg-[#121218] border-emerald-200 dark:border-emerald-500/20'
-                    : 'bg-white dark:bg-[#121218] border-amber-200 dark:border-amber-500/20'
-                    }`}>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] flex items-center gap-2">
-                            <Zap size={15} className={(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? 'text-emerald-500' : 'text-amber-500'} />
-                            兼容性检测
-                        </h3>
-                        {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
-                            <div className="px-2 py-0.5 rounded-md bg-emerald-500 text-white text-[8px] font-black uppercase shadow-sm">通过</div>
-                        ) : (
-                            <div className="px-2 py-0.5 rounded-md bg-amber-500 text-white text-[8px] font-black uppercase shadow-sm">待检查</div>
-                        )}
-                    </div>
-                    <div className="text-[12px] font-bold">
-                        {(health.status === 'perfect' && (!simResult || (simResult.errors?.length === 0 && simResult.warnings?.length === 0))) ? (
-                            <div className="text-emerald-700 dark:text-emerald-400 flex items-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
-                                <CheckCircle2 size={15} /> <span>核心组件完美兼容，方案健康</span>
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                {health.issues.map((issue: string, idx: number) => (
-                                    <div key={`health-${idx}`} className="flex gap-2.5 text-amber-800 bg-amber-50 p-2.5 rounded-lg border border-amber-100">
-                                        <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span className="leading-tight">{issue}</span>
-                                    </div>
-                                ))}
-                                {simResult?.errors?.map((issue: string, idx: number) => (
-                                    <div key={`err-${idx}`} className="flex gap-2.5 text-rose-700 bg-rose-50 p-2.5 rounded-lg border border-rose-100">
-                                        <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span className="leading-tight">{issue}</span>
-                                    </div>
-                                ))}
-                                {simResult?.warnings?.map((issue: string, idx: number) => (
-                                    <div key={`warn-${idx}`} className="flex gap-2.5 text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-100">
-                                        <AlertCircle size={14} className="shrink-0 mt-0.5" /> <span className="leading-tight">{issue}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Box 3: 鲁大师跑分与功耗 Grid */}
-                <div className="hidden lg:grid grid-cols-2 gap-3">
-                    <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none rounded-xl p-3.5 relative overflow-hidden group min-h-[92px]">
-                                <div className="absolute -right-4 -bottom-4 opacity-[0.04] text-indigo-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Activity size={64}/></div>
-                                <h4 className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Activity size={13} className="text-indigo-500"/> 鲁大师跑分</h4>
-                                <div className="text-[22px] font-black text-indigo-600 dark:text-indigo-400 font-display tracking-tighter mt-1.5">
-                                    {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
-                                </div>
-                    </div>
-                    <div className="bg-white dark:bg-[#121218] border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none rounded-xl p-3.5 relative overflow-hidden group min-h-[92px]">
-                        <div className="absolute -right-2 -bottom-2 opacity-[0.04] text-amber-500 group-hover:scale-110 transition-transform duration-500 delay-75"><Zap size={64}/></div>
-                        <h4 className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5"><Zap size={13} className="text-amber-500"/> 系统峰值功耗</h4>
-                        <div className="text-[22px] font-black text-slate-800 dark:text-slate-300 font-display tracking-tighter flex items-center mt-1.5">
-                            {simResult && simResult.totalPowerDraw > 0 ? <><BouncyNumber value={simResult.totalPowerDraw} />W</> : '---'}
-                        </div>
-                        {simResult && simResult.totalPowerDraw > 0 && <div className="text-[9px] text-slate-400 font-bold mt-1 bg-slate-50 dark:bg-slate-800 py-0.5 px-1.5 rounded-md inline-block">推荐电源 {Math.ceil(simResult.totalPowerDraw * 1.3 / 50) * 50}W+</div>}
-                        {(!simResult || simResult.totalPowerDraw <= 0) && <div className="text-[9px] text-slate-400/80 font-bold mt-1 whitespace-nowrap">完善配置后可见</div>}
-                    </div>
-                </div>
-
-                {/* Box 4: 游戏帧率体验测算 */}
-                <div className="hidden lg:block">
-                    {renderGameFpsSection()}
-                </div>
+            <div className={`w-full min-w-0 flex flex-col gap-3 mt-2 lg:mt-0 mb-28 lg:mb-0 ${DESKTOP_VISUAL_COLUMN_HEIGHT} lg:overflow-hidden relative z-10`}>
+                <PC3DViewer buildList={buildList} issues={health.issues} className="hidden lg:flex min-h-0 flex-1" />
+                {renderBuildSummarySection()}
             </div>
 
             {/* Premium Modal Category Selector */}
             {modalCategory && typeof document !== 'undefined' && createPortal((
-                <div className="fixed inset-0 z-[120] flex items-end md:items-center justify-center bg-slate-900/45 md:bg-slate-900/60 md:p-4 backdrop-blur-sm md:backdrop-blur-md animate-fade-in">
+                <div className="fixed inset-0 z-[120] flex items-end justify-center bg-slate-900/45 backdrop-blur-sm animate-fade-in md:pointer-events-none md:items-start md:justify-start md:bg-transparent md:backdrop-blur-none">
                     <div
-                        className="bg-[#FAFAFA] dark:bg-[#121218] rounded-none md:rounded-2xl w-full max-w-3xl h-[100dvh] md:h-[88vh] overflow-y-auto overscroll-contain custom-scrollbar shadow-xl md:shadow-2xl dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] animate-scale-up border-x md:border border-slate-200 dark:border-[#1E293B]"
+                        className="pointer-events-auto bg-[#FAFAFA] dark:bg-[#121218] rounded-none md:fixed md:left-4 md:top-[76px] md:bottom-4 md:rounded-2xl xl:left-[calc((100vw-80rem)/2+1rem)] w-full md:w-[min(44vw,520px)] max-w-3xl md:max-w-[520px] h-[100dvh] md:h-auto overflow-y-auto overscroll-contain custom-scrollbar shadow-xl md:shadow-2xl dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] animate-scale-up border-x md:border border-slate-200 dark:border-[#1E293B]"
                         onScroll={handleModalListScroll}
                     >
                         {/* Modal Header */}
@@ -1283,6 +1287,26 @@ function VisualBuilder({
                                         </button>
                                     )}
                                     </div>
+
+                                    {pc3dAvailableCount > 0 && (
+                                        <div className="flex gap-1.5 md:gap-2 items-center overflow-x-auto no-scrollbar pb-1">
+                                            {([
+                                                { key: 'all', label: `全部${modalCategoryLabel}` },
+                                                { key: 'with3d', label: `有3D模型 ${pc3dAvailableCount}` },
+                                            ] as const).map(option => (
+                                                <button
+                                                    key={option.key}
+                                                    onClick={() => setModalPc3dFilter(option.key)}
+                                                    className={`px-3 md:px-4 py-1.5 rounded-lg md:rounded-xl text-[10px] md:text-[11px] font-black tracking-wide whitespace-nowrap transition-all border shrink-0 ${modalPc3dFilter === option.key
+                                                        ? 'bg-emerald-600 dark:bg-emerald-500/20 text-white dark:text-emerald-300 border-emerald-500 dark:border-emerald-500/30'
+                                                        : 'bg-white dark:bg-[#121218] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#2D3748] hover:border-emerald-200 dark:hover:border-[#2D3748] hover:text-slate-700 dark:hover:text-slate-200'
+                                                    }`}
+                                                >
+                                                    {option.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
     
                                     {/* Monitor filters */}
                                     {modalCategory === 'monitor' && (
@@ -1460,6 +1484,7 @@ function VisualBuilder({
                                     <>
                                         {visibleModalItems.map(item => {
                                             const isOutOfStock = item.price === 0;
+                                            const pc3dMatch = getPc3dMatch(item);
                                             return (
                                                 <div
                                                     key={item.id}
@@ -1500,6 +1525,7 @@ function VisualBuilder({
                                                             </span>
                                                             {isOutOfStock && <span className="text-[9px] bg-slate-100 text-slate-400 px-2 py-0.5 rounded-md font-black uppercase">暂无现货</span>}
                                                             {item.isDiscount && <span className="text-[9px] bg-rose-500 text-white px-2 py-0.5 rounded-md font-black uppercase shadow-sm shadow-rose-200">特价</span>}
+                                                            {renderPc3dBadge(pc3dMatch)}
                                                             {item.createdAt && (new Date().getTime() - new Date(item.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000) && (
                                                                 <span className="text-[9px] bg-emerald-500 text-white px-2 py-0.5 rounded-md font-black uppercase shadow-sm shadow-emerald-200">新品</span>
                                                             )}

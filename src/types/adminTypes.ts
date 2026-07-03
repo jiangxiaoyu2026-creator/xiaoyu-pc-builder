@@ -96,13 +96,7 @@ export interface AISettings {
     // Personality and Strategy
     persona?: 'toxic' | 'professional' | 'enthusiastic' | 'balanced'; // 性格：毒舌、专业、热心、中庸
     strategy?: 'performance' | 'budget' | 'balanced' | 'aesthetic'; // 策略：性能优先、预算优先、平衡、颜值优先
-    // Content Configuration
-    intros?: string[];
-    lowBudgetIntros?: string[];
-    severeBudgetIntros?: string[];
-    verdicts?: string[];
-    ctas?: string[];
-    suggestions?: string[]; // 启发式建议 (Heuristics)
+    suggestions?: string[]; // C 端快捷需求
 }
 
 // --- Chat System Types ---

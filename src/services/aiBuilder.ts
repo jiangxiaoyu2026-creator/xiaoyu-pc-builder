@@ -7,6 +7,7 @@ export interface AIBuildRequest {
     appearance: 'black' | 'white' | 'rgb';
     includeMonitor?: boolean;
     prompt?: string; // Added to carry original user prompt
+    discountRate?: number;
 }
 
 export interface AIBuildLog {
@@ -24,21 +25,40 @@ export interface AIEvaluation {
 }
 
 export interface AIBuildResult {
+    status?: 'ready' | 'needs_confirmation' | 'blocked';
     items: Partial<Record<Category, HardwareItem>>;
     totalPrice: number;
+    finalPrice?: number;
     description: string;
+    alternatives?: string[];
     evaluation?: AIEvaluation;
     requirementSummary?: {
         budget: number;
+        hardwareBudget?: number;
         usage: string;
         appearance: string;
         includeMonitor: boolean;
-        requestedItems: { id: string; category: string; name: string }[];
+        requestedItems: { id: string; category: string; name: string; candidateIds?: string[] }[];
+        unmatchedRequestedTerms?: { category: string; term: string }[];
     };
     checks?: {
-        budget?: { ok: boolean; limit: number; actual: number };
+        budget?: {
+            ok: boolean;
+            limit: number;
+            actual: number;
+            hardwareLimit?: number;
+            hardwareTotal?: number;
+            finalPrice?: number;
+            serviceFeeRate?: number;
+            discountRate?: number;
+        };
         compatibility?: { ok: boolean; issues: string[] };
-        requestedItems?: { ok: boolean; items: { id: string; category: string; name: string; kept: boolean }[] };
+        requestedItems?: {
+            ok: boolean;
+            items: { id: string; category: string; name: string; kept: boolean; candidateIds?: string[] }[];
+            unmatched?: { category: string; term: string }[];
+        };
+        completeness?: { ok: boolean; missing: string[] };
     };
     logs: AIBuildLog[];
 }
@@ -60,9 +80,9 @@ export const aiBuilder = {
 
         // 1. Extract Budget - prefer numbers near budget keywords over hardware model numbers
         let budgetFound = false;
-        // First: look for explicit budget patterns like "预算8000" / "8000元" / "8000块"
-        const explicitMatch = prompt.match(/(?:预算|budget|花|出|控制在)\s*(\d{3,6})/i) 
-            || prompt.match(/(\d{4,6})\s*(?:元|块|左右|以内|上下|的预算)/);
+        // First: look for explicit budget patterns like "预算8000" / "8000元" / "100元"
+        const explicitMatch = prompt.match(/(?:预算|budget|花|出|控制在)\s*(\d{2,6})/i)
+            || prompt.match(/(\d{2,6})\s*(?:元|块|左右|以内|上下|的预算)/);
         if (explicitMatch) {
             budget = parseInt(explicitMatch[1]);
             budgetFound = true;
@@ -134,7 +154,8 @@ export const aiBuilder = {
                 budget: req.budget,
                 usage: req.usage,
                 appearance: req.appearance,
-                includeMonitor: Boolean(req.includeMonitor)
+                includeMonitor: Boolean(req.includeMonitor),
+                discountRate: req.discountRate || 1.0
             };
 
             // Call the new backend API
@@ -143,10 +164,10 @@ export const aiBuilder = {
             // Backend returns the verified build. Logs are UI progress labels, not claims about model internals.
             const logs: AIBuildLog[] = [
                 { type: 'analysis', step: '需求解析', detail: '正在提取预算、用途、外观偏好和点名配件。' },
-                { type: 'search', step: '库存召回', detail: `正在检索 ${req.budget} 元档位的可用硬件候选。` },
-                { type: 'match', step: '方案生成', detail: '正在组合满足预算和用途的配置方案。' },
-                { type: 'adjustment', step: '规则校验', detail: '正在校验接口、内存、机箱尺寸和电源冗余。' },
-                { type: 'complete', step: '生成完毕', detail: '配置单已生成。' }
+                { type: 'search', step: '库存召回', detail: `正在按最终预算 ${req.budget} 元检索可售库存。` },
+                { type: 'match', step: '规则配单', detail: '正在用后端规则组合真实商品。' },
+                { type: 'adjustment', step: '硬校验', detail: '正在校验接口、内存、机箱尺寸、电源冗余和最终价。' },
+                { type: 'complete', step: '生成完毕', detail: '配单引擎已返回结果。' }
             ];
 
             if (response.error) {
@@ -156,11 +177,13 @@ export const aiBuilder = {
             // Validate: check if any actual hardware was returned
             const items = response.items || {};
             const hasAnyItem = Object.values(items).some((v: any) => v && typeof v === 'object' && v.id);
-            if (!hasAnyItem) {
+            if (!hasAnyItem && response.status !== 'blocked') {
                 return {
+                    status: 'blocked',
                     items: {},
                     totalPrice: 0,
-                    description: '⚠️ AI 未能在当前库存中找到匹配的硬件。请尝试调整预算或简化需求描述后重试。',
+                    description: '⚠️ 配单引擎未能在当前库存中找到匹配的硬件。请尝试调整预算或简化需求描述后重试。',
+                    alternatives: ['降低点名限制', '提高预算', '补齐后台商品规格'],
                     logs: [
                         { type: 'analysis' as const, step: '库存匹配', detail: '[WARN] 当前库存中没有找到满足您需求的配件组合。' }
                     ]
@@ -168,9 +191,12 @@ export const aiBuilder = {
             }
 
             return {
+                status: response.status || 'ready',
                 items,
                 totalPrice: response.totalPrice || 0,
+                finalPrice: response.finalPrice || undefined,
                 description: response.description || "AI 未返回描述。",
+                alternatives: response.alternatives || undefined,
                 evaluation: response.evaluation || undefined,
                 requirementSummary: response.requirementSummary || undefined,
                 checks: response.checks || undefined,
@@ -192,9 +218,11 @@ export const aiBuilder = {
             }
 
             return {
+                status: 'blocked',
                 items: {},
                 totalPrice: 0,
                 description: `⚠️ 生成失败: ${friendlyError}\n\n技术细节: ${errorMsg}`,
+                alternatives: ['检查后台配单开关', '稍后重试', '改用手动选配'],
                 logs: [
                     { type: 'analysis', step: '云端连接', detail: '[SYSTEM] Connecting...' },
                     { type: 'analysis', step: '错误', detail: `[ERROR] ${friendlyError} | 详情: ${errorMsg}` }
