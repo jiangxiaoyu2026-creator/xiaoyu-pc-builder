@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D 模型本地筛选台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --line: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --soft: #f8fafc;
+      --green: #047857;
+      --amber: #b45309;
+      --red: #be123c;
+      --blue: #2563eb;
+      --teal: #0f766e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .page { max-width: 1500px; margin: 0 auto; padding: 22px; }
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+    h1 { margin: 0; font-size: 26px; letter-spacing: 0; }
+    .sub { margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.7; font-weight: 700; }
+    .toolbar, .stats, .table-wrap, .side-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+    }
+    .stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; overflow: hidden; margin-bottom: 14px; }
+    .stat { padding: 15px; border-right: 1px solid var(--line); }
+    .stat:last-child { border-right: 0; }
+    .stat .label { font-size: 11px; font-weight: 900; color: var(--muted); }
+    .stat .value { margin-top: 8px; font-size: 28px; font-weight: 950; }
+    .toolbar { padding: 14px; margin-bottom: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    input, select, button, textarea {
+      font: inherit;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+    }
+    input, select { height: 38px; padding: 0 11px; font-size: 13px; font-weight: 800; }
+    input.search { min-width: 320px; flex: 1; }
+    button {
+      height: 36px;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .15s ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    button.primary { background: var(--text); color: #fff; border-color: var(--text); }
+    button.approve { background: #ecfdf5; color: var(--green); border-color: #bbf7d0; }
+    button.delete { background: #fff1f2; color: var(--red); border-color: #fecdd3; }
+    button.restore { background: #ecfdf5; color: var(--green); border-color: #bbf7d0; }
+    button:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 14px; align-items: start; }
+    .category-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 0 0 14px;
+    }
+    .category-chip {
+      height: 34px;
+      padding: 0 11px;
+      border-radius: 9px;
+      background: #fff;
+      color: #334155;
+      border: 1px solid var(--line);
+    }
+    .category-chip.active {
+      background: #0f172a;
+      color: #fff;
+      border-color: #0f172a;
+    }
+    .table-wrap { overflow: hidden; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--soft);
+      border-bottom: 1px solid var(--line);
+      padding: 11px;
+      text-align: left;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 950;
+      white-space: nowrap;
+    }
+    tbody td { border-bottom: 1px solid #eef2f7; padding: 12px 11px; vertical-align: top; }
+    tbody tr:hover { background: #fbfdff; }
+    .scroll { max-height: calc(100vh - 238px); overflow: auto; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+    .exact { background: #ecfdf5; color: var(--green); }
+    .similar { background: #fffbeb; color: var(--amber); }
+    .none { background: #f1f5f9; color: #475569; }
+    .rejected { background: #fff1f2; color: var(--red); }
+    .category-badge { background: #eef6ff; color: var(--blue); }
+    .manual { background: #f0fdfa; color: var(--teal); }
+    .product { font-weight: 950; line-height: 1.45; max-width: 310px; }
+    .product-line { display: flex; gap: 11px; align-items: flex-start; min-width: 280px; }
+    .thumb {
+      width: 76px;
+      height: 76px;
+      flex: 0 0 76px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      background: #fff;
+      display: grid;
+      place-items: center;
+    }
+    .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .thumb.placeholder {
+      background: #f8fafc;
+      color: #64748b;
+      text-align: center;
+      padding: 8px;
+      line-height: 1.25;
+    }
+    .thumb.placeholder span { font-size: 12px; font-weight: 950; }
+    .thumb.placeholder small { display: block; margin-top: 5px; font-size: 10px; font-weight: 800; }
+    .meta { margin-top: 5px; color: var(--muted); font-size: 11px; font-weight: 800; line-height: 1.5; }
+    .asset { max-width: 340px; font-weight: 900; line-height: 1.45; }
+    .model-link { display: inline-block; margin-top: 6px; color: var(--blue); font-size: 11px; font-weight: 900; text-decoration: none; }
+    .reason { max-width: 430px; color: #334155; font-weight: 750; line-height: 1.6; }
+    .risk { margin-top: 6px; color: var(--amber); font-size: 11px; font-weight: 900; line-height: 1.5; }
+    .actions { display: grid; gap: 8px; min-width: 86px; }
+    .side-card { padding: 14px; margin-bottom: 14px; }
+    .side-card h2 { margin: 0 0 10px; font-size: 14px; }
+    .help { color: var(--muted); font-size: 12px; font-weight: 750; line-height: 1.75; }
+    .deleted-list { display: grid; gap: 8px; max-height: 360px; overflow: auto; }
+    .deleted-item { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--soft); }
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      max-width: 420px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #0f172a;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 850;
+      box-shadow: 0 16px 50px rgba(15, 23, 42, .24);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: .18s ease;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .empty { padding: 42px; text-align: center; color: var(--muted); font-weight: 900; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div>
+        <h1>3D 模型本地筛选台</h1>
+        <div class="sub">当前策略是先默认关联：有候选模型的产品先标记可用，后续你再逐个审核。点“不可用”会剔除当前模型，误操作可以在右侧撤销。</div>
+      </div>
+      <button class="primary" id="reloadBtn">刷新数据</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="label">全部产品</div><div class="value" id="totalCount">-</div></div>
+      <div class="stat"><div class="label">可用模型</div><div class="value" id="exactCount">-</div></div>
+      <div class="stat"><div class="label">候选待确认</div><div class="value" id="similarCount">-</div></div>
+      <div class="stat"><div class="label">未关联</div><div class="value" id="noneCount">-</div></div>
+      <div class="stat"><div class="label">不可用</div><div class="value" id="rejectedCount">-</div></div>
+    </div>
+
+    <div class="category-strip" id="categoryChips"></div>
+
+    <div class="toolbar">
+      <input id="searchInput" class="search" placeholder="搜索分类、品牌、型号、模型名、原因、风险" />
+      <select id="statusFilter">
+        <option value="all">全部</option>
+        <option value="exact">可用已确认</option>
+        <option value="similar">候选待确认</option>
+        <option value="none">未关联</option>
+        <option value="rejected">不可用</option>
+      </select>
+      <select id="categoryFilter"><option value="all">全部类目</option></select>
+      <select id="brandFilter"><option value="all">全部品牌</option></select>
+      <button id="clearFilters">清空筛选</button>
+    </div>
+
+    <div class="grid">
+      <div class="table-wrap">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>状态</th>
+                <th>分类</th>
+                <th>后台产品 / 图片</th>
+                <th>候选/关联模型</th>
+                <th>依据与风险</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+      <aside>
+        <div class="side-card">
+          <h2>筛选规则</h2>
+          <div class="help">
+            可用 = 当前产品会使用这个 3D 模型，后续网站 3D 预览可以显示。<br />
+            不可用 = 这个产品不使用当前候选模型，系统会把它改成未关联并记录本地决定。<br />
+            默认关联只是先跑通展示，后续可以再逐个审核和修正。
+          </div>
+        </div>
+        <div class="side-card">
+          <h2>最近处理</h2>
+          <div id="deletedList" class="deleted-list"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const state = {
+      products: [],
+      assets: [],
+      decisions: {},
+      filtered: [],
+      timer: null
+    };
+    const categoryLabels = {
+      case: '机箱', mainboard: '主板', gpu: '显卡', cooling: '散热',
+      power: '电源', fan: '风扇', ram: '内存'
+    };
+    const statusLabels = {
+      exact: '可用',
+      similar: '待确认',
+      none: '未关联',
+      rejected: '不可用'
+    };
+    const $ = (id) => document.getElementById(id);
+    const routeMap = {
+      '/api/mapping': '/api/pc3d/mapping',
+      '/api/approve': '/api/pc3d/approve',
+      '/api/delete': '/api/pc3d/reject',
+      '/api/restore': '/api/pc3d/restore'
+    };
+
+    function apiPath(path) {
+      if (location.port === '8788') return path;
+      return routeMap[path] || path;
+    }
+
+    function toast(message) {
+      const el = $('toast');
+      el.textContent = message;
+      el.classList.add('show');
+      window.clearTimeout(state.timer);
+      state.timer = window.setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    async function api(path, options = {}) {
+      const token = (() => {
+        try { return localStorage.getItem('xiaoyu_token'); } catch { return ''; }
+      })();
+      const res = await fetch(apiPath(path), {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(options.headers || {})
+        }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data;
+    }
+
+    function rejectedIds() {
+      return new Set(Object.entries(state.decisions || {})
+        .filter(([, decision]) => decision?.action === 'rejected')
+        .map(([id]) => id));
+    }
+
+    function reviewStatusLabel(product) {
+      if (product.review_status === 'manual_approved') return '手动可用';
+      if (product.review_status === 'auto_exact') return '自动精准';
+      if (product.review_status === 'needs_review') return '待人工确认';
+      if (product.review_status === 'unmapped') return '未关联';
+      return product.review_status || '';
+    }
+
+    function currentSummary() {
+      const rejected = rejectedIds();
+      const counts = { exact: 0, similar: 0, none: 0, rejected: rejected.size };
+      for (const product of state.products) {
+        if (rejected.has(product.product_id)) continue;
+        if (product.match_kind === 'exact') counts.exact += 1;
+        else if (product.match_kind === 'similar') counts.similar += 1;
+        else counts.none += 1;
+      }
+      return counts;
+    }
+
+    function updateStats() {
+      const counts = currentSummary();
+      $('totalCount').textContent = state.products.length;
+      $('exactCount').textContent = counts.exact;
+      $('similarCount').textContent = counts.similar;
+      $('noneCount').textContent = counts.none;
+      $('rejectedCount').textContent = counts.rejected;
+    }
+
+    function fillSelects() {
+      const categories = [...new Set(state.products.map((p) => p.category).filter(Boolean))]
+        .sort((a, b) => (categoryLabels[a] || a).localeCompare(categoryLabels[b] || b, 'zh-CN'));
+      $('categoryFilter').innerHTML = '<option value="all">全部类目</option>' +
+        categories.map((cat) => `<option value="${escapeHtml(cat)}">${escapeHtml(categoryLabels[cat] || cat)}</option>`).join('');
+      const brands = [...new Set(state.products.map((p) => p.brand).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, 'zh-CN'));
+      $('brandFilter').innerHTML = '<option value="all">全部品牌</option>' +
+        brands.map((brand) => `<option value="${escapeHtml(brand)}">${escapeHtml(brand)}</option>`).join('');
+    }
+
+    function renderCategoryChips() {
+      const selected = $('categoryFilter').value;
+      const counts = new Map();
+      for (const product of state.products) {
+        const category = product.category || 'unknown';
+        counts.set(category, (counts.get(category) || 0) + 1);
+      }
+      const categories = [...counts.keys()]
+        .sort((a, b) => (categoryLabels[a] || a).localeCompare(categoryLabels[b] || b, 'zh-CN'));
+      $('categoryChips').innerHTML = [
+        `<button class="category-chip ${selected === 'all' ? 'active' : ''}" data-category="all">全部 ${state.products.length}</button>`,
+        ...categories.map((cat) => `<button class="category-chip ${selected === cat ? 'active' : ''}" data-category="${escapeHtml(cat)}">${escapeHtml(categoryLabels[cat] || cat)} ${counts.get(cat)}</button>`)
+      ].join('');
+      $('categoryChips').querySelectorAll('[data-category]').forEach((button) => {
+        button.addEventListener('click', () => {
+          $('categoryFilter').value = button.dataset.category;
+          applyFilters();
+        });
+      });
+    }
+
+    function applyFilters() {
+      const q = $('searchInput').value.trim().toLowerCase();
+      const status = $('statusFilter').value;
+      const category = $('categoryFilter').value;
+      const brand = $('brandFilter').value;
+      const rejected = rejectedIds();
+      state.filtered = state.products.filter((product) => {
+        const isRejected = rejected.has(product.product_id);
+        if (status === 'rejected' && !isRejected) return false;
+        if (isRejected && status !== 'rejected' && status !== 'all') return false;
+        if (status !== 'rejected' && status !== 'all' && product.match_kind !== status) return false;
+        if (category !== 'all' && product.category !== category) return false;
+        if (brand !== 'all' && product.brand !== brand) return false;
+        if (!q) return true;
+        const text = [
+          product.brand, product.model, product.category, categoryLabels[product.category],
+          product.category_label, product.asset_label,
+          product.asset_source_name, product.reason, product.risk, product.product_id, product.asset_id
+        ].join(' ').toLowerCase();
+        return text.includes(q);
+      }).sort((a, b) => {
+        const rank = { similar: 0, exact: 1, none: 2 };
+        const ar = rejected.has(a.product_id) ? -1 : (rank[a.match_kind] ?? 9);
+        const br = rejected.has(b.product_id) ? -1 : (rank[b.match_kind] ?? 9);
+        if (ar !== br) return ar - br;
+        if ((b.confidence || 0) !== (a.confidence || 0)) return (b.confidence || 0) - (a.confidence || 0);
+        return `${a.brand}${a.model}`.localeCompare(`${b.brand}${b.model}`, 'zh-CN');
+      });
+      renderRows();
+      renderDeletedList();
+      renderCategoryChips();
+      updateStats();
+    }
+
+    function productImageHtml(product) {
+      const label = product.category_label || categoryLabels[product.category] || '产品';
+      if (product.product_image_available && product.product_image_url) {
+        return `<div class="thumb"><img src="${escapeHtml(product.product_image_url)}" alt="" loading="lazy" /></div>`;
+      }
+      return `<div class="thumb placeholder"><span>${escapeHtml(label)}</span><small>${product.product_image_url ? '图片未同步' : '暂无图'}</small></div>`;
+    }
+
+    function actionHtml(product, isRejected) {
+      if (isRejected) {
+        return `<button class="restore" data-restore="${escapeHtml(product.product_id)}">撤销</button>`;
+      }
+      const hasModel = Boolean(product.asset_id);
+      const isExact = product.match_kind === 'exact';
+      return `<div class="actions">
+        <button class="approve" data-approve="${escapeHtml(product.product_id)}" ${(!hasModel || isExact) ? `disabled title="${isExact ? '已经是可用模型' : '没有候选模型'}"` : ''}>可用</button>
+        <button class="delete" data-delete="${escapeHtml(product.product_id)}" ${!hasModel ? 'disabled title="没有候选模型"' : ''}>不可用</button>
+      </div>`;
+    }
+
+    function renderRows() {
+      const tbody = $('rows');
+      if (!state.filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty">没有符合条件的产品</div></td></tr>';
+        return;
+      }
+      const rejected = rejectedIds();
+      tbody.innerHTML = state.filtered.map((product) => {
+        const isRejected = rejected.has(product.product_id);
+        const kind = isRejected ? 'rejected' : product.match_kind;
+        const reviewLabel = reviewStatusLabel(product);
+        const reviewClass = product.review_status === 'manual_approved' ? 'manual' : kind;
+        const categoryLabel = product.category_label || categoryLabels[product.category] || product.category || '未分类';
+        return `<tr>
+          <td>
+            <span class="badge ${escapeHtml(kind)}">${escapeHtml(statusLabels[kind] || kind)}</span>
+            <div class="meta">${product.confidence || 0}% · ${escapeHtml(reviewLabel)}</div>
+          </td>
+          <td>
+            <span class="badge category-badge">${escapeHtml(categoryLabel)}</span>
+            <div class="meta">${escapeHtml(product.category || '')}</div>
+          </td>
+          <td>
+            <div class="product-line">
+              ${productImageHtml(product)}
+              <div>
+                <div class="product">${escapeHtml(product.brand)} ${escapeHtml(product.model)}</div>
+                <div class="meta">¥${Number(product.price || 0).toLocaleString('zh-CN')}<br>${escapeHtml(product.product_id)}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            ${product.asset_id ? `<div class="asset">${escapeHtml(product.asset_label || product.asset_source_name || '未命名模型')}</div>
+            <div class="meta">${escapeHtml(product.asset_id)}</div>
+            ${product.asset_model_url ? `<a class="model-link" href="${escapeHtml(product.asset_model_url)}" target="_blank" rel="noreferrer">打开模型文件</a>` : ''}` : '<span class="badge none">无模型</span>'}
+          </td>
+          <td>
+            ${reviewLabel ? `<span class="badge ${escapeHtml(reviewClass)}">${escapeHtml(reviewLabel)}</span>` : ''}
+            <div class="reason">${escapeHtml(product.reason || '')}</div>
+            ${product.risk ? `<div class="risk">${escapeHtml(product.risk)}</div>` : ''}
+          </td>
+          <td>${actionHtml(product, isRejected)}</td>
+        </tr>`;
+      }).join('');
+      tbody.querySelectorAll('[data-approve]').forEach((button) => {
+        button.addEventListener('click', () => approveProduct(button.dataset.approve));
+      });
+      tbody.querySelectorAll('[data-delete]').forEach((button) => {
+        button.addEventListener('click', () => deleteProduct(button.dataset.delete));
+      });
+      tbody.querySelectorAll('[data-restore]').forEach((button) => {
+        button.addEventListener('click', () => restoreProduct(button.dataset.restore));
+      });
+    }
+
+    function renderDeletedList() {
+      const list = $('deletedList');
+      const items = Object.values(state.decisions || {}).sort((a, b) => String(b.decided_at || '').localeCompare(String(a.decided_at || '')));
+      if (!items.length) {
+        list.innerHTML = '<div class="help">还没有处理记录。</div>';
+        return;
+      }
+      list.innerHTML = items.slice(0, 40).map((item) => `<div class="deleted-item">
+        <span class="badge ${item.action === 'approved' ? 'exact' : 'rejected'}">${item.action === 'approved' ? '可用' : '不可用'}</span>
+        <div class="product">${escapeHtml(item.brand || '')} ${escapeHtml(item.model || '')}</div>
+        <div class="meta">${escapeHtml(item.category_label || item.category || '')}<br>${escapeHtml(item.asset_label || '')}</div>
+        <button class="restore" data-restore="${escapeHtml(item.product_id)}">撤销</button>
+      </div>`).join('');
+      list.querySelectorAll('[data-restore]').forEach((button) => {
+        button.addEventListener('click', () => restoreProduct(button.dataset.restore));
+      });
+    }
+
+    async function approveProduct(productId) {
+      const product = state.products.find((item) => item.product_id === productId);
+      if (!product || !product.asset_id || product.match_kind === 'exact') return;
+      const label = `${product.brand} ${product.model}`;
+      await api('/api/approve', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId })
+      });
+      toast(`已标记可用：${label}`);
+      await loadData(false);
+    }
+
+    async function deleteProduct(productId) {
+      const product = state.products.find((item) => item.product_id === productId);
+      if (!product || !product.asset_id) return;
+      const label = `${product.brand} ${product.model}`;
+      await api('/api/delete', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId })
+      });
+      toast(`已标记不可用：${label}`);
+      await loadData(false);
+    }
+
+    async function restoreProduct(productId) {
+      await api('/api/restore', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId })
+      });
+      toast('已撤销上一次处理');
+      await loadData(false);
+    }
+
+    async function loadData(refill = true) {
+      const data = await api('/api/mapping');
+      state.products = data.products || [];
+      state.assets = data.assets || [];
+      state.decisions = data.decisions || {};
+      if (refill) fillSelects();
+      applyFilters();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
+    }
+
+    $('reloadBtn').addEventListener('click', () => loadData(false).then(() => toast('已刷新')));
+    $('searchInput').addEventListener('input', applyFilters);
+    $('statusFilter').addEventListener('change', applyFilters);
+    $('categoryFilter').addEventListener('change', applyFilters);
+    $('brandFilter').addEventListener('change', applyFilters);
+    $('clearFilters').addEventListener('click', () => {
+      $('searchInput').value = '';
+      $('statusFilter').value = 'all';
+      $('categoryFilter').value = 'all';
+      $('brandFilter').value = 'all';
+      applyFilters();
+    });
+
+    loadData().catch((error) => {
+      console.error(error);
+      toast(`加载失败：${error.message}`);
+    });
+  </script>
+</body>
+</html>

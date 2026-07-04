@@ -1,0 +1,2290 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DIY叉叉 3D 装机搭配台</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b10;
+      --panel: #121218;
+      --panel-2: #1a1a24;
+      --line: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --blue: #6366f1;
+      --green: #34d399;
+      --amber: #f59e0b;
+      --red: #fb7185;
+      --soft: #1a1a24;
+      --stage: #e7e8e1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+      overflow: hidden;
+    }
+    header {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 16px;
+      background: rgba(18, 18, 24, .96);
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0; font-size: 18px; font-weight: 760; }
+    .summary { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .mode-note {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+      text-align: right;
+    }
+    .mode-note strong {
+      color: var(--blue);
+      font-size: 13px;
+    }
+    main {
+      height: calc(100vh - 54px);
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr) 360px;
+      min-width: 0;
+    }
+    aside, .build-panel {
+      background: var(--panel);
+      overflow: auto;
+      padding: 12px;
+    }
+    aside { border-right: 1px solid var(--line); }
+    .build-panel { border-left: 1px solid var(--line); }
+    .stage-wrap {
+      position: relative;
+      background: var(--stage);
+      min-width: 0;
+      overflow: hidden;
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel-2);
+      padding: 9px 10px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    textarea { min-height: 72px; resize: vertical; }
+    button {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel-2);
+      color: var(--text);
+      min-height: 36px;
+      padding: 0 10px;
+      font-size: 13px;
+      font-weight: 680;
+      cursor: pointer;
+    }
+    button:hover { border-color: #475569; }
+    button.primary { color: #fff; background: var(--blue); border-color: var(--blue); }
+    button.good { color: var(--green); }
+    button.warn { color: var(--amber); }
+    button.bad { color: var(--red); }
+    .filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin: 10px 0;
+    }
+    .tabs button {
+      min-height: 32px;
+      padding: 0 6px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .tabs button.active { background: rgba(99, 102, 241, .16); border-color: rgba(99, 102, 241, .55); color: #c7d2fe; }
+    .list { display: grid; gap: 8px; }
+    .asset {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: var(--panel);
+      display: grid;
+      gap: 8px;
+    }
+    .asset.selected { border-color: var(--blue); outline: 2px solid rgba(99, 102, 241, .18); }
+    .asset-title { font-size: 14px; font-weight: 760; line-height: 1.35; }
+    .asset-meta { color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .asset-actions { display: flex; gap: 8px; }
+    .asset-actions button { flex: 1; }
+    .pill-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .pill.high { color: #bbf7d0; background: rgba(34, 197, 94, .15); }
+    .pill.medium { color: #fde68a; background: rgba(245, 158, 11, .14); }
+    .pill.low, .pill.risk { color: #fecdd3; background: rgba(244, 63, 94, .14); }
+    .pill.catalog_candidate, .pill.brand_candidate, .pill.sample_build { color: #c7d2fe; background: rgba(99, 102, 241, .15); }
+    .toolbar {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 2;
+      flex-wrap: wrap;
+    }
+    .toolbar button.active { background: rgba(99, 102, 241, .16); border-color: rgba(99, 102, 241, .55); color: #c7d2fe; }
+    .legend {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      z-index: 2;
+      background: rgba(255,255,255,.9);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 12px;
+      max-width: min(520px, calc(100% - 24px));
+      line-height: 1.45;
+    }
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(231, 232, 225, .72), rgba(231, 232, 225, .36));
+      backdrop-filter: blur(2px);
+      transition: opacity .18s ease;
+    }
+    .loading-overlay[hidden] {
+      display: none;
+    }
+    .loading-card {
+      min-width: min(320px, calc(100% - 32px));
+      border: 1px solid rgba(148, 163, 184, .28);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .92);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, .14);
+      padding: 14px 16px;
+      color: #334155;
+    }
+    .loading-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #111827;
+    }
+    .loading-spinner {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 3px solid rgba(99, 102, 241, .18);
+      border-top-color: var(--blue);
+      animation: spin .8s linear infinite;
+    }
+    .loading-detail {
+      margin-top: 6px;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.45;
+    }
+    .loading-bar {
+      height: 4px;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, .14);
+    }
+    .loading-bar span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--blue);
+      transition: width .22s ease;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .section-title {
+      margin: 4px 0 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 720;
+    }
+    .slot-list, .risk-list { display: grid; gap: 8px; }
+    .slot {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+      padding: 10px;
+    }
+    .slot-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .slot-name { font-weight: 760; font-size: 14px; }
+    .slot-empty { color: var(--muted); font-size: 13px; }
+    .slot-model { font-size: 13px; line-height: 1.35; }
+    .slot button { min-height: 30px; padding: 0 8px; }
+    .risk {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: var(--panel-2);
+      font-size: 13px;
+      line-height: 1.38;
+    }
+    .risk.warn { border-color: rgba(245, 158, 11, .35); background: rgba(245, 158, 11, .1); color: #fde68a; }
+    .risk.bad { border-color: rgba(244, 63, 94, .35); background: rgba(244, 63, 94, .1); color: #fecdd3; }
+    .save-row { display: grid; gap: 8px; margin: 12px 0; }
+    .save-actions { display: flex; gap: 8px; }
+    .save-actions button { flex: 1; }
+    .calibration {
+      display: grid;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+      padding: 10px;
+      margin: 10px 0 12px;
+    }
+    .cal-row {
+      display: grid;
+      grid-template-columns: 44px 1fr 52px;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .cal-row input { padding: 0; }
+    .cal-value {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      color: var(--text);
+    }
+    .nudge-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .nudge-grid button { min-height: 32px; padding: 0 6px; }
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      min-width: 220px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #1f2a24;
+      color: #fff;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 10;
+      font-size: 14px;
+      font-weight: 720;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .file-warning {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      z-index: 99;
+      background: radial-gradient(circle at 45% 20%, rgba(99, 102, 241, .18), transparent 34%), #0b0b10;
+      color: var(--text);
+      padding: 24px;
+    }
+    body.file-opened .file-warning { display: grid; }
+    body.file-opened > header,
+    body.file-opened > main {
+      display: none;
+    }
+    .file-card {
+      width: min(560px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(18, 18, 24, .94);
+      padding: 24px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .36);
+    }
+    .file-card h2 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    .file-card p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .file-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .file-actions a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      border-radius: 8px;
+      padding: 0 14px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: var(--panel-2);
+    }
+    .file-actions a.primary {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: white;
+    }
+    @media (max-width: 1080px) {
+      body { overflow: auto; }
+      main { height: auto; grid-template-columns: 1fr; }
+      aside, .build-panel { max-height: 42vh; border: 0; border-bottom: 1px solid var(--line); }
+      .stage-wrap { height: 58vh; min-height: 440px; }
+    }
+    body.embed header,
+    body.embed aside,
+    body.embed .build-panel {
+      display: none;
+    }
+    body.embed {
+      overflow: hidden;
+      background: var(--stage);
+    }
+    body.embed main {
+      height: 100vh;
+      grid-template-columns: minmax(0, 1fr);
+    }
+    body.embed .stage-wrap {
+      height: 100vh;
+      min-height: 0;
+    }
+    body.embed .toolbar {
+      left: 8px;
+      top: 8px;
+    }
+    body.embed .toolbar button:not(#resetCamera) {
+      display: none;
+    }
+    body.embed .legend {
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      max-width: none;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="file-warning">
+    <div class="file-card">
+      <h2>这个文件不能直接打开</h2>
+      <p>
+        这里是 3D 模型校准工作台，需要通过网站服务加载模型资源。客户看到的入口不是这个文件，而是网站 AI装机台右侧的 3D 装机效果预览。
+      </p>
+      <div class="file-actions">
+        <a class="primary" href="http://127.0.0.1:5173/">打开网站 AI装机台</a>
+        <a href="http://127.0.0.1:5173/pc3d/combo.html">打开校准工作台</a>
+      </div>
+    </div>
+  </div>
+  <header>
+    <h1>DIY叉叉 3D 模型校准工作台</h1>
+    <div class="mode-note">
+      <strong>客户入口在网站 AI装机台右侧</strong>
+      <span id="summary">加载中</span>
+    </div>
+  </header>
+  <main>
+    <aside>
+      <input id="search" placeholder="搜索品牌 / 型号 / 颜色 / 料号" />
+      <div class="filters">
+        <select id="brand"></select>
+        <select id="confidence"></select>
+      </div>
+      <div class="tabs" id="categoryTabs"></div>
+      <div class="list" id="assetList"></div>
+    </aside>
+    <section class="stage-wrap">
+      <div class="toolbar">
+        <button id="resetCamera">重置视角</button>
+        <button id="layoutMode">装机效果</button>
+        <button id="anchorToggle" class="active">显示定位框</button>
+        <button id="autoBuild" class="good">一键示例</button>
+        <button id="explodeToggle">紧凑/展开</button>
+        <button id="clearBuild" class="bad">清空搭配</button>
+      </div>
+      <canvas id="stage"></canvas>
+      <div class="loading-overlay" id="loadingOverlay" hidden>
+        <div class="loading-card">
+          <div class="loading-head">
+            <span class="loading-spinner"></span>
+            <span id="loadingTitle">正在加载 3D 模型</span>
+          </div>
+          <div class="loading-detail" id="loadingDetail">模型文件较大，请稍等片刻。</div>
+          <div class="loading-bar"><span id="loadingBar"></span></div>
+        </div>
+      </div>
+      <div class="legend" id="legend">正式站预览版：优先读取机箱模型里的 MOTHERBOARD、PSU、PCIE、CASE_FAN 定位框。</div>
+    </section>
+    <section class="build-panel">
+      <div class="section-title">当前搭配</div>
+      <div class="slot-list" id="slotList"></div>
+      <div class="section-title">装机微调</div>
+      <div class="calibration">
+        <select id="calCategory"></select>
+        <div class="cal-row"><span>X</span><input id="calX" type="range" min="-1.5" max="1.5" step="0.01" /><span id="calXValue" class="cal-value">0.00</span></div>
+        <div class="cal-row"><span>Y</span><input id="calY" type="range" min="0" max="3" step="0.01" /><span id="calYValue" class="cal-value">0.00</span></div>
+        <div class="cal-row"><span>Z</span><input id="calZ" type="range" min="-1.8" max="1.8" step="0.01" /><span id="calZValue" class="cal-value">0.00</span></div>
+        <div class="cal-row"><span>比例</span><input id="calScale" type="range" min="2" max="8" step="0.05" /><span id="calScaleValue" class="cal-value">5.00</span></div>
+        <div class="nudge-grid">
+          <button id="nudgeLeft">←</button>
+          <button id="nudgeUp">↑</button>
+          <button id="nudgeDown">↓</button>
+          <button id="nudgeRight">→</button>
+          <button id="nudgeOut">外</button>
+          <button id="nudgeIn">里</button>
+        </div>
+        <button id="calReset">重置当前</button>
+      </div>
+      <div class="save-row">
+        <input id="buildName" placeholder="方案名称，例如 白色海景房 5070Ti" />
+        <textarea id="buildNotes" placeholder="备注：预算、配色、需要补建模的部件等"></textarea>
+        <div class="save-actions">
+          <button id="saveBuild" class="primary">保存方案</button>
+          <button id="saveCalibration">保存校准</button>
+          <button id="copyBuild">复制清单</button>
+        </div>
+      </div>
+      <div class="section-title">风险提示</div>
+      <div class="risk-list" id="riskList"></div>
+    </section>
+  </main>
+  <div class="toast" id="toast">已保存</div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
+
+    const CATEGORY_LABELS = {
+      case: '机箱',
+      mainboard: '主板',
+      gpu: '显卡',
+      cooling: '散热',
+      power: '电源',
+      fan: '风扇',
+      ram: '内存'
+    };
+    const CATEGORY_ORDER = ['case', 'mainboard', 'gpu', 'cooling', 'power', 'fan', 'ram'];
+    const REQUIRED_CATEGORIES = ['case', 'mainboard', 'gpu', 'power'];
+    const ASSEMBLY_SCENE_SCALE = 5;
+    const CONFIDENCE_SCORE = {
+      high: 0,
+      medium: 1,
+      sample_build: 2,
+      catalog_candidate: 3,
+      brand_candidate: 4,
+      low: 5
+    };
+    const DISPLAY_LAYOUT = {
+      case: { x: -1.8, z: 0.1, scale: 3.2 },
+      mainboard: { x: 1.4, z: -0.2, scale: 1.8 },
+      gpu: { x: 2.4, z: 1.35, scale: 1.6 },
+      cooling: { x: -0.2, z: -1.85, scale: 1.35 },
+      power: { x: -2.9, z: 1.75, scale: 1.1 },
+      fan: { x: 0.35, z: 1.85, scale: 0.9 },
+      ram: { x: 2.7, z: -1.65, scale: 0.75 }
+    };
+    const ASSEMBLY_LAYOUT = {
+      case: { x: 0, y: 0, z: 0, scale: ASSEMBLY_SCENE_SCALE, realScale: true },
+      mainboard: { x: 0.34, y: 0.92, z: -0.32, scale: ASSEMBLY_SCENE_SCALE, realScale: true },
+      gpu: { x: 0.26, y: 0.72, z: 0.34, scale: ASSEMBLY_SCENE_SCALE, realScale: true },
+      cooling: { x: 0.34, y: 1.48, z: -0.28, scale: ASSEMBLY_SCENE_SCALE, realScale: true },
+      power: { x: -0.16, y: 0.14, z: 0.72, scale: ASSEMBLY_SCENE_SCALE, realScale: true },
+      fan: { x: -0.34, y: 1.92, z: 1.36, scale: ASSEMBLY_SCENE_SCALE, realScale: true },
+      ram: { x: 0.48, y: 1.48, z: -0.38, scale: ASSEMBLY_SCENE_SCALE, realScale: true }
+    };
+    const PREVIEW_LAYOUT = { x: 0, y: 0, z: 0, scale: 2.6 };
+    const DEFAULT_BUILD_IDS = {
+      "case": "69a4f561efc7dbcbfe1e6813",
+      "mainboard": "67e17668ed83af0a09956248",
+      "gpu": "691790e79925ee6efedf6366",
+      "cooling": "67cba67ce8d3aa2721ef50b9",
+      "power": "65482cd0477e815da41f7c36",
+      "fan": "68f0ce76dfec4e18f2aed95e",
+      "ram": "68c2db589e03fd4385e23953"
+};
+    const DEFAULT_LAYOUT_OVERRIDES = {
+      "mainboard": {
+            "x": 0.1,
+            "y": 0.92,
+            "z": -0.35,
+            "scale": 5,
+            "realScale": true
+      },
+      "cooling": {
+            "x": 0.34,
+            "y": 1.44,
+            "z": -0.3,
+            "scale": 5,
+            "realScale": true
+      },
+      "ram": {
+            "x": 0.53,
+            "y": 1.48,
+            "z": -0.38,
+            "scale": 5,
+            "realScale": true
+      },
+      "fan": {
+            "x": -0.35,
+            "y": 1.93,
+            "z": 1.43,
+            "scale": 5,
+            "realScale": true
+      }
+};
+
+    const el = (id) => document.getElementById(id);
+    const QUERY = new URLSearchParams(window.location.search);
+    const IS_EMBED = QUERY.get('embed') === '1';
+    const PREVIEW_ASSET_ID = QUERY.get('asset_id') || QUERY.get('preview_asset_id') || '';
+    if (IS_EMBED) document.body.classList.add('embed');
+    let assets = [];
+    let productMappingById = new Map();
+    let filtered = [];
+    let activeCategory = 'case';
+    let build = {};
+    let exploded = true;
+    let layoutMode = localStorage.getItem('diyxx_combo_layout_mode') || 'assembled';
+    let layoutOverrides = loadLayoutOverrides();
+    let anchorsVisible = true;
+    let layoutToken = 0;
+    let loadingToken = 0;
+    let loadingTotal = 0;
+    let loadingDone = 0;
+    let loadingAutoFinish = false;
+    const loadedObjects = new Map();
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xe7e8e1);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(5.4, 4.2, 6.4);
+    const renderer = new THREE.WebGLRenderer({ canvas: el('stage'), antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 0.55, 0);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.rotateSpeed = 0.42;
+    controls.enablePan = false;
+
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8d9288, 2.6));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    keyLight.position.set(4, 6, 4);
+    scene.add(keyLight);
+    const grid = new THREE.GridHelper(9, 18, 0xaeb4aa, 0xd4d7cf);
+    scene.add(grid);
+    const anchorHelperGroup = new THREE.Group();
+    scene.add(anchorHelperGroup);
+    const ktx2Loader = new KTX2Loader()
+      .setTranscoderPath('https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/libs/basis/')
+      .detectSupport(renderer);
+    const loader = new GLTFLoader();
+    loader.setKTX2Loader(ktx2Loader);
+
+    if (window.location.protocol === 'file:') {
+      document.body.classList.add('file-opened');
+    } else {
+      init().catch((err) => {
+      el('summary').textContent = '加载失败';
+      el('assetList').innerHTML = `<div class="risk bad">${escapeHtml(err.message)}</div>`;
+      });
+    }
+
+    async function init() {
+      const [loadedAssets, mappingData] = await Promise.all([
+        loadModelAssets(),
+        loadProductModelMapping()
+      ]);
+      assets = loadedAssets;
+      productMappingById = new Map((mappingData?.products || []).map((item) => [
+        String(item.product_id),
+        { ...item, __mappingSource: mappingData?.__mappingSource || 'static' }
+      ]));
+      const handoffSummary = loadHandoffBuild();
+      const hasHandoffBuild = Boolean(handoffSummary);
+      if (!IS_EMBED && !hasHandoffBuild && !Object.keys(build).length) {
+        const saved = localStorage.getItem('diyxx_combo_build');
+        if (saved) build = JSON.parse(saved);
+      }
+      if (!IS_EMBED && !hasHandoffBuild && !Object.keys(build).length && localStorage.getItem('diyxx_combo_user_cleared') !== '1') {
+        build = createDemoBuild();
+        persistBuild();
+      }
+      initControls();
+      applyFilters();
+      if (PREVIEW_ASSET_ID) {
+        previewOnly(PREVIEW_ASSET_ID);
+        animate();
+        return;
+      }
+      renderBuild();
+      if (handoffSummary) renderEmbeddedLegend(handoffSummary);
+      animate();
+    }
+
+    async function loadModelAssets() {
+      try {
+        const catalogRes = await fetch('/api/pc3d/model-catalog', { cache: 'no-store' });
+        if (catalogRes.ok) {
+          const catalog = await catalogRes.json();
+          const catalogAssets = normalizeModelAssets(catalog?.assets || []);
+          if (catalogAssets.length) return catalogAssets;
+        }
+      } catch (err) {
+        console.warn('Failed to load API model catalog', err);
+      }
+
+      const fallbackRes = await fetch('/data/pc3d/assets.json', { cache: 'no-store' });
+      if (!fallbackRes.ok) throw new Error('3D 模型清单加载失败');
+      return normalizeModelAssets(await fallbackRes.json(), { allowStatic: true });
+    }
+
+    function normalizeModelAssets(rows, options = {}) {
+      return (Array.isArray(rows) ? rows : [])
+        .map((asset) => {
+          const servedUrl = asset.served_model_available && asset.served_model_url ? asset.served_model_url : '';
+          const modelUrl = servedUrl || asset.model_url || asset.interactive_model_url || asset.external_model_url || '';
+          return {
+            ...asset,
+            brand_label: asset.brand_label || asset.brand_cn || asset.brand_en || asset.manufacturer || '',
+            category_label: asset.category_label || CATEGORY_LABELS[asset.category] || asset.category || '',
+            model_url: modelUrl,
+            served_model_available: Boolean(asset.served_model_available || options.allowStatic),
+          };
+        })
+        .filter((asset) => asset.asset_id && CATEGORY_ORDER.includes(asset.category) && isLoadableModelUrl(asset.model_url));
+    }
+
+    function isLoadableModelUrl(url) {
+      const cleanUrl = String(url || '').split('?')[0].split('#')[0].toLowerCase();
+      if (!cleanUrl || cleanUrl.endsWith('.glb.br')) return false;
+      return cleanUrl.endsWith('.glb') || cleanUrl.includes('/api/pc3d/model-file/');
+    }
+
+    async function loadProductModelMapping() {
+      try {
+        const res = await fetch('/api/pc3d/mapping', { cache: 'no-store' });
+        if (!res.ok) return null;
+        const data = await res.json();
+        return { ...data, __mappingSource: 'api' };
+      } catch (err) {
+        try {
+          const fallback = await fetch('/data/pc3d/product-model-mapping.json', { cache: 'no-store' });
+          if (!fallback.ok) return null;
+          const data = await fallback.json();
+          return { ...data, __mappingSource: 'static' };
+        } catch (fallbackErr) {
+          console.warn('Failed to load product model mapping', err, fallbackErr);
+          return null;
+        }
+      }
+    }
+
+    function loadHandoffBuild() {
+      if (IS_EMBED) return null;
+      let raw = null;
+      try {
+        raw = sessionStorage.getItem('diyxx_pc3d_handoff_items');
+        if (raw) sessionStorage.removeItem('diyxx_pc3d_handoff_items');
+      } catch {
+        return null;
+      }
+      if (!raw) return null;
+      try {
+        const items = JSON.parse(raw);
+        const result = resolveBuildAssets(Array.isArray(items) ? items : []);
+        build = result.build;
+        layoutMode = 'assembled';
+        localStorage.setItem('diyxx_combo_layout_mode', layoutMode);
+        localStorage.removeItem('diyxx_combo_user_cleared');
+        return result.summary;
+      } catch (err) {
+        console.warn('Failed to load handoff build', err);
+        return null;
+      }
+    }
+
+    function initControls() {
+      fillSelect('brand', '全部品牌', unique(assets.map((x) => x.brand_label)));
+      fillSelect('confidence', '全部匹配级别', unique(assets.map((x) => x.best_confidence)));
+      el('search').addEventListener('input', applyFilters);
+      el('brand').addEventListener('change', applyFilters);
+      el('confidence').addEventListener('change', applyFilters);
+      el('resetCamera').addEventListener('click', resetCamera);
+      el('layoutMode').addEventListener('click', () => {
+        layoutMode = layoutMode === 'assembled' ? 'display' : 'assembled';
+        localStorage.setItem('diyxx_combo_layout_mode', layoutMode);
+        updateLayoutControls();
+        renderBuild();
+      });
+      el('anchorToggle').addEventListener('click', () => {
+        anchorsVisible = !anchorsVisible;
+        anchorHelperGroup.visible = anchorsVisible;
+        el('anchorToggle').classList.toggle('active', anchorsVisible);
+      });
+      el('autoBuild').addEventListener('click', autoBuild);
+      el('explodeToggle').addEventListener('click', () => { exploded = !exploded; layoutScene(); });
+      el('clearBuild').addEventListener('click', () => {
+        build = {};
+        localStorage.setItem('diyxx_combo_user_cleared', '1');
+        persistBuild();
+        renderBuild();
+      });
+      el('saveBuild').addEventListener('click', saveBuild);
+      el('saveCalibration').addEventListener('click', saveCalibration);
+      el('copyBuild').addEventListener('click', copyBuild);
+      renderCategoryTabs();
+      initCalibrationControls();
+      updateLayoutControls();
+      if (IS_EMBED) {
+        anchorsVisible = false;
+        anchorHelperGroup.visible = false;
+        el('anchorToggle').classList.remove('active');
+        window.addEventListener('message', handleEmbeddedBuildMessage);
+        window.parent?.postMessage({ type: 'diyxx_pc3d_ready' }, window.location.origin);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+    }
+
+    function updateLayoutControls() {
+      const assembled = layoutMode === 'assembled';
+      el('layoutMode').textContent = assembled ? '装机效果' : '陈列预览';
+      el('layoutMode').classList.toggle('active', assembled);
+      el('anchorToggle').disabled = !assembled;
+      el('explodeToggle').disabled = assembled;
+      el('explodeToggle').textContent = exploded ? '紧凑/展开' : '展开/紧凑';
+      document.querySelector('.calibration').style.opacity = assembled ? '1' : '.45';
+      resetCamera();
+    }
+
+    function initCalibrationControls() {
+      el('calCategory').innerHTML = CATEGORY_ORDER.map((category) => (
+        `<option value="${category}">${CATEGORY_LABELS[category]}</option>`
+      )).join('');
+      el('calCategory').addEventListener('change', syncCalibrationControls);
+      for (const id of ['calX', 'calY', 'calZ', 'calScale']) {
+        el(id).addEventListener('input', updateCalibrationFromControls);
+      }
+      el('nudgeLeft').addEventListener('click', () => nudgeCalibration('x', -1));
+      el('nudgeRight').addEventListener('click', () => nudgeCalibration('x', 1));
+      el('nudgeUp').addEventListener('click', () => nudgeCalibration('y', 1));
+      el('nudgeDown').addEventListener('click', () => nudgeCalibration('y', -1));
+      el('nudgeIn').addEventListener('click', () => nudgeCalibration('z', 1));
+      el('nudgeOut').addEventListener('click', () => nudgeCalibration('z', -1));
+      el('calReset').addEventListener('click', () => {
+        const category = el('calCategory').value;
+        const previous = assembledLayout(category);
+        delete layoutOverrides[category];
+        saveLayoutOverrides();
+        syncCalibrationControls();
+        applyLiveCalibration(category, previous, assembledLayout(category));
+      });
+      window.addEventListener('keydown', onCalibrationKeyDown);
+      syncCalibrationControls();
+    }
+
+    function updateCalibrationFromControls() {
+      const category = el('calCategory').value;
+      const base = ASSEMBLY_LAYOUT[category] || PREVIEW_LAYOUT;
+      const previous = assembledLayout(category);
+      const next = {
+        x: Number(el('calX').value),
+        y: Number(el('calY').value),
+        z: Number(el('calZ').value),
+        scale: Number(el('calScale').value),
+        realScale: base.realScale,
+        shell: base.shell
+      };
+      layoutOverrides[category] = next;
+      saveLayoutOverrides();
+      syncCalibrationValues();
+      applyLiveCalibration(category, previous, next);
+    }
+
+    function onCalibrationKeyDown(event) {
+      if (layoutMode !== 'assembled') return;
+      const target = event.target;
+      if (target?.matches?.('input:not([type="range"]), textarea, select')) return;
+      const stepScale = event.shiftKey ? 5 : 1;
+      const keyMap = {
+        ArrowLeft: ['x', -1],
+        ArrowRight: ['x', 1],
+        ArrowUp: event.altKey ? ['z', 1] : ['y', 1],
+        ArrowDown: event.altKey ? ['z', -1] : ['y', -1],
+      };
+      const action = keyMap[event.key];
+      if (!action) return;
+      event.preventDefault();
+      nudgeCalibration(action[0], action[1], stepScale);
+    }
+
+    function nudgeCalibration(axis, direction, stepScale = 1) {
+      const input = el(`cal${axis.toUpperCase()}`);
+      if (!input) return;
+      const step = Number(input.step || 0.01) * stepScale;
+      const min = Number(input.min);
+      const max = Number(input.max);
+      const current = Number(input.value || 0);
+      const next = Math.max(min, Math.min(max, current + direction * step));
+      input.value = next.toFixed(axis === 'scale' ? 2 : 2);
+      updateCalibrationFromControls();
+    }
+
+    function applyLiveCalibration(category, previous, next) {
+      const root = loadedObjects.get(category);
+      if (!root || layoutMode !== 'assembled') {
+        layoutScene({ frame: false });
+        return;
+      }
+      const oldScale = Number(previous.scale || ASSEMBLY_SCENE_SCALE);
+      const newScale = Number(next.scale || ASSEMBLY_SCENE_SCALE);
+      if (oldScale > 0 && newScale > 0 && Math.abs(newScale - oldScale) > 0.0001) {
+        root.scale.multiplyScalar(newScale / oldScale);
+      }
+      root.position.x += Number(next.x || 0) - Number(previous.x || 0);
+      root.position.y += Number(next.y || 0) - Number(previous.y || 0);
+      root.position.z += Number(next.z || 0) - Number(previous.z || 0);
+      root.updateMatrixWorld(true);
+      if (category === 'case') createAnchorHelpers(root);
+      updateDebugState();
+      renderSummary();
+    }
+
+    function syncCalibrationControls() {
+      const category = el('calCategory').value || 'case';
+      const layout = assembledLayout(category);
+      el('calX').value = layout.x || 0;
+      el('calY').value = layout.y || 0;
+      el('calZ').value = layout.z || 0;
+      el('calScale').value = layout.scale || ASSEMBLY_SCENE_SCALE;
+      syncCalibrationValues();
+    }
+
+    function syncCalibrationValues() {
+      el('calXValue').textContent = Number(el('calX').value).toFixed(2);
+      el('calYValue').textContent = Number(el('calY').value).toFixed(2);
+      el('calZValue').textContent = Number(el('calZ').value).toFixed(2);
+      el('calScaleValue').textContent = Number(el('calScale').value).toFixed(2);
+    }
+
+    function assembledLayout(category) {
+      const base = ASSEMBLY_LAYOUT[category] || PREVIEW_LAYOUT;
+      const override = layoutOverrides[category];
+      return override ? { ...base, ...override, realScale: base.realScale, shell: base.shell } : base;
+    }
+
+    function loadLayoutOverrides() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('diyxx_combo_anchor_overrides_v3') || '{}');
+        return Object.keys(saved || {}).length ? saved : { ...DEFAULT_LAYOUT_OVERRIDES };
+      } catch {
+        return { ...DEFAULT_LAYOUT_OVERRIDES };
+      }
+    }
+
+    function saveLayoutOverrides() {
+      localStorage.setItem('diyxx_combo_anchor_overrides_v3', JSON.stringify(layoutOverrides));
+    }
+
+    function renderCategoryTabs() {
+      el('categoryTabs').innerHTML = CATEGORY_ORDER.map((category) => (
+        `<button class="${category === activeCategory ? 'active' : ''}" data-category="${category}">${CATEGORY_LABELS[category]}</button>`
+      )).join('');
+      document.querySelectorAll('[data-category]').forEach((button) => {
+        button.addEventListener('click', () => {
+          activeCategory = button.dataset.category;
+          renderCategoryTabs();
+          applyFilters();
+        });
+      });
+    }
+
+    function fillSelect(id, label, values) {
+      el(id).innerHTML = `<option value="">${escapeHtml(label)}</option>` + values.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+    }
+
+    function unique(values) {
+      return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-CN'));
+    }
+
+    function applyFilters() {
+      const q = el('search').value.trim().toLowerCase();
+      const brand = el('brand').value;
+      const confidence = el('confidence').value;
+      filtered = assets.filter((asset) => {
+        if (asset.category !== activeCategory) return false;
+        if (brand && asset.brand_label !== brand) return false;
+        if (confidence && asset.best_confidence !== confidence) return false;
+        const haystack = [
+          asset.brand_label, asset.model_name, asset.buildcores_name, asset.local_product_examples,
+          asset.part_numbers, asset.color_hint, asset.best_confidence
+        ].join(' ').toLowerCase();
+        return !q || haystack.includes(q);
+      });
+      renderAssetList();
+      renderSummary();
+    }
+
+    function renderSummary() {
+      const selected = Object.keys(build).length;
+      el('summary').textContent = `${assets.length} 个可用模型，已选 ${selected} 类，当前列表 ${filtered.length}`;
+    }
+
+    function renderAssetList() {
+      const selectedId = build[activeCategory]?.asset_id;
+      if (!filtered.length) {
+        el('assetList').innerHTML = '<div class="risk">没有符合条件的模型</div>';
+        return;
+      }
+      el('assetList').innerHTML = filtered.map((asset) => {
+        const selected = selectedId === asset.asset_id ? ' selected' : '';
+        return `<div class="asset${selected}">
+          <div class="asset-title">${escapeHtml(asset.model_name || asset.buildcores_name)}</div>
+          <div class="asset-meta">${escapeHtml(asset.brand_label)} · ${escapeHtml(asset.category_label)} · ${escapeHtml(asset.buildcores_name || '')}</div>
+          <div class="pill-row">
+            ${pill(asset.best_confidence, asset.best_confidence)}
+            ${asset.local_product_mapping_count > 0 ? pill(`映射 ${asset.local_product_mapping_count}`) : pill('补充素材')}
+            ${asset.color_hint ? pill('颜色需核对', 'risk') : ''}
+          </div>
+          ${asset.color_hint ? `<div class="asset-meta">${escapeHtml(asset.color_hint)}</div>` : ''}
+          <div class="asset-actions">
+            <button class="primary" data-add="${escapeHtml(asset.asset_id)}">加入搭配</button>
+            <button data-focus="${escapeHtml(asset.asset_id)}">只预览</button>
+          </div>
+        </div>`;
+      }).join('');
+      document.querySelectorAll('[data-add]').forEach((button) => {
+        button.addEventListener('click', () => addToBuild(button.dataset.add));
+      });
+      document.querySelectorAll('[data-focus]').forEach((button) => {
+        button.addEventListener('click', () => previewOnly(button.dataset.focus));
+      });
+    }
+
+    function addToBuild(assetId) {
+      const asset = assets.find((item) => item.asset_id === assetId);
+      if (!asset) return;
+      const shouldFrame = asset.category === 'case' || (layoutMode === 'assembled' && !loadedObjects.has('case'));
+      build[asset.category] = asset;
+      localStorage.removeItem('diyxx_combo_user_cleared');
+      persistBuild();
+      renderAssetList();
+      renderBuild({ frame: shouldFrame });
+      showToast(`已加入：${CATEGORY_LABELS[asset.category]}`);
+    }
+
+    function autoBuild() {
+      build = createDemoBuild();
+      layoutMode = 'assembled';
+      localStorage.removeItem('diyxx_combo_user_cleared');
+      localStorage.setItem('diyxx_combo_layout_mode', layoutMode);
+      persistBuild();
+      updateLayoutControls();
+      renderAssetList();
+      renderBuild();
+      showToast('已生成示例搭配');
+    }
+
+    function createDefaultBuild() {
+      const next = {};
+      for (const [category, assetId] of Object.entries(DEFAULT_BUILD_IDS || {})) {
+        const asset = assets.find((item) => item.asset_id === assetId);
+        if (asset) next[category] = asset;
+      }
+      return Object.fromEntries(Object.entries(next).filter(([, asset]) => Boolean(asset)));
+    }
+
+    function createDemoBuild() {
+      const fixed = createDefaultBuild();
+      if (Object.keys(fixed).length) return fixed;
+      const preferredBrand = bestDemoBrand();
+      const next = {};
+      for (const category of CATEGORY_ORDER) {
+        next[category] = pickDemoAsset(category, preferredBrand) || pickDemoAsset(category, null);
+      }
+      return Object.fromEntries(Object.entries(next).filter(([, asset]) => Boolean(asset)));
+    }
+
+    let hasEmbeddedBuild = false;
+    let embeddedFramedCaseAssetId = null;
+
+    function handleEmbeddedBuildMessage(event) {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data || {};
+      if (data.type !== 'diyxx_pc3d_build') return;
+      const result = resolveBuildAssets(Array.isArray(data.items) ? data.items : []);
+      build = result.build;
+      const caseAssetId = result.build.case?.asset_id || null;
+      const shouldFrame = caseAssetId
+        ? caseAssetId !== embeddedFramedCaseAssetId
+        : !hasEmbeddedBuild && (result.summary?.rendered || 0) > 0;
+      renderBuild({ frame: shouldFrame });
+      if (caseAssetId && shouldFrame) embeddedFramedCaseAssetId = caseAssetId;
+      if ((result.summary?.total || 0) > 0) hasEmbeddedBuild = true;
+      renderEmbeddedLegend(result.summary);
+      window.parent?.postMessage({
+        type: 'diyxx_pc3d_match_summary',
+        summary: result.summary
+      }, window.location.origin);
+    }
+
+    function renderEmbeddedLegend(summary) {
+      const rendered = summary.rendered || 0;
+      const total = summary.total || 0;
+      const similar = summary.similar || 0;
+      const missing = summary.missing?.length || 0;
+      if (!total) {
+        el('legend').textContent = '选择机箱、主板、显卡等配件后，这里会生成 3D 装机效果。';
+        return;
+      }
+      if (!rendered) {
+        el('legend').textContent = '当前配置暂无已确认 3D 模型；候选模型需要后台手动确认后才会显示给客户。';
+        return;
+      }
+      if (similar || missing) {
+        el('legend').textContent = '部分配件还没有已确认模型；客户页只展示已经确认的 3D 关联。';
+        return;
+      }
+      el('legend').textContent = '真实模型预览：当前配置已匹配可用 3D 模型，实际外观以实物为准。';
+    }
+
+    function resolveBuildAssets(items) {
+      const next = {};
+      const matches = [];
+      const missing = [];
+      let exact = 0;
+      let similar = 0;
+
+      for (const item of items) {
+        const category = item.category;
+        if (!CATEGORY_ORDER.includes(category)) {
+          missing.push({ category, name: itemName(item) });
+          continue;
+        }
+        const match = findBestAssetForBuildItem(item);
+        if (!match) {
+          missing.push({ category, name: itemName(item) });
+          continue;
+        }
+        const asset = {
+          ...match.asset,
+          best_confidence: match.kind === 'exact' ? '精确模型' : '近似模型',
+          matched_item_name: itemName(item),
+          match_kind: match.kind
+        };
+        next[category] = asset;
+        if (match.kind === 'exact') exact += 1;
+        if (match.kind === 'similar') similar += 1;
+        matches.push({
+          category,
+          kind: match.kind,
+          itemName: itemName(item),
+          assetName: asset.model_name || asset.buildcores_name
+        });
+      }
+
+      return {
+        build: next,
+        summary: {
+          total: items.length,
+          rendered: Object.keys(next).length,
+          exact,
+          similar,
+          missing,
+          matches
+        }
+      };
+    }
+
+    function findBestAssetForBuildItem(item) {
+      const candidates = assets.filter((asset) => asset.category === item.category);
+      if (!candidates.length) return null;
+      const explicitMapping = item.id ? productMappingById.get(String(item.id)) : null;
+      if (explicitMapping) {
+        if (!isConfirmedProductMapping(explicitMapping)) return null;
+        const mappedAsset = assets.find((asset) => asset.asset_id === explicitMapping.asset_id);
+        if (!mappedAsset) return null;
+        if (!isAssetLoadableForMapping(mappedAsset, explicitMapping)) return null;
+        return {
+          asset: {
+            ...mappedAsset,
+            match_reason: explicitMapping.reason,
+            match_risk: explicitMapping.risk
+          },
+          kind: 'exact'
+        };
+      }
+      if (productMappingById.size > 0) return null;
+      const scored = candidates
+        .map((asset) => ({ asset, ...scoreAssetForBuildItem(asset, item) }))
+        .sort((a, b) => b.score - a.score);
+      const best = scored[0];
+      if (best && best.kind === 'exact') return { asset: best.asset, kind: 'exact' };
+      return null;
+    }
+
+    function isConfirmedProductMapping(mapping) {
+      const confirmedStatuses = new Set(['auto_exact', 'manual_approved']);
+      return Boolean(
+        mapping &&
+        confirmedStatuses.has(mapping.review_status) &&
+        mapping.match_kind === 'exact' &&
+        mapping.asset_id
+      );
+    }
+
+    function isAssetLoadableForMapping(asset, mapping) {
+      if (asset?.served_model_available) return true;
+      const cleanUrl = String(asset?.model_url || mapping?.asset_model_url || '').split('?')[0].split('#')[0].toLowerCase();
+      if (!isLoadableModelUrl(cleanUrl)) return false;
+      if (mapping?.__mappingSource === 'static' && cleanUrl.includes('/api/pc3d/model-file/')) return false;
+      return true;
+    }
+
+    function scoreAssetForBuildItem(asset, item) {
+      const itemBrand = normalizeMatchText(item.brand);
+      const itemModel = normalizeMatchText(item.model);
+      const assetBrand = normalizeMatchText([asset.brand_label, asset.brand_cn, asset.brand_en, asset.manufacturer].join(' '));
+      const assetModel = normalizeMatchText([asset.model_name, asset.buildcores_name, asset.part_numbers].join(' '));
+      let score = 0;
+      const brandMatch = itemBrand && assetBrand && (assetBrand.includes(itemBrand) || itemBrand.includes(assetBrand));
+      if (brandMatch) score += 45;
+      if (itemModel && assetModel) {
+        if (assetModel.includes(itemModel) || itemModel.includes(assetModel)) score += 120;
+        const overlap = tokenOverlap(itemModel, assetModel);
+        score += overlap * 12;
+      }
+      const exact = score >= 80 && (brandMatch || score >= 120);
+      return { score, kind: exact ? 'exact' : 'similar' };
+    }
+
+    function tokenOverlap(left, right) {
+      const leftTokens = new Set((left.match(/[a-z0-9]+/g) || []).filter((token) => token.length >= 2));
+      const rightTokens = new Set((right.match(/[a-z0-9]+/g) || []).filter((token) => token.length >= 2));
+      let count = 0;
+      for (const token of leftTokens) if (rightTokens.has(token)) count += 1;
+      return count;
+    }
+
+    function normalizeMatchText(value) {
+      return String(value || '')
+        .normalize('NFKC')
+        .toLowerCase()
+        .replace(/geforce|gaming|edition|version|white|black|argb|rgb|wifi|显卡|主板|机箱|电源|散热|风扇|内存/g, ' ')
+        .replace(/[\s_./\\\-+()[\]{}（）【】,，:：]+/g, ' ')
+        .trim();
+    }
+
+    function itemName(item) {
+      return [item.brand, item.model].filter(Boolean).join(' ') || CATEGORY_LABELS[item.category] || item.category;
+    }
+
+    function bestDemoBrand() {
+      const brands = unique(assets.map((asset) => asset.brand_label));
+      let best = '';
+      let bestScore = -Infinity;
+      for (const brand of brands) {
+        let score = 0;
+        for (const category of CATEGORY_ORDER) {
+          const candidate = pickDemoAsset(category, brand);
+          if (!candidate) continue;
+          score += REQUIRED_CATEGORIES.includes(category) ? 20 : 8;
+          score += Math.max(0, 8 - confidenceScore(candidate.best_confidence));
+          if (candidate.local_product_mapping_count > 0) score += 2;
+          if (candidate.color_hint) score -= 2;
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          best = brand;
+        }
+      }
+      return best;
+    }
+
+    function pickDemoAsset(category, brand) {
+      const candidates = assets.filter((asset) => asset.category === category && (!brand || asset.brand_label === brand));
+      if (!candidates.length) return null;
+      return [...candidates].sort((a, b) => demoAssetScore(a) - demoAssetScore(b))[0];
+    }
+
+    function demoAssetScore(asset) {
+      return confidenceScore(asset.best_confidence) * 100
+        - Number(asset.local_product_mapping_count || 0) * 8
+        + (asset.color_hint ? 30 : 0)
+        + (asset.model_name || asset.buildcores_name || '').length / 500;
+    }
+
+    function confidenceScore(value) {
+      return CONFIDENCE_SCORE[value] ?? 6;
+    }
+
+    function previewOnly(assetId) {
+      const asset = assets.find((item) => item.asset_id === assetId);
+      if (!asset) return;
+      clearSceneObjects();
+      const token = ++layoutToken;
+      startLoading(token, [asset], '正在加载单个 3D 模型', true);
+      loadAsset(asset, { temporary: true, preview: true, token, trackLoading: true });
+      el('legend').textContent = `单独预览：${asset.brand_label} · ${asset.model_name || asset.buildcores_name}`;
+    }
+
+    function renderBuild(options = {}) {
+      const categories = CATEGORY_ORDER;
+      el('slotList').innerHTML = categories.map((category) => {
+        const asset = build[category];
+        if (!asset) {
+          return `<div class="slot">
+            <div class="slot-head"><div class="slot-name">${CATEGORY_LABELS[category]}</div><button data-pick="${category}">选择</button></div>
+            <div class="slot-empty">未选择</div>
+          </div>`;
+        }
+        return `<div class="slot">
+          <div class="slot-head"><div class="slot-name">${CATEGORY_LABELS[category]}</div><button data-remove="${category}">移除</button></div>
+          <div class="slot-model">${escapeHtml(asset.model_name || asset.buildcores_name)}</div>
+          <div class="asset-meta">${escapeHtml(asset.brand_label)} · ${escapeHtml(asset.best_confidence)}</div>
+        </div>`;
+      }).join('');
+      document.querySelectorAll('[data-pick]').forEach((button) => {
+        button.addEventListener('click', () => {
+          activeCategory = button.dataset.pick;
+          renderCategoryTabs();
+          applyFilters();
+        });
+      });
+      document.querySelectorAll('[data-remove]').forEach((button) => {
+        button.addEventListener('click', () => {
+          delete build[button.dataset.remove];
+          persistBuild();
+          renderBuild({ frame: false });
+        });
+      });
+      renderRisks();
+      layoutScene(options);
+      renderSummary();
+    }
+
+    function renderRisks() {
+      const risks = collectRisks();
+      if (!risks.length) {
+        el('riskList').innerHTML = '<div class="risk">当前没有明显搭配风险。仍需人工确认型号、颜色和授权。</div>';
+        return;
+      }
+      el('riskList').innerHTML = risks.map((risk) => `<div class="risk ${risk.level}">${escapeHtml(risk.text)}</div>`).join('');
+    }
+
+    function collectRisks() {
+      const selected = Object.values(build);
+      const risks = [];
+      if (layoutMode === 'assembled' && selected.length > 1) {
+        risks.push({ level: 'warn', text: '装机效果优先使用 GLB 内置定位框；多布局机箱、冷排兼容和线材空间仍需人工复核' });
+      }
+      for (const category of REQUIRED_CATEGORIES) {
+        if (!build[category]) risks.push({ level: 'warn', text: `缺少关键部件：${CATEGORY_LABELS[category]}` });
+      }
+      for (const asset of selected) {
+        if (asset.color_hint) risks.push({ level: 'bad', text: `${CATEGORY_LABELS[asset.category]}：${asset.color_hint}` });
+        if (asset.best_confidence === 'low') risks.push({ level: 'bad', text: `${CATEGORY_LABELS[asset.category]}：低置信匹配，型号需要重点核对` });
+        if (asset.local_product_mapping_count === 0) risks.push({ level: 'warn', text: `${CATEGORY_LABELS[asset.category]}：补充素材，无本地商品映射` });
+      }
+      const selectedColors = new Set();
+      for (const asset of selected) {
+        for (const color of asset.colors || []) selectedColors.add(color);
+      }
+      if (selectedColors.size > 2) risks.push({ level: 'warn', text: `配色较杂：${[...selectedColors].join(' / ')}` });
+      return risks;
+    }
+
+    function persistBuild() {
+      if (IS_EMBED) return;
+      localStorage.setItem('diyxx_combo_build', JSON.stringify(build));
+    }
+
+    function clearSceneObjects() {
+      for (const object of loadedObjects.values()) scene.remove(object);
+      loadedObjects.clear();
+      anchorHelperGroup.clear();
+    }
+
+    function startLoading(token, selected, title = '正在加载 3D 模型', autoFinish = false) {
+      if (!selected.length) {
+        hideLoading(token);
+        return;
+      }
+      loadingToken = token;
+      loadingTotal = selected.length;
+      loadingDone = 0;
+      loadingAutoFinish = autoFinish;
+      el('loadingOverlay').hidden = false;
+      updateLoadingMessage(title, selected);
+    }
+
+    function markLoadingProgress(token, asset) {
+      if (token !== loadingToken) return;
+      loadingDone = Math.min(loadingDone + 1, loadingTotal);
+      updateLoadingMessage('正在加载 3D 模型', null, asset);
+      if (loadingAutoFinish && loadingDone >= loadingTotal) finishLoading(token);
+    }
+
+    function finishLoading(token = loadingToken) {
+      if (token !== loadingToken) return;
+      updateLoadingMessage('正在生成装机效果');
+      window.setTimeout(() => hideLoading(token), 180);
+    }
+
+    function hideLoading(token) {
+      if (token && token !== loadingToken) return;
+      el('loadingOverlay').hidden = true;
+      el('loadingBar').style.width = '0%';
+      loadingTotal = 0;
+      loadingDone = 0;
+      loadingAutoFinish = false;
+    }
+
+    function updateLoadingMessage(title, selected = null, currentAsset = null) {
+      const total = Math.max(loadingTotal, 1);
+      const percent = Math.max(8, Math.round((loadingDone / total) * 100));
+      const currentLabel = currentAsset
+        ? `${CATEGORY_LABELS[currentAsset.category] || '模型'}：${currentAsset.model_name || currentAsset.buildcores_name || currentAsset.asset_id}`
+        : selected?.length
+          ? selected.map((asset) => CATEGORY_LABELS[asset.category] || asset.category).join(' / ')
+          : '模型文件较大，请稍等片刻。';
+      el('loadingTitle').textContent = title;
+      el('loadingDetail').textContent = loadingTotal > 0
+        ? `已加载 ${Math.min(loadingDone, loadingTotal)}/${loadingTotal} · ${currentLabel}`
+        : currentLabel;
+      el('loadingBar').style.width = `${percent}%`;
+    }
+
+    function layoutScene(options = {}) {
+      clearSceneObjects();
+      const token = ++layoutToken;
+      const selected = CATEGORY_ORDER.map((category) => build[category]).filter(Boolean);
+      hideLoading();
+      if (layoutMode === 'assembled') {
+        layoutAssembly(selected, token, options);
+      } else {
+        startLoading(token, selected, '正在加载 3D 模型', true);
+        for (const asset of selected) loadAsset(asset, { temporary: false, token, trackLoading: true });
+      }
+      if (!selected.length) {
+        el('legend').textContent = '请选择部件加入搭配。模型会按装机效果或陈列预览显示。';
+        return;
+      }
+      const names = selected.map((x) => CATEGORY_LABELS[x.category]).join(' / ');
+      el('legend').textContent = layoutMode === 'assembled'
+        ? `当前搭配：${names}。真实机箱居中，配件按模型锚点对齐；仍需规格校验。`
+        : `当前搭配：${names}。陈列预览用于核对模型外观，不代表最终装配坐标。`;
+    }
+
+    async function layoutAssembly(selected, token, options = {}) {
+      const byCategory = Object.fromEntries(selected.map((asset) => [asset.category, asset]));
+      startLoading(token, selected, '正在加载 3D 装机模型');
+      const entries = await Promise.all(selected.map(async (asset) => {
+        const root = await loadRoot(asset, token);
+        markLoadingProgress(token, asset);
+        return [asset.category, root];
+      }));
+      if (token !== layoutToken) return;
+      const roots = Object.fromEntries(entries.filter(([, root]) => root));
+      for (const root of Object.values(roots)) {
+        root.scale.setScalar(ASSEMBLY_SCENE_SCALE);
+        root.rotation.set(0, 0, 0);
+        root.position.set(0, 0, 0);
+        root.updateMatrixWorld(true);
+      }
+
+      if (roots.case) {
+        centerCase(roots.case);
+        applyAssemblyOverride(roots.case, 'case');
+        scene.add(roots.case);
+        loadedObjects.set('case', roots.case);
+        createAnchorHelpers(roots.case);
+      }
+      if (roots.mainboard) {
+        placeMainboard(roots.mainboard, roots.case);
+        applyAssemblyOverride(roots.mainboard, 'mainboard');
+        scene.add(roots.mainboard);
+        loadedObjects.set('mainboard', roots.mainboard);
+      }
+      if (roots.gpu) {
+        placeGpu(roots.gpu, roots.mainboard, roots.case);
+        applyAssemblyOverride(roots.gpu, 'gpu');
+        scene.add(roots.gpu);
+        loadedObjects.set('gpu', roots.gpu);
+      }
+      if (roots.cooling) {
+        placeCooling(roots.cooling, roots.mainboard, roots.case);
+        applyAssemblyOverride(roots.cooling, 'cooling');
+        scene.add(roots.cooling);
+        loadedObjects.set('cooling', roots.cooling);
+      }
+      if (roots.power) {
+        placePower(roots.power, roots.case);
+        applyAssemblyOverride(roots.power, 'power');
+        scene.add(roots.power);
+        loadedObjects.set('power', roots.power);
+      }
+      if (roots.fan) {
+        const fanAssembly = placeFans(roots.fan, roots.case);
+        applyAssemblyOverride(fanAssembly, 'fan');
+        scene.add(fanAssembly);
+        loadedObjects.set('fan', fanAssembly);
+      }
+      if (roots.ram) {
+        placeRam(roots.ram, roots.mainboard, roots.case);
+        applyAssemblyOverride(roots.ram, 'ram');
+        scene.add(roots.ram);
+        loadedObjects.set('ram', roots.ram);
+      }
+      if (options.frame !== false) frameCase(roots.case || Object.values(roots)[0]);
+      updateDebugState();
+      renderSummary();
+      finishLoading(token);
+    }
+
+    function updateDebugState() {
+      window.__diyxxComboDebug = {
+        metrics() {
+          const objects = {};
+          for (const [category, root] of loadedObjects.entries()) {
+            objects[category] = boxInfo(new THREE.Box3().setFromObject(root));
+          }
+          const caseRoot = loadedObjects.get('case');
+          const anchors = caseRoot ? {
+            motherboard: boxInfo(nodeBox(caseRoot, /^MOTHERBOARD(?:[._-]\d+)?$/i)),
+            psu: boxInfo(nodeBox(caseRoot, /^PSU(?:[._-]\d+)?$/i)),
+            pcie: boxInfo(nodeBox(caseRoot, /^PCIE_BRACKET_0?1(?:[._-]\d+)?$/i) || nodeBox(caseRoot, /^PCIE_BRACKET/i)),
+            fan: boxInfo(nodeBox(caseRoot, /^CASE_FAN/i)),
+            fanSlots: nodeBoxes(caseRoot, /^CASE_FAN/i).map((box) => boxInfo(box)),
+            sideWindow: boxInfo(nodeBox(caseRoot, /^SIDE_PANEL_WINDOW/i))
+          } : {};
+          const mainboardRoot = loadedObjects.get('mainboard');
+          const coolingRoot = loadedObjects.get('cooling');
+          const ramRoot = loadedObjects.get('ram');
+          const fanRoot = loadedObjects.get('fan');
+          const partAnchors = {
+            mainboard: mainboardRoot ? {
+              coolerMount: boxInfo(nodeBox(mainboardRoot, /^COOLER_MOUNT(?:[._-]\d+)?$/i)),
+              cpu: boxInfo(nodeBox(mainboardRoot, /^CPU(?:[._-]\w+)?$/i)),
+              dimm01: boxInfo(nodeBox(mainboardRoot, /^DIMM_01(?:[._-]\d+)?$/i)),
+              dimm02: boxInfo(nodeBox(mainboardRoot, /^DIMM_02(?:[._-]\d+)?$/i)),
+              pcie01: boxInfo(nodeBox(mainboardRoot, /^PCIE_X16_01(?:[._-]\d+)?$/i))
+            } : {},
+            cooling: coolingRoot ? {
+              cpuBlockMount: boxInfo(nodeBox(coolingRoot, /^CPU_BLOCK_MOUNT(?:[._-]\d+)?$/i)),
+              cpuBlock: boxInfo(nodeBox(coolingRoot, /^CPU_BLOCK/i))
+            } : {},
+            ram: ramRoot ? {
+              pins: boxInfo(nodeBox(ramRoot, /^RAM_MODULE_PINS(?:[._-]\d+)?$/i))
+            } : {}
+          };
+          const boardMounts = mainboardRoot ? {
+            cooling: coolingRoot ? boardSurfaceInfo(coolingRoot, mainboardRoot, caseRoot, [/^COOLER_MOUNT(?:[._-]\d+)?$/i, /^CPU(?:[._-]\w+)?$/i]) : null,
+            ram: ramRoot ? boardSurfaceInfo(ramRoot, mainboardRoot, caseRoot, [/^DIMM_02(?:[._-]\d+)?$/i, /^DIMM_01(?:[._-]\d+)?$/i, /^DIMM/i]) : null
+          } : {};
+          return {
+            layoutMode,
+            objects,
+            anchors,
+            partAnchors,
+            boardMounts,
+            fanInstances: fanRoot?.name === 'fan-slots' ? fanRoot.children.length : (fanRoot ? 1 : 0),
+            camera: {
+              position: vectorInfo(camera.position),
+              target: vectorInfo(controls.target)
+            }
+          };
+        }
+      };
+    }
+
+    function loadRoot(asset, token) {
+      return new Promise((resolve) => {
+        loader.load(asset.model_url, (gltf) => {
+          if (token !== layoutToken) return resolve(null);
+          const root = gltf.scene;
+          root.traverse((node) => {
+            if (node.isMesh) {
+              node.castShadow = false;
+              node.receiveShadow = false;
+              node.frustumCulled = false;
+            }
+          });
+          resolve(root);
+        }, undefined, (err) => {
+          showToast(`加载失败：${asset.model_name || asset.buildcores_name}`);
+          console.error(err);
+          resolve(null);
+        });
+      });
+    }
+
+    function centerCase(root) {
+      root.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(root);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      root.position.x -= center.x;
+      root.position.z -= center.z;
+      root.position.y -= box.min.y;
+      root.updateMatrixWorld(true);
+    }
+
+    function placeMainboard(board, caseRoot) {
+      if (!caseRoot) return placeFallback(board, 'mainboard');
+      const tray = nodeBox(caseRoot, /^MOTHERBOARD(?:[._-]\d+)?$/i);
+      if (!tray) return placeFallback(board, 'mainboard');
+      const boardBox = new THREE.Box3().setFromObject(board);
+      const trayCenter = centerOfBox(tray);
+      const pcieBox = nodeBox(caseRoot, /^PCIE_BRACKET_0?1(?:[._-]\d+)?$/i) || nodeBox(caseRoot, /^PCIE_BRACKET/i);
+      const pcieCenter = pcieBox ? centerOfBox(pcieBox) : null;
+      const rearSide = pcieCenter ? Math.sign(pcieCenter.x - trayCenter.x) || -1 : -1;
+      const targetRearX = rearSide < 0 ? tray.min.x : tray.max.x;
+      const sourceRearX = rearSide < 0 ? boardBox.min.x : boardBox.max.x;
+      const rearZSide = pcieCenter ? Math.sign(pcieCenter.z - trayCenter.z) || -1 : -1;
+      const targetRearZ = rearZSide < 0 ? tray.min.z : tray.max.z;
+      const sourceRearZ = rearZSide < 0 ? boardBox.min.z : boardBox.max.z;
+      board.position.x += targetRearX - sourceRearX;
+      board.position.y += tray.max.y - boardBox.max.y;
+      board.position.z += targetRearZ - sourceRearZ;
+      board.position.x += -rearSide * 0.018;
+      fitWithinCaseDepth(board, caseRoot, 0.018);
+      board.updateMatrixWorld(true);
+    }
+
+    function placeGpu(gpu, board, caseRoot) {
+      if (!board) return placeFallback(gpu, 'gpu');
+      const slot = nodePosition(board, /^PCIE_X16_01($|\.)/i) || nodePosition(board, /^PCIE_X16/i);
+      if (!slot) return placeFallback(gpu, 'gpu');
+      const caseBox = caseRoot ? new THREE.Box3().setFromObject(caseRoot) : null;
+      const caseBracket = caseRoot
+        ? nodeBox(caseRoot, /^PCIE_BRACKET_0?1(?:[._-]\d+)?$/i) || nodeBox(caseRoot, /^PCIE_BRACKET/i)
+        : null;
+      const candidates = [0, Math.PI].map((rotationY) => {
+        gpu.position.set(0, 0, 0);
+        gpu.rotation.set(0, rotationY, 0);
+        gpu.updateMatrixWorld(true);
+        const connector = nodePosition(gpu, /^PCIE_CONNECTOR(?:[._-]\d+)?$/i)
+          || nodePosition(gpu, /^PCIE_CONNECTOR/i)
+          || nodePosition(gpu, /PCB Connector/i);
+        if (!connector) return null;
+        gpu.position.add(slot.clone().sub(connector));
+        gpu.updateMatrixWorld(true);
+        const gpuBracket = nodeBox(gpu, /^Bracket(?:[._-]\d+)?$/i) || nodeBox(gpu, /^IO(?:[._-]\d+)?$/i);
+        if (caseBracket && gpuBracket) {
+          const caseBracketCenter = centerOfBox(caseBracket);
+          const gpuBracketCenter = centerOfBox(gpuBracket);
+          gpu.position.z += caseBracketCenter.z - gpuBracketCenter.z;
+          gpu.updateMatrixWorld(true);
+        }
+        const fitShift = caseBox ? depthFitShift(new THREE.Box3().setFromObject(gpu), caseBox, 0.035) : 0;
+        gpu.position.z += fitShift;
+        gpu.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(gpu);
+        return {
+          rotationY,
+          position: gpu.position.clone(),
+          score: outsidePenalty(box, caseBox) + Math.abs(fitShift) * 0.08
+        };
+      }).filter(Boolean).sort((a, b) => a.score - b.score);
+      const best = candidates[0];
+      if (!best) return placeFallback(gpu, 'gpu');
+      gpu.rotation.set(0, best.rotationY, 0);
+      gpu.position.copy(best.position);
+      gpu.updateMatrixWorld(true);
+    }
+
+    function placeCooling(cooling, board, caseRoot) {
+      if (!board) return placeFallback(cooling, 'cooling');
+      const placed = placeBoardMountedPart(cooling, board, caseRoot, {
+        targetPatterns: [/^COOLER_MOUNT(?:[._-]\d+)?$/i, /^CPU(?:[._-]\w+)?$/i],
+        sourcePatterns: [/^CPU_BLOCK_MOUNT(?:[._-]\d+)?$/i, /^CPU_BLOCK/i],
+        margin: 0.02
+      });
+      if (!placed) placeFallback(cooling, 'cooling');
+    }
+
+    function placePower(power, caseRoot) {
+      if (!caseRoot) return placeFallback(power, 'power');
+      const bay = nodeBox(caseRoot, /^PSU(?:[._-]\d+)?$/i);
+      if (!bay) return placeFallback(power, 'power');
+      const caseBox = new THREE.Box3().setFromObject(caseRoot);
+      const bayCenter = centerOfBox(bay);
+      const baySize = boxSize(bay);
+      const candidates = [0, Math.PI / 2, -Math.PI / 2, Math.PI].map((rotationZ) => {
+        power.position.set(0, 0, 0);
+        power.rotation.set(0, 0, rotationZ);
+        power.updateMatrixWorld(true);
+        const psu = nodeBox(power, /^PSU_BBOX(?:[._-]\d+)?$/i) || new THREE.Box3().setFromObject(power);
+        if (!psu) return null;
+        const psuCenter = centerOfBox(psu);
+        power.position.x += bayCenter.x - psuCenter.x;
+        power.position.y += bayCenter.y - psuCenter.y;
+        power.updateMatrixWorld(true);
+        const shiftedPsu = nodeBox(power, /^PSU_BBOX(?:[._-]\d+)?$/i) || new THREE.Box3().setFromObject(power);
+        const bayNearMinZ = Math.abs(bayCenter.z - caseBox.min.z) <= Math.abs(bayCenter.z - caseBox.max.z);
+        power.position.z += bayNearMinZ
+          ? bayCenter.z + 0.035 - shiftedPsu.min.z
+          : bayCenter.z - 0.035 - shiftedPsu.max.z;
+        const fitShift = fitWithinCaseDepth(power, caseRoot, 0.035);
+        power.updateMatrixWorld(true);
+        const finalPsu = nodeBox(power, /^PSU_BBOX(?:[._-]\d+)?$/i) || new THREE.Box3().setFromObject(power);
+        const finalSize = boxSize(finalPsu);
+        const faceScore = Math.abs(finalSize.x - baySize.x) + Math.abs(finalSize.y - baySize.y);
+        const box = new THREE.Box3().setFromObject(power);
+        return {
+          rotationZ,
+          position: power.position.clone(),
+          score: faceScore * 8 + outsidePenalty(box, caseBox) + Math.abs(fitShift) * 0.08
+        };
+      }).filter(Boolean).sort((a, b) => a.score - b.score);
+      const best = candidates[0];
+      if (!best) return placeFallback(power, 'power');
+      power.rotation.set(0, 0, best.rotationZ);
+      power.position.copy(best.position);
+      power.updateMatrixWorld(true);
+    }
+
+    function placeFans(fanTemplate, caseRoot) {
+      if (!caseRoot) {
+        placeFallback(fanTemplate, 'fan');
+        return fanTemplate;
+      }
+      const targets = nodeBoxes(caseRoot, /^CASE_FAN/i);
+      if (!targets.length) {
+        placeFallback(fanTemplate, 'fan');
+        return fanTemplate;
+      }
+      const group = new THREE.Group();
+      group.name = 'fan-slots';
+      let fanIndex = 0;
+      for (const target of targets) {
+        for (const slot of fanSlotsForTarget(target)) {
+          const fan = fanTemplate.clone(true);
+          fan.name = `case-fan-${++fanIndex}`;
+          fan.position.set(0, 0, 0);
+          orientFanToTarget(fan, target);
+          fan.updateMatrixWorld(true);
+          const source = nodeBox(fan, /^FAN_BBOX(?:[._-]\d+)?$/i)
+            || nodeBox(fan, /^FAN_BBOX/i)
+            || new THREE.Box3().setFromObject(fan);
+          if (!source) continue;
+          fan.position.add(slot.center.clone().sub(centerOfBox(source)));
+          fan.updateMatrixWorld(true);
+          group.add(fan);
+        }
+      }
+      if (!group.children.length) {
+        placeFallback(fanTemplate, 'fan');
+        return fanTemplate;
+      }
+      group.updateMatrixWorld(true);
+      return group;
+    }
+
+    function orientFanToTarget(fan, targetBox) {
+      const targetSize = boxSize(targetBox);
+      const thinAxis = smallestAxis(targetSize);
+      fan.rotation.set(0, 0, 0);
+      if (thinAxis === 'x') fan.rotation.y = Math.PI / 2;
+      if (thinAxis === 'y') fan.rotation.x = Math.PI / 2;
+    }
+
+    function fanSlotsForTarget(targetBox) {
+      const size = boxSize(targetBox);
+      const thinAxis = smallestAxis(size);
+      const planeAxes = ['x', 'y', 'z'].filter((axis) => axis !== thinAxis);
+      const axesByLength = planeAxes.sort((a, b) => size[b] - size[a]);
+      const longAxis = axesByLength[0];
+      const shortAxis = axesByLength[1];
+      const ratio = size[longAxis] / Math.max(size[shortAxis], 0.001);
+      const count = Math.max(1, Math.min(4, Math.round(ratio)));
+      const center = centerOfBox(targetBox);
+      const slots = [];
+      const step = size[longAxis] / count;
+      const start = axisValue(targetBox.min, longAxis);
+      for (let index = 0; index < count; index += 1) {
+        const slotCenter = center.clone();
+        addAxis(slotCenter, longAxis, start + step * (index + 0.5) - axisValue(slotCenter, longAxis));
+        slots.push({ center: slotCenter, target: targetBox, index, count });
+      }
+      return slots;
+    }
+
+    function placeRam(ram, board, caseRoot) {
+      if (!board) return placeFallback(ram, 'ram');
+      const placed = placeBoardMountedPart(ram, board, caseRoot, {
+        targetPatterns: [/^DIMM_02(?:[._-]\d+)?$/i, /^DIMM_01(?:[._-]\d+)?$/i, /^DIMM/i],
+        sourcePatterns: [/^RAM_MODULE_PINS(?:[._-]\d+)?$/i, /^RAM/i],
+        margin: 0.012
+      });
+      if (!placed) placeFallback(ram, 'ram');
+    }
+
+    function placeBoardMountedPart(part, board, caseRoot, config) {
+      const target = firstNodeBox(board, config.targetPatterns);
+      if (!target) return false;
+      const targetCenter = centerOfBox(target);
+      const context = boardMountContext(board, caseRoot, target);
+      const candidates = [0, Math.PI].map((rotationY) => {
+        part.position.set(0, 0, 0);
+        part.rotation.set(0, rotationY, 0);
+        part.updateMatrixWorld(true);
+        const source = firstNodeBox(part, config.sourcePatterns) || new THREE.Box3().setFromObject(part);
+        if (!source) return null;
+        part.position.add(targetCenter.clone().sub(centerOfBox(source)));
+        part.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(part);
+        const score = boardMountedScore(box, context, targetCenter, Number(config.margin || 0));
+        return { rotationY, position: part.position.clone(), score };
+      }).filter(Boolean).sort((a, b) => a.score - b.score);
+      const best = candidates[0];
+      if (!best) return false;
+      part.rotation.set(0, best.rotationY, 0);
+      part.position.copy(best.position);
+      part.updateMatrixWorld(true);
+      if (Number.isFinite(config.surfaceGap)) {
+        snapPartToBoardSurface(
+          part,
+          context,
+          Number(config.surfaceGap),
+          Number(config.surfaceSnapLimit || 0.025)
+        );
+      }
+      return true;
+    }
+
+    function boardMountContext(board, caseRoot, targetBox) {
+      const boardBox = new THREE.Box3().setFromObject(board);
+      const targetCenter = centerOfBox(targetBox);
+      const boardCenter = centerOfBox(boardBox);
+      let axis = 'x';
+      let side = 1;
+      const tray = caseRoot ? nodeBox(caseRoot, /^MOTHERBOARD(?:[._-]\d+)?$/i) : null;
+      if (tray) {
+        const traySize = new THREE.Vector3();
+        tray.getSize(traySize);
+        axis = smallestAxis(traySize);
+        side = Math.sign(axisValue(boardCenter, axis) - axisValue(centerOfBox(tray), axis)) || 1;
+      } else {
+        const boardSize = new THREE.Vector3();
+        boardBox.getSize(boardSize);
+        axis = smallestAxis(boardSize);
+        side = 1;
+      }
+      return { axis, side, boardBox, targetCoord: axisValue(targetCenter, axis) };
+    }
+
+    function boardMountedScore(partBox, context, targetCenter, margin) {
+      const partCenter = centerOfBox(partBox);
+      const centerForward = context.side * (axisValue(partCenter, context.axis) - context.targetCoord);
+      const nearFace = context.side > 0 ? axisValue(partBox.min, context.axis) : axisValue(partBox.max, context.axis);
+      const nearOffset = Math.abs(nearFace - context.targetCoord);
+      const behindPenalty = Math.max(0, margin - centerForward) * 10;
+      return behindPenalty + nearOffset * 0.35 + Math.abs(axisValue(partCenter, context.axis) - context.targetCoord) * 0.08;
+    }
+
+    function snapPartToBoardSurface(part, context, gap = 0.004, limit = 0.025) {
+      const box = new THREE.Box3().setFromObject(part);
+      const nearFace = context.side > 0 ? axisValue(box.min, context.axis) : axisValue(box.max, context.axis);
+      const target = context.targetCoord + context.side * gap;
+      const rawDelta = target - nearFace;
+      const clampedDelta = Math.max(-limit, Math.min(limit, rawDelta));
+      addAxis(part.position, context.axis, clampedDelta);
+      part.updateMatrixWorld(true);
+    }
+
+    function boardSurfaceInfo(part, board, caseRoot, targetPatterns) {
+      const target = firstNodeBox(board, targetPatterns);
+      if (!target) return null;
+      const context = boardMountContext(board, caseRoot, target);
+      const partBox = new THREE.Box3().setFromObject(part);
+      const nearFace = context.side > 0 ? axisValue(partBox.min, context.axis) : axisValue(partBox.max, context.axis);
+      return {
+        axis: context.axis,
+        side: context.side,
+        targetCoord: Number(context.targetCoord.toFixed(4)),
+        nearFace: Number(nearFace.toFixed(4)),
+        offset: Number((nearFace - context.targetCoord).toFixed(4))
+      };
+    }
+
+    function placeFallback(root, category) {
+      const layout = ASSEMBLY_LAYOUT[category] || PREVIEW_LAYOUT;
+      root.position.set(layout.x || 0, layout.y || 0, layout.z || 0);
+      root.updateMatrixWorld(true);
+    }
+
+    function applyAssemblyOverride(root, category) {
+      const override = layoutOverrides[category];
+      if (!override) return;
+      const base = ASSEMBLY_LAYOUT[category] || PREVIEW_LAYOUT;
+      const scaleRatio = override.scale && base.scale ? override.scale / base.scale : 1;
+      if (Number.isFinite(scaleRatio) && scaleRatio > 0 && Math.abs(scaleRatio - 1) > 0.001) {
+        root.scale.multiplyScalar(scaleRatio);
+      }
+      root.position.x += Number(override.x || 0) - Number(base.x || 0);
+      root.position.y += Number(override.y || 0) - Number(base.y || 0);
+      root.position.z += Number(override.z || 0) - Number(base.z || 0);
+      root.updateMatrixWorld(true);
+    }
+
+    function fitWithinCaseDepth(root, caseRoot, margin = 0.02) {
+      if (!root || !caseRoot) return 0;
+      const caseBox = new THREE.Box3().setFromObject(caseRoot);
+      const box = new THREE.Box3().setFromObject(root);
+      const shift = depthFitShift(box, caseBox, margin);
+      if (Math.abs(shift) > 0.0001) {
+        root.position.z += shift;
+        root.updateMatrixWorld(true);
+      }
+      return shift;
+    }
+
+    function depthFitShift(box, caseBox, margin = 0.02) {
+      if (!box || !caseBox) return 0;
+      const minAllowed = caseBox.min.z + margin;
+      const maxAllowed = caseBox.max.z - margin;
+      let shift = 0;
+      if (box.min.z < minAllowed) shift += minAllowed - box.min.z;
+      if (box.max.z + shift > maxAllowed) shift += maxAllowed - (box.max.z + shift);
+      return shift;
+    }
+
+    function outsidePenalty(box, bounds) {
+      if (!box || !bounds) return 0;
+      const over = (minValue, maxValue, minAllowed, maxAllowed) => (
+        Math.max(0, minAllowed - minValue) + Math.max(0, maxValue - maxAllowed)
+      );
+      return over(box.min.x, box.max.x, bounds.min.x, bounds.max.x)
+        + over(box.min.z, box.max.z, bounds.min.z, bounds.max.z) * 1.8;
+    }
+
+    function nodePosition(root, pattern) {
+      const node = findNode(root, pattern);
+      if (!node) return null;
+      node.updateMatrixWorld(true);
+      return node.getWorldPosition(new THREE.Vector3());
+    }
+
+    function nodeBox(root, pattern) {
+      const boxes = nodeBoxes(root, pattern);
+      return largestBox(boxes);
+    }
+
+    function firstNodeBox(root, patterns) {
+      for (const pattern of patterns) {
+        const box = nodeBox(root, pattern);
+        if (box) return box;
+      }
+      return null;
+    }
+
+    function nodeBoxes(root, pattern) {
+      const boxes = [];
+      for (const node of findNodes(root, pattern)) {
+        node.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(node);
+        if (!box.isEmpty() && Number.isFinite(box.min.x)) boxes.push(box);
+      }
+      return boxes;
+    }
+
+    function largestBox(boxes) {
+      if (!boxes.length) return null;
+      return boxes.sort((a, b) => boxVolume(b) - boxVolume(a))[0];
+    }
+
+    function boxVolume(box) {
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      return Math.max(size.x, 0.001) * Math.max(size.y, 0.001) * Math.max(size.z, 0.001);
+    }
+
+    function findNode(root, pattern) {
+      return findNodes(root, pattern)[0] || null;
+    }
+
+    function findNodes(root, pattern) {
+      const found = [];
+      root.traverse((node) => {
+        if (node.name && pattern.test(node.name)) found.push(node);
+      });
+      found.sort((a, b) => nodeNameScore(a.name) - nodeNameScore(b.name));
+      return found;
+    }
+
+    function nodeNameScore(name) {
+      let score = name.length;
+      if (/[._-]\d+$/.test(name)) score += 10;
+      if (/BBOX/i.test(name)) score -= 6;
+      if (/^PSU$/i.test(name) || /^MOTHERBOARD$/i.test(name)) score -= 8;
+      return score;
+    }
+
+    function centerOfBox(box) {
+      return box.getCenter(new THREE.Vector3());
+    }
+
+    function smallestAxis(size) {
+      const axes = ['x', 'y', 'z'];
+      return axes.sort((a, b) => Math.abs(size[a]) - Math.abs(size[b]))[0];
+    }
+
+    function axisValue(vector, axis) {
+      return vector[axis];
+    }
+
+    function boxSize(box) {
+      return box.getSize(new THREE.Vector3());
+    }
+
+    function addAxis(vector, axis, delta) {
+      vector[axis] += delta;
+    }
+
+    function boxInfo(box) {
+      if (!box || box.isEmpty() || !Number.isFinite(box.min.x)) return null;
+      const size = new THREE.Vector3();
+      const center = new THREE.Vector3();
+      box.getSize(size);
+      box.getCenter(center);
+      return {
+        min: vectorInfo(box.min),
+        max: vectorInfo(box.max),
+        center: vectorInfo(center),
+        size: vectorInfo(size)
+      };
+    }
+
+    function vectorInfo(vector) {
+      const round = (value) => Number(value.toFixed(4));
+      return [round(vector.x), round(vector.y), round(vector.z)];
+    }
+
+    function createAnchorHelpers(caseRoot) {
+      anchorHelperGroup.clear();
+      if (!caseRoot || layoutMode !== 'assembled') return;
+      const helperRules = [
+        [/^MOTHERBOARD(?:[._-]\d+)?$/i, 0x18a558],
+        [/^PSU(?:[._-]\d+)?$/i, 0x1f62d1],
+        [/^PCIE_BRACKET/i, 0xdb9a00],
+        [/^CASE_FAN/i, 0xdb9a00],
+        [/^CASE_RADIATOR/i, 0x7b4ed8],
+        [/^SIDE_PANEL_WINDOW/i, 0x0891b2]
+      ];
+      for (const [pattern, color] of helperRules) {
+        for (const box of nodeBoxes(caseRoot, pattern)) {
+          const helper = new THREE.Box3Helper(box, color);
+          helper.material.depthTest = false;
+          helper.material.transparent = true;
+          helper.material.opacity = 0.92;
+          helper.renderOrder = 50;
+          anchorHelperGroup.add(helper);
+        }
+      }
+      anchorHelperGroup.visible = anchorsVisible;
+    }
+
+
+    function frameCase(root) {
+      if (!root) return resetCamera();
+      root.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(root);
+      const size = new THREE.Vector3();
+      const center = new THREE.Vector3();
+      box.getSize(size);
+      box.getCenter(center);
+      const radius = Math.max(size.x, size.y, size.z, 1) * 2.12;
+      const polar = Math.PI / 2.55;
+      const minPolar = Math.PI / 2.95;
+      const maxPolar = Math.PI / 2.16;
+      const sideWindow = nodeBox(root, /^SIDE_PANEL_WINDOW/i);
+      const sideWindowCenter = sideWindow ? centerOfBox(sideWindow) : null;
+      const viewSignX = sideWindowCenter && Math.abs(sideWindowCenter.x - center.x) > 0.001
+        ? Math.sign(sideWindowCenter.x - center.x)
+        : -1;
+      const target = center.clone();
+      target.y += Math.min(Math.max(size.y * 0.08, 0.08), 0.22);
+      const offsetX = viewSignX * Math.sin(polar) * radius * 1.12;
+      const offsetY = Math.cos(polar) * radius;
+      const offsetZ = Math.sin(polar) * radius * 0.18;
+      controls.target.copy(target);
+      controls.minPolarAngle = minPolar;
+      controls.maxPolarAngle = maxPolar;
+      controls.minAzimuthAngle = -Infinity;
+      controls.maxAzimuthAngle = Infinity;
+      controls.minDistance = radius * 0.72;
+      controls.maxDistance = radius * 1.5;
+      controls.enablePan = false;
+      camera.position.set(
+        target.x + offsetX,
+        target.y + offsetY,
+        target.z + offsetZ
+      );
+      camera.near = 0.05;
+      camera.far = 100;
+      camera.updateProjectionMatrix();
+      controls.update();
+    }
+
+    function loadAsset(asset, options) {
+      loader.load(asset.model_url, (gltf) => {
+        if (options.token !== layoutToken) return;
+        const root = gltf.scene;
+        root.traverse((node) => {
+          if (node.isMesh) {
+            node.castShadow = false;
+            node.receiveShadow = false;
+          }
+        });
+        const box = new THREE.Box3().setFromObject(root);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const layout = getLayout(asset, options);
+        const scale = layout.realScale ? layout.scale : layout.scale / maxDim;
+        root.scale.setScalar(scale);
+        root.rotation.set(layout.rx || 0, layout.ry || 0, layout.rz || 0);
+        const scaledBox = new THREE.Box3().setFromObject(root);
+        const center = new THREE.Vector3();
+        scaledBox.getCenter(center);
+        root.position.sub(center);
+        const finalBox = new THREE.Box3().setFromObject(root);
+        root.position.y += -finalBox.min.y;
+        root.position.x += layout.x || 0;
+        root.position.y += layout.y || 0;
+        root.position.z += layout.z || 0;
+        if (layout.shell && layoutMode === 'assembled' && asset.category === 'case') {
+          const shell = createCaseShell(root);
+          scene.add(shell);
+          loadedObjects.set(options.temporary ? `tmp:${asset.asset_id}` : asset.category, shell);
+          if (options.trackLoading) markLoadingProgress(options.token, asset);
+          return;
+        }
+        scene.add(root);
+        loadedObjects.set(options.temporary ? `tmp:${asset.asset_id}` : asset.category, root);
+        if (options.trackLoading) markLoadingProgress(options.token, asset);
+      }, undefined, (err) => {
+        showToast(`加载失败：${asset.model_name || asset.buildcores_name}`);
+        console.error(err);
+        if (options.trackLoading) markLoadingProgress(options.token, asset);
+      });
+    }
+
+    function getLayout(asset, options) {
+      if (options.preview) return PREVIEW_LAYOUT;
+      if (layoutMode === 'assembled') return assembledLayout(asset.category);
+      const layout = DISPLAY_LAYOUT[asset.category] || PREVIEW_LAYOUT;
+      const spread = exploded ? 1 : 0.38;
+      return { ...layout, x: layout.x * spread, z: layout.z * spread };
+    }
+
+    function createCaseShell(root) {
+      const box = new THREE.Box3().setFromObject(root);
+      const size = new THREE.Vector3();
+      const center = new THREE.Vector3();
+      box.getSize(size);
+      box.getCenter(center);
+      const group = new THREE.Group();
+      const shell = new THREE.Mesh(
+        new THREE.BoxGeometry(size.x, size.y, size.z),
+        new THREE.MeshBasicMaterial({
+          color: 0xdfe6e0,
+          transparent: true,
+          opacity: 0.12,
+          depthWrite: false
+        })
+      );
+      shell.position.copy(center);
+      const edges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.BoxGeometry(size.x, size.y, size.z)),
+        new THREE.LineBasicMaterial({ color: 0x7e887f, transparent: true, opacity: 0.72 })
+      );
+      edges.position.copy(center);
+      group.add(shell, edges);
+      return group;
+    }
+
+    function resetCamera() {
+      if (layoutMode === 'assembled') {
+        const caseRoot = loadedObjects.get('case');
+        if (caseRoot) return frameCase(caseRoot);
+        camera.position.set(4.1, 2.8, 4.2);
+        controls.target.set(0, 1.1, 0.05);
+      } else {
+        camera.position.set(5.4, 4.2, 6.4);
+        controls.target.set(0, 0.55, 0);
+      }
+      controls.minPolarAngle = 0;
+      controls.maxPolarAngle = Math.PI;
+      controls.minAzimuthAngle = -Infinity;
+      controls.maxAzimuthAngle = Infinity;
+      controls.minDistance = 0;
+      controls.maxDistance = Infinity;
+      controls.update();
+    }
+
+    async function saveBuild() {
+      const selected = Object.values(build);
+      const payload = {
+        name: el('buildName').value.trim() || `方案 ${new Date().toLocaleString()}`,
+        notes: el('buildNotes').value.trim(),
+        parts: selected.map((asset) => ({
+          category: asset.category,
+          asset_id: asset.asset_id,
+          brand: asset.brand_label,
+          model_name: asset.model_name,
+          buildcores_name: asset.buildcores_name,
+          glb_path: asset.glb_path,
+          best_confidence: asset.best_confidence,
+          color_hint: asset.color_hint
+        })),
+        layout_mode: layoutMode,
+        layout_overrides: layoutOverrides,
+        risks: collectRisks().map((risk) => risk.text)
+      };
+      const saved = JSON.parse(localStorage.getItem('diyxx_combo_site_builds') || '[]');
+      saved.unshift({ ...payload, id: Date.now(), created_at: new Date().toISOString() });
+      localStorage.setItem('diyxx_combo_site_builds', JSON.stringify(saved.slice(0, 20)));
+      showToast('方案已保存到当前浏览器');
+    }
+
+    async function saveCalibration() {
+      const metrics = window.__diyxxComboDebug?.metrics?.() || {};
+      const selected = Object.values(build);
+      const payload = {
+        name: el('buildName').value.trim() || `校准 ${new Date().toLocaleString()}`,
+        notes: el('buildNotes').value.trim(),
+        parts: selected.map((asset) => ({
+          category: asset.category,
+          asset_id: asset.asset_id,
+          brand: asset.brand_label,
+          model_name: asset.model_name,
+          buildcores_name: asset.buildcores_name,
+          glb_path: asset.glb_path
+        })),
+        layout_mode: layoutMode,
+        layout_overrides: layoutOverrides,
+        anchor_snapshot: {
+          case_anchors: metrics.anchors || {},
+          part_anchors: metrics.partAnchors || {},
+          board_mounts: metrics.boardMounts || {},
+          objects: metrics.objects || {}
+        }
+      };
+      const saved = JSON.parse(localStorage.getItem('diyxx_combo_site_calibrations') || '[]');
+      saved.unshift({ ...payload, id: Date.now(), created_at: new Date().toISOString() });
+      localStorage.setItem('diyxx_combo_site_calibrations', JSON.stringify(saved.slice(0, 20)));
+      showToast('校准已保存到当前浏览器');
+    }
+
+    async function copyBuild() {
+      const lines = Object.values(build).map((asset) => `${CATEGORY_LABELS[asset.category]}：${asset.brand_label} ${asset.model_name || asset.buildcores_name}`);
+      await navigator.clipboard.writeText(lines.join('\n'));
+      showToast('清单已复制');
+    }
+
+    function resize() {
+      const wrap = document.querySelector('.stage-wrap');
+      const width = wrap.clientWidth;
+      const height = wrap.clientHeight;
+      camera.aspect = width / Math.max(height, 1);
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height, false);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    function pill(text, cls = '') {
+      return `<span class="pill ${escapeHtml(cls || '')}">${escapeHtml(text || '')}</span>`;
+    }
+
+    function showToast(text) {
+      const toast = document.querySelector('.toast');
+      toast.textContent = text;
+      toast.classList.add('show');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => toast.classList.remove('show'), 1400);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+  </script>
+</body>
+</html>

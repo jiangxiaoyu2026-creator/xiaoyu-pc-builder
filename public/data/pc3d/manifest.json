@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-07-02",
+  "source": "crawler-output-3d_asset_catalog_20260629",
+  "mode": "site-mvp",
+  "default_build_ids": {
+    "case": "69a4f561efc7dbcbfe1e6813",
+    "mainboard": "67e17668ed83af0a09956248",
+    "gpu": "691790e79925ee6efedf6366",
+    "cooling": "67cba67ce8d3aa2721ef50b9",
+    "power": "65482cd0477e815da41f7c36",
+    "fan": "68f0ce76dfec4e18f2aed95e",
+    "ram": "68c2db589e03fd4385e23953"
+  },
+  "default_layout_overrides": {
+    "mainboard": {
+      "x": 0.1,
+      "y": 0.92,
+      "z": -0.35,
+      "scale": 5,
+      "realScale": true
+    },
+    "cooling": {
+      "x": 0.34,
+      "y": 1.44,
+      "z": -0.3,
+      "scale": 5,
+      "realScale": true
+    },
+    "ram": {
+      "x": 0.53,
+      "y": 1.48,
+      "z": -0.38,
+      "scale": 5,
+      "realScale": true
+    },
+    "fan": {
+      "x": -0.35,
+      "y": 1.93,
+      "z": 1.43,
+      "scale": 5,
+      "realScale": true
+    }
+  },
+  "asset_count": 9,
+  "missing": [],
+  "updated_at": "2026-07-02T17:10:20",
+  "notes": "Cooling adjusted after user found slight clipping."
+}

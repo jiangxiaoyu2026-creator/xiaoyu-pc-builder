@@ -85,6 +85,19 @@ jobs:
             cp -a "$COMPOSE_SRC" "$APP_DIR/docker-compose.yml"
             cd "$APP_DIR"
 
+            # 同步 3D 映射 JSON 到持久目录；保留服务器已有的 GLB 模型文件和数据库。
+            if [ -d "$APP_DIR/dist/data/pc3d" ]; then
+              mkdir -p "$APP_DIR/data/pc3d"
+              for file in assets.json manifest.json model-catalog.json model-filter-decisions.json product-model-mapping.json; do
+                if [ -f "$APP_DIR/dist/data/pc3d/$file" ]; then
+                  cp -a "$APP_DIR/dist/data/pc3d/$file" "$APP_DIR/data/pc3d/$file"
+                fi
+              done
+              if [ -f "$APP_DIR/dist/data/pc3d/model-review-decisions.json" ] && [ ! -f "$APP_DIR/data/pc3d/model-review-decisions.json" ]; then
+                cp -a "$APP_DIR/dist/data/pc3d/model-review-decisions.json" "$APP_DIR/data/pc3d/model-review-decisions.json"
+              fi
+            fi
+
             fallback_deploy() {
               echo "Using direct container copy fallback..."
               docker cp "$APP_DIR/dist/." xiaoyu-pc-builder:/app/dist/

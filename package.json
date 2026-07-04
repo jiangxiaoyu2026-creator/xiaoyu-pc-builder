@@ -6,12 +6,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "pc3d:filter": "node scripts/pc3d-filter-server.mjs",
     "server": "python3 -m uvicorn server_py.main:app --host 127.0.0.1 --port 8000 --reload",
     "server:ts": "tsx server/index.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run server\"",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
+    "bundle:frontend": "rm -f dist.zip && zip -qr dist.zip dist",
+    "bundle:backend": "rm -f server_py_clean.zip && zip -qr server_py_clean.zip server_py -x \"server_py/**/__pycache__/*\" \"server_py/*.db\" \"server_py/uploads/*\" \"server_py/session.json\"",
+    "deploy:frontend": "npm run build && npm run bundle:frontend && python3 deploy_dist_quick.py",
+    "deploy:backend": "npm run bundle:backend && python3 upload_backend_secure.py",
+    "deploy:direct": "npm run deploy:backend && npm run deploy:frontend",
     "push": "git add . && git commit -m \"Auto-sync: $(date +'%Y-%m-%d %H:%M:%S')\" && git push"
   },
   "dependencies": {
@@ -33,6 +39,7 @@
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
+    "three": "^0.184.0",
     "tsx": "^4.21.0"
   },
   "devDependencies": {
@@ -41,6 +48,7 @@
     "@types/node": "^25.2.2",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
+    "@types/three": "^0.184.1",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "@vitejs/plugin-react": "^4.2.1",

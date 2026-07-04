@@ -29,16 +29,33 @@ interface Pc3dProductMatch {
     asset_id?: string;
     asset_label?: string;
     asset_model_url?: string;
+    asset_model_available?: boolean;
+    customer_visible_3d?: boolean;
+    __mappingSource?: 'api' | 'static';
 }
 
 const CUSTOMER_VISIBLE_PC3D_STATUSES = new Set(['auto_exact', 'manual_approved']);
 
+function isLoadablePc3dModelUrl(url?: string) {
+    const cleanUrl = String(url || '').split('?')[0].split('#')[0].toLowerCase();
+    if (!cleanUrl || cleanUrl.endsWith('.glb.br')) return false;
+    return cleanUrl.endsWith('.glb') || cleanUrl.includes('/api/pc3d/model-file/');
+}
+
 function isCustomerVisiblePc3dMatch(match?: Pc3dProductMatch | null) {
+    if (typeof match?.customer_visible_3d === 'boolean') return match.customer_visible_3d;
+    const cleanUrl = String(match?.asset_model_url || '').split('?')[0].split('#')[0].toLowerCase();
+    const isApiModelProxy = cleanUrl.includes('/api/pc3d/model-file/');
+    const isStaticApiProxy = match?.__mappingSource === 'static' && isApiModelProxy;
+    const hasLoadableModel = !isStaticApiProxy && (
+        match?.asset_model_available === true || isLoadablePc3dModelUrl(match?.asset_model_url)
+    );
     return Boolean(
         match &&
         match.match_kind === 'exact' &&
         CUSTOMER_VISIBLE_PC3D_STATUSES.has(String(match.review_status || '')) &&
-        (match.asset_id || match.asset_model_url)
+        match.asset_id &&
+        hasLoadableModel
     );
 }
 
@@ -163,11 +180,13 @@ function VisualBuilder({
 
         const loadPc3dMapping = async () => {
             let data: { products?: Pc3dProductMatch[] } | null = null;
+            let source: Pc3dProductMatch['__mappingSource'] = 'api';
             for (const url of ['/api/pc3d/mapping', '/data/pc3d/product-model-mapping.json']) {
                 try {
                     const res = await fetch(url, { cache: 'no-store' });
                     if (!res.ok) continue;
                     data = await res.json();
+                    source = url.startsWith('/api/') ? 'api' : 'static';
                     break;
                 } catch {
                     // Fall through to the static mapping file.
@@ -175,7 +194,7 @@ function VisualBuilder({
             }
             if (cancelled || !Array.isArray(data?.products)) return;
             const nextMatches = data.products.reduce((acc: Record<string, Pc3dProductMatch>, item: Pc3dProductMatch) => {
-                if (item.product_id) acc[String(item.product_id)] = item;
+                if (item.product_id) acc[String(item.product_id)] = { ...item, __mappingSource: source };
                 return acc;
             }, {});
             setPc3dProductMatches(nextMatches);

@@ -6,6 +6,7 @@ import { useVisitTracker } from './hooks/useVisitTracker';
 const ClientApp = lazy(() => import('./pages/ClientApp'));
 const AdminApp = lazy(() => import('./pages/AdminApp'));
 const ArticleDetail = lazy(() => import('./components/client/ArticleDetail'));
+const PC3DComboPage = lazy(() => import('./pages/PC3DComboPage'));
 
 function App() {
     useVisitTracker();
@@ -28,6 +29,7 @@ function App() {
                 <Route path="/" element={<ClientApp />} />
                 <Route path="/VIP" element={<ClientApp />} />
                 <Route path="/vip" element={<ClientApp />} />
+                <Route path="/pc3d" element={<PC3DComboPage />} />
                 <Route path="/article/:id" element={<ArticleDetail />} />
                 <Route path="/admin" element={<AdminApp />} />
                 <Route path="*" element={<ClientApp />} />

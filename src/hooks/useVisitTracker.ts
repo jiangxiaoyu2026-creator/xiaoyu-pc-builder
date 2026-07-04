@@ -42,6 +42,7 @@ export function useVisitTracker() {
     useEffect(() => {
         const path = `${location.pathname}${location.search}`;
         if (path.toLowerCase().startsWith('/admin')) return;
+        if (path.toLowerCase().startsWith('/pc3d')) return;
 
         const now = Date.now();
         if (lastTrackedPath === path && now - lastTrackedAt < 2000) return;
