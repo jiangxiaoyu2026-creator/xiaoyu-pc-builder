@@ -1436,15 +1436,14 @@ def auto_link_smart_models(admin: User = Depends(get_current_admin)) -> Dict[str
         if status == "ambiguous":
             skipped_ambiguous += 1
             continue
-        if status == "replace_candidate":
-            skipped_replace_candidate += 1
-            continue
         if relation != "exact":
+            if status == "replace_candidate":
+                skipped_replace_candidate += 1
             skipped_non_exact += 1
             continue
 
         category = str(suggestion.get("category") or "unknown")
-        if status == "direct":
+        if status in {"direct", "replace_candidate"}:
             asset = assets_by_id.get(asset_id)
             if not asset:
                 skipped_conflict += 1
@@ -1464,8 +1463,12 @@ def auto_link_smart_models(admin: User = Depends(get_current_admin)) -> Dict[str
             mapping["products"][product_index] = next_product
             _record_decision(decisions, "approved", next_product, original=original)
             _remove_review_links_for_product(review, product_id)
-            linked += 1
-            action = "published"
+            if status == "replace_candidate":
+                replaced += 1
+                action = "replaced"
+            else:
+                linked += 1
+                action = "published"
         else:
             if status == "review_conflict":
                 skipped_conflict += 1

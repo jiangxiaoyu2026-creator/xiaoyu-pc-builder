@@ -50,12 +50,13 @@ def publish_direct_exact(copy_model_files: bool, sync_public: bool, dry_run: boo
 
     publishable = [
         suggestion for suggestion in suggestions
-        if suggestion.get("status") == "direct" and suggestion.get("relation") == "exact"
+        if suggestion.get("status") in {"direct", "replace_candidate"} and suggestion.get("relation") == "exact"
     ]
 
     copied_assets: dict[str, str] = {}
     examples = []
     linked = 0
+    replaced = 0
 
     for suggestion in publishable:
         asset_id = str((suggestion.get("suggested_asset") or {}).get("asset_id") or "")
@@ -74,14 +75,19 @@ def publish_direct_exact(copy_model_files: bool, sync_public: bool, dry_run: boo
             continue
 
         next_product = pc3d._manual_link_product(original, asset, relation="exact")
+        status = str(suggestion.get("status") or "")
         next_product["reason"] = f"本地脚本发布精确模型：{pc3d._model_asset_label(asset)}（模型型号与后台型号一致）"
         mapping["products"][product_index] = next_product
         pc3d._record_decision(decisions, "approved", next_product, original=original)
         pc3d._remove_review_links_for_product(review, product_id)
-        linked += 1
+        if status == "replace_candidate":
+            replaced += 1
+        else:
+            linked += 1
 
         if len(examples) < 20:
             examples.append({
+                "action": "replaced" if status == "replace_candidate" else "published",
                 "category": suggestion.get("category"),
                 "brand": suggestion.get("brand"),
                 "model": suggestion.get("model"),
@@ -93,6 +99,7 @@ def publish_direct_exact(copy_model_files: bool, sync_public: bool, dry_run: boo
     summary = {
         "publishable": len(publishable),
         "linked": linked,
+        "replaced": replaced,
         "unique_assets_copied": len(copied_assets),
         "copied_bytes": sum(Path(path).stat().st_size for path in copied_assets.values()) if copied_assets else 0,
         "mapping_summary": mapping.get("summary"),
