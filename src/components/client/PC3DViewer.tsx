@@ -28,6 +28,9 @@ interface MatchSummary {
     rendered: number;
     total: number;
     matches: Array<{ category: VisualCategory; kind: MatchKind; assetName: string; itemName: string }>;
+    caseModelAvailable?: boolean | null;
+    fallbackMode?: 'models' | 'images';
+    fallbackReason?: string;
 }
 
 const VISUAL_CATEGORIES = new Set<Category>(['mainboard', 'gpu', 'ram', 'power', 'cooling', 'fan', 'case']);
@@ -52,6 +55,9 @@ const emptySummary: MatchSummary = {
     rendered: 0,
     total: 0,
     matches: [],
+    caseModelAvailable: null,
+    fallbackMode: 'models',
+    fallbackReason: '',
 };
 
 export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProps) {
@@ -63,30 +69,56 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
     const pc3dItems = useMemo(() => toPc3dItems(buildList), [buildList]);
     const payloadKey = useMemo(() => JSON.stringify(pc3dItems), [pc3dItems]);
     const imageFallbackItems = useMemo(() => buildList
-        .filter(entry => VISUAL_CATEGORIES.has(entry.category))
-        .filter(entry => Boolean(entry.item?.image))
+        .filter(entry => Boolean(entry.item || entry.customName))
         .map(entry => ({
             category: entry.category,
-            name: `${entry.item?.brand || ''} ${entry.item?.model || ''}`.trim(),
-            image: entry.item!.image!,
+            name: `${entry.item?.brand || ''} ${entry.item?.model || entry.customName || ''}`.trim() || CATEGORY_MAP[entry.category] || entry.category,
+            image: entry.item?.image || '',
         })), [buildList]);
     const isEmpty = summary.total === 0;
+    const caseModelUnavailable = summary.fallbackMode === 'images' && summary.fallbackReason === 'case_missing';
     const hasOnlyExactModels = summary.total > 0 && summary.rendered === summary.total && summary.missing.length === 0 && summary.similar === 0;
-    const hasRenderedModels = summary.rendered > 0;
+    const hasRenderedModels = summary.rendered > 0 && !caseModelUnavailable;
+    const selectedCase = useMemo(
+        () => buildList.find(entry => entry.category === 'case' && Boolean(entry.item || entry.customName)),
+        [buildList]
+    );
+    const selectedCaseName = `${selectedCase?.item?.brand || ''} ${selectedCase?.item?.model || selectedCase?.customName || ''}`.trim();
+    const showCaseRequirementHint = isReady && !selectedCase;
+    const caseRequirementCopy = selectedCase
+        ? {
+            badge: '机箱缺少 3D',
+            title: '当前机箱还没有可用 3D 模型',
+            description: `${selectedCaseName || '已选机箱'} 暂未匹配 3D 模型，无法生成完整装机预览效果。`,
+            footnote: '请换一款带“有3D模型”标识的机箱，或先补充该机箱的 3D 模型。',
+        }
+        : {
+            badge: '需要先选机箱',
+            title: '想看 3D 预览，先选带 3D 模型的机箱',
+            description: '机箱是装机效果的外壳基准。没有机箱，或机箱没有 3D 模型时，无法生成完整 3D 装机效果。',
+            footnote: '在左侧“机箱”分类里选择带“有3D模型”标识的型号即可预览。',
+        };
     const missingCategorySet = useMemo(() => new Set(summary.missing.map(item => item.category)), [summary.missing]);
     const missingImageFallbackItems = useMemo(
-        () => imageFallbackItems.filter(item => missingCategorySet.has(item.category)),
+        () => imageFallbackItems.filter(item => missingCategorySet.has(item.category) && item.image),
         [imageFallbackItems, missingCategorySet]
     );
-    const showFullImageFallback = isReady && !isEmpty && !hasRenderedModels && imageFallbackItems.length > 0;
-    const showMissingImageStrip = isReady && hasRenderedModels && missingImageFallbackItems.length > 0;
+    const showFullImageFallback = isReady && !isEmpty && (caseModelUnavailable || !hasRenderedModels) && imageFallbackItems.length > 0;
+    const showMissingImageStrip = isReady && hasRenderedModels && !caseModelUnavailable && missingImageFallbackItems.length > 0;
     const previewState = isEmpty
         ? {
             label: '等待配置',
             tone: 'slate',
-            description: '选择机箱、主板、显卡等配件后自动生成装机效果。',
+            description: '先选择带 3D 图片/模型的机箱，再生成装机效果。',
             icon: Info,
         }
+        : caseModelUnavailable
+            ? {
+                label: '产品图片预览',
+                tone: 'slate',
+                description: '当前机箱暂无 3D 模型，已切换为整套产品图片。',
+                icon: Info,
+            }
         : hasOnlyExactModels
             ? {
                 label: '真实模型预览',
@@ -113,6 +145,29 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
         : previewState.tone === 'amber'
             ? 'bg-amber-50 text-amber-700 ring-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20'
             : 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-[#1A1A24] dark:text-slate-300 dark:ring-[#2D3748]';
+    const imageFallbackTitle = caseModelUnavailable ? '机箱暂无 3D 模型' : '暂无可用 3D 模型';
+    const imageFallbackDescription = caseModelUnavailable
+        ? `${selectedCaseName || '当前机箱'} 暂无 3D 模型，因此只展示整套产品图片，不再显示其它配件 3D。`
+        : '先用已选产品图片展示外观，模型补齐后自动切换为 3D。';
+
+    const renderImageFallbackGrid = (expanded = false) => (
+        <div className={`grid min-h-0 flex-1 gap-2 overflow-y-auto pr-1 ${expanded ? 'grid-cols-2 md:grid-cols-4 auto-rows-[150px]' : 'grid-cols-2 auto-rows-[88px]'}`}>
+            {imageFallbackItems.map(item => (
+                <div key={`${item.category}-${item.name}`} className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-[#1E293B] dark:bg-[#121218]">
+                    {item.image ? (
+                        <img src={item.image} alt={item.name} className="h-full w-full object-contain p-2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    ) : (
+                        <div className="flex h-full w-full items-center justify-center px-3 text-center text-[11px] font-black text-slate-400 dark:text-slate-500">
+                            暂无图片
+                        </div>
+                    )}
+                    <div className="absolute left-2 top-2 rounded-md bg-white/90 px-1.5 py-0.5 text-[9px] font-black text-slate-600 shadow-sm dark:bg-slate-950/80 dark:text-slate-300">
+                        {CATEGORY_MAP[item.category] || item.category}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
 
     const postBuild = (target: HTMLIFrameElement | null = iframeRef.current) => {
         target?.contentWindow?.postMessage({
@@ -168,6 +223,46 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
         />
     );
 
+    const renderCaseRequirementHint = (expanded = false) => (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-5">
+            <div className={`pointer-events-auto w-full max-w-[430px] overflow-hidden rounded-lg border p-4 shadow-[0_18px_48px_rgba(15,23,42,0.16)] backdrop-blur-md ${
+                expanded
+                    ? 'border-white/10 bg-slate-950/90 text-white'
+                    : 'border-indigo-100/80 bg-white/95 text-slate-900 dark:border-white/10 dark:bg-[#121218]/92 dark:text-white'
+            }`}>
+                <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-950">
+                        <Box size={18} />
+                    </div>
+                    <div className="min-w-0">
+                        <div className={`mb-1 inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-black ${
+                            selectedCase
+                                ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20'
+                                : 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20'
+                        }`}>
+                            <Info size={12} />
+                            {caseRequirementCopy.badge}
+                        </div>
+                        <div className="text-sm font-black leading-snug">{caseRequirementCopy.title}</div>
+                        <div className={`mt-2 text-xs font-bold leading-relaxed ${
+                            expanded ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'
+                        }`}>
+                            {caseRequirementCopy.description}
+                        </div>
+                    </div>
+                </div>
+                <div className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-black ${
+                    expanded
+                        ? 'bg-white/10 text-slate-200'
+                        : 'bg-slate-50 text-slate-600 ring-1 ring-slate-100 dark:bg-[#0B0B10] dark:text-slate-300 dark:ring-white/10'
+                }`}>
+                    <CheckCircle2 size={14} className="shrink-0 text-emerald-500" />
+                    <span>{caseRequirementCopy.footnote}</span>
+                </div>
+            </div>
+        </div>
+    );
+
     const expandedLayer = isExpanded && typeof document !== 'undefined'
         ? createPortal(
             <div className="fixed inset-0 z-[150] bg-slate-950/80 p-5 backdrop-blur-md">
@@ -187,12 +282,31 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
                         </button>
                     </div>
                     <div className="relative min-h-0 flex-1 bg-[#0B0B10]">
-                        {renderIframe(modalIframeRef, '放大查看当前配置 3D 装机效果', true)}
-                        {isEmpty && (
+                        {caseModelUnavailable && imageFallbackItems.length > 0 ? (
+                            <div className="relative flex h-full flex-col bg-white/95 p-5 dark:bg-[#0B0B10]">
+                                <div className="mb-4 flex shrink-0 items-center justify-between gap-3">
+                                    <div>
+                                        <div className="text-sm font-black text-slate-900 dark:text-white">{imageFallbackTitle}</div>
+                                        <div className="mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">{imageFallbackDescription}</div>
+                                    </div>
+                                    <div className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-black text-slate-500 dark:bg-[#1A1A24] dark:text-slate-300">
+                                        图片参考
+                                    </div>
+                                </div>
+                                {renderImageFallbackGrid(true)}
+                                {showCaseRequirementHint && renderCaseRequirementHint(true)}
+                            </div>
+                        ) : (
+                            <>
+                            {renderIframe(modalIframeRef, '放大查看当前配置 3D 装机效果', true)}
+                            {showCaseRequirementHint && renderCaseRequirementHint(true)}
+                            {isEmpty && !showCaseRequirementHint && (
                             <div className="absolute left-5 bottom-5 max-w-md rounded-lg border border-white/10 bg-slate-950/85 p-3 text-slate-300 shadow-xl backdrop-blur">
                                 <div className="text-xs font-black text-white">还没有可生成的装机效果</div>
-                                <div className="mt-1 text-[11px] font-bold leading-relaxed text-slate-400">先选择机箱、主板、显卡等部件；没有真实模型时会使用同类外观参考。</div>
+                                <div className="mt-1 text-[11px] font-bold leading-relaxed text-slate-400">先选择带 3D 图片/模型的机箱，再继续添加主板、显卡等部件。</div>
                             </div>
+                            )}
+                            </>
                         )}
                     </div>
                 </div>
@@ -235,13 +349,13 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
                         <span className="text-xs font-bold">加载 3D 模型...</span>
                     </div>
                 )}
-                {isEmpty && isReady && (
+                {isEmpty && isReady && !showCaseRequirementHint && (
                     <div className="absolute inset-x-4 bottom-4 rounded-lg border border-white/70 bg-white/90 p-3 text-slate-600 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#121218]/90 dark:text-slate-300">
                         <div className="flex items-start gap-2">
                             <Info size={15} className="mt-0.5 shrink-0 text-slate-400" />
                             <div>
                                 <div className="text-xs font-black text-slate-800 dark:text-white">还没有可生成的装机效果</div>
-                                <div className="mt-1 text-[11px] font-bold leading-relaxed text-slate-500 dark:text-slate-400">先选择机箱、主板、显卡等部件；没有真实模型时会使用同类外观参考。</div>
+                                <div className="mt-1 text-[11px] font-bold leading-relaxed text-slate-500 dark:text-slate-400">先选择带 3D 图片/模型的机箱，再继续添加主板、显卡等部件。</div>
                             </div>
                         </div>
                     </div>
@@ -250,25 +364,17 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
                     <div className="absolute inset-0 z-10 flex flex-col bg-white/95 p-4 backdrop-blur-sm dark:bg-[#0B0B10]/95">
                         <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
                             <div>
-                                <div className="text-sm font-black text-slate-900 dark:text-white">暂无可用 3D 模型</div>
-                                <div className="mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">先用已选产品图片展示外观，模型补齐后自动切换为 3D。</div>
+                                <div className="text-sm font-black text-slate-900 dark:text-white">{imageFallbackTitle}</div>
+                                <div className="mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">{imageFallbackDescription}</div>
                             </div>
                             <div className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-black text-slate-500 dark:bg-[#1A1A24] dark:text-slate-300">
                                 图片参考
                             </div>
                         </div>
-                        <div className="grid min-h-0 flex-1 grid-cols-2 gap-2">
-                            {imageFallbackItems.slice(0, 4).map(item => (
-                                <div key={`${item.category}-${item.name}`} className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-[#1E293B] dark:bg-[#121218]">
-                                    <img src={item.image} alt={item.name} className="h-full w-full object-contain p-2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                    <div className="absolute left-2 top-2 rounded-md bg-white/90 px-1.5 py-0.5 text-[9px] font-black text-slate-600 shadow-sm dark:bg-slate-950/80 dark:text-slate-300">
-                                        {CATEGORY_MAP[item.category]}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        {renderImageFallbackGrid()}
                     </div>
                 )}
+                {showCaseRequirementHint && renderCaseRequirementHint()}
                 {showMissingImageStrip && (
                     <div className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-2 overflow-hidden rounded-lg border border-white/70 bg-white/92 p-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#121218]/92">
                         <div className="shrink-0 text-[10px] font-black leading-tight text-slate-500 dark:text-slate-400">缺少模型<br />图片参考</div>

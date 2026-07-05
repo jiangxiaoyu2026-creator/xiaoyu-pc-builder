@@ -1139,8 +1139,28 @@
       const missing = [];
       let exact = 0;
       let similar = 0;
+      const normalizedItems = Array.isArray(items) ? items : [];
+      const caseItem = normalizedItems.find((item) => item.category === 'case');
+      const caseMatch = caseItem ? findBestAssetForBuildItem(caseItem) : null;
 
-      for (const item of items) {
+      if (caseItem && !caseMatch) {
+        return {
+          build: {},
+          summary: {
+            total: normalizedItems.length,
+            rendered: 0,
+            exact: 0,
+            similar: 0,
+            missing: normalizedItems.map((item) => ({ category: item.category, name: itemName(item) })),
+            matches: [],
+            caseModelAvailable: false,
+            fallbackMode: 'images',
+            fallbackReason: 'case_missing'
+          }
+        };
+      }
+
+      for (const item of normalizedItems) {
         const category = item.category;
         if (!CATEGORY_ORDER.includes(category)) {
           missing.push({ category, name: itemName(item) });
@@ -1176,7 +1196,9 @@
           exact,
           similar,
           missing,
-          matches
+          matches,
+          caseModelAvailable: caseItem ? true : null,
+          fallbackMode: 'models'
         }
       };
     }
