@@ -63,6 +63,22 @@
 }
 
 @layer utilities {
+  .streamer-center-grid-bg {
+    background-color: #f7f7f8;
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
+    background-size: 32px 32px;
+    background-position: center top;
+  }
+
+  .dark .streamer-center-grid-bg {
+    background-color: #0b0b10;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.10) 1px, transparent 1px);
+  }
+
   .ripple {
     position: relative;
     overflow: hidden;

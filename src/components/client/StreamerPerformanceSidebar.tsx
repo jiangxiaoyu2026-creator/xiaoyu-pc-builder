@@ -34,6 +34,79 @@ function SidebarRollingPrice({ value }: { value: number }) {
     return <motion.span>{rounded}</motion.span>;
 }
 
+const GAME_OFFICIAL_IMAGE_PATHS: Record<string, string> = {
+    'Apex 英雄': '/data/howmanyfps/2026-06-26/official-images/12-apex-legends-steam_library_hero.jpg',
+    '使命召唤：战区 2.0': '/data/howmanyfps/2026-06-26/official-images/09-call-of-duty-warzone-20-steam_library_hero.jpg',
+    '侠盗猎车手 5': '/data/howmanyfps/2026-06-26/official-images/03-grand-theft-auto-v-steam_library_hero.jpg',
+    '刀塔 2': '/data/howmanyfps/2026-06-26/official-images/07-dota-2-steam_library_hero.jpg',
+    '反恐精英 2': '/data/howmanyfps/2026-06-26/official-images/05-counter-strike-2-steam_library_hero.jpg',
+    '命运 2': '/data/howmanyfps/2026-06-26/official-images/16-destiny-2-steam_library_hero.jpg',
+    '堡垒之夜': '/data/howmanyfps/2026-06-26/official-images/01-fortnite-playstation_hero_desktop.webp',
+    '守望先锋 2': '/data/howmanyfps/2026-06-26/official-images/08-overwatch-2-steam_library_hero.jpg',
+    '彩虹六号：围攻': '/data/howmanyfps/2026-06-26/official-images/11-tom-clancys-rainbow-six-siege-steam_library_hero.jpg',
+    '我的世界': '/data/howmanyfps/2026-06-26/official-images/02-minecraft-official_primary.jpg',
+    '无畏契约': '/data/howmanyfps/2026-06-26/official-images/06-valorant-official_primary.jpg',
+    '英雄联盟': '/data/howmanyfps/2026-06-26/official-images/04-league-of-legends-fallback-cover.png',
+    '荒野大镖客：救赎 2': '/data/howmanyfps/2026-06-26/official-images/23-red-dead-redemption-2-steam_library_hero.jpg',
+    '赛博朋克 2077': '/data/howmanyfps/2026-06-26/official-images/26-cyberpunk-2077-steam_library_hero.jpg',
+    '逃离塔科夫': '/data/howmanyfps/2026-06-26/official-images/13-escape-from-tarkov-fallback-cover.jpg',
+    '魔兽世界': '/data/howmanyfps/2026-06-26/official-images/10-world-of-warcraft-official_primary.png',
+    '腐蚀': '/data/howmanyfps/2026-06-26/official-images/18-rust-steam_library_hero.jpg',
+    '艾尔登法环': '/data/howmanyfps/2026-06-26/official-images/19-elden-ring-steam_library_hero.jpg',
+    '火箭联盟': '/data/howmanyfps/2026-06-26/official-images/15-rocket-league-steam_library_hero.jpg',
+    '绝地求生': '/data/howmanyfps/2026-06-26/official-images/17-playerunknowns-battlegrounds-steam_library_hero.jpg',
+};
+
+const GAME_COVER_NAMES = new Set([
+    '黑神话：悟空',
+    '守望先锋 2',
+    '反恐精英 2',
+    '我的世界',
+    'Apex 英雄',
+    '三角洲行动',
+    '绝地求生',
+    '赛博朋克 2077',
+    '无畏契约',
+    '刀塔 2',
+    '荒野大镖客：救赎 2',
+]);
+
+function getGameImageSources(name: string) {
+    const sources = [
+        `/images/games/icons/${name}.png`,
+        GAME_COVER_NAMES.has(name) ? `/images/games/covers/${name}.jpg` : null,
+        GAME_OFFICIAL_IMAGE_PATHS[name] || null,
+    ].filter((source): source is string => Boolean(source));
+    return Array.from(new Set(sources));
+}
+
+function GameFpsIcon({ name, className }: { name: string; className: string }) {
+    const [sourceIndex, setSourceIndex] = useState(0);
+    const sources = getGameImageSources(name);
+    const source = sources[sourceIndex];
+
+    useEffect(() => {
+        setSourceIndex(0);
+    }, [name]);
+
+    if (!source) {
+        return (
+            <div className={`${className} flex items-center justify-center bg-slate-800 text-[10px] font-black text-white`}>
+                {name.slice(0, 1)}
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={source}
+            alt={name}
+            className={className}
+            onError={() => setSourceIndex(index => index + 1)}
+        />
+    );
+}
+
 export interface SidebarPricingProps {
     pricing: { standardPrice: number; finalPrice: number; savedAmount: number };
     discountRate: number;
@@ -377,7 +450,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                 displayFpsData.map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-2">
                                         <div className="relative shrink-0">
-                                            <img src={`/images/games/icons/${item.name}.png`} alt={item.name} className={`w-8 h-8 rounded-full object-cover border-2 ${liveStyleConfig.border}`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                            <GameFpsIcon name={item.name} className={`w-8 h-8 rounded-full object-cover border-2 ${liveStyleConfig.border}`} />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className={`text-[11px] font-black ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
@@ -504,7 +577,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                     <div key={idx} className="group/item">
                                         <div className="flex justify-between items-end text-[11px] mb-1.5">
                                             <span className={`font-bold text-slate-700 dark:text-slate-300 group-hover/item:text-slate-900 dark:group-hover/item:text-white transition-colors flex items-center gap-1.5 flex-1 min-w-0 pr-2`}>
-                                                <img src={`/images/games/icons/${item.name}.png`} alt="" className={`w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                                <GameFpsIcon name={item.name} className="w-4 h-4 rounded-[4px] object-cover bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0" />
                                                 <span className="truncate">{item.name}</span>
                                             </span>
                                             <div className="flex items-baseline gap-2 justify-end shrink-0">
