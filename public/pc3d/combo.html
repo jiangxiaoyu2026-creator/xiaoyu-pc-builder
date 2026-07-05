@@ -598,6 +598,20 @@
             "realScale": true
       }
 };
+    const CAMERA_LIMITS = {
+      assembled: {
+        minPolar: Math.PI * 0.16,
+        maxPolar: Math.PI * 0.74,
+        minDistanceRatio: 0.48,
+        maxDistanceRatio: 2.35
+      },
+      display: {
+        minPolar: Math.PI * 0.04,
+        maxPolar: Math.PI * 0.92,
+        minDistanceRatio: 0.38,
+        maxDistanceRatio: 3.2
+      }
+    };
 
     const el = (id) => document.getElementById(id);
     const QUERY = new URLSearchParams(window.location.search);
@@ -631,7 +645,10 @@
     controls.target.set(0, 0.55, 0);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
-    controls.rotateSpeed = 0.42;
+    controls.rotateSpeed = 0.62;
+    controls.zoomSpeed = 0.88;
+    controls.enableRotate = true;
+    controls.enableZoom = true;
     controls.enablePan = false;
 
     scene.add(new THREE.HemisphereLight(0xffffff, 0x8d9288, 2.6));
@@ -2065,8 +2082,6 @@
       box.getCenter(center);
       const radius = Math.max(size.x, size.y, size.z, 1) * 2.12;
       const polar = Math.PI / 2.55;
-      const minPolar = Math.PI / 2.95;
-      const maxPolar = Math.PI / 2.16;
       const sideWindow = nodeBox(root, /^SIDE_PANEL_WINDOW/i);
       const sideWindowCenter = sideWindow ? centerOfBox(sideWindow) : null;
       const viewSignX = sideWindowCenter && Math.abs(sideWindowCenter.x - center.x) > 0.001
@@ -2078,13 +2093,7 @@
       const offsetY = Math.cos(polar) * radius;
       const offsetZ = Math.sin(polar) * radius * 0.18;
       controls.target.copy(target);
-      controls.minPolarAngle = minPolar;
-      controls.maxPolarAngle = maxPolar;
-      controls.minAzimuthAngle = -Infinity;
-      controls.maxAzimuthAngle = Infinity;
-      controls.minDistance = radius * 0.72;
-      controls.maxDistance = radius * 1.5;
-      controls.enablePan = false;
+      applyCameraLimits(radius);
       camera.position.set(
         target.x + offsetX,
         target.y + offsetY,
@@ -2094,6 +2103,19 @@
       camera.far = 100;
       camera.updateProjectionMatrix();
       controls.update();
+    }
+
+    function applyCameraLimits(radius = 6) {
+      const limits = layoutMode === 'assembled' ? CAMERA_LIMITS.assembled : CAMERA_LIMITS.display;
+      controls.minPolarAngle = limits.minPolar;
+      controls.maxPolarAngle = limits.maxPolar;
+      controls.minAzimuthAngle = -Infinity;
+      controls.maxAzimuthAngle = Infinity;
+      controls.minDistance = Math.max(0.4, radius * limits.minDistanceRatio);
+      controls.maxDistance = Math.max(controls.minDistance + 0.2, radius * limits.maxDistanceRatio);
+      controls.enableRotate = true;
+      controls.enableZoom = true;
+      controls.enablePan = false;
     }
 
     function loadAsset(asset, options) {
@@ -2184,12 +2206,8 @@
         camera.position.set(5.4, 4.2, 6.4);
         controls.target.set(0, 0.55, 0);
       }
-      controls.minPolarAngle = 0;
-      controls.maxPolarAngle = Math.PI;
-      controls.minAzimuthAngle = -Infinity;
-      controls.maxAzimuthAngle = Infinity;
-      controls.minDistance = 0;
-      controls.maxDistance = Infinity;
+      const targetDistance = camera.position.distanceTo(controls.target) || 6;
+      applyCameraLimits(targetDistance);
       controls.update();
     }
 
