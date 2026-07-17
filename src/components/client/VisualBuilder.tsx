@@ -14,6 +14,33 @@ import { gamesFpsData, gamesList, Resolution } from '../../data/gameFpsData';
 
 const MODAL_ITEM_BATCH_SIZE = 40;
 const DESKTOP_VISUAL_COLUMN_HEIGHT = 'lg:h-[clamp(720px,calc(100dvh-196px),860px)]';
+const DESKTOP_BUILD_CATEGORY_ORDER: Category[] = [
+    'case',
+    'cpu',
+    'mainboard',
+    'cooling',
+    'ram',
+    'disk',
+    'gpu',
+    'power',
+    'fan',
+    'monitor',
+    'mouse',
+    'keyboard',
+    'accessory',
+];
+const DESKTOP_BUILD_CATEGORY_INDEX = new Map(DESKTOP_BUILD_CATEGORY_ORDER.map((category, index) => [category, index]));
+
+function orderDesktopBuildEntries(entries: BuildEntry[]) {
+    return entries
+        .map((entry, index) => ({ entry, index }))
+        .sort((a, b) => {
+            const categoryOrder = (DESKTOP_BUILD_CATEGORY_INDEX.get(a.entry.category) ?? Number.MAX_SAFE_INTEGER)
+                - (DESKTOP_BUILD_CATEGORY_INDEX.get(b.entry.category) ?? Number.MAX_SAFE_INTEGER);
+            return categoryOrder || a.index - b.index;
+        })
+        .map(({ entry }) => entry);
+}
 
 type MonitorResolutionFilter = 'all' | '1K' | '2K' | '4K' | '5K';
 type MonitorRefreshFilter = 'all' | '60' | '75' | '100' | '144' | '180' | '240' | '300';
@@ -151,6 +178,7 @@ function VisualBuilder({
     onShare?: () => void,
     onReset?: () => void
 }) {
+    const desktopBuildList = useMemo(() => orderDesktopBuildEntries(buildList), [buildList]);
     const [modalCategory, setModalCategory] = useState<Category | null>(null);
     const [modalEntryId, setModalEntryId] = useState<string | null>(null);
     const [modalSearch, setModalSearch] = useState('');
@@ -1136,7 +1164,7 @@ function VisualBuilder({
                     initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.035 } } }}
                     className="flex flex-col space-y-1"
                 >
-                    {buildList.map((entry) => (
+                    {desktopBuildList.map((entry) => (
                         <motion.div
                             variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } } }}
                             whileHover={{ y: 0 }}
@@ -1231,7 +1259,7 @@ function VisualBuilder({
             {modalCategory && typeof document !== 'undefined' && createPortal((
                 <div className="fixed inset-0 z-[120] flex items-end justify-center bg-slate-900/45 backdrop-blur-sm animate-fade-in md:pointer-events-none md:items-start md:justify-start md:bg-transparent md:backdrop-blur-none">
                     <div
-                        className="pointer-events-auto bg-[#FAFAFA] dark:bg-[#121218] rounded-none md:fixed md:left-4 md:top-[76px] md:bottom-4 md:rounded-2xl xl:left-[calc((100vw-80rem)/2+1rem)] w-full md:w-[min(44vw,520px)] max-w-3xl md:max-w-[520px] h-[100dvh] md:h-auto overflow-y-auto overscroll-contain custom-scrollbar shadow-xl md:shadow-2xl dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] animate-scale-up border-x md:border border-slate-200 dark:border-[#1E293B]"
+                        className="pointer-events-auto bg-[#FAFAFA] dark:bg-[#121218] rounded-none md:fixed md:left-4 md:top-[76px] md:bottom-4 md:rounded-2xl xl:left-[calc((100vw-80rem)/2+1rem)] w-full md:w-[min(44vw,520px)] lg:w-[min(48vw,600px)] max-w-3xl md:max-w-[520px] lg:max-w-[600px] h-[100dvh] md:h-auto overflow-y-auto overscroll-contain custom-scrollbar shadow-xl md:shadow-2xl dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.7)] animate-scale-up border-x md:border border-slate-200 dark:border-[#1E293B]"
                         onScroll={handleModalListScroll}
                     >
                         {/* Modal Header */}

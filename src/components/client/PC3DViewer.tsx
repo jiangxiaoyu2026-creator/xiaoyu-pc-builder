@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
-import { Box, CheckCircle2, Info, Layers, Maximize2, RefreshCw, X } from 'lucide-react';
+import { AlertCircle, Box, CheckCircle2, Info, Layers, Maximize2, RefreshCw, ScanSearch, X } from 'lucide-react';
 import { BuildEntry, Category } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 
@@ -84,19 +84,19 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
         [buildList]
     );
     const selectedCaseName = `${selectedCase?.item?.brand || ''} ${selectedCase?.item?.model || selectedCase?.customName || ''}`.trim();
-    const showCaseRequirementHint = isReady && !selectedCase;
+    const showCaseRequirementHint = isReady && (!selectedCase || caseModelUnavailable);
     const caseRequirementCopy = selectedCase
         ? {
             badge: '机箱缺少 3D',
-            title: '当前机箱还没有可用 3D 模型',
-            description: `${selectedCaseName || '已选机箱'} 暂未匹配 3D 模型，无法生成完整装机预览效果。`,
-            footnote: '请换一款带“有3D模型”标识的机箱，或先补充该机箱的 3D 模型。',
+            title: '这款机箱还不能生成 3D 预览',
+            description: `${selectedCaseName || '当前机箱'} 暂未匹配 3D 图片/模型。请更换带“有3D模型”标识的机箱，或先补充该机箱的 3D 图片/模型。`,
+            steps: ['更换有 3D 模型机箱', '补充机箱 3D 图'],
         }
         : {
-            badge: '需要先选机箱',
+            badge: '3D 预览提示',
             title: '想看 3D 预览，先选带 3D 模型的机箱',
-            description: '机箱是装机效果的外壳基准。没有机箱，或机箱没有 3D 模型时，无法生成完整 3D 装机效果。',
-            footnote: '在左侧“机箱”分类里选择带“有3D模型”标识的型号即可预览。',
+            description: '机箱决定整机外观基准。未选择机箱，或机箱没有 3D 图片/模型时，暂不显示完整 3D 装机效果。',
+            steps: ['选择机箱', '确认有 3D 模型'],
         };
     const missingCategorySet = useMemo(() => new Set(summary.missing.map(item => item.category)), [summary.missing]);
     const missingImageFallbackItems = useMemo(
@@ -116,7 +116,7 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
             ? {
                 label: '产品图片预览',
                 tone: 'slate',
-                description: '当前机箱暂无 3D 模型，已切换为整套产品图片。',
+                description: '当前机箱暂无 3D 图片/模型，暂不能生成完整 3D 预览。',
                 icon: Info,
             }
         : hasOnlyExactModels
@@ -145,9 +145,9 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
         : previewState.tone === 'amber'
             ? 'bg-amber-50 text-amber-700 ring-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20'
             : 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-[#1A1A24] dark:text-slate-300 dark:ring-[#2D3748]';
-    const imageFallbackTitle = caseModelUnavailable ? '机箱暂无 3D 模型' : '暂无可用 3D 模型';
+    const imageFallbackTitle = caseModelUnavailable ? '机箱暂无 3D 图片/模型' : '暂无可用 3D 模型';
     const imageFallbackDescription = caseModelUnavailable
-        ? `${selectedCaseName || '当前机箱'} 暂无 3D 模型，因此只展示整套产品图片，不再显示其它配件 3D。`
+        ? '需要选择带 3D 图片/模型的机箱，才能生成完整装机预览效果。'
         : '先用已选产品图片展示外观，模型补齐后自动切换为 3D。';
 
     const renderImageFallbackGrid = (expanded = false) => (
@@ -223,45 +223,65 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
         />
     );
 
-    const renderCaseRequirementHint = (expanded = false) => (
+    const renderCaseRequirementHint = (expanded = false) => {
+        const CaseHintIcon = selectedCase ? AlertCircle : ScanSearch;
+        return (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-5">
-            <div className={`pointer-events-auto w-full max-w-[430px] overflow-hidden rounded-lg border p-4 shadow-[0_18px_48px_rgba(15,23,42,0.16)] backdrop-blur-md ${
+            <div className={`pointer-events-auto relative w-full max-w-[430px] overflow-hidden rounded-lg border px-4 py-3.5 pl-5 shadow-[0_22px_56px_rgba(15,23,42,0.16)] backdrop-blur-xl ${
                 expanded
-                    ? 'border-white/10 bg-slate-950/90 text-white'
-                    : 'border-indigo-100/80 bg-white/95 text-slate-900 dark:border-white/10 dark:bg-[#121218]/92 dark:text-white'
+                    ? 'border-white/10 bg-slate-950/88 text-white'
+                    : 'border-white/85 bg-white/94 text-slate-900 ring-1 ring-slate-950/5 dark:border-white/10 dark:bg-[#121218]/92 dark:text-white dark:ring-white/10'
             }`}>
+                <div className={`absolute inset-y-0 left-0 w-1 ${selectedCase ? 'bg-amber-400' : 'bg-indigo-500'}`} />
                 <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-950">
-                        <Box size={18} />
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                        selectedCase
+                            ? 'bg-amber-50 text-amber-600 ring-1 ring-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20'
+                            : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20'
+                    }`}>
+                        <CaseHintIcon size={18} strokeWidth={2.4} />
                     </div>
                     <div className="min-w-0">
-                        <div className={`mb-1 inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-black ${
+                        <div className={`mb-1 inline-flex rounded-md px-2 py-1 text-[10px] font-black ${
                             selectedCase
                                 ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20'
                                 : 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20'
                         }`}>
-                            <Info size={12} />
                             {caseRequirementCopy.badge}
                         </div>
                         <div className="text-sm font-black leading-snug">{caseRequirementCopy.title}</div>
-                        <div className={`mt-2 text-xs font-bold leading-relaxed ${
+                        <div className={`mt-1.5 text-xs font-bold leading-relaxed ${
                             expanded ? 'text-slate-300' : 'text-slate-500 dark:text-slate-400'
                         }`}>
                             {caseRequirementCopy.description}
                         </div>
                     </div>
                 </div>
-                <div className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-black ${
-                    expanded
-                        ? 'bg-white/10 text-slate-200'
-                        : 'bg-slate-50 text-slate-600 ring-1 ring-slate-100 dark:bg-[#0B0B10] dark:text-slate-300 dark:ring-white/10'
-                }`}>
-                    <CheckCircle2 size={14} className="shrink-0 text-emerald-500" />
-                    <span>{caseRequirementCopy.footnote}</span>
+                <div className="mt-3 flex flex-wrap gap-2 pl-[52px]">
+                    {caseRequirementCopy.steps.map((step, index) => (
+                        <span
+                            key={step}
+                            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[10px] font-black ${
+                                expanded
+                                    ? 'bg-white/10 text-slate-200'
+                                    : 'bg-slate-50 text-slate-600 ring-1 ring-slate-100 dark:bg-[#0B0B10] dark:text-slate-300 dark:ring-white/10'
+                            }`}
+                        >
+                            <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] ${
+                                selectedCase
+                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200'
+                                    : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200'
+                            }`}>
+                                {index + 1}
+                            </span>
+                            {step}
+                        </span>
+                    ))}
                 </div>
             </div>
         </div>
-    );
+        );
+    };
 
     const expandedLayer = isExpanded && typeof document !== 'undefined'
         ? createPortal(

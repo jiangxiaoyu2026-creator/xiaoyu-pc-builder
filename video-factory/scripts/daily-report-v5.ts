@@ -318,62 +318,119 @@ async function main() {
   const VTT = path.join(TEMP, "voiceover_v2.vtt");
   const ASS = path.join(ASM, "subtitles.ass");
 
-  // Convert VTT to styled ASS for Douyin mobile (1080x1920)
-  // Safe area: bottom 200px (抖音底部按钮), so MarginV=220
-  // Font: 38px bold, white, black outline 3px, semi-transparent bg
   const assHeader = `[Script Info]
-Title: Daily Report Subtitles
 ScriptType: v4.00+
-WrapStyle: 0
 PlayResX: 1080
 PlayResY: 1920
 ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,PingFang SC,38,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,1,3,1,2,80,80,220,1
+Style: Default,PingFang SC,52,&H00FFFFFF,&H000000FF,&H00333333,&H00000000,-1,0,0,0,100,100,0,0,1,2.5,0,2,80,80,240,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 `;
 
+  function highlightText(text: string): string {
+    const hlStart = `{\\1c&H00CCFF&}`;
+    const hlEnd = `{\\r}`;
+    let result = text;
+    // Highlight numbers optionally followed by "块" or "元" or "%", and up/down terms
+    result = result.replace(/([降涨]了?)(\d+(?:\.\d+)?(?:块|元|%)?)/g, `$1${hlStart}$2${hlEnd}`);
+    result = result.replace(/(¥\d+)/g, `${hlStart}$1${hlEnd}`);
+    // Highlight CPU models and special terms
+    const keywords = ['9800X3D', 'DDR5', '5090D', 'TrendForce'];
+    for (const kw of keywords) {
+      const regex = new RegExp(`(${kw})`, 'gi');
+      result = result.replace(regex, `${hlStart}$1${hlEnd}`);
+    }
+    return result;
+  }
+
   // Parse VTT and convert to ASS events
   const vttContent = fs.readFileSync(VTT, "utf-8");
   const blocks = vttContent.split("\n\n").filter(b => b.includes("-->"));
   let assEvents = "";
+  let totalSegmentsGenerated = 0;
+
   for (const block of blocks) {
     const lines = block.trim().split("\n");
     const timeLine = lines.find(l => l.includes("-->"));
     if (!timeLine) continue;
     const textLines = lines.filter(l => !l.includes("-->") && !/^\d+$/.test(l.trim()));
-    let text = textLines.join("\\N").replace(/\n/g, "\\N");
-    if (!text) continue;
+    let rawText = textLines.join("").replace(/\n/g, "").replace(/"/g, "");
+    if (!rawText) continue;
 
-    // Auto-wrap: insert \N every ~20 chars for CJK text (1080px - 160px margin = 920px / ~38px font ≈ 24 chars)
-    const MAX_LINE = 22;
-    if (text.length > MAX_LINE && !text.includes("\\N")) {
-      const mid = Math.ceil(text.length / 2);
-      // Try to break at punctuation near midpoint
-      let breakAt = -1;
-      for (let i = mid - 4; i <= mid + 4 && i < text.length; i++) {
-        if ("，。、；！？".includes(text[i])) { breakAt = i + 1; break; }
+    // Parse VTT time: 00:00:02,650 --> 00:00:08,182
+    const [startStr, endStr] = timeLine.split("-->").map(s => s.trim());
+    const parseTime = (t: string) => {
+      const m = t.match(/(\d+):(\d+):(\d+)[,.](\d+)/);
+      if (!m) return 0;
+      return parseInt(m[1])*3600 + parseInt(m[2])*60 + parseInt(m[3]) + parseInt(m[4].padEnd(3, '0').slice(0,3))/1000;
+    };
+    const toASS = (t: number) => {
+      const h = Math.floor(t / 3600);
+      const m = Math.floor((t % 3600) / 60);
+      const s = Math.floor(t % 60);
+      const cs = Math.floor((t - Math.floor(t)) * 100);
+      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
+    };
+
+    const tStart = parseTime(startStr);
+    const tEnd = parseTime(endStr);
+    const tDuration = tEnd - tStart;
+
+    // Split text by sentence-ending or pausing punctuations
+    const parts = rawText.split(/([，。！？、；])/).filter(Boolean);
+    const subSegments: {text: string, charCount: number}[] = [];
+    let currentSeg = "";
+    
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      if (/^[。！？；]$/.test(part)) {
+        // drop ending punctuation
+        if (currentSeg.length > 0) {
+          subSegments.push({text: currentSeg, charCount: currentSeg.length});
+          currentSeg = "";
+        }
+      } else if (/^[，、]$/.test(part)) {
+        // drop comma but act as split
+        if (currentSeg.length > 0) {
+          subSegments.push({text: currentSeg, charCount: currentSeg.length});
+          currentSeg = "";
+        }
+      } else {
+        currentSeg += part;
       }
-      if (breakAt < 0) breakAt = mid;
-      text = text.slice(0, breakAt) + "\\N" + text.slice(breakAt);
+    }
+    if (currentSeg.length > 0) {
+      subSegments.push({text: currentSeg, charCount: currentSeg.length});
     }
 
-    // Parse time: 00:00:02,650 --> 00:00:08,182
-    const [startRaw, endRaw] = timeLine.split("-->").map(s => s.trim());
-    const toASS = (t: string) => {
-      const m = t.match(/(\d+):(\d+):(\d+)[,.](\d+)/);
-      if (!m) return "0:00:00.00";
-      return `${parseInt(m[1])}:${m[2]}:${m[3]}.${m[4].slice(0, 2)}`;
-    };
-    assEvents += `Dialogue: 0,${toASS(startRaw)},${toASS(endRaw)},Default,,0,0,0,,${text}\n`;
+    const totalChars = subSegments.reduce((sum, seg) => sum + seg.charCount, 0);
+    let currentStartTime = tStart;
+
+    for (const seg of subSegments) {
+       if (!seg.text.trim()) continue;
+       
+       let displayDuration = tDuration * (seg.charCount / totalChars);
+       let currentEndTime = currentStartTime + displayDuration;
+       
+       const st = toASS(currentStartTime);
+       const et = toASS(currentEndTime);
+       
+       let finalText = highlightText(seg.text.trim());
+       const fx = `{\\fad(150,100)\\blur0.8}`;
+       
+       assEvents += `Dialogue: 0,${st},${et},Default,,0,0,0,,${fx}${finalText}\n`;
+       currentStartTime = currentEndTime;
+       totalSegmentsGenerated++;
+    }
   }
 
   fs.writeFileSync(ASS, assHeader + assEvents);
-  console.log(`  Generated ${blocks.length} subtitle entries`);
+  console.log(`  Generated ${totalSegmentsGenerated} subtitle entries (smart split)`);
 
   console.log("=> Burning subtitles...");
   const final = path.join(OUT, "daily_report_final_v5_20260526.mp4");

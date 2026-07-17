@@ -143,7 +143,7 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
     };
 
     return (
-        <div className="fixed bottom-[200px] md:bottom-6 right-4 md:right-6 z-[100] flex flex-col items-end">
+        <div className="fixed bottom-[calc(78px+env(safe-area-inset-bottom))] md:bottom-6 right-3 md:right-6 z-[100] flex flex-col items-end">
             {/* Chat Window */}
             {isOpen && (
                 <div className="mb-4 w-[calc(100vw-2rem)] md:w-[360px] h-[65vh] md:h-[520px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-10 fade-in duration-300">
@@ -226,9 +226,9 @@ export default function ChatWidget({ isOpen: externalIsOpen, onToggle, initialMe
             {!isOpen && (
                 <button
                     onClick={() => handleToggle(true)}
-                    className="group relative w-14 h-14 bg-slate-900 hover:bg-indigo-600 text-white rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.2)] flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
+                    className="group relative w-12 h-12 md:w-14 md:h-14 bg-slate-900 hover:bg-indigo-600 text-white rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.2)] flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
                 >
-                    <MessageCircle size={28} className="group-hover:rotate-12 transition-transform duration-300" />
+                    <MessageCircle size={24} className="md:w-7 md:h-7 group-hover:rotate-12 transition-transform duration-300" />
                     {unreadCount > 0 && (
                         <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white animate-bounce">
                             {unreadCount}

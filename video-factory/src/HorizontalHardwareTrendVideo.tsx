@@ -31,6 +31,7 @@ type ProductTrend = {
 type CategorySummary = {
   key: string;
   label: string;
+  periodLabel?: string;
   changed: number;
   up: number;
   down: number;
@@ -45,18 +46,42 @@ type NewsItem = {
   summary: string;
 };
 
+type VoiceScene = {
+  key: string;
+  label: string;
+  text: string;
+};
+
+type SceneAudio = VoiceScene & {
+  src: string;
+  durationSeconds: number;
+  durationFrames: number;
+};
+
+export type ChangeTableItem = {
+  name: string;
+  oldPrice: number;
+  newPrice: number;
+  changeAmount: number;
+  changePercent: number;
+};
+
 export type HorizontalHardwareTrendProps = {
   date: string;
   title: string;
   headline: string;
   audioSrc: string;
+  sceneDurations?: number[];
+  sceneAudio?: SceneAudio[];
+  voiceScenes?: VoiceScene[];
   categories: CategorySummary[];
   featured: ProductTrend[];
+  changeTables?: Partial<Record<"ram" | "disk" | "cpu" | "gpu", { down: ChangeTableItem[]; up: ChangeTableItem[] }>>;
   news: NewsItem[];
   script: string;
 };
 
-export const horizontalHardwareDurationFrames = 5520;
+export const horizontalHardwareDurationFrames = 5460;
 
 export const defaultHorizontalHardwareTrendProps: HorizontalHardwareTrendProps = {
   date: "2026-05-26",
@@ -69,7 +94,7 @@ export const defaultHorizontalHardwareTrendProps: HorizontalHardwareTrendProps =
   script: "",
 };
 
-const sceneDurations = [360, 1020, 840, 840, 1140, 840, 480];
+const sceneDurations = [360, 1020, 840, 840, 1140, 840, 420];
 
 const sceneAtFrame = (frame: number) => {
   let cursor = 0;
@@ -90,7 +115,8 @@ const formatMoney = (value: number | null) =>
 
 const formatChange = (value: number) => {
   if (Math.abs(value) < 0.01) return "0";
-  return `${value > 0 ? "+" : ""}${Math.round(value).toLocaleString("zh-CN")}`;
+  if (value > 0) return `↑ +${Math.round(value).toLocaleString("zh-CN")}`;
+  return `↓ ${Math.round(Math.abs(value)).toLocaleString("zh-CN")}`;
 };
 
 const changeColor = (value: number) => {
@@ -101,6 +127,8 @@ const changeColor = (value: number) => {
 
 const trimText = (text: string, max: number) =>
   text.length > max ? `${text.slice(0, max - 1)}…` : text;
+
+const loopProgress = (frame: number, period: number) => ((frame % period) + period) % period / period;
 
 const Background = () => {
   const frame = useCurrentFrame();
@@ -159,22 +187,6 @@ const Shell = ({ children }: { children: ReactNode }) => (
     }}
   >
     {children}
-    <div
-      style={{
-        position: "absolute",
-        left: 58,
-        right: 58,
-        bottom: 30,
-        display: "flex",
-        justifyContent: "space-between",
-        color: "rgba(214,211,209,0.46)",
-        fontSize: 20,
-        fontWeight: 800,
-      }}
-    >
-      <span>DIYXX.COM DATA CENTER</span>
-      <span>30-DAY PRICE CURVES · API SOURCE</span>
-    </div>
   </AbsoluteFill>
 );
 
@@ -210,58 +222,162 @@ const Header = ({ props }: { props: HorizontalHardwareTrendProps }) => (
   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
     <div>
       <div style={{ color: "#67e8f9", fontSize: 20, fontWeight: 900, marginBottom: 12 }}>
-        JIANG XIAOYU MARKET BRIEF · {props.date}
+        后台行情数据 · {props.date}
       </div>
       <div style={{ fontSize: 46, fontWeight: 950 }}>{props.title}</div>
-    </div>
-    <div
-      style={{
-        border: "1px solid rgba(214,211,209,0.16)",
-        borderRadius: 8,
-        padding: "13px 18px",
-        color: "#d6d3d1",
-        fontSize: 22,
-        fontWeight: 850,
-        background: "rgba(28,25,23,0.72)",
-      }}
-    >
-      横屏数据版 · 1920x1080
     </div>
   </div>
 );
 
-const CategoryStrip = ({ categories }: { categories: CategorySummary[] }) => (
-  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
-    {categories.map((category) => (
-      <div
-        key={category.key}
-        style={{
-          border: "1px solid rgba(214,211,209,0.14)",
-          borderRadius: 8,
-          background: "rgba(28,25,23,0.7)",
-          padding: "18px 20px",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 10, height: 30, borderRadius: 4, background: category.color }} />
-          <div style={{ fontSize: 27, fontWeight: 950 }}>{category.label}</div>
-        </div>
-        <div style={{ marginTop: 18, display: "flex", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ color: "#a8a29e", fontSize: 16, fontWeight: 850 }}>变动</div>
-            <div style={{ fontSize: 34, fontWeight: 950 }}>{category.changed}</div>
-          </div>
-          <div>
-            <div style={{ color: "#a8a29e", fontSize: 16, fontWeight: 850 }}>涨 / 降</div>
-            <div style={{ fontSize: 34, fontWeight: 950, color: category.color }}>
-              {category.up} / {category.down}
+const CategoryStrip = ({ categories }: { categories: CategorySummary[] }) => {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+      {categories.map((category) => {
+        return (
+          <div
+            key={category.key}
+            style={{
+              position: "relative",
+              overflow: "hidden",
+              border: `1px solid ${category.color}`,
+              borderRadius: 8,
+              background: "rgba(28,25,23,0.7)",
+              padding: "18px 20px",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 4,
+                background: "rgba(214,211,209,0.08)",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                bottom: 0,
+                height: 4,
+                width: "100%",
+                background: category.color,
+              }}
+            />
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 10, height: 30, borderRadius: 4, background: category.color }} />
+              <div style={{ fontSize: 27, fontWeight: 950 }}>{category.label}</div>
+            </div>
+            <div style={{ marginTop: 18, display: "flex", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ color: "#a8a29e", fontSize: 16, fontWeight: 850 }}>变动</div>
+                <div style={{ fontSize: 34, fontWeight: 950 }}>{category.changed}</div>
+              </div>
+              <div>
+                <div style={{ color: "#a8a29e", fontSize: 16, fontWeight: 850 }}>涨 / 降</div>
+                <div style={{ display: "flex", gap: 14, fontSize: 30, fontWeight: 950 }}>
+                  <span style={{ color: "#ef4444" }}>↑ {category.up}</span>
+                  <span style={{ color: "#10b981" }}>↓ {category.down}</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const PhaseRail = ({
+  labels,
+  localFrame,
+  duration,
+  color,
+}: {
+  labels: string[];
+  localFrame: number;
+  duration: number;
+  color: string;
+}) => {
+  const progress = interpolate(localFrame, [0, duration], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const active = Math.min(labels.length - 1, Math.floor(progress * labels.length));
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${labels.length}, 1fr)`,
+        gap: 8,
+        marginTop: 20,
+      }}
+    >
+      {labels.map((label, index) => {
+        const isActive = index === active;
+        return (
+          <div
+            key={label}
+            style={{
+              border: `1px solid ${isActive ? color : "rgba(214,211,209,0.12)"}`,
+              borderRadius: 8,
+              padding: "9px 12px",
+              color: isActive ? "#fafaf9" : "#a8a29e",
+              background: isActive ? "rgba(41,37,36,0.86)" : "rgba(17,17,15,0.58)",
+              fontSize: 18,
+              fontWeight: 900,
+              textAlign: "center",
+            }}
+          >
+            {label}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const TickerTape = ({ items }: { items: ProductTrend[] }) => {
+  const frame = useCurrentFrame();
+  const entries = items.map((item) => `${item.category} ${trimText(item.shortName, 18)} ${formatChange(item.changeAmount)} 当前 ${formatMoney(item.newPrice)}`);
+  const repeated = [...entries, ...entries, ...entries];
+  const x = -((frame * 1.35) % 980);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 58,
+        right: 58,
+        bottom: 60,
+        height: 34,
+        overflow: "hidden",
+        borderTop: "1px solid rgba(214,211,209,0.1)",
+        borderBottom: "1px solid rgba(214,211,209,0.1)",
+        background: "rgba(17,17,15,0.54)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: 34,
+          whiteSpace: "nowrap",
+          transform: `translateX(${x}px)`,
+          color: "rgba(250,250,249,0.72)",
+          fontSize: 18,
+          fontWeight: 850,
+          lineHeight: "34px",
+        }}
+      >
+        {repeated.map((entry, index) => (
+          <span key={`${entry}-${index}`}>{entry}</span>
+        ))}
       </div>
-    ))}
-  </div>
-);
+    </div>
+  );
+};
 
 const pointsFor = (trend: ProductTrend) => trend.points.filter((point) => point.price > 0);
 
@@ -297,16 +413,17 @@ const TrendChart = ({
   }));
   const path = plotted.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
   const area = `${path} L ${plotted[plotted.length - 1]?.x || pad.left} ${pad.top + plotH} L ${pad.left} ${pad.top + plotH} Z`;
-  const drawEndFrame = Math.min(duration - 24, compact ? 112 : 148);
+  const drawEndFrame = Math.min(duration - 24, compact ? 86 : 108);
   const drawProgress = interpolate(localFrame, [8, drawEndFrame], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
   const scanStart = Math.min(duration - 72, drawEndFrame + 18);
-  const scanProgress = interpolate(localFrame, [scanStart, Math.max(scanStart + 1, duration - 48)], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  const scanPeriod = compact ? 156 : 186;
+  const scanProgress =
+    localFrame < scanStart
+      ? drawProgress
+      : loopProgress(localFrame - scanStart, scanPeriod);
   const cursor = scanProgress * Math.max(1, plotted.length - 1);
   const floor = Math.floor(cursor);
   const ceil = Math.min(plotted.length - 1, floor + 1);
@@ -336,6 +453,7 @@ const TrendChart = ({
   const badgeH = compact ? 46 : 54;
   const badgeX = Math.max(pad.left, Math.min(pad.left + plotW - badgeW, latest.x - badgeW + 18));
   const badgeY = Math.max(12, Math.min(pad.top + plotH - badgeH - 8, latest.y - badgeH - 30));
+  const sweepX = pad.left + loopProgress(localFrame, compact ? 92 : 118) * plotW;
   const revealId = `reveal-${trend.key.replace(/[^a-zA-Z0-9]/g, "")}-${compact ? "c" : "f"}`;
 
   return (
@@ -412,6 +530,16 @@ const TrendChart = ({
               {point.date.slice(5)}
             </text>
           ))}
+        {drawProgress > 0.9 && (
+          <rect
+            x={sweepX - (compact ? 24 : 34)}
+            y={pad.top}
+            width={compact ? 48 : 68}
+            height={plotH}
+            fill={trend.color}
+            opacity={compact ? 0.1 : 0.12}
+          />
+        )}
         <g clipPath={`url(#${revealId})`}>
           <path d={area} fill={`url(#${revealId}-area)`} />
           <path d={path} fill="none" stroke={trend.color} strokeWidth={compact ? 4 : 5} strokeLinecap="round" strokeLinejoin="round" />
@@ -554,6 +682,12 @@ const IntroScene = ({ props, localFrame, duration }: { props: HorizontalHardware
           <CategoryStrip categories={props.categories} />
         </div>
       </div>
+      <PhaseRail
+        labels={["今日大盘", "内存", "硬盘", "CPU", "显卡", "新闻"]}
+        localFrame={localFrame}
+        duration={duration}
+        color="#67e8f9"
+      />
       <div
         style={{
           position: "absolute",
@@ -607,6 +741,12 @@ const SingleProductScene = ({
         <div style={{ marginTop: 18, fontSize: 45, lineHeight: 1.12, fontWeight: 950 }}>
           {trimText(trend.name, 33)}
         </div>
+        <PhaseRail
+          labels={["今日变化", "30天曲线", "周线参考"]}
+          localFrame={localFrame}
+          duration={duration}
+          color={trend.color}
+        />
         <ImpactPanel trend={trend} localFrame={localFrame} />
         <div style={{ marginTop: 30, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           <Metric label="今日原价" value={formatMoney(trend.oldPrice)} />
@@ -645,6 +785,12 @@ const CpuScene = ({
   return (
     <Shell>
       <Header props={props} />
+      <PhaseRail
+        labels={["AMD 游戏 U", "Intel 入门散片", "分化判断", "预算建议"]}
+        localFrame={localFrame}
+        duration={duration}
+        color="#38bdf8"
+      />
       <div style={{ marginTop: 34, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
         {cpuItems.map((item) => (
           <TrendChart key={item.key} trend={item} localFrame={localFrame} duration={duration} compact />
@@ -706,6 +852,9 @@ const MiniSparkline = ({
   const plotted = points.map((point, index) => ({ ...point, x: toX(index), y: toY(point.price) }));
   const path = plotted.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
   const revealId = `mini-${item.key.replace(/[^a-zA-Z0-9]/g, "")}`;
+  const scan = loopProgress(localFrame + item.shortName.length * 11, 96);
+  const scanX = pad + scan * (width - pad * 2);
+  const scanPoint = plotted[Math.min(plotted.length - 1, Math.round(scan * Math.max(0, plotted.length - 1)))];
 
   return (
     <div
@@ -748,6 +897,14 @@ const MiniSparkline = ({
             <circle key={`${item.key}-${index}`} cx={point.x} cy={point.y} r={3.5} fill="#fafaf9" stroke={item.color} strokeWidth={2} />
           ))}
         </g>
+        {progress > 0.98 && scanPoint && (
+          <g>
+            <rect x={scanX - 18} y={pad} width={36} height={height - pad * 2} fill={item.color} opacity={0.14} />
+            <line x1={scanX} y1={pad} x2={scanX} y2={height - pad} stroke="rgba(250,250,249,0.32)" strokeDasharray="4 6" />
+            <circle cx={scanPoint.x} cy={scanPoint.y} r={7} fill={item.color} opacity={0.26} />
+            <circle cx={scanPoint.x} cy={scanPoint.y} r={4} fill={item.color} stroke="#fafaf9" strokeWidth={1.5} />
+          </g>
+        )}
       </svg>
       <div style={{ display: "flex", justifyContent: "space-between", color: "#a8a29e", fontSize: 16, fontWeight: 850 }}>
         <span>{points[0]?.date.slice(5)}</span>
@@ -765,17 +922,26 @@ const NewsScene = ({ props, localFrame }: { props: HorizontalHardwareTrendProps;
       <div style={{ color: "#67e8f9", fontSize: 22, fontWeight: 900 }}>行业新闻背景</div>
       <div style={{ marginTop: 12, fontSize: 56, fontWeight: 950 }}>新闻只做解释框架，不替后台价格背锅</div>
     </div>
+    <PhaseRail
+      labels={["存储价格", "AI 基建", "回到报价"]}
+      localFrame={localFrame}
+      duration={840}
+      color="#67e8f9"
+    />
     <div style={{ marginTop: 48, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28 }}>
       {props.news.slice(0, 2).map((item, index) => {
         const cardIn = interpolate(localFrame, [index * 18, index * 18 + 34], [0, 1], {
           extrapolateLeft: "clamp",
           extrapolateRight: "clamp",
         });
+        const scan = loopProgress(localFrame + index * 42, 156);
 
         return (
           <div
             key={`${item.source}-${index}`}
             style={{
+              position: "relative",
+              overflow: "hidden",
               minHeight: 420,
               border: "1px solid rgba(214,211,209,0.14)",
               borderRadius: 8,
@@ -788,6 +954,16 @@ const NewsScene = ({ props, localFrame }: { props: HorizontalHardwareTrendProps;
               transform: `translateY(${(1 - cardIn) * 24}px)`,
             }}
           >
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                bottom: 0,
+                left: `${Math.round(scan * 100)}%`,
+                width: 80,
+                background: `linear-gradient(90deg, transparent, ${index === 0 ? "rgba(249,115,22,0.14)" : "rgba(96,165,250,0.14)"}, transparent)`,
+              }}
+            />
             <div>
               <div style={{ color: index === 0 ? "#f97316" : "#60a5fa", fontSize: 20, fontWeight: 900 }}>
                 {item.source}
@@ -837,27 +1013,48 @@ const OutroScene = ({
   props: HorizontalHardwareTrendProps;
   localFrame: number;
   duration: number;
-}) => (
-  <Shell>
-    <Header props={props} />
-    <div style={{ marginTop: 64, display: "grid", gridTemplateColumns: "0.56fr 0.44fr", gap: 28 }}>
-      <div>
-        <div style={{ color: "#67e8f9", fontSize: 22, fontWeight: 900 }}>收口判断</div>
-        <div style={{ marginTop: 18, fontSize: 64, lineHeight: 1.16, fontWeight: 950 }}>
-          显卡看二次回调，CPU 分型号比价，内存硬盘按曲线别靠感觉。
+}) => {
+  const scan = loopProgress(localFrame, 84);
+
+  return (
+    <Shell>
+      <Header props={props} />
+      <div
+        style={{
+          position: "absolute",
+          top: 104,
+          bottom: 72,
+          left: `${Math.round(58 + scan * 1680)}px`,
+          width: 220,
+          background: "linear-gradient(90deg, transparent, rgba(103,232,249,0.18), rgba(16,185,129,0.16), transparent)",
+          mixBlendMode: "screen",
+        }}
+      />
+      <div style={{ marginTop: 64, display: "grid", gridTemplateColumns: "0.56fr 0.44fr", gap: 28 }}>
+        <div>
+          <div style={{ color: "#67e8f9", fontSize: 22, fontWeight: 900 }}>收口判断</div>
+          <div style={{ marginTop: 18, fontSize: 64, lineHeight: 1.16, fontWeight: 950 }}>
+            显卡看二次回调，CPU 分型号比价，内存硬盘按曲线别靠感觉。
+          </div>
+          <PhaseRail
+            labels={["显卡", "CPU", "内存", "硬盘"]}
+            localFrame={localFrame}
+            duration={duration}
+            color="#67e8f9"
+          />
+          <div style={{ marginTop: 34, color: "#d6d3d1", fontSize: 34, lineHeight: 1.36, fontWeight: 850 }}>
+            评论区留预算和用途，我帮你把配置里的水分挤出来。
+          </div>
         </div>
-        <div style={{ marginTop: 34, color: "#d6d3d1", fontSize: 34, lineHeight: 1.36, fontWeight: 850 }}>
-          评论区留预算和用途，我帮你把配置里的水分挤出来。
+        <div style={{ display: "grid", gap: 14 }}>
+          {props.featured.slice(0, 3).map((item) => (
+            <MiniSparkline key={`${item.key}-outro`} item={item} localFrame={localFrame} duration={duration} />
+          ))}
         </div>
       </div>
-      <div style={{ display: "grid", gap: 14 }}>
-        {props.featured.slice(0, 3).map((item) => (
-          <MiniSparkline key={`${item.key}-outro`} item={item} localFrame={localFrame} duration={duration} />
-        ))}
-      </div>
-    </div>
-  </Shell>
-);
+    </Shell>
+  );
+};
 
 export const HorizontalHardwareTrendVideo = (props: HorizontalHardwareTrendProps) => {
   const frame = useCurrentFrame();
@@ -904,6 +1101,7 @@ export const HorizontalHardwareTrendVideo = (props: HorizontalHardwareTrendProps
         {scene.index === 6 && <OutroScene props={props} localFrame={scene.localFrame} duration={scene.duration} />}
         {scene.index === 7 && <CurveWallScene props={props} localFrame={scene.localFrame} duration={scene.duration} />}
       </Scene>
+      {props.featured.length ? <TickerTape items={props.featured} /> : null}
     </AbsoluteFill>
   );
 };

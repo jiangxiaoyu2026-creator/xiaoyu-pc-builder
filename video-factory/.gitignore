@@ -7,4 +7,8 @@ dist
 out
 temp/
 tmp/
+/.venv-tts/
+models/
 public/*.m4a
+public/*.mp3
+public/*.wav

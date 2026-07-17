@@ -1,8 +1,8 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Recycle, Monitor, FolderOpen } from 'lucide-react';
-import { BuildEntry, StreamerLiveMeta } from '../../types/clientTypes';
+import { BuildEntry, Category, StreamerLiveMeta } from '../../types/clientTypes';
 import { storage } from '../../services/storage';
 import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
 import { AiGenerateModal } from './AiGenerateModal';
@@ -15,6 +15,34 @@ import { StreamerPerformanceSidebar } from './StreamerPerformanceSidebar';
 import { StreamerPosterTemplate } from './StreamerPosterTemplate';
 import { StreamerPermissionWall } from './StreamerPermissionWall';
 // --------------------
+
+const STREAMER_BUILD_CATEGORY_ORDER: Category[] = [
+    'cpu',
+    'cooling',
+    'mainboard',
+    'ram',
+    'disk',
+    'gpu',
+    'power',
+    'case',
+    'fan',
+    'monitor',
+    'mouse',
+    'keyboard',
+    'accessory',
+];
+const STREAMER_BUILD_CATEGORY_INDEX = new Map(STREAMER_BUILD_CATEGORY_ORDER.map((category, index) => [category, index]));
+
+function orderStreamerBuildEntries(entries: BuildEntry[]) {
+    return entries
+        .map((entry, index) => ({ entry, index }))
+        .sort((a, b) => {
+            const categoryOrder = (STREAMER_BUILD_CATEGORY_INDEX.get(a.entry.category) ?? Number.MAX_SAFE_INTEGER)
+                - (STREAMER_BUILD_CATEGORY_INDEX.get(b.entry.category) ?? Number.MAX_SAFE_INTEGER);
+            return categoryOrder || a.index - b.index;
+        })
+        .map(({ entry }) => entry);
+}
 
 const LIVE_SCENARIO_ROWS = [
     ['实用', '颜值', '海景房'],
@@ -212,6 +240,7 @@ function StreamerWorkbench({
 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const rowInputRefs = useRef<(StreamerRowHandle | null)[]>([]);
+    const visibleBuildList = useMemo(() => orderStreamerBuildEntries(buildList), [buildList]);
 
 
     const updateGhost = (el: HTMLElement | null, status: string = '') => {
@@ -267,7 +296,7 @@ function StreamerWorkbench({
                 const entry = buildList.find(e => e.category === cat);
 
                 if (entry && targetItem) {
-                    const rowIndex = buildList.findIndex(e => e.id === entry.id);
+                    const rowIndex = visibleBuildList.findIndex(e => e.id === entry.id);
                     const row = rowInputRefs.current[rowIndex];
 
                     if (row) {
@@ -344,8 +373,7 @@ function StreamerWorkbench({
         }
     };
 
-    const validPosterItems = buildList.filter(b => b.item || b.customName);
-    const visibleBuildList = buildList;
+    const validPosterItems = visibleBuildList.filter(b => b.item || b.customName);
     const aiStatus = aiResult?.status || 'ready';
     const aiStatusLabel = aiStatus === 'blocked' ? '不可直接采用' : aiStatus === 'needs_confirmation' ? '需要确认' : '可直接采用';
     const serviceFeeRate = pricingStrategy?.serviceFeeRate ?? pricing?.serviceFeeRate ?? 0.06;
@@ -804,7 +832,7 @@ function StreamerWorkbench({
                     </div>
 
                     {/* === Right: Performance Sidebar === */}
-                    <StreamerPerformanceSidebar buildList={buildList} pricingProps={{ pricing, discountRate, setDiscountRate, strategies, serviceFeeRate, clearBuild, handleSave, handleGeneratePoster, isGeneratingPoster, handleShareTrigger, isSharing }} />
+                    <StreamerPerformanceSidebar buildList={visibleBuildList} pricingProps={{ pricing, discountRate, setDiscountRate, strategies, serviceFeeRate, clearBuild, handleSave, handleGeneratePoster, isGeneratingPoster, handleShareTrigger, isSharing }} />
                     </div>
                 </>
                 ) : activeTab === 'leaderboard' ? (

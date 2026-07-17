@@ -28,6 +28,51 @@ const UsedItemDetail = lazy(() => import('../components/client/UsedItemDetail'))
 const PriceTrendChart = lazy(() => import('../components/admin/PriceTrendChart'));
 const LeaderboardCenter = lazy(() => import('../components/client/LeaderboardCenter'));
 
+function AnimatedPriceNumber({ value, className }: { value: number; className?: string }) {
+    const targetValue = Math.floor(Number.isFinite(value) ? value : 0);
+    const [displayValue, setDisplayValue] = useState(targetValue);
+    const previousValueRef = useRef(targetValue);
+
+    useEffect(() => {
+        const startValue = previousValueRef.current;
+        const endValue = targetValue;
+        if (startValue === endValue) {
+            setDisplayValue(endValue);
+            return;
+        }
+
+        const startedAt = Date.now();
+        const duration = 680;
+        let frame = 0;
+
+        const tick = () => {
+            const progress = Math.min((Date.now() - startedAt) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setDisplayValue(Math.round(startValue + (endValue - startValue) * eased));
+            if (progress < 1) {
+                frame = requestAnimationFrame(tick);
+            } else {
+                previousValueRef.current = endValue;
+            }
+        };
+
+        frame = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(frame);
+    }, [targetValue]);
+
+    return (
+        <motion.span
+            key={targetValue}
+            initial={{ opacity: 0.72, y: 7 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+            className={className}
+        >
+            {displayValue.toLocaleString('zh-CN')}
+        </motion.span>
+    );
+}
+
 // ...
 import { useTheme } from '../hooks/useTheme';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -120,48 +165,27 @@ export default function ClientApp() {
 
     const loadData = async () => {
         try {
-            const [user, s, configs, allUsers, productsRes] = await Promise.all([
-                storage.getCurrentUser(),
+            const [user, s, configs, productsRes] = await Promise.all([
+                storage.refreshCurrentUser(),
                 storage.getPricingStrategy(),
                 storage.getConfigs({ pageSize: 1000 }),
-                storage.getUsers(),
                 storage.getProducts(1, 1000)
             ]);
 
-            // --- Sync Current User Object from All Users ---
-            // Zero-cost sync: Instead of a new API call, we use the allUsers list we just fetched 
-            // to update the current user's role and VIP status in case it was changed by an admin.
-            let activeUser = user;
-            if (activeUser) {
-                const updatedUser = allUsers.find(u => u.id === activeUser?.id || (u as any)._id === activeUser?.id);
-                if (updatedUser) {
-                    const needsUpdate =
-                        updatedUser.role !== activeUser.role ||
-                        updatedUser.vipExpireAt !== activeUser.vipExpireAt ||
-                        updatedUser.streamerExpireAt !== activeUser.streamerExpireAt;
-
-                    if (needsUpdate) {
-                        activeUser = { ...activeUser, role: updatedUser.role, vipExpireAt: updatedUser.vipExpireAt, streamerExpireAt: updatedUser.streamerExpireAt };
-                        // Silently update local storage without triggering another loadData loop
-                        localStorage.setItem('xiaoyu_current_user', JSON.stringify(activeUser));
-                    }
-                }
-            }
-            setCurrentUser(activeUser);
-            // ----------------------------------------------
+            setCurrentUser(user);
             setSettings(s);
             setAllProducts(productsRes.items);
 
             const visibleConfigs = configs.items.filter((c: any) => c.status === 'published' || c.status === 'active');
             // Map admin configs to client template
             const mappedList: ConfigTemplate[] = visibleConfigs.map((c: any) => {
-                const authorUser = allUsers.find((u: any) => u.id === c.userId);
-                const authorName = c.userName || (authorUser?.username) || '匿名';
+                const authorName = c.userName || c.authorName || '匿名';
+                const authorRole = c.authorRole || 'user';
 
                 // Unified type logic consistent with ConfigSquare
                 let type: 'official' | 'streamer' | 'user' | 'help' = 'user';
                 // Prioritize role-based identification
-                if (c.authorRole === 'streamer') type = 'streamer';
+                if (authorRole === 'streamer') type = 'streamer';
                 // Fallback to keyword matching and other flags
                 else if (authorName.includes('主播') || (authorName.includes('分享者') === false && c.title.includes('主播'))) type = 'streamer';
 
@@ -170,10 +194,7 @@ export default function ClientApp() {
                 // 官方要求：只有后台明确设置了“官方推荐”才显示为官方配置
                 if (c.isRecommended) type = 'official';
 
-                const isVip = authorUser ? (
-                    ['admin', 'streamer', 'sub_admin'].includes(authorUser.role) ||
-                    !!(authorUser.vipExpireAt && authorUser.vipExpireAt > Date.now())
-                ) : false;
+                const isVip = ['admin', 'streamer', 'sub_admin'].includes(authorRole);
 
                 return {
                     id: c.id,
@@ -299,6 +320,13 @@ export default function ClientApp() {
             onDiscountChange: setDiscountRate
         };
     }, [buildList, discountRate, settings]);
+    const selectedDiscountTier = useMemo(
+        () => settings.discountTiers.find(tier => tier.multiplier === discountRate),
+        [settings.discountTiers, discountRate]
+    );
+    const selectedDiscountName = (selectedDiscountTier?.name || '标准售价').replace(/\s*\(.*?\)/g, '');
+    const selectedDiscountPercent = Math.round(((selectedDiscountTier?.multiplier ?? discountRate) || 1) * 100);
+    const hasDiscount = (pricing.savedAmount || 0) > 0;
 
     const healthCheck = useMemo(() => {
         const issues: string[] = [];
@@ -686,7 +714,7 @@ export default function ClientApp() {
     };
 
     return (
-        <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#FAFAFA] dark:bg-[#0B0B10] font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800 dark:text-slate-200 transition-colors duration-300">
+        <div className={`flex flex-col h-[100dvh] overflow-hidden font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800 dark:text-slate-200 transition-colors duration-300 ${viewMode === 'streamer' ? 'streamer-center-grid-bg' : 'bg-[#FAFAFA] dark:bg-[#0B0B10]'}`}>
             <header className="relative md:sticky top-0 z-40 bg-white/70 dark:bg-[#0B0B10]/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-[#1E293B]/50 transition-all duration-300">
                 <div className={`max-w-7xl mx-auto px-4 flex items-center justify-between ${compactGameFpsHeader ? 'h-12' : 'h-16'}`}>
                     <div className="flex items-center gap-2.5">
@@ -852,10 +880,6 @@ export default function ClientApp() {
                                         label: '主播工作台',
                                         desc: '大屏模式推流工具',
                                         onClick: () => {
-                                            if (!hasStreamerPermission) {
-                                                showToast("🔒 此功能仅限合作主播与管理员使用");
-                                                return;
-                                            }
                                             setViewMode('streamer');
                                             setShowMobileMenu(false);
                                         },
@@ -979,7 +1003,7 @@ export default function ClientApp() {
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     className="flex-1 min-h-0 w-full max-w-7xl mx-auto overflow-hidden pb-[calc(56px+env(safe-area-inset-bottom)+10px)] md:pb-0"
                 >
-                    <div className={`h-full custom-scrollbar pb-0 ${viewMode === 'streamer' ? 'streamer-center-grid-bg overflow-auto' : 'overflow-y-auto'}`} id="main-scroll-container" onScroll={handleScroll}>
+                    <div className={`h-full custom-scrollbar pb-0 ${viewMode === 'streamer' ? 'overflow-auto' : 'overflow-y-auto'}`} id="main-scroll-container" onScroll={handleScroll}>
                     <Suspense fallback={<div className="flex items-center justify-center h-64"><RefreshCw size={24} className="animate-spin text-indigo-500" /></div>}>
                     {viewMode === 'streamer' && (
                         <StreamerWorkbench
@@ -1205,16 +1229,32 @@ export default function ClientApp() {
                         {/* Mobile: Two-row layout */}
                         <div className="flex md:hidden flex-col gap-1 py-2">
                             {/* Row 1: Price info */}
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2" onClick={() => setShowDiscountSheet(true)}>
-                                    <div className="flex items-baseline gap-0.5">
-                                        <span className="text-sm font-bold text-slate-900">¥</span>
-                                        <span className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-indigo-600 font-mono">{pricing.finalPrice}</span>
-                                        <ChevronDown size={14} className="text-slate-400 ml-0.5 translate-y-0.5" />
+                            <div className="flex items-center justify-between gap-2">
+                                <div
+                                    className="flex min-w-0 items-center gap-2 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-indigo-50 px-2.5 py-1.5 shadow-[0_0_0_3px_rgba(251,191,36,0.14),0_8px_22px_rgba(15,23,42,0.08)] active:scale-[0.99] dark:border-amber-500/30 dark:from-amber-500/12 dark:via-[#121218] dark:to-indigo-500/12"
+                                    onClick={() => setShowDiscountSheet(true)}
+                                >
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-slate-950 shadow-sm shadow-amber-300/50">
+                                        <Sparkles size={16} />
                                     </div>
-                                    <span className="bg-emerald-100 text-emerald-700 text-[9px] px-1.5 py-0.5 rounded-full font-bold">省¥{pricing.savedAmount}</span>
+                                    <div className="min-w-0">
+                                        <div className="flex min-w-0 items-center gap-1">
+                                            <span className="shrink-0 text-[9px] font-black text-amber-700 dark:text-amber-200">优惠方案</span>
+                                            <span className="max-w-[88px] truncate rounded-full bg-white/80 px-1.5 py-0.5 text-[8px] font-black text-indigo-600 ring-1 ring-amber-100 dark:bg-white/10 dark:text-indigo-200 dark:ring-white/10">
+                                                {selectedDiscountName}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-baseline gap-0.5">
+                                            <span className="text-sm font-black text-slate-900 dark:text-white">¥</span>
+                                            <AnimatedPriceNumber value={pricing.finalPrice} className="font-mono text-xl font-extrabold leading-none text-transparent bg-clip-text bg-gradient-to-r from-slate-950 via-indigo-600 to-emerald-600 dark:from-white dark:via-indigo-200 dark:to-emerald-200" />
+                                            <ChevronDown size={14} className="ml-0.5 translate-y-0.5 text-amber-600 dark:text-amber-200" />
+                                        </div>
+                                    </div>
+                                    <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-black ${hasDiscount ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-100'}`}>
+                                        {hasDiscount ? `省¥${pricing.savedAmount}` : `${selectedDiscountPercent}%`}
+                                    </span>
                                 </div>
-                                <span className="text-[8px] font-bold text-slate-400 whitespace-nowrap">
+                                <span className="shrink-0 text-right text-[8px] font-bold text-slate-400 whitespace-nowrap">
                                     含 {(settings.serviceFeeRate * 100).toFixed(0)}% 装机服务费
                                 </span>
                             </div>
@@ -1235,16 +1275,27 @@ export default function ClientApp() {
                         {/* Desktop: price/action bar */}
                         <div className="hidden md:grid h-14 grid-cols-[minmax(260px,1fr)_auto_auto] items-center gap-4">
                             <div className="flex min-w-0 items-center gap-2.5">
-                                <span className="shrink-0 text-[11px] font-black text-slate-500 dark:text-slate-400">优惠方案</span>
-                                <div className="relative shrink-0">
-                                    <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="h-8 w-[156px] appearance-none truncate rounded-lg border border-slate-200 bg-slate-50 pl-3 pr-7 text-[11px] font-black text-slate-700 outline-none transition-all hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500/20 dark:border-[#2D3748] dark:bg-[#1A1A24] dark:text-slate-200">
-                                        {settings.discountTiers.map(opt => (
-                                            <option key={opt.id} value={opt.multiplier}>
-                                                {opt.name.replace(/\s*\(.*?\)/g, '')}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
+                                <div className="relative flex min-w-[332px] items-center gap-2 overflow-hidden rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-indigo-50 px-3 py-1.5 shadow-[0_0_0_3px_rgba(251,191,36,0.14),0_10px_24px_rgba(15,23,42,0.08)] dark:border-amber-500/25 dark:from-amber-500/12 dark:via-[#121218] dark:to-indigo-500/12">
+                                    <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-amber-400 via-orange-400 to-indigo-500" />
+                                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-400 text-slate-950 shadow-sm shadow-amber-300/50">
+                                        <Sparkles size={15} />
+                                    </div>
+                                    <div className="shrink-0 leading-tight">
+                                        <div className="text-[11px] font-black text-amber-700 dark:text-amber-200">优惠方案</div>
+                                        <div className="text-[9px] font-black text-slate-400 dark:text-slate-500">
+                                            {hasDiscount ? `当前省 ¥${pricing.savedAmount}` : `${selectedDiscountPercent}% 折扣`}
+                                        </div>
+                                    </div>
+                                    <div className="relative shrink-0">
+                                        <select value={discountRate} onChange={(e) => setDiscountRate(parseFloat(e.target.value))} className="h-8 w-[172px] appearance-none truncate rounded-lg border border-amber-200 bg-white pl-3 pr-8 text-[11px] font-black text-slate-800 outline-none transition-all hover:border-amber-300 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 dark:border-amber-500/25 dark:bg-[#1A1A24] dark:text-slate-100">
+                                            {settings.discountTiers.map(opt => (
+                                                <option key={opt.id} value={opt.multiplier}>
+                                                    {opt.name.replace(/\s*\(.*?\)/g, '')}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-amber-600 dark:text-amber-200" size={13} />
+                                    </div>
                                 </div>
                                 {(pricing.savedAmount || 0) > 0 && (
                                     <span className="shrink-0 rounded-md border border-emerald-100 bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">已优惠 ¥{pricing.savedAmount}</span>
@@ -1262,7 +1313,7 @@ export default function ClientApp() {
                                     <div className="whitespace-nowrap text-[9px] font-black text-indigo-500 dark:text-indigo-300">优惠后实付</div>
                                     <div className="flex items-baseline justify-end gap-0.5">
                                         <span className="text-base font-black">¥</span>
-                                        <span className="font-mono text-[26px] font-black leading-none tracking-tight">{pricing.finalPrice}</span>
+                                        <AnimatedPriceNumber value={pricing.finalPrice} className="font-mono text-[26px] font-black leading-none tracking-tight" />
                                     </div>
                                 </div>
                             </div>

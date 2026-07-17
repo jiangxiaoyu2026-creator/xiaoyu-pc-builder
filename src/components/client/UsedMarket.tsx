@@ -86,20 +86,30 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
         });
     }, [items, searchQuery]);
 
+    const handleTypeChange = (type: 'all' | 'official' | 'personal') => {
+        setSelectedType(type);
+        setPage(1);
+    };
+
+    const handleCategoryChange = (category: UsedCategory | 'all') => {
+        setSelectedCategory(category);
+        setPage(1);
+    };
+
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-4 md:space-y-8 pb-24 md:pb-20">
             {/* Header Section */}
-            <div className="bg-white dark:bg-[#121218] rounded-2xl p-6 md:p-8 relative overflow-hidden border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div>
-                        <div className="flex items-center gap-3 mb-3">
-                            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">二手闲置</h2>
+            <div className="bg-white dark:bg-[#121218] rounded-xl md:rounded-2xl p-4 md:p-8 relative overflow-hidden border border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none">
+                <div className="hidden md:block absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-6">
+                    <div className="w-full md:w-auto">
+                        <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">二手闲置</h2>
                             <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                                 让价值流动
                             </span>
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400 max-w-lg text-sm leading-relaxed">
+                        <p className="hidden md:block text-slate-600 dark:text-slate-400 max-w-lg text-sm leading-relaxed">
                             <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
                                 <Shield size={14} /> 官方二手
                             </span>
@@ -109,18 +119,26 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                             </span>
                             <span className="mx-1.5">由用户自行发布，交易通过闲鱼完成。</span>
                         </p>
+                        <div className="flex md:hidden flex-wrap gap-1.5 text-[11px] font-bold">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20">
+                                <Shield size={12} /> 官方质检
+                            </span>
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20">
+                                <User size={12} /> 个人发布
+                            </span>
+                        </div>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="grid grid-cols-2 md:flex gap-2 md:gap-3 w-full md:w-auto">
                         <button
                             onClick={currentUser ? onRecycle : onLogin}
-                            className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl font-bold transition-all flex items-center gap-2 text-sm text-white"
+                            className="h-10 md:h-auto px-3 md:px-5 py-2 md:py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm text-white"
                         >
                             <Recycle size={16} />
                             我要回收
                         </button>
                         <button
                             onClick={currentUser ? onSell : onLogin}
-                            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm rounded-xl font-bold transition-all flex items-center gap-2 text-sm"
+                            className="h-10 md:h-auto px-3 md:px-5 py-2 md:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm"
                         >
                             <Plus size={18} />
                             发布闲置
@@ -130,12 +148,12 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
             </div>
 
             {/* Type Filter */}
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0 md:pb-2 px-1 md:px-0">
                 {TYPE_FILTERS.map(type => (
                     <button
                         key={type.id}
-                        onClick={() => setSelectedType(type.id)}
-                        className={`px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-1.5 ${selectedType === type.id
+                        onClick={() => handleTypeChange(type.id)}
+                        className={`h-9 md:h-auto px-3 md:px-4 py-1.5 md:py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-1.5 ${selectedType === type.id
                             ? 'bg-indigo-600 dark:bg-indigo-500/20 text-white dark:text-indigo-300 border border-indigo-600 dark:border-indigo-500/30 shadow-sm'
                             : 'bg-white dark:bg-[#121218] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748]'
                             }`}
@@ -148,13 +166,13 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
             </div>
 
             {/* Filters & Search */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between sticky top-[72px] z-30 bg-white/80 dark:bg-[#0B0B10]/80 backdrop-blur-md py-4 -my-4 px-4 rounded-xl border border-slate-200/50 dark:border-[#1E293B]/50 shadow-sm dark:shadow-none">
-                <div className="flex gap-2 overflow-x-auto no-scrollbar w-full md:w-auto pb-2 md:pb-0">
+            <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-center justify-between sticky top-0 md:top-[72px] z-30 bg-white/95 md:bg-white/80 dark:bg-[#0B0B10]/95 md:dark:bg-[#0B0B10]/80 backdrop-blur-md py-2 md:py-4 -my-1 md:-my-4 px-3 md:px-4 rounded-xl border border-slate-200/50 dark:border-[#1E293B]/50 shadow-sm dark:shadow-none">
+                <div className="flex gap-2 overflow-x-auto no-scrollbar w-full md:w-auto pb-0 md:pb-0">
                     {CATEGORIES.map(cat => (
                         <button
                             key={cat.id}
-                            onClick={() => setSelectedCategory(cat.id)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all ${selectedCategory === cat.id
+                            onClick={() => handleCategoryChange(cat.id)}
+                            className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-bold whitespace-nowrap transition-all ${selectedCategory === cat.id
                                 ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md dark:shadow-none'
                                 : 'bg-slate-100 dark:bg-[#121218] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-[#1A1A24] border border-transparent dark:border-[#2D3748]'
                                 }`}
@@ -185,7 +203,7 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                         hidden: { opacity: 0 },
                         visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
                     }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6"
                 >
                     {filteredItems.map(item => (
                         <motion.div
@@ -195,13 +213,13 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                             }}
                             key={item.id}
                             onClick={() => onViewDetail(item)}
-                            className={`rounded-2xl shadow-sm dark:shadow-none transition-all cursor-pointer overflow-hidden group border 
+                            className={`rounded-xl md:rounded-2xl shadow-sm dark:shadow-none transition-all cursor-pointer overflow-hidden group border flex md:block
                                 ${item.status === 'sold' 
                                     ? 'bg-slate-50 dark:bg-[#121218]/50 border-slate-200 dark:border-[#1E293B]/50 grayscale opacity-60' 
                                     : 'bg-white dark:bg-[#121218] border-slate-200 dark:border-[#1E293B] hover:border-indigo-400/50 dark:hover:border-indigo-500/50 hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-none'
                                 }`}
                         >
-                            <div className="aspect-[4/3] bg-slate-100 dark:bg-[#1A1A24] relative overflow-hidden">
+                            <div className="w-32 min-h-[142px] md:w-full md:min-h-0 md:aspect-[4/3] bg-slate-100 dark:bg-[#1A1A24] relative overflow-hidden shrink-0">
                                 {item.images[0] ? (
                                     <img src={item.images[0]} alt={item.model} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 ) : (
@@ -210,7 +228,7 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                                     </div>
                                 )}
                                 {/* 成色标签 */}
-                                <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-2 py-1 rounded-lg">
+                                <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-black/60 backdrop-blur-md text-white text-[10px] md:text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded-lg">
                                     {item.condition}
                                 </div>
                                 {/* 类型标签 */}
@@ -225,13 +243,13 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                                 )}
                                 {/* 验机报告标签 */}
                                 {item.type === 'official' && item.inspectionReport && (
-                                    <div className="absolute bottom-3 left-3 bg-blue-500/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg">
+                                    <div className="hidden md:block absolute bottom-3 left-3 bg-blue-500/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg">
                                         已验机 · {item.inspectionReport.grade}级
                                     </div>
                                 )}
                                 {/* 闲鱼标签 */}
                                 {item.type === 'personal' && item.xianyuLink && (
-                                    <div className="absolute bottom-3 right-3 bg-orange-500/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1">
+                                    <div className="hidden md:flex absolute bottom-3 right-3 bg-orange-500/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg items-center gap-1">
                                         <ExternalLink size={10} /> 闲鱼
                                     </div>
                                 )}
@@ -244,19 +262,24 @@ export default function UsedMarket({ currentUser, onLogin, onViewDetail, onSell,
                                     </div>
                                 )}
                             </div>
-                            <div className="p-4">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className={`font-bold text-sm line-clamp-2 ${item.status === 'sold' ? 'text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>{item.brand} {item.model}</h3>
+                            <div className="p-3 md:p-4 flex-1 min-w-0 flex flex-col justify-between md:block">
+                                <div>
+                                    <div className="flex justify-between items-start mb-1.5 md:mb-2">
+                                        <h3 className={`font-bold text-sm line-clamp-2 ${item.status === 'sold' ? 'text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>{item.brand} {item.model}</h3>
+                                    </div>
+                                    <p className="md:hidden text-[11px] leading-5 text-slate-500 dark:text-slate-400 line-clamp-2 mb-2">
+                                        {item.description}
+                                    </p>
+                                    <div className="flex items-center gap-1.5 md:gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 md:mb-4">
+                                        <span className={`px-1.5 py-0.5 rounded ${item.type === 'official' && item.status !== 'sold' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20' : 'bg-slate-50 dark:bg-[#1A1A24] text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-[#2D3748]'}`}>
+                                            {CATEGORIES.find(c => c.id === item.category)?.label}
+                                        </span>
+                                        <span>•</span>
+                                        <span className="truncate">{new Date(item.createdAt).toLocaleDateString()}</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-4">
-                                    <span className={`px-1.5 py-0.5 rounded ${item.type === 'official' && item.status !== 'sold' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20' : 'bg-slate-50 dark:bg-[#1A1A24] text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-[#2D3748]'}`}>
-                                        {CATEGORIES.find(c => c.id === item.category)?.label}
-                                    </span>
-                                    <span>•</span>
-                                    <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-                                </div>
-                                <div className="flex items-center justify-between border-t border-slate-100 dark:border-[#2D3748] pt-2.5">
-                                    <div className="text-lg font-bold font-mono tracking-tight text-slate-900 dark:text-white">
+                                <div className="flex items-center justify-between border-t border-slate-100 dark:border-[#2D3748] pt-2 md:pt-2.5">
+                                    <div className="text-base md:text-lg font-bold font-mono tracking-tight text-slate-900 dark:text-white">
                                         ¥{item.price}
                                         {item.originalPrice && <span className="text-[10px] text-slate-400 font-normal line-through ml-2">¥{item.originalPrice}</span>}
                                     </div>

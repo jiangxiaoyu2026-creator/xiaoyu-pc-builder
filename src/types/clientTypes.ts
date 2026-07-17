@@ -14,6 +14,18 @@ export interface UserItem {
 
 export type Category = 'cpu' | 'mainboard' | 'gpu' | 'ram' | 'disk' | 'power' | 'cooling' | 'fan' | 'case' | 'monitor' | 'mouse' | 'keyboard' | 'accessory';
 
+export interface Visual3DSpec {
+    caseType?: 'mid_tower' | 'full_tower' | 'matx' | 'itx' | 'panoramic';
+    motherboardFormFactor?: 'ATX' | 'M-ATX' | 'ITX';
+    gpuLengthMm?: number;
+    gpuSlotWidth?: number;
+    radiatorSizeMm?: 120 | 240 | 280 | 360 | 420;
+    fanSlots?: number;
+    psuType?: 'ATX' | 'SFX' | 'SFX-L';
+    coolerType?: 'air' | 'aio' | 'custom_loop';
+    coolerHeightMm?: number;
+}
+
 export interface HardwareSpecs {
     socket?: string;
     memoryType?: string;
@@ -27,6 +39,7 @@ export interface HardwareSpecs {
     performance?: string;
     length?: number;
     memorySize?: number;
+    visual3d?: Visual3DSpec;
 }
 
 export interface HardwareItem {

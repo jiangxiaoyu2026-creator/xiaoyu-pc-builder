@@ -28,7 +28,6 @@ export default defineConfig({
                     vendor: ['react', 'react-dom', 'react-router-dom'],
                     icons: ['lucide-react'],
                     motion: ['framer-motion'],
-                    'game-fps-data': ['./src/data/gameFpsData'],
                     'html2canvas': ['html2canvas'],
                     'heic2any': ['heic2any'],
                 },

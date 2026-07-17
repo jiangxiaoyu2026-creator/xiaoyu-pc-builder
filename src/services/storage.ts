@@ -1,5 +1,6 @@
 import { HardwareItem, ConfigItem, PricingStrategy, UserItem, UsedItem, RecycleRequest, SMSSettings, SystemStats, DailyStat, AboutUsConfig, VisitStatsSummary } from '../types/adminTypes';
 import { DEFAULT_AI_CONTENT } from '../data/adminData';
+import { CONFIG_SQUARE_DB, HARDWARE_DB } from '../data/clientData';
 import { ApiService } from './api';
 
 // ... (existing imports)
@@ -62,6 +63,86 @@ const getProductListCacheKey = (page: number, pageSize: number, category: string
     [page, pageSize, category || 'all', brand || 'all', search.trim()].join('|');
 
 const clearProductListCache = () => productListCache.clear();
+
+const canUseLocalDemoFallback = () => {
+    if (typeof window === 'undefined') return false;
+    return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+};
+
+const demoProducts = (): HardwareItem[] => HARDWARE_DB.map((item, index) => ({
+    ...item,
+    specs: item.specs || {},
+    sortOrder: index + 1,
+    status: 'active',
+    createdAt: '2026-01-01T00:00:00.000Z',
+})) as HardwareItem[];
+
+const getDemoProducts = (
+    page: number,
+    pageSize: number,
+    category: string = 'all',
+    brand: string = 'all',
+    search: string = ''
+): ProductListResult => {
+    const normalizedSearch = search.trim().toLowerCase();
+    const filtered = demoProducts().filter((item) => {
+        if (category && category !== 'all' && item.category !== category) return false;
+        if (brand && brand !== 'all' && item.brand !== brand) return false;
+        if (normalizedSearch) {
+            const searchable = `${item.brand} ${item.model} ${item.category}`.toLowerCase();
+            if (!searchable.includes(normalizedSearch)) return false;
+        }
+        return true;
+    });
+    const start = Math.max(0, (page - 1) * pageSize);
+    return {
+        items: filtered.slice(start, start + pageSize),
+        total: filtered.length
+    };
+};
+
+const getDemoConfigs = (params: {
+    page?: number,
+    pageSize?: number,
+    tag?: string,
+    search?: string,
+    status?: string
+} = {}): { items: ConfigItem[], total: number } => {
+    const { page = 1, pageSize = 20, tag, search, status } = params;
+    const normalizedSearch = (search || '').trim().toLowerCase();
+    const source = (!status || status === 'published' || status === 'active') ? CONFIG_SQUARE_DB : [];
+    const filtered = source
+        .filter((config) => !tag || tag === 'all' || config.tags.some((item) => item.label === tag))
+        .filter((config) => {
+            if (!normalizedSearch) return true;
+            const searchable = `${config.title} ${config.author} ${config.tags.map((item) => item.label).join(' ')}`.toLowerCase();
+            return searchable.includes(normalizedSearch);
+        })
+        .map((config, index) => ({
+            id: config.id,
+            userId: config.userId || 'demo',
+            userName: config.author,
+            authorName: config.author,
+            title: config.title,
+            totalPrice: config.price,
+            items: config.items as ConfigItem['items'],
+            tags: config.tags.map((item) => item.label),
+            status: 'published' as const,
+            isRecommended: config.type === 'official',
+            views: config.views,
+            likes: config.likes,
+            createdAt: `${config.date || '2026-01-01'}T00:00:00.000Z`,
+            serialNumber: config.serialNumber,
+            description: config.description,
+            authorRole: config.type === 'streamer' ? 'streamer' : undefined,
+            sortOrder: index + 1
+        }));
+    const start = Math.max(0, (page - 1) * pageSize);
+    return {
+        items: filtered.slice(start, start + pageSize),
+        total: filtered.length
+    };
+};
 
 class StorageService {
     constructor() {
@@ -168,6 +249,9 @@ class StorageService {
                 if (search) params.append('search', search);
 
                 const result = await ApiService.get(`/products?${params.toString()}`);
+                if ((!Array.isArray(result.items) || result.items.length === 0) && canUseLocalDemoFallback()) {
+                    return getDemoProducts(page, pageSize, category, brand, search);
+                }
                 return {
                     items: result.items || [],
                     total: result.total || 0
@@ -175,7 +259,7 @@ class StorageService {
             } catch (e) {
                 productListCache.delete(cacheKey);
                 console.error('Failed to load products', e);
-                return { items: [], total: 0 };
+                return canUseLocalDemoFallback() ? getDemoProducts(page, pageSize, category, brand, search) : { items: [], total: 0 };
             }
         })();
 
@@ -194,10 +278,16 @@ class StorageService {
         try {
             // Join IDs with comma to support GET request query param
             const idString = ids.join(',');
-            return await ApiService.get(`/products/batch?ids=${encodeURIComponent(idString)}`);
+            const response = await ApiService.get(`/products/batch?ids=${encodeURIComponent(idString)}`);
+            const items = Array.isArray(response) ? response : [];
+            const missingIds = ids.filter((id) => !items.some((item: HardwareItem) => item.id === id));
+            if (!missingIds.length) return items;
+            if (!canUseLocalDemoFallback()) return items;
+            const fallbackItems = demoProducts().filter((item) => missingIds.includes(item.id));
+            return [...items, ...fallbackItems];
         } catch (e) {
             console.error('Failed to load batch products', e);
-            return [];
+            return canUseLocalDemoFallback() ? demoProducts().filter((item) => ids.includes(item.id)) : [];
         }
     }
 
@@ -301,26 +391,33 @@ class StorageService {
         tag?: string,
         search?: string,
         sortBy?: string,
+        minPrice?: number,
+        maxPrice?: number,
         isRecommended?: boolean,
         status?: string
     } = {}): Promise<{ items: ConfigItem[], total: number }> {
-        const { page = 1, pageSize = 20, tag, search, sortBy, isRecommended, status } = params;
+        const { page = 1, pageSize = 20, tag, search, sortBy, minPrice, maxPrice, isRecommended, status } = params;
         try {
             let url = `/configs?page=${page}&page_size=${pageSize}`;
             if (tag && tag !== 'all') url += `&tag=${encodeURIComponent(tag)}`;
             if (search) url += `&search=${encodeURIComponent(search)}`;
             if (sortBy) url += `&sort_by=${sortBy}`;
+            if (minPrice !== undefined) url += `&min_price=${minPrice}`;
+            if (maxPrice !== undefined) url += `&max_price=${maxPrice}`;
             if (isRecommended !== undefined) url += `&is_recommended=${isRecommended}`;
             if (status) url += `&status=${status}`;
 
             const result = await ApiService.get(url);
+            if ((!Array.isArray(result.items) || result.items.length === 0) && canUseLocalDemoFallback()) {
+                return getDemoConfigs({ page, pageSize, tag, search, status });
+            }
             return {
                 items: Array.isArray(result.items) ? result.items : [],
                 total: result.total || 0
             };
         } catch (e) {
             console.error('Failed to load configs', e);
-            return { items: [], total: 0 };
+            return canUseLocalDemoFallback() ? getDemoConfigs({ page, pageSize, tag, search, status }) : { items: [], total: 0 };
         }
     }
 
@@ -780,6 +877,23 @@ class StorageService {
         } catch (e) {
             return null;
         }
+    }
+
+    async refreshCurrentUser(): Promise<UserItem | null> {
+        const currentUser = this.getCurrentUser();
+        if (!currentUser) return null;
+
+        try {
+            const remoteUser = await ApiService.get('/auth/me');
+            if (remoteUser) {
+                localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(remoteUser));
+                return remoteUser;
+            }
+        } catch {
+            // Keep the locally cached user when the profile refresh is unavailable.
+        }
+
+        return this.getCurrentUser();
     }
 
     async login(username: string, password?: string): Promise<UserItem | null> {

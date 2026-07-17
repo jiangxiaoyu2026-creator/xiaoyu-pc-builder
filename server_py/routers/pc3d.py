@@ -361,6 +361,9 @@ def _asset_exact_match_keys(asset: Dict[str, Any]) -> set[tuple[str, str, str]]:
         normalized_name = _normalize_match_text(name)
         if normalized_name:
             keys.add((category, brand, normalized_name))
+        if category == "cooling":
+            for normalized_name in _cooling_model_keys(name):
+                keys.add((category, brand, normalized_name))
     return keys
 
 
@@ -446,6 +449,58 @@ def _mainboard_model_keys(value: Any) -> set[str]:
     return {key for key in keys if key}
 
 
+def _cooling_model_keys(value: Any) -> set[str]:
+    text = _normalize_match_text(value)
+    if not text:
+        return set()
+
+    family = ""
+    if "peerlessassassin140" in text or "pa140" in text:
+        family = "thermalright_pa140"
+        if "se" in text:
+            family += "_se"
+    elif "peerlessassassin120" in text or "pa120" in text:
+        family = "thermalright_pa120"
+        if "se" in text:
+            family += "_se"
+        if "v3" in text:
+            family += "_v3"
+    elif "phantomspirit120" in text or "ps120" in text:
+        family = "thermalright_ps120"
+        if "se" in text:
+            family += "_se"
+    elif "frostcommander140" in text or "fc140" in text or "冰封统领" in text:
+        family = "thermalright_fc140"
+    elif "frosttower140" in text or "ft140" in text:
+        family = "thermalright_ft140"
+
+    if not family:
+        return set()
+
+    color = ""
+    if "white" in text or "白" in text:
+        color = "white"
+    elif "black" in text or "黑" in text:
+        color = "black"
+    elif "silver" in text or "银" in text:
+        color = "silver"
+
+    lighting = ""
+    if "argb" in text or "rgb" in text:
+        lighting = "argb"
+    elif "无光" in text or "nonrgb" in text or "norgb" in text:
+        lighting = "no_rgb"
+    elif family.startswith("thermalright_"):
+        lighting = "no_rgb"
+
+    parts = [family]
+    if color:
+        parts.append(color)
+    if lighting:
+        parts.append(lighting)
+    return {":".join(parts)}
+
+
 def _asset_mainboard_loose_keys(asset: Dict[str, Any]) -> set[tuple[str, str, str]]:
     category = str(asset.get("category") or "")
     brand = _normalize_match_text(_asset_brand(asset))
@@ -470,6 +525,9 @@ def _product_match_keys(product: Dict[str, Any]) -> set[tuple[str, str, str]]:
         keys.add((category, brand, normalized_model))
     if category == "mainboard":
         for normalized_model in _mainboard_model_keys(model):
+            keys.add((category, brand, normalized_model))
+    if category == "cooling":
+        for normalized_model in _cooling_model_keys(model):
             keys.add((category, brand, normalized_model))
     return keys
 
@@ -756,6 +814,8 @@ def _model_catalog_with_review(mapping: Dict[str, Any], catalog: Dict[str, Any],
         draft_links = []
         for link in item_review.get("links") or []:
             product = products_by_id.get(str(link.get("product_id") or ""))
+            if product and str(product.get("asset_id") or "") == asset_id:
+                continue
             draft_links.append({
                 "product_id": link.get("product_id"),
                 "category": product.get("category") if product else "",
@@ -1180,9 +1240,11 @@ def sync_defaults(admin: User = Depends(get_current_admin)) -> Dict[str, Any]:
     for product in mapping.get("products", []):
         if not product.get("asset_id"):
             continue
-        if product.get("category") == "case" and product.get("review_status") != "auto_exact":
+        if product.get("match_kind") != "exact":
             continue
-        if product.get("match_kind") == "exact" and product.get("review_status") in {"auto_exact", "manual_approved"}:
+        if product.get("review_status") == "manual_approved":
+            continue
+        if product.get("review_status") != "auto_exact":
             continue
         _record_decision(decisions, "approved", product)
         product.update(_mark_approved(product))
@@ -1194,7 +1256,7 @@ def sync_defaults(admin: User = Depends(get_current_admin)) -> Dict[str, Any]:
         original = decision.get("original") or {}
         if not original.get("asset_id"):
             continue
-        if original.get("category") == "case" and original.get("review_status") != "auto_exact":
+        if original.get("match_kind") != "exact" or original.get("review_status") != "auto_exact":
             continue
         index = _find_product_index(mapping, product_id)
         next_product = _mark_approved(original)
@@ -1203,8 +1265,8 @@ def sync_defaults(admin: User = Depends(get_current_admin)) -> Dict[str, Any]:
         changed += 1
 
     mapping["policy"] = (
-        "Default-link confirmed non-case 3D assets only. Case candidates stay in needs_review until an admin confirms them, "
-        "so the customer page falls back to product images instead of showing a questionable case model."
+        "Default sync only confirms exact auto-matched 3D assets. Similar or placeholder candidates stay out of customer-visible "
+        "3D until an admin explicitly replaces the product with a reviewed model."
     )
     _save(mapping, decisions)
     return {"ok": True, "changed": changed, "summary": mapping["summary"], "admin": admin.username}
@@ -1317,15 +1379,18 @@ def auto_link_exact_models(admin: User = Depends(get_current_admin)) -> Dict[str
 
     for product in mapping.get("products", []):
         product_id = str(product.get("product_id") or "")
-        key = (
-            str(product.get("category") or ""),
-            _normalize_match_text(product.get("brand")),
-            _normalize_match_text(product.get("model")),
-        )
-        if not product_id or not all(key):
+        if not product_id:
             continue
 
-        candidates = asset_candidates_by_key.get(key) or []
+        candidates_by_asset: Dict[str, Dict[str, Any]] = {}
+        for key in _product_match_keys(product):
+            if not all(key):
+                continue
+            for candidate in asset_candidates_by_key.get(key) or []:
+                asset_id = str(candidate.get("asset_id") or "")
+                if asset_id:
+                    candidates_by_asset[asset_id] = candidate
+        candidates = list(candidates_by_asset.values())
         if len(candidates) > 1:
             skipped_ambiguous += 1
             continue

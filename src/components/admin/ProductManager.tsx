@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Download, Plus, ListFilter, Package, Edit3, Trash2, X, Sparkles, Upload, CheckCircle2, Zap } from 'lucide-react';
 import { HardwareItem, Category } from '../../types/adminTypes';
+import type { Visual3DSpec } from '../../types/clientTypes';
 import { CATEGORY_MAP, COMPATIBILITY_FIELDS } from '../../data/adminData';
 import { SortIcon } from './Shared';
 import { storage } from '../../services/storage';
@@ -36,6 +37,60 @@ const SPEC_LABELS: Record<string, string> = {
     cpu: '处理器', gpu: '显卡',
 };
 
+type Visual3DField = {
+    key: keyof Visual3DSpec;
+    label: string;
+    type: 'number' | 'select';
+    placeholder?: string;
+    options?: { label: string; value: string | number }[];
+};
+
+const VISUAL_3D_FIELDS: Partial<Record<Category, Visual3DField[]>> = {
+    mainboard: [
+        { key: 'motherboardFormFactor', label: '主板板型', type: 'select', options: [
+            { label: 'ATX', value: 'ATX' },
+            { label: 'M-ATX', value: 'M-ATX' },
+            { label: 'ITX', value: 'ITX' },
+        ] },
+    ],
+    gpu: [
+        { key: 'gpuLengthMm', label: '显卡长度 mm', type: 'number', placeholder: '例如 320' },
+        { key: 'gpuSlotWidth', label: '显卡厚度 槽', type: 'number', placeholder: '例如 2.5' },
+    ],
+    cooling: [
+        { key: 'coolerType', label: '散热类型', type: 'select', options: [
+            { label: '风冷', value: 'air' },
+            { label: '一体水冷', value: 'aio' },
+            { label: '分体水冷', value: 'custom_loop' },
+        ] },
+        { key: 'radiatorSizeMm', label: '冷排尺寸 mm', type: 'select', options: [
+            { label: '120', value: 120 },
+            { label: '240', value: 240 },
+            { label: '280', value: 280 },
+            { label: '360', value: 360 },
+            { label: '420', value: 420 },
+        ] },
+        { key: 'coolerHeightMm', label: '风冷高度 mm', type: 'number', placeholder: '例如 165' },
+    ],
+    case: [
+        { key: 'caseType', label: '机箱类型', type: 'select', options: [
+            { label: '中塔', value: 'mid_tower' },
+            { label: '全塔', value: 'full_tower' },
+            { label: 'M-ATX', value: 'matx' },
+            { label: 'ITX', value: 'itx' },
+            { label: '海景房', value: 'panoramic' },
+        ] },
+        { key: 'fanSlots', label: '风扇位数量', type: 'number', placeholder: '例如 6' },
+    ],
+    power: [
+        { key: 'psuType', label: '电源规格', type: 'select', options: [
+            { label: 'ATX', value: 'ATX' },
+            { label: 'SFX', value: 'SFX' },
+            { label: 'SFX-L', value: 'SFX-L' },
+        ] },
+    ],
+};
+
 // 各品类优先显示的字段顺序
 const CATEGORY_PRIORITY: Record<string, string[]> = {
     cpu: ['master_lu_score', 'power_draw', 'socket_type', 'cores', 'threads', 'frequency', 'socket', 'memoryType', 'wattage'],
@@ -64,7 +119,7 @@ function getDisplaySpecs(specs: Record<string, any>, category: string): { label:
     if (result.length < 4) {
         for (const [key, val] of Object.entries(specs)) {
             if (result.length >= 4) break;
-            if (priority.includes(key) || benchmarkKeys.includes(key) || key === 'cpu' || key === 'gpu' || key.startsWith('jd_')) continue;
+            if (priority.includes(key) || benchmarkKeys.includes(key) || key === 'cpu' || key === 'gpu' || key === 'visual3d' || key.startsWith('jd_')) continue;
             if (val !== null && val !== undefined && val !== '') {
                 result.push({ label: SPEC_LABELS[key] || key, value: String(val) });
             }
@@ -93,6 +148,25 @@ const withManualPrice = <T extends Partial<HardwareItem>>(item: T, price: number
 
 const isUnsafePriceChangeError = (error: unknown) =>
     error instanceof Error && error.message.includes('force_price_update');
+
+const parseSpecsForForm = (rawSpecs: unknown): Record<string, any> => {
+    let parsed = rawSpecs;
+    for (let i = 0; i < 3 && typeof parsed === 'string'; i += 1) {
+        try {
+            parsed = JSON.parse(parsed);
+        } catch {
+            return {};
+        }
+    }
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed as any)['0'] === '{') {
+        try {
+            return JSON.parse(Object.values(parsed).join(''));
+        } catch {
+            return {};
+        }
+    }
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, any> : {};
+};
 
 
 export default function ProductManager() {
@@ -816,12 +890,7 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
 
     const handleSpecChange = (key: string, value: any) => {
         setFormData(prev => {
-            let currentSpecs: any = prev.specs || {};
-            if (typeof currentSpecs === 'string') {
-                try { currentSpecs = JSON.parse(currentSpecs); } catch (e) { currentSpecs = {}; }
-            } else if (currentSpecs && typeof currentSpecs === 'object' && !Array.isArray(currentSpecs) && '0' in currentSpecs && typeof currentSpecs['0'] === 'string' && currentSpecs['0'] === '{') {
-                try { currentSpecs = JSON.parse(Object.values(currentSpecs).join('')); } catch (e) { currentSpecs = {}; }
-            }
+            const currentSpecs = parseSpecsForForm(prev.specs);
             return {
                 ...prev,
                 specs: { ...currentSpecs, [key]: value }
@@ -829,7 +898,34 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
         });
     };
 
+    const handleVisual3DChange = (field: Visual3DField, rawValue: string) => {
+        setFormData(prev => {
+            const currentSpecs = parseSpecsForForm(prev.specs);
+            const currentVisual3D = parseSpecsForForm(currentSpecs.visual3d);
+            const nextVisual3D = { ...currentVisual3D };
+
+            if (rawValue === '') {
+                delete nextVisual3D[field.key];
+            } else {
+                const isNumericValue = field.type === 'number' || field.options?.some(option => typeof option.value === 'number');
+                nextVisual3D[field.key] = isNumericValue ? Number(rawValue) : rawValue;
+            }
+
+            const nextSpecs = { ...currentSpecs };
+            if (Object.keys(nextVisual3D).length > 0) {
+                nextSpecs.visual3d = nextVisual3D;
+            } else {
+                delete nextSpecs.visual3d;
+            }
+
+            return { ...prev, specs: nextSpecs };
+        });
+    };
+
     const currentCatSpecs = formData.category ? COMPATIBILITY_FIELDS[formData.category] : null;
+    const currentSpecsObject = parseSpecsForForm(formData.specs);
+    const currentVisual3D = parseSpecsForForm(currentSpecsObject.visual3d);
+    const currentVisual3DFields = formData.category ? VISUAL_3D_FIELDS[formData.category] : null;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -1112,6 +1208,39 @@ function ProductEditModal({ product, onClose, onSave }: { product: HardwareItem 
                             </div>
                         ) : (
                             <div className="text-xs text-slate-400 italic">该分类暂无特定兼容性参数，请使用下方自由录入。</div>
+                        )}
+
+                        {currentVisual3DFields && (
+                            <>
+                                <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><Package size={14} /> 3D 展示参数</h4>
+                                <div className="grid grid-cols-2 gap-4 bg-sky-50/60 p-4 rounded-xl border border-sky-100">
+                                    {currentVisual3DFields.map(field => (
+                                        <div key={field.key}>
+                                            <label className="block text-xs font-bold text-slate-600 mb-1">{field.label}</label>
+                                            {field.type === 'select' ? (
+                                                <select
+                                                    className="w-full border border-sky-100 rounded-lg p-2 text-xs bg-white"
+                                                    value={currentVisual3D[field.key] ?? ''}
+                                                    onChange={e => handleVisual3DChange(field, e.target.value)}
+                                                >
+                                                    <option value="">未设置</option>
+                                                    {field.options?.map(option => <option key={String(option.value)} value={option.value}>{option.label}</option>)}
+                                                </select>
+                                            ) : (
+                                                <input
+                                                    type="number"
+                                                    className="w-full border border-sky-100 rounded-lg p-2 text-xs bg-white"
+                                                    value={currentVisual3D[field.key] ?? ''}
+                                                    onChange={e => handleVisual3DChange(field, e.target.value)}
+                                                    placeholder={field.placeholder}
+                                                    step={field.key === 'gpuSlotWidth' ? '0.1' : '1'}
+                                                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                                />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
                         )}
 
                         <details className="group">
