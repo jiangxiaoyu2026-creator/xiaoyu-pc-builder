@@ -63,12 +63,30 @@ function getRamCapacity(item: HardwareItem) {
     return totalMatch ? `${totalMatch[1]}G` : '其他';
 }
 
-function getFormFactor(item: HardwareItem) {
+function parseHardwareSpecs(item: HardwareItem) {
     let specs = item.specs as unknown;
     if (typeof specs === 'string') {
         try { specs = JSON.parse(specs); } catch { specs = {}; }
     }
-    const specRecord = specs && typeof specs === 'object' && !Array.isArray(specs) ? specs as Record<string, unknown> : {};
+    return specs && typeof specs === 'object' && !Array.isArray(specs) ? specs as Record<string, unknown> : {};
+}
+
+function getSpecValue(item: HardwareItem, keys: string[]) {
+    const specs = parseHardwareSpecs(item);
+    for (const key of keys) {
+        const value = specs[key];
+        if (value !== undefined && value !== null && String(value).trim()) return String(value).trim();
+    }
+    return '';
+}
+
+function buildFilterOptions(items: HardwareItem[], getValue: (item: HardwareItem) => string, compare?: (left: string, right: string) => number) {
+    const values = Array.from(new Set(items.map(getValue).filter(Boolean)));
+    return ['全部', ...values.sort(compare)];
+}
+
+function getFormFactor(item: HardwareItem) {
+    const specRecord = parseHardwareSpecs(item);
     const explicit = String(specRecord.formFactor || specRecord.form_factor || '').toUpperCase().replace('-', '');
     if (explicit) return explicit;
 
@@ -79,8 +97,84 @@ function getFormFactor(item: HardwareItem) {
     return '';
 }
 
+function getMonitorSize(item: HardwareItem) {
+    const modelMatch = item.model.toUpperCase().match(/(?:^|\D)(\d{2}(?:\.\d+)?)\s*(?:寸|英寸|INCH)/);
+    if (modelMatch) return `${Number(modelMatch[1])}寸`;
+    const explicit = getSpecValue(item, ['screenSize', 'screen_size', 'size']);
+    const match = explicit.match(/\d+(?:\.\d+)?/);
+    return match?.[0] ? `${Number(match[0])}寸` : '';
+}
+
+function getMonitorResolution(item: HardwareItem) {
+    const model = item.model.toUpperCase();
+    const explicit = getSpecValue(item, ['resolution']).toUpperCase();
+    for (const text of [model, explicit]) {
+        if (/8K|7680\s*[*X×]\s*4320/.test(text)) return '8K';
+        if (/5K|5120\s*[*X×]\s*2880/.test(text)) return '5K';
+        if (/4K|3840\s*[*X×]\s*2160|2160P/.test(text)) return '4K';
+        if (/2K|2560\s*[*X×]\s*1440|1440P/.test(text)) return '2K';
+        if (/1K|1920\s*[*X×]\s*1080|1080P/.test(text)) return '1K';
+    }
+    return '';
+}
+
+function getMonitorRefreshRate(item: HardwareItem) {
+    const model = item.model.toUpperCase();
+    const modelRates = [
+        ...Array.from(model.matchAll(/(?:^|\D)(\d{2,3})\s*HZ/g), (match) => Number(match[1])),
+        ...Array.from(model.matchAll(/[12458]K\s*(\d{2,3})(?!\d)/g), (match) => Number(match[1])),
+    ].filter(Boolean);
+    if (modelRates.length > 0) return `${Math.max(...modelRates)}Hz`;
+    const explicit = getSpecValue(item, ['refreshRate', 'refresh_rate']);
+    const match = explicit.match(/\d{2,3}/);
+    return match?.[0] ? `${Number(match[0])}Hz` : '';
+}
+
+function getMonitorRefreshBand(item: HardwareItem) {
+    const rate = Number(getMonitorRefreshRate(item).replace('Hz', ''));
+    if (!rate) return '';
+    if (rate <= 100) return '≤100';
+    if (rate <= 180) return '120–180';
+    if (rate <= 280) return '200–280';
+    return '300+';
+}
+
+function getCoolerType(item: HardwareItem) {
+    const text = `${getSpecValue(item, ['type', 'coolerType'])} ${item.model}`;
+    if (/水冷|AIO/i.test(text)) return '水冷';
+    if (/风冷|塔式|下压/i.test(text)) return '风冷';
+    return '';
+}
+
+function getCoolerSize(item: HardwareItem) {
+    const text = `${getSpecValue(item, ['dimensions', 'radiatorSize', 'radiator_size'])} ${getSpecValue(item, ['type', 'coolerType'])} ${item.model}`.toUpperCase();
+    const match = text.match(/(?:^|\D)(120|240|280|360|420)\s*MM(?:\D|$)/);
+    return match ? `${match[1]}mm` : '';
+}
+
+function getDiskProtocol(item: HardwareItem) {
+    const text = `${getSpecValue(item, ['protocol'])} ${getSpecValue(item, ['interface', 'interfaceType'])} ${item.model}`.toUpperCase();
+    if (/SATA/.test(text)) return 'SATA';
+    if (/PCIE\s*5(?:\.0)?/.test(text)) return 'PCIe 5.0';
+    if (/PCIE\s*4(?:\.0)?/.test(text)) return 'PCIe 4.0';
+    if (/PCIE\s*3(?:\.0)?/.test(text)) return 'PCIe 3.0';
+    if (/NVME|M\.2/.test(text)) return 'NVMe';
+    return '';
+}
+
+function getDiskCapacity(item: HardwareItem) {
+    const text = `${getSpecValue(item, ['capacity', 'size'])} ${item.model}`.toUpperCase();
+    const match = text.match(/(?:^|\D)(\d+(?:\.\d+)?)\s*(TB|T|GB|G)(?:\D|$)/);
+    if (!match) return '';
+    return `${Number(match[1])}${match[2].startsWith('T') ? 'T' : 'G'}`;
+}
+
 function productMeta(item: HardwareItem) {
     const compatibility = getHardwareCompatibility(item);
+    if (item.category === 'monitor') return [getMonitorSize(item), getMonitorResolution(item), getMonitorRefreshRate(item)].filter(Boolean);
+    if (item.category === 'cooling') return [getCoolerType(item), getCoolerSize(item)].filter(Boolean);
+    if (item.category === 'ram') return [...compatibility.memoryTypes, getRamCapacity(item)].filter(Boolean).slice(0, 3);
+    if (item.category === 'disk') return [getDiskProtocol(item), getDiskCapacity(item)].filter(Boolean);
     const meta = [
         ...compatibility.sockets,
         ...compatibility.memoryTypes,
@@ -92,14 +186,18 @@ function productMeta(item: HardwareItem) {
 
 function calculatePosition(anchorElement: HTMLElement): PickerPosition {
     const rect = anchorElement.getBoundingClientRect();
+    const boundary = anchorElement.closest<HTMLElement>('[data-hardware-picker-boundary]');
+    const boundaryRect = boundary?.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const width = Math.min(920, Math.max(760, rect.width + 460), viewportWidth - 24);
+    const availableWidth = boundaryRect ? boundaryRect.width - 16 : Math.max(760, rect.width + 460);
+    const width = Math.min(920, Math.max(320, availableWidth), viewportWidth - 24);
     const spaceBelow = viewportHeight - rect.bottom - 12;
     const openUpward = spaceBelow < 300 && rect.top > spaceBelow;
     const availableHeight = openUpward ? rect.top - 12 : spaceBelow;
     const maxHeight = Math.max(260, Math.min(560, availableHeight));
-    const left = Math.min(Math.max(12, rect.left - 120), viewportWidth - width - 12);
+    const preferredLeft = boundaryRect ? boundaryRect.left + 8 : rect.left - 120;
+    const left = Math.min(Math.max(12, preferredLeft), viewportWidth - width - 12);
     const top = openUpward
         ? Math.max(12, rect.top - maxHeight - 8)
         : Math.min(rect.bottom + 8, viewportHeight - maxHeight - 12);
@@ -122,7 +220,15 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
     const [cpuSocket, setCpuSocket] = useState('全部');
     const [cpuSeries, setCpuSeries] = useState('全部');
     const [boardFormFactor, setBoardFormFactor] = useState('全部');
+    const [ramMemoryType, setRamMemoryType] = useState('全部');
     const [ramCapacity, setRamCapacity] = useState('全部');
+    const [monitorSize, setMonitorSize] = useState('全部');
+    const [monitorResolution, setMonitorResolution] = useState('全部');
+    const [monitorRefreshBand, setMonitorRefreshBand] = useState('全部');
+    const [coolerType, setCoolerType] = useState('全部');
+    const [coolerSize, setCoolerSize] = useState('全部');
+    const [diskProtocol, setDiskProtocol] = useState('全部');
+    const [diskCapacity, setDiskCapacity] = useState('全部');
 
     const selectedCpu = getBuildItem(buildList, 'cpu');
     const selectedMainboard = getBuildItem(buildList, 'mainboard');
@@ -202,6 +308,25 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
         const values = Array.from(new Set(strictItems.map(getRamCapacity)));
         return ['全部', ...values.filter((value) => value !== '其他').sort((left, right) => Number(left.replace('G', '')) - Number(right.replace('G', ''))), ...values.filter((value) => value === '其他')];
     }, [strictItems]);
+    const ramMemoryTypes = useMemo(() => ['全部', ...Array.from(new Set(strictItems.flatMap((item) => getHardwareCompatibility(item).memoryTypes))).sort()], [strictItems]);
+    const monitorSizes = useMemo(() => buildFilterOptions(strictItems, getMonitorSize, (left, right) => Number(left.replace('寸', '')) - Number(right.replace('寸', ''))), [strictItems]);
+    const monitorResolutions = useMemo(() => buildFilterOptions(strictItems, getMonitorResolution, (left, right) => Number(left.replace('K', '')) - Number(right.replace('K', ''))), [strictItems]);
+    const monitorRefreshBands = useMemo(() => {
+        const order = ['≤100', '120–180', '200–280', '300+'];
+        const values = new Set<string>(strictItems.map(getMonitorRefreshBand).filter(Boolean));
+        return ['全部', ...order.filter((value) => values.has(value))];
+    }, [strictItems]);
+    const coolerTypes = useMemo(() => buildFilterOptions(strictItems, getCoolerType), [strictItems]);
+    const coolerSizes = useMemo(() => buildFilterOptions(strictItems, getCoolerSize, (left, right) => Number(left.replace('mm', '')) - Number(right.replace('mm', ''))), [strictItems]);
+    const diskProtocols = useMemo(() => {
+        const order = ['PCIe 5.0', 'PCIe 4.0', 'PCIe 3.0', 'NVMe', 'SATA'];
+        const values = new Set<string>(strictItems.map(getDiskProtocol).filter(Boolean));
+        return ['全部', ...order.filter((value) => values.has(value))];
+    }, [strictItems]);
+    const diskCapacities = useMemo(() => buildFilterOptions(strictItems, getDiskCapacity, (left, right) => {
+        const toGigabytes = (value: string) => Number(value.slice(0, -1)) * (value.endsWith('T') ? 1024 : 1);
+        return toGigabytes(left) - toGigabytes(right);
+    }), [strictItems]);
     const filteredItems = useMemo(() => {
         const terms = search.toLowerCase().trim().split(/\s+/).filter(Boolean);
         const next = strictItems.filter((item) => {
@@ -215,7 +340,23 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
                 if (cpuSeries !== '全部' && getCpuSeries(item) !== cpuSeries) return false;
             }
             if (entry.category === 'mainboard' && boardFormFactor !== '全部' && !getFormFactor(item).includes(boardFormFactor.replace('-', ''))) return false;
-            if (entry.category === 'ram' && ramCapacity !== '全部' && getRamCapacity(item) !== ramCapacity) return false;
+            if (entry.category === 'ram') {
+                if (ramMemoryType !== '全部' && !compatibility.memoryTypes.includes(ramMemoryType)) return false;
+                if (ramCapacity !== '全部' && getRamCapacity(item) !== ramCapacity) return false;
+            }
+            if (entry.category === 'monitor') {
+                if (monitorSize !== '全部' && getMonitorSize(item) !== monitorSize) return false;
+                if (monitorResolution !== '全部' && getMonitorResolution(item) !== monitorResolution) return false;
+                if (monitorRefreshBand !== '全部' && getMonitorRefreshBand(item) !== monitorRefreshBand) return false;
+            }
+            if (entry.category === 'cooling') {
+                if (coolerType !== '全部' && getCoolerType(item) !== coolerType) return false;
+                if (coolerSize !== '全部' && getCoolerSize(item) !== coolerSize) return false;
+            }
+            if (entry.category === 'disk') {
+                if (diskProtocol !== '全部' && getDiskProtocol(item) !== diskProtocol) return false;
+                if (diskCapacity !== '全部' && getDiskCapacity(item) !== diskCapacity) return false;
+            }
             return true;
         });
         return next.sort((left, right) => {
@@ -226,7 +367,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
             if (leftSpecial !== rightSpecial) return leftSpecial ? -1 : 1;
             return left.price - right.price;
         });
-    }, [boardFormFactor, brand, cpuBrand, cpuSeries, cpuSocket, entry.category, ramCapacity, search, sortOrder, strictItems]);
+    }, [boardFormFactor, brand, coolerSize, coolerType, cpuBrand, cpuSeries, cpuSocket, diskCapacity, diskProtocol, entry.category, monitorRefreshBand, monitorResolution, monitorSize, ramCapacity, ramMemoryType, search, sortOrder, strictItems]);
 
     const resetFilters = () => {
         setSearch('');
@@ -236,7 +377,15 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
         setCpuSocket('全部');
         setCpuSeries('全部');
         setBoardFormFactor('全部');
+        setRamMemoryType('全部');
         setRamCapacity('全部');
+        setMonitorSize('全部');
+        setMonitorResolution('全部');
+        setMonitorRefreshBand('全部');
+        setCoolerType('全部');
+        setCoolerSize('全部');
+        setDiskProtocol('全部');
+        setDiskCapacity('全部');
     };
 
     const panelClass = isLiveMode
@@ -284,6 +433,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
     return createPortal(
         <div
             ref={pickerRef}
+            data-hardware-picker
             className={`fixed z-[180] flex flex-col overflow-hidden ${panelClass}`}
             style={{ left: position.left, maxHeight: position.maxHeight, top: position.top, width: position.width }}
         >
@@ -328,11 +478,37 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
                 {entry.category === 'ram' && (
                     <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
                         {renderFilterGroup('品牌', brands, brand, setBrand)}
-                        {renderFilterGroup('容量', ramCapacities, ramCapacity, setRamCapacity)}
+                        {renderFilterGroup('代际', ramMemoryTypes, ramMemoryType, setRamMemoryType)}
+                        {renderFilterGroup('容量', ramCapacities, ramCapacity, setRamCapacity, 'min-[720px]:col-span-2')}
                     </div>
                 )}
 
-                {!['cpu', 'mainboard', 'ram'].includes(entry.category) && renderFilterGroup('品牌', brands, brand, setBrand)}
+                {entry.category === 'monitor' && (
+                    <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
+                        {renderFilterGroup('品牌', brands, brand, setBrand)}
+                        {renderFilterGroup('尺寸', monitorSizes, monitorSize, setMonitorSize)}
+                        {renderFilterGroup('分辨率', monitorResolutions, monitorResolution, setMonitorResolution)}
+                        {renderFilterGroup('刷新率', monitorRefreshBands, monitorRefreshBand, setMonitorRefreshBand)}
+                    </div>
+                )}
+
+                {entry.category === 'cooling' && (
+                    <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
+                        {renderFilterGroup('品牌', brands, brand, setBrand)}
+                        {renderFilterGroup('类型', coolerTypes, coolerType, setCoolerType)}
+                        {renderFilterGroup('冷排', coolerSizes, coolerSize, setCoolerSize, 'min-[720px]:col-span-2')}
+                    </div>
+                )}
+
+                {entry.category === 'disk' && (
+                    <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
+                        {renderFilterGroup('品牌', brands, brand, setBrand)}
+                        {renderFilterGroup('协议', diskProtocols, diskProtocol, setDiskProtocol)}
+                        {renderFilterGroup('容量', diskCapacities, diskCapacity, setDiskCapacity, 'min-[720px]:col-span-2')}
+                    </div>
+                )}
+
+                {!['cpu', 'mainboard', 'ram', 'monitor', 'cooling', 'disk'].includes(entry.category) && renderFilterGroup('品牌', brands, brand, setBrand)}
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-2 hide-scrollbar">

@@ -598,7 +598,7 @@ function StreamerWorkbench({
                     <>
                     <div className={`flex ${isLiveMode ? 'flex-row h-full' : 'flex-col xl:flex-row'}`}>
                     {/* === Left: Config Table === */}
-                    <div className={`flex-1 min-w-0 ${isLiveMode ? liveTableShellClass : 'max-w-[1550px]'}`}>
+                    <div data-hardware-picker-boundary className={`flex-1 min-w-0 ${isLiveMode ? liveTableShellClass : 'max-w-[1550px]'}`}>
                         {isLiveMode && (
                             <>
                                 <div className={`pointer-events-none absolute inset-0 z-10 ${livePanelRadius} border ${isPixelLiveStyle ? 'border-black' : 'border-black/40'}`}></div>
