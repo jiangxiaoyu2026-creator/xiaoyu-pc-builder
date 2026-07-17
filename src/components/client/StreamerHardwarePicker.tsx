@@ -78,15 +78,15 @@ function calculatePosition(anchorElement: HTMLElement): PickerPosition {
     const rect = anchorElement.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const width = Math.min(620, Math.max(440, rect.width + 176), viewportWidth - 16);
+    const width = Math.min(920, Math.max(760, rect.width + 460), viewportWidth - 24);
     const spaceBelow = viewportHeight - rect.bottom - 12;
     const openUpward = spaceBelow < 300 && rect.top > spaceBelow;
     const availableHeight = openUpward ? rect.top - 12 : spaceBelow;
-    const maxHeight = Math.max(220, Math.min(420, availableHeight));
-    const left = Math.min(Math.max(8, rect.left - 84), viewportWidth - width - 8);
+    const maxHeight = Math.max(260, Math.min(560, availableHeight));
+    const left = Math.min(Math.max(12, rect.left - 120), viewportWidth - width - 12);
     const top = openUpward
-        ? Math.max(8, rect.top - maxHeight - 8)
-        : Math.min(rect.bottom + 8, viewportHeight - maxHeight - 8);
+        ? Math.max(12, rect.top - maxHeight - 8)
+        : Math.min(rect.bottom + 8, viewportHeight - maxHeight - 12);
     return { left, maxHeight, top, width };
 }
 
@@ -232,8 +232,32 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
             : 'bg-black/15 border border-white/10 rounded-lg'
         : 'bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg';
     const chipClass = (active: boolean) => active
-        ? `${liveStyleConfig.glowBg} ${isPixelLiveStyle ? 'text-gray-950' : 'text-white'} border-transparent`
+        ? `${liveStyleConfig.glowBg} ${isPixelLiveStyle ? 'text-gray-950 rounded-none' : 'text-white rounded-md'} border-transparent shadow-sm`
         : `${controlClass} ${modelText} hover:brightness-110`;
+    const hiddenCompatibilityCount = products.length - strictItems.length;
+    const renderFilterGroup = (
+        label: string,
+        values: string[],
+        selected: string,
+        onChange: (value: string) => void,
+        className = '',
+    ) => (
+        <div className={`flex min-w-0 items-center gap-1.5 ${className}`}>
+            <span className={`w-8 shrink-0 text-[9px] font-black ${mutedText}`}>{label}</span>
+            <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto hide-scrollbar">
+                {values.map((value) => (
+                    <button
+                        key={value}
+                        type="button"
+                        onClick={() => onChange(value)}
+                        className={`h-6 shrink-0 border px-2 text-[10px] font-black leading-none transition-all ${chipClass(selected === value)}`}
+                    >
+                        {value}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
 
     if (!position || typeof document === 'undefined') return null;
 
@@ -243,100 +267,80 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
             className={`fixed z-[180] flex flex-col overflow-hidden ${panelClass}`}
             style={{ left: position.left, maxHeight: position.maxHeight, top: position.top, width: position.width }}
         >
-            <div className={`flex items-start justify-between gap-3 border-b px-4 py-3 ${isLiveMode ? liveStyleConfig.border : 'border-slate-200 dark:border-slate-700'}`}>
-                <div className="min-w-0">
-                    <div className={`text-sm font-black ${modelText}`}>筛选{CATEGORY_MAP[entry.category]}</div>
-                    <div className={`mt-1 flex flex-wrap gap-1.5 text-[10px] font-bold ${mutedText}`}>
-                        {requiredSockets.map((socket) => <span key={socket} className={`px-1.5 py-0.5 ${controlClass}`}>已锁定 {socket}</span>)}
-                        {requiredMemoryTypes.map((memoryType) => <span key={memoryType} className={`px-1.5 py-0.5 ${controlClass}`}>已锁定 {memoryType}</span>)}
-                        {requiredSockets.length === 0 && requiredMemoryTypes.length === 0 && <span>点击商品后直接写入当前行</span>}
-                    </div>
-                </div>
-                <button type="button" onClick={onClose} className={`h-7 w-7 shrink-0 ${mutedText} hover:text-red-400 transition-colors`} title="关闭筛选">
-                    <X size={18} />
-                </button>
-            </div>
-
-            <div className={`space-y-2 border-b px-4 py-3 ${isLiveMode ? liveStyleConfig.border : 'border-slate-200 dark:border-slate-700'}`}>
-                <div className="flex gap-2">
-                    <label className={`flex h-9 min-w-0 flex-1 items-center gap-2 px-3 ${controlClass}`}>
-                        <Search size={15} className={mutedText} />
-                        <input ref={searchRef} value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`搜索${CATEGORY_MAP[entry.category]}型号`} className={`min-w-0 flex-1 bg-transparent text-xs font-bold outline-none ${modelText} placeholder:opacity-50`} />
+            <div className={`space-y-2 border-b px-3 py-2 ${isLiveMode ? liveStyleConfig.border : 'border-slate-200 dark:border-slate-700'}`}>
+                <div className="flex items-center gap-1.5">
+                    <label className={`flex h-8 min-w-0 flex-1 items-center gap-2 px-2.5 ${controlClass}`}>
+                        <Search size={14} className={mutedText} />
+                        <input ref={searchRef} value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`搜索${CATEGORY_MAP[entry.category]}型号或品牌`} className={`min-w-0 flex-1 bg-transparent text-xs font-bold outline-none ${modelText} placeholder:opacity-50`} />
                     </label>
-                    <button type="button" onClick={() => setSortOrder((current) => current === 'default' ? 'asc' : current === 'asc' ? 'desc' : 'default')} className={`h-9 shrink-0 px-3 text-xs font-black ${controlClass} ${modelText}`}>
-                        {sortOrder === 'default' ? '排序' : sortOrder === 'asc' ? '低价' : '高价'}
+                    <div className={`hidden shrink-0 items-center gap-1.5 text-[9px] font-bold min-[720px]:flex ${mutedText}`}>
+                        {requiredSockets.map((socket) => <span key={socket} className={`px-1.5 py-1 ${controlClass}`}>锁定 {socket}</span>)}
+                        {requiredMemoryTypes.map((memoryType) => <span key={memoryType} className={`px-1.5 py-1 ${controlClass}`}>锁定 {memoryType}</span>)}
+                        <span>{filteredItems.length} 项</span>
+                        {hiddenCompatibilityCount > 0 && <span>已隐藏 {hiddenCompatibilityCount}</span>}
+                    </div>
+                    <button type="button" onClick={() => setSortOrder((current) => current === 'default' ? 'asc' : current === 'asc' ? 'desc' : 'default')} className={`h-8 shrink-0 px-2.5 text-[10px] font-black ${controlClass} ${modelText}`}>
+                        {sortOrder === 'default' ? '价格排序' : sortOrder === 'asc' ? '价格 ↑' : '价格 ↓'}
                     </button>
-                    <button type="button" onClick={resetFilters} className={`h-9 w-9 shrink-0 flex items-center justify-center ${controlClass} ${mutedText}`} title="重置筛选">
-                        <RotateCcw size={15} />
+                    <button type="button" onClick={resetFilters} className={`flex h-8 w-8 shrink-0 items-center justify-center ${controlClass} ${mutedText}`} title="重置筛选">
+                        <RotateCcw size={14} />
                     </button>
-                </div>
-
-                <div className="flex gap-1.5 overflow-x-auto pb-0.5 hide-scrollbar">
-                    {brands.map((value) => (
-                        <button key={value} type="button" onClick={() => setBrand(value)} className={`shrink-0 border px-2 py-1 text-[10px] font-black transition-colors ${chipClass(brand === value)}`}>
-                            {value}
-                        </button>
-                    ))}
+                    <button type="button" onClick={onClose} className={`flex h-8 w-8 shrink-0 items-center justify-center ${controlClass} ${mutedText} hover:text-red-400 transition-colors`} title="关闭筛选">
+                        <X size={17} />
+                    </button>
                 </div>
 
                 {entry.category === 'cpu' && (
-                    <>
-                        <div className="flex gap-1.5 overflow-x-auto pb-0.5 hide-scrollbar">
-                            {['全部', 'Intel', 'AMD'].map((value) => (
-                                <button key={value} type="button" onClick={() => setCpuBrand(value)} className={`shrink-0 border px-2 py-1 text-[10px] font-black transition-colors ${chipClass(cpuBrand === value)}`}>{value}</button>
-                            ))}
-                            {sockets.map((value) => (
-                                <button key={value} type="button" onClick={() => setCpuSocket(value)} className={`shrink-0 border px-2 py-1 text-[10px] font-black transition-colors ${chipClass(cpuSocket === value)}`}>{value}</button>
-                            ))}
-                        </div>
-                        <div className="flex gap-1.5 overflow-x-auto pb-0.5 hide-scrollbar">
-                            {['全部', 'Core i5', 'Core i7', 'Core i9', 'Ultra', 'Ryzen 5', 'Ryzen 7', 'Ryzen 9', 'X3D'].map((value) => (
-                                <button key={value} type="button" onClick={() => setCpuSeries(value)} className={`shrink-0 border px-2 py-1 text-[10px] font-black transition-colors ${chipClass(cpuSeries === value)}`}>{value}</button>
-                            ))}
-                        </div>
-                    </>
+                    <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
+                        {renderFilterGroup('品牌', ['全部', 'Intel', 'AMD'], cpuBrand, setCpuBrand)}
+                        {renderFilterGroup('接口', sockets, cpuSocket, setCpuSocket)}
+                        {renderFilterGroup('系列', ['全部', 'Core i5', 'Core i7', 'Core i9', 'Ultra', 'Ryzen 5', 'Ryzen 7', 'Ryzen 9', 'X3D'], cpuSeries, setCpuSeries, 'min-[720px]:col-span-2')}
+                    </div>
                 )}
 
                 {entry.category === 'mainboard' && (
-                    <div className="flex gap-1.5 overflow-x-auto pb-0.5 hide-scrollbar">
-                        {['全部', 'ATX', 'MATX', 'ITX'].map((value) => (
-                            <button key={value} type="button" onClick={() => setBoardFormFactor(value)} className={`shrink-0 border px-2 py-1 text-[10px] font-black transition-colors ${chipClass(boardFormFactor === value)}`}>{value}</button>
-                        ))}
+                    <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
+                        {renderFilterGroup('品牌', brands, brand, setBrand)}
+                        {renderFilterGroup('规格', ['全部', 'ATX', 'M-ATX', 'ITX'], boardFormFactor, setBoardFormFactor)}
                     </div>
                 )}
 
                 {entry.category === 'ram' && (
-                    <div className="flex gap-1.5 overflow-x-auto pb-0.5 hide-scrollbar">
-                        {['全部', '16G', '32G', '64G', '128G'].map((value) => (
-                            <button key={value} type="button" onClick={() => setRamCapacity(value)} className={`shrink-0 border px-2 py-1 text-[10px] font-black transition-colors ${chipClass(ramCapacity === value)}`}>{value}</button>
-                        ))}
+                    <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
+                        {renderFilterGroup('品牌', brands, brand, setBrand)}
+                        {renderFilterGroup('容量', ['全部', '16G', '32G', '64G', '128G'], ramCapacity, setRamCapacity)}
                     </div>
                 )}
+
+                {!['cpu', 'mainboard', 'ram'].includes(entry.category) && renderFilterGroup('品牌', brands, brand, setBrand)}
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-2 hide-scrollbar">
                 {isLoading && <div className={`flex items-center justify-center gap-2 py-10 text-xs font-bold ${mutedText}`}><RefreshCw size={15} className="animate-spin" /> 正在加载产品库…</div>}
                 {!isLoading && loadFailed && <div className={`py-10 text-center text-xs font-bold ${mutedText}`}>产品库加载失败，请稍后重试</div>}
-                {!isLoading && !loadFailed && filteredItems.map((item) => {
-                    const meta = productMeta(item);
-                    return (
-                        <button key={item.id} type="button" onClick={() => onSelect(item)} className={`mb-1.5 flex w-full items-center gap-3 border px-3 py-2 text-left transition-colors ${isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} border-2 hover:brightness-110 rounded-none` : `${controlClass} hover:bg-white/10`}`}>
-                            <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1.5">
-                                    <span className={`text-[10px] font-black ${isLiveMode ? liveStyleConfig.accentText : theme.primary}`}>{item.brand}</span>
-                                    {item.isRecommended && <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-400"><Sparkles size={10} /> 推荐</span>}
-                                    {item.isDiscount && <span className="text-[9px] font-black text-rose-400">特惠</span>}
-                                </div>
-                                <div className={`truncate text-sm font-black ${modelText}`}>{item.model}</div>
-                                {meta.length > 0 && <div className={`mt-0.5 flex flex-wrap gap-1 text-[9px] font-bold ${mutedText}`}>{meta.map((value) => <span key={value}>{value}</span>)}</div>}
-                            </div>
-                            <span className={`shrink-0 text-base font-black ${isLiveMode ? liveStyleConfig.priceText : theme.primary}`}>¥{item.price}</span>
-                        </button>
-                    );
-                })}
+                {!isLoading && !loadFailed && (
+                    <div className={`grid gap-1.5 ${position.width >= 720 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                        {filteredItems.map((item) => {
+                            const meta = productMeta(item);
+                            return (
+                                <button key={item.id} type="button" onClick={() => onSelect(item)} className={`flex min-h-[52px] w-full items-center gap-2 border px-2.5 py-1.5 text-left transition-colors ${isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} border-2 hover:brightness-110 rounded-none` : `${controlClass} hover:bg-white/10`}`}>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex min-w-0 items-center gap-1.5">
+                                            <span className={`shrink-0 text-[9px] font-black ${isLiveMode ? liveStyleConfig.accentText : theme.primary}`}>{item.brand}</span>
+                                            <span className={`truncate text-[13px] font-black ${modelText}`}>{item.model}</span>
+                                            {item.isRecommended && <span className="inline-flex shrink-0 items-center gap-0.5 text-[8px] font-black text-amber-400"><Sparkles size={9} /> 推荐</span>}
+                                            {item.isDiscount && <span className="shrink-0 text-[8px] font-black text-rose-400">特惠</span>}
+                                        </div>
+                                        {meta.length > 0 && <div className={`mt-0.5 flex flex-wrap gap-1 text-[8px] font-bold leading-none ${mutedText}`}>{meta.map((value) => <span key={value}>{value}</span>)}</div>}
+                                    </div>
+                                    <span className={`shrink-0 text-sm font-black ${isLiveMode ? liveStyleConfig.priceText : theme.primary}`}>¥{item.price}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
                 {!isLoading && !loadFailed && filteredItems.length === 0 && <div className={`py-10 text-center text-xs font-bold ${mutedText}`}>没有符合条件的{CATEGORY_MAP[entry.category]}</div>}
             </div>
-            {!isLoading && (requiredSockets.length > 0 || requiredMemoryTypes.length > 0) && <div className={`border-t px-4 py-2 text-[10px] font-bold ${isLiveMode ? liveStyleConfig.border : 'border-slate-200 dark:border-slate-700'} ${mutedText}`}>已隐藏 {products.length - strictItems.length} 个不兼容或规格不完整型号</div>}
         </div>,
         document.body,
     );
