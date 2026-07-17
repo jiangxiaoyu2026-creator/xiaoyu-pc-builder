@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Recycle, Monitor, FolderOpen } from 'lucide-react';
-import { BuildEntry, Category, StreamerLiveMeta } from '../../types/clientTypes';
+import { BuildEntry, Category, HardwareItem, StreamerLiveMeta } from '../../types/clientTypes';
 import { storage } from '../../services/storage';
 import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
 import { AiGenerateModal } from './AiGenerateModal';
@@ -14,6 +14,8 @@ import { StreamerRow, StreamerRowHandle } from './StreamerRow';
 import { StreamerPerformanceSidebar } from './StreamerPerformanceSidebar';
 import { StreamerPosterTemplate } from './StreamerPosterTemplate';
 import { StreamerPermissionWall } from './StreamerPermissionWall';
+import { StreamerHardwarePicker } from './StreamerHardwarePicker';
+import { areMemoryIncompatible, areSocketIncompatible, getBuildItem } from '../../utils/hardwareCompatibility';
 // --------------------
 
 const STREAMER_BUILD_CATEGORY_ORDER: Category[] = [
@@ -239,8 +241,10 @@ function StreamerWorkbench({
     const { theme, currentThemeKey, setTheme: setCurrentThemeKey, isLiveMode, setLiveMode, liveStyleConfig, liveStyle, setLiveStyle } = React.useContext(ThemeContext);
 
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [pickerState, setPickerState] = useState<{ anchorElement: HTMLElement; entryId: string } | null>(null);
     const rowInputRefs = useRef<(StreamerRowHandle | null)[]>([]);
     const visibleBuildList = useMemo(() => orderStreamerBuildEntries(buildList), [buildList]);
+    const pickerEntry = pickerState ? visibleBuildList.find((entry) => entry.id === pickerState.entryId) : null;
 
 
     const updateGhost = (el: HTMLElement | null, status: string = '') => {
@@ -266,6 +270,50 @@ function StreamerWorkbench({
         if (prevInput) {
             prevInput.focus();
         }
+    };
+
+    const openHardwarePicker = (entry: BuildEntry, anchorElement: HTMLElement) => {
+        setPickerState({ entryId: entry.id, anchorElement });
+    };
+
+    const clearPickerEntry = (target: BuildEntry) => {
+        onUpdate(target.id, { item: null, customName: undefined, customPrice: undefined, quantity: 1 });
+    };
+
+    const handlePickerSelect = (item: HardwareItem) => {
+        if (!pickerEntry) return;
+        const mainboardEntry = buildList.find((entry) => entry.category === 'mainboard');
+        const ramEntry = buildList.find((entry) => entry.category === 'ram');
+        const selectedCpu = getBuildItem(buildList, 'cpu');
+        const selectedMainboard = getBuildItem(buildList, 'mainboard');
+        const selectedRam = getBuildItem(buildList, 'ram');
+
+        if (pickerEntry.category === 'cpu' && mainboardEntry && selectedMainboard && areSocketIncompatible(item, selectedMainboard)) {
+            const confirmed = window.confirm(`新 CPU 与当前主板不兼容。继续后会清空主板和内存，是否继续？`);
+            if (!confirmed) return;
+            onUpdate(pickerEntry.id, { item, customName: undefined, customPrice: undefined });
+            clearPickerEntry(mainboardEntry);
+            if (ramEntry?.item || ramEntry?.customName) clearPickerEntry(ramEntry);
+            setPickerState(null);
+            return;
+        }
+
+        if (pickerEntry.category === 'mainboard' && selectedCpu && areSocketIncompatible(selectedCpu, item)) {
+            alert('该主板与当前 CPU 接口不兼容，请从兼容筛选结果中选择。');
+            return;
+        }
+
+        if (pickerEntry.category === 'mainboard' && ramEntry && selectedRam && areMemoryIncompatible(item, selectedRam)) {
+            const confirmed = window.confirm('新主板与当前内存不兼容。继续后会清空内存，是否继续？');
+            if (!confirmed) return;
+            onUpdate(pickerEntry.id, { item, customName: undefined, customPrice: undefined });
+            clearPickerEntry(ramEntry);
+            setPickerState(null);
+            return;
+        }
+
+        onUpdate(pickerEntry.id, { item, customName: undefined, customPrice: undefined });
+        setPickerState(null);
     };
 
     const handleAiBuild = async (prompt: any, preResult?: any) => {
@@ -652,7 +700,7 @@ function StreamerWorkbench({
                                         exit={{ opacity: 0, x: -20 }}
                                         transition={{ duration: 0.3, delay: index * 0.03, type: "spring", stiffness: 300, damping: 25 }}
                                     >
-                                        <StreamerRow index={index} entry={entry} onUpdate={onUpdate} ref={(el) => (rowInputRefs.current[index] = el)} onEnter={() => handleNextFocus(index)} onPrev={() => handlePrevFocus(index)} onPreview={setPreviewImage} />
+                                        <StreamerRow index={index} entry={entry} onUpdate={onUpdate} ref={(el) => (rowInputRefs.current[index] = el)} onEnter={() => handleNextFocus(index)} onPrev={() => handlePrevFocus(index)} onPreview={setPreviewImage} onOpenPicker={isLiveMode ? openHardwarePicker : undefined} />
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
@@ -856,6 +904,15 @@ function StreamerWorkbench({
                             </button>
                         </div>
                     </div>
+                )}
+                {pickerState && pickerEntry && (
+                    <StreamerHardwarePicker
+                        anchorElement={pickerState.anchorElement}
+                        buildList={buildList}
+                        entry={pickerEntry}
+                        onClose={() => setPickerState(null)}
+                        onSelect={handlePickerSelect}
+                    />
                 )}
             </div >
         </div>

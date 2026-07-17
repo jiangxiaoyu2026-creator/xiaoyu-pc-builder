@@ -10,6 +10,7 @@ import ChatWidget from '../components/common/ChatWidget';
 import { ShareFormModal, SavePreviewModal, ConfigLibraryModal } from '../components/client/Modals';
 import { UsedItem } from '../types/adminTypes';
 import DailyPopup from '../components/client/DailyPopup';
+import { getCompatibilityIssues } from '../utils/hardwareCompatibility';
 // Removed ArticleList
 // Client trends page reuses the full admin trend center.
 
@@ -329,62 +330,7 @@ export default function ClientApp() {
     const hasDiscount = (pricing.savedAmount || 0) > 0;
 
     const healthCheck = useMemo(() => {
-        const issues: string[] = [];
-        const cpuEntry = buildList.find(e => e.category === 'cpu');
-        const mbEntry = buildList.find(e => e.category === 'mainboard');
-        const ramEntry = buildList.find(e => e.category === 'ram');
-
-        const inferSpecs = (item: any) => {
-            if (!item) return {};
-            let specs = item.specs || {};
-            if (typeof specs === 'string') {
-                try {
-                    specs = JSON.parse(specs);
-                } catch (e) {
-                    specs = {};
-                }
-            }
-            specs = { ...specs };
-            const model = item.model.toUpperCase();
-
-            if (!specs.memoryType) {
-                // 最高优先级：型号名称里写明了 DDR4 / DDR5（如 "B660M DDR4"）
-                if (model.includes('DDR4') || model.includes(' D4')) {
-                    specs.memoryType = 'DDR4';
-                } else if (model.includes('DDR5') || model.includes(' D5')) {
-                    specs.memoryType = 'DDR5';
-                }
-                // 次优先级：根据芯片组推断（仅在名称中没有显式标注时）
-                else if (/X870|B650|X670|A620|Z890|B860|Z790|B760|Z690|B660/.test(model)) {
-                    specs.memoryType = 'DDR5';
-                } else if (/B550|X570|B450|A320|H610M-K|Z590|B560|Z490/.test(model)) {
-                    specs.memoryType = 'DDR4';
-                }
-            }
-
-            // Normalize for comparison
-            if (specs.memoryType) specs.memoryType = specs.memoryType.toUpperCase().trim();
-            if (specs.socket) specs.socket = specs.socket.toUpperCase().trim();
-
-            if (item.category === 'mainboard' && !specs.socket) {
-                if (/X870|B650|X670|A620/.test(model)) specs.socket = 'AM5';
-                else if (/B550|X570|B450|A320/.test(model)) specs.socket = 'AM4';
-                else if (/Z890|B860/.test(model)) specs.socket = 'LGA1851';
-                else if (/Z790|B760|Z690|B660/.test(model)) specs.socket = 'LGA1700';
-            }
-            return specs;
-        };
-
-        const cpuSpecs = inferSpecs(cpuEntry?.item);
-        const mbSpecs = inferSpecs(mbEntry?.item);
-        const ramSpecs = inferSpecs(ramEntry?.item);
-
-        if (cpuEntry?.item && mbEntry?.item && cpuSpecs.socket && mbSpecs.socket && cpuSpecs.socket !== mbSpecs.socket) {
-            issues.push(`接口不兼容: CPU是 ${cpuSpecs.socket}，主板是 ${mbSpecs.socket} `);
-        }
-        if (ramEntry?.item && mbEntry?.item && ramSpecs.memoryType && mbSpecs.memoryType && ramSpecs.memoryType !== mbSpecs.memoryType) {
-            issues.push(`内存不兼容: 内存是 ${ramSpecs.memoryType}，主板仅支持 ${mbSpecs.memoryType} `);
-        }
+        const issues = getCompatibilityIssues(buildList);
         return { status: issues.length === 0 ? 'perfect' : 'warning', issues };
     }, [buildList]);
 

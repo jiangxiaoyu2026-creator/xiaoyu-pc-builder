@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 
-import { X, Sparkles, RefreshCw } from 'lucide-react';
+import { X, Sparkles, RefreshCw, SlidersHorizontal } from 'lucide-react';
 import { BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
@@ -112,7 +112,7 @@ function PixelCategoryIcon({ category }: { category: string }) {
     );
 }
 
-export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPrev: () => void, onPreview: (img: string) => void }>(({ entry, index, onUpdate, onEnter, onPrev, onPreview }, ref) => {
+export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPrev: () => void, onPreview: (img: string) => void, onOpenPicker?: (entry: BuildEntry, anchorElement: HTMLElement) => void }>(({ entry, index, onUpdate, onEnter, onPrev, onPreview, onOpenPicker }, ref) => {
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
     const isPixelLiveStyle = liveStyle.startsWith('pixel');
     const [query, setQuery] = useState(entry.customName || entry.item?.model || '');
@@ -395,6 +395,13 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
         e.stopPropagation();
         onUpdate(entry.id, { item: null, customPrice: undefined, customName: undefined, quantity: 1 });
     };
+    const openPicker = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!inputRef.current || !onOpenPicker) return;
+        setShowSuggestions(false);
+        onOpenPicker(entry, inputRef.current);
+    };
 
     return (
         <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px] h-full px-3 py-0' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px] px-3 py-2'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
@@ -409,7 +416,17 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
             </div>
 
             <div className="relative">
-                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 ${isLiveMode ? liveStyleConfig.modelText + ' text-[20px]' : 'text-slate-800 dark:text-slate-200 text-[15px]'} font-semibold tracking-wide ${isLiveMode ? 'placeholder-white/20' : 'placeholder-slate-300 dark:placeholder-slate-600'} focus:ring-0 focus:outline-none ${isLiveMode ? (hasRowContent ? 'pr-8' : 'pr-2') : (entry.item ? 'pr-14' : '')}`} placeholder={isLiveMode ? `${CATEGORY_MAP[entry.category]}...` : (entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`)} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 ${isLiveMode ? liveStyleConfig.modelText + ' text-[20px]' : 'text-slate-800 dark:text-slate-200 text-[15px]'} font-semibold tracking-wide ${isLiveMode ? 'placeholder-white/20' : 'placeholder-slate-300 dark:placeholder-slate-600'} focus:ring-0 focus:outline-none ${isLiveMode ? (hasRowContent ? 'pr-16' : 'pr-8') : (entry.item ? 'pr-14' : '')}`} placeholder={isLiveMode ? `${CATEGORY_MAP[entry.category]}...` : (entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`)} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+                {isLiveMode && onOpenPicker && (
+                    <button
+                        type="button"
+                        onClick={openPicker}
+                        className={`absolute ${hasRowContent ? 'right-7' : 'right-0'} top-1/2 -translate-y-1/2 ${liveStyleConfig.accentText} w-7 h-7 rounded-md hover:bg-white/10 hover:brightness-125 flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all`}
+                        title={`筛选${CATEGORY_MAP[entry.category]}`}
+                    >
+                        <SlidersHorizontal size={16} />
+                    </button>
+                )}
                 {isLiveMode && hasRowContent && (
                     <button
                         type="button"
