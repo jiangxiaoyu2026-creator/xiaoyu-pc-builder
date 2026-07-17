@@ -59,10 +59,10 @@ function inferSockets(item: HardwareItem) {
         if (/Z790|B760|Z690|B660|H610|Z590|B560|H510/.test(model)) return ['LGA1700'];
     }
     if (item.category === 'cpu') {
-        if (/\b(245|265|285)[A-Z]{0,3}\b/.test(model)) return ['LGA1851'];
+        if (/\b(245|250|265|270|285)[A-Z]{0,6}\b/.test(model)) return ['LGA1851'];
         if (/\b(12100|12400|12600|12900|13100|13400|13500|13600|13700|13900|14100|14400|14500|14600|14700|14900)[A-Z]{0,3}\b/.test(model)) return ['LGA1700'];
         if (/\b(7500|7600|7700|7800|7900|7950|8400|8500|8600|8700|9600|9700|9800|9900|9950)[A-Z0-9]*\b/.test(model)) return ['AM5'];
-        if (/\b(3600|3700|3900|4500|4600|4650|5500|5600|5700|5800|5900|5950)[A-Z0-9]*\b/.test(model)) return ['AM4'];
+        if (/\b(2200|2400|2600|2700|3100|3200|3300|3400|3500|3600|3700|3900|4500|4600|4650|5500|5600|5700|5800|5900|5950)[A-Z0-9]*\b/.test(model)) return ['AM4'];
     }
     return [];
 }
@@ -71,6 +71,10 @@ function inferMemoryTypes(item: HardwareItem) {
     const model = item.model.toUpperCase();
     const explicit = normalizeMemoryType(model);
     if (explicit.length > 0) return explicit;
+    if (item.category === 'ram') {
+        const speedMatch = model.match(/(?:^|\D)(2133|2400|2666|2800|3000|3200|3600|4000|4800|5200|5600|6000|6200|6400|6800|7200|7600|8000|8200|8400)(?:\D|$)/);
+        if (speedMatch) return Number(speedMatch[1]) >= 4800 ? ['DDR5'] : ['DDR4'];
+    }
     if (item.category === 'mainboard') {
         if (/X870|B850|B840|B650|X670|A620|Z890|B860|H810/.test(model)) return ['DDR5'];
     }

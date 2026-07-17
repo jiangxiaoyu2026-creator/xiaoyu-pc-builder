@@ -44,23 +44,39 @@ function getCpuBrand(item: HardwareItem) {
 function getCpuSeries(item: HardwareItem) {
     const text = item.model.toUpperCase();
     if (/X3D/.test(text)) return 'X3D';
-    if (/CORE\s*ULTRA|\bULTRA\b/.test(text)) return 'Ultra';
+    if (/CORE\s*ULTRA|\bULTRA\b|\b(?:245|250|265|270|285)[A-Z]{0,6}\b/.test(text)) return 'Ultra';
     if (/CORE\s*I9|\bI9[-\s]?/.test(text)) return 'Core i9';
     if (/CORE\s*I7|\bI7[-\s]?/.test(text)) return 'Core i7';
     if (/CORE\s*I5|\bI5[-\s]?/.test(text)) return 'Core i5';
     if (/RYZEN\s*[579]|\bR[579]\b/.test(text)) return `Ryzen ${text.match(/(?:RYZEN\s*|R)([579])/)?.[1] || ''}`.trim();
+    if (/\b(?:3400|3500|3600|4500|5500|5600|7500|7600|8400|8500|8600|9600)[A-Z0-9]*\b/.test(text)) return 'Ryzen 5';
+    if (/\b(?:3700|5700|5800|7700|7800|8700|9700|9800)[A-Z0-9]*\b/.test(text)) return 'Ryzen 7';
+    if (/\b(?:3900|5900|5950|7900|7950|9900|9950)[A-Z0-9]*\b/.test(text)) return 'Ryzen 9';
     return '其他';
 }
 
 function getRamCapacity(item: HardwareItem) {
     const text = `${item.model} ${JSON.stringify(item.specs || {})}`.toUpperCase();
-    const match = text.match(/(?:^|\D)(16|32|64|128)\s*(?:GB|G)(?:\D|$)/);
-    return match ? `${match[1]}G` : '其他';
+    const kitMatch = text.match(/(?:^|\D)(4|8|16|24|32|48|64)\s*(?:GB|G)?\s*[*X×]\s*(2|4)(?:\D|$)/);
+    if (kitMatch) return `${Number(kitMatch[1]) * Number(kitMatch[2])}G`;
+    const totalMatch = text.match(/(?:^|\D)(8|16|24|32|48|64|96|128)\s*(?:GB|G)(?:\D|$)/);
+    return totalMatch ? `${totalMatch[1]}G` : '其他';
 }
 
 function getFormFactor(item: HardwareItem) {
-    const specs = item.specs as unknown as Record<string, unknown>;
-    return String(specs.formFactor || specs.form_factor || '').toUpperCase().replace('-', '');
+    let specs = item.specs as unknown;
+    if (typeof specs === 'string') {
+        try { specs = JSON.parse(specs); } catch { specs = {}; }
+    }
+    const specRecord = specs && typeof specs === 'object' && !Array.isArray(specs) ? specs as Record<string, unknown> : {};
+    const explicit = String(specRecord.formFactor || specRecord.form_factor || '').toUpperCase().replace('-', '');
+    if (explicit) return explicit;
+
+    const model = item.model.toUpperCase();
+    if (/\b(?:MINI[-\s]?ITX|ITX)\b|\b(?:A|B|H|X|Z)\d{3}E?I\b/.test(model)) return 'ITX';
+    if (/\bM[-\s]?ATX\b|\b(?:A|B|H|X|Z)\d{3}E?M\b/.test(model)) return 'MATX';
+    if (/大板|\b(?:A|B|H|X|Z)\d{3}/.test(model)) return 'ATX';
+    return '';
 }
 
 function productMeta(item: HardwareItem) {
@@ -182,6 +198,10 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
 
     const brands = useMemo(() => ['全部', ...Array.from(new Set(strictItems.map((item) => item.brand))).sort()], [strictItems]);
     const sockets = useMemo(() => ['全部', ...Array.from(new Set(strictItems.flatMap((item) => getHardwareCompatibility(item).sockets))).sort()], [strictItems]);
+    const ramCapacities = useMemo(() => {
+        const values = Array.from(new Set(strictItems.map(getRamCapacity)));
+        return ['全部', ...values.filter((value) => value !== '其他').sort((left, right) => Number(left.replace('G', '')) - Number(right.replace('G', ''))), ...values.filter((value) => value === '其他')];
+    }, [strictItems]);
     const filteredItems = useMemo(() => {
         const terms = search.toLowerCase().trim().split(/\s+/).filter(Boolean);
         const next = strictItems.filter((item) => {
@@ -308,7 +328,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
                 {entry.category === 'ram' && (
                     <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
                         {renderFilterGroup('品牌', brands, brand, setBrand)}
-                        {renderFilterGroup('容量', ['全部', '16G', '32G', '64G', '128G'], ramCapacity, setRamCapacity)}
+                        {renderFilterGroup('容量', ramCapacities, ramCapacity, setRamCapacity)}
                     </div>
                 )}
 
@@ -319,7 +339,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
                 {isLoading && <div className={`flex items-center justify-center gap-2 py-10 text-xs font-bold ${mutedText}`}><RefreshCw size={15} className="animate-spin" /> 正在加载产品库…</div>}
                 {!isLoading && loadFailed && <div className={`py-10 text-center text-xs font-bold ${mutedText}`}>产品库加载失败，请稍后重试</div>}
                 {!isLoading && !loadFailed && (
-                    <div className={`grid gap-1.5 ${position.width >= 720 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    <div className="grid grid-cols-1 gap-1.5">
                         {filteredItems.map((item) => {
                             const meta = productMeta(item);
                             return (
