@@ -478,27 +478,27 @@
     animation: vsPulse 2s ease-in-out infinite;
   }
 
-  /* VIP live-theme border effects. They are absolute overlays and never affect layout. */
+  /* VIP live-theme frame overlays. They cover the fixed 964 x 790 sheet without taking layout space. */
+  .live-sheet-frame,
   .live-frame-motion {
     position: absolute;
-    inset: 4px;
-    z-index: 26;
-    overflow: hidden;
-    border-radius: inherit;
     pointer-events: none;
+    border-radius: inherit;
     isolation: isolate;
   }
 
-  @keyframes liveThemeSwatchShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+  .live-sheet-frame {
+    inset: 2px;
+    z-index: 38;
+    border: 2px solid currentColor;
+    box-shadow:
+      inset 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent),
+      inset 0 0 22px color-mix(in srgb, currentColor 16%, transparent),
+      0 0 12px color-mix(in srgb, currentColor 40%, transparent);
   }
 
-  .live-theme-swatch--animated {
-    background-size: 220% 220% !important;
-    animation: liveThemeSwatchShift 4.2s ease-in-out infinite;
-  }
-
+  .live-sheet-frame::before,
+  .live-sheet-frame::after,
   .live-frame-motion::before,
   .live-frame-motion::after {
     content: '';
@@ -507,119 +507,205 @@
     pointer-events: none;
   }
 
-  @keyframes liveFrameChargeTop {
-    0% { left: -26%; opacity: 0; }
-    10% { opacity: 0.95; }
-    72% { opacity: 0.95; }
-    100% { left: 106%; opacity: 0; }
+  /* Angular circuit frame: clipped rails, an inset trace and visible corner armour. */
+  .live-sheet-frame--tech {
+    clip-path: polygon(0 16px, 16px 0, calc(100% - 72px) 0, calc(100% - 58px) 10px, 100% 10px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 72px 100%, 58px calc(100% - 9px), 0 calc(100% - 9px));
   }
 
-  @keyframes liveFrameChargeBottom {
-    0% { right: -30%; opacity: 0; }
-    15% { opacity: 0.7; }
-    75% { opacity: 0.7; }
-    100% { right: 104%; opacity: 0; }
+  .live-sheet-frame--tech::before {
+    inset: 7px;
+    border: 1px solid currentColor;
+    opacity: 0.72;
+    clip-path: polygon(0 11px, 11px 0, calc(100% - 48px) 0, calc(100% - 38px) 7px, 100% 7px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 48px 100%, 38px calc(100% - 6px), 0 calc(100% - 6px));
+  }
+
+  .live-sheet-frame--tech::after {
+    inset: 0;
+    background:
+      linear-gradient(135deg, currentColor 0 54%, transparent 55%) left top / 42px 42px no-repeat,
+      linear-gradient(315deg, currentColor 0 54%, transparent 55%) right bottom / 42px 42px no-repeat,
+      linear-gradient(90deg, currentColor, transparent) 64px 7px / 178px 3px no-repeat,
+      linear-gradient(270deg, currentColor, transparent) calc(100% - 64px) calc(100% - 7px) / 178px 3px no-repeat,
+      radial-gradient(circle, white 0 2px, currentColor 3px 5px, transparent 6px) 252px 3px / 12px 12px no-repeat,
+      radial-gradient(circle, white 0 2px, currentColor 3px 5px, transparent 6px) calc(100% - 252px) calc(100% - 3px) / 12px 12px no-repeat;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 5px currentColor);
+  }
+
+  /* Softer double rail: rounded inner line plus four bright bracket corners. */
+  .live-sheet-frame--soft {
+    inset: 3px;
+    border-color: color-mix(in srgb, currentColor 82%, white 18%);
+    box-shadow:
+      inset 0 0 0 5px color-mix(in srgb, currentColor 12%, transparent),
+      inset 0 0 26px color-mix(in srgb, currentColor 13%, transparent),
+      0 0 14px color-mix(in srgb, currentColor 32%, transparent);
+  }
+
+  .live-sheet-frame--soft::before {
+    inset: 8px;
+    border: 1px solid currentColor;
+    border-radius: 6px;
+    opacity: 0.52;
+  }
+
+  .live-sheet-frame--soft::after {
+    inset: 6px;
+    background:
+      linear-gradient(currentColor, currentColor) left top / 62px 4px no-repeat,
+      linear-gradient(currentColor, currentColor) left top / 4px 62px no-repeat,
+      linear-gradient(currentColor, currentColor) right top / 62px 4px no-repeat,
+      linear-gradient(currentColor, currentColor) right top / 4px 62px no-repeat,
+      linear-gradient(currentColor, currentColor) left bottom / 62px 4px no-repeat,
+      linear-gradient(currentColor, currentColor) left bottom / 4px 62px no-repeat,
+      linear-gradient(currentColor, currentColor) right bottom / 62px 4px no-repeat,
+      linear-gradient(currentColor, currentColor) right bottom / 4px 62px no-repeat;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+
+  /* Pixel rail: square stepped outline and repeating edge blocks. */
+  .live-sheet-frame--pixel {
+    inset: 0;
+    border-width: 4px;
+    border-radius: 0;
+    box-shadow:
+      inset 0 0 0 4px color-mix(in srgb, currentColor 25%, #050505 75%),
+      inset 0 0 0 7px color-mix(in srgb, currentColor 45%, transparent),
+      0 0 0 2px #050505;
+  }
+
+  .live-sheet-frame--pixel::before {
+    inset: 10px;
+    border: 2px dashed currentColor;
+    opacity: 0.58;
+  }
+
+  .live-sheet-frame--pixel::after {
+    inset: 4px;
+    background:
+      repeating-linear-gradient(90deg, currentColor 0 12px, transparent 12px 24px) left top / 100% 4px no-repeat,
+      repeating-linear-gradient(90deg, transparent 0 12px, currentColor 12px 24px) left bottom / 100% 4px no-repeat,
+      repeating-linear-gradient(0deg, currentColor 0 12px, transparent 12px 24px) left top / 4px 100% no-repeat,
+      repeating-linear-gradient(0deg, transparent 0 12px, currentColor 12px 24px) right top / 4px 100% no-repeat;
+    opacity: 0.86;
+  }
+
+  .live-frame-motion {
+    inset: 2px;
+    z-index: 40;
+    overflow: hidden;
+  }
+
+  /* Electric charge: full-width lightning rails stay visible while energy flows through them. */
+  @keyframes liveFrameChargeRail {
+    from { background-position: 0 0; }
+    to { background-position: 292px 0; }
   }
 
   .live-frame-motion--charge::before,
   .live-frame-motion--charge::after {
-    width: 22%;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, currentColor 34%, white 50%, currentColor 66%, transparent);
-    filter: drop-shadow(0 0 5px currentColor);
+    left: 2.5%;
+    width: 95%;
+    height: 9px;
+    background: repeating-linear-gradient(115deg, transparent 0 34px, currentColor 35px 62px, white 63px 68px, currentColor 69px 96px, transparent 97px 146px);
+    background-size: 292px 100%;
+    clip-path: polygon(0 0, 100% 0, 100% 32%, 97% 32%, 95% 100%, 91% 36%, 84% 36%, 81% 100%, 76% 36%, 69% 36%, 66% 100%, 61% 36%, 54% 36%, 51% 100%, 46% 36%, 39% 36%, 36% 100%, 31% 36%, 24% 36%, 21% 100%, 16% 36%, 9% 36%, 6% 100%, 0 100%);
+    opacity: 0.96;
+    filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 9px currentColor);
+    animation: liveFrameChargeRail 2.2s linear infinite;
   }
 
-  .live-frame-motion--charge::before {
-    top: 0;
-    animation: liveFrameChargeTop 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  }
-
+  .live-frame-motion--charge::before { top: 0; }
   .live-frame-motion--charge::after {
     bottom: 0;
-    animation: liveFrameChargeBottom 4.1s cubic-bezier(0.4, 0, 0.2, 1) infinite 0.8s;
+    transform: rotate(180deg);
+    animation-direction: reverse;
   }
 
-  @keyframes liveFrameScanDown {
-    0% { top: -20%; opacity: 0; }
-    12% { opacity: 0.8; }
-    78% { opacity: 0.8; }
-    100% { top: 112%; opacity: 0; }
-  }
-
-  @keyframes liveFrameScanUp {
-    0% { bottom: -24%; opacity: 0; }
-    18% { opacity: 0.55; }
-    80% { opacity: 0.55; }
-    100% { bottom: 110%; opacity: 0; }
+  /* Circuit scan: bright cores continually travel through both full-height side rails. */
+  @keyframes liveFrameScanRail {
+    from { background-position: 0 -216px; }
+    to { background-position: 0 216px; }
   }
 
   .live-frame-motion--scan::before,
   .live-frame-motion--scan::after {
-    width: 2px;
-    height: 18%;
-    background: linear-gradient(180deg, transparent, currentColor 40%, white 50%, currentColor 60%, transparent);
-    filter: drop-shadow(0 0 4px currentColor);
+    top: 2%;
+    width: 8px;
+    height: 96%;
+    background: repeating-linear-gradient(180deg, transparent 0 38px, currentColor 39px 76px, white 77px 85px, currentColor 86px 123px, transparent 124px 216px);
+    background-size: 100% 216px;
+    opacity: 0.94;
+    filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 8px currentColor);
+    animation: liveFrameScanRail 2.7s linear infinite;
   }
 
-  .live-frame-motion--scan::before {
-    left: 0;
-    animation: liveFrameScanDown 3.7s linear infinite;
-  }
-
+  .live-frame-motion--scan::before { left: 0; }
   .live-frame-motion--scan::after {
     right: 0;
-    animation: liveFrameScanUp 4.5s linear infinite 0.5s;
+    animation-direction: reverse;
   }
 
+  /* Breathing double frame: the whole outline and two energy nodes pulse together. */
   @keyframes liveFramePulse {
-    0%, 100% { opacity: 0.18; box-shadow: inset 0 0 0 1px currentColor, 0 0 0 transparent; }
-    50% { opacity: 0.7; box-shadow: inset 0 0 0 2px currentColor, inset 0 0 14px currentColor; }
+    0%, 100% {
+      opacity: 0.62;
+      box-shadow: inset 0 0 0 2px currentColor, inset 0 0 10px color-mix(in srgb, currentColor 24%, transparent);
+    }
+    50% {
+      opacity: 1;
+      box-shadow: inset 0 0 0 4px currentColor, inset 0 0 28px color-mix(in srgb, currentColor 55%, transparent), 0 0 14px currentColor;
+    }
   }
 
   .live-frame-motion--pulse {
-    border: 1px solid currentColor;
-    animation: liveFramePulse 2.8s ease-in-out infinite;
+    inset: 5px;
+    border: 2px solid currentColor;
+    animation: liveFramePulse 2.1s ease-in-out infinite;
   }
 
   .live-frame-motion--pulse::before,
   .live-frame-motion--pulse::after {
-    width: 7px;
-    height: 7px;
+    width: 13px;
+    height: 13px;
+    border: 2px solid white;
     background: currentColor;
-    box-shadow: 0 0 8px currentColor;
+    box-shadow: 0 0 5px white, 0 0 14px currentColor;
   }
 
-  .live-frame-motion--pulse::before { left: 8px; top: 8px; }
-  .live-frame-motion--pulse::after { right: 8px; bottom: 8px; }
+  .live-frame-motion--pulse::before { left: 10px; top: 10px; }
+  .live-frame-motion--pulse::after { right: 10px; bottom: 10px; }
 
-  @keyframes liveFrameWarning {
+  /* Hazard drive: broad diagonal strips are always visible and move in opposite directions. */
+  @keyframes liveFrameWarningRail {
     from { background-position: 0 0; }
-    to { background-position: 32px 0; }
+    to { background-position: 72px 0; }
   }
 
   .live-frame-motion--warning::before,
   .live-frame-motion--warning::after {
-    left: 5%;
-    width: 90%;
-    height: 3px;
-    background: repeating-linear-gradient(115deg, transparent 0 8px, currentColor 8px 16px, transparent 16px 24px);
-    background-size: 32px 100%;
-    opacity: 0.68;
-    filter: drop-shadow(0 0 3px currentColor);
-    animation: liveFrameWarning 1.4s linear infinite;
+    left: 1.5%;
+    width: 97%;
+    height: 9px;
+    border-block: 1px solid currentColor;
+    background: repeating-linear-gradient(120deg, currentColor 0 14px, transparent 14px 27px, currentColor 27px 41px, white 41px 45px, transparent 45px 72px);
+    background-size: 72px 100%;
+    opacity: 0.94;
+    filter: drop-shadow(0 0 6px currentColor);
+    animation: liveFrameWarningRail 1.15s linear infinite;
   }
 
   .live-frame-motion--warning::before { top: 0; }
-  .live-frame-motion--warning::after { bottom: 0; animation-direction: reverse; }
+  .live-frame-motion--warning::after {
+    bottom: 0;
+    animation-direction: reverse;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .live-frame-motion,
     .live-frame-motion::before,
     .live-frame-motion::after {
-      animation: none !important;
-    }
-
-    .live-theme-swatch--animated {
       animation: none !important;
     }
   }

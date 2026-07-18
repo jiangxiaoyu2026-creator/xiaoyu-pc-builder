@@ -78,6 +78,12 @@ const LIVE_FRAME_MOTION_CLASSES = {
     warning: 'live-frame-motion--warning',
 } as const;
 
+const LIVE_FRAME_FAMILY_CLASSES = {
+    pixel: 'live-sheet-frame--pixel',
+    tech: 'live-sheet-frame--tech',
+    soft: 'live-sheet-frame--soft',
+} as const;
+
 // The live config sheet is used for capture/layout workflows. Keep this canvas fixed.
 const LIVE_CONFIG_SHEET_WIDTH = 964;
 const LIVE_CONFIG_SHEET_HEIGHT = 790;
@@ -463,6 +469,7 @@ function StreamerWorkbench({
     const liveFrameRailOpacity = isSoftFrame ? 'opacity-55' : 'opacity-85';
     const liveFrameTopLineOpacity = isSoftFrame ? 'opacity-40' : 'opacity-70';
     const liveFrameBottomLineOpacity = isSoftFrame ? 'opacity-45' : 'opacity-75';
+    const liveFrameFamily = isPixelLiveStyle ? 'pixel' : liveStyleConfig.frameTreatment;
     const liveShellClass = isLiveMode
         ? isPixelLiveStyle
             ? `rounded-none flex flex-col border-4 ${liveStyleConfig.stampBorder} shadow-[8px_8px_0_#050505]`
@@ -481,6 +488,18 @@ function StreamerWorkbench({
     return (
         <div className={isLiveMode ? 'mx-auto shrink-0' : 'w-full'} style={isLiveMode ? LIVE_CONFIG_SHEET_FRAME_STYLE : undefined}>
         <div className={`${theme.cardBg} ${liveShellClass} overflow-hidden relative transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
+            {isLiveMode && liveStyleConfig.frameMotion !== 'none' && (
+                <>
+                    <div
+                        aria-hidden="true"
+                        className={`live-sheet-frame ${LIVE_FRAME_FAMILY_CLASSES[liveFrameFamily]} ${liveStyleConfig.accentText}`}
+                    />
+                    <div
+                        aria-hidden="true"
+                        className={`live-frame-motion ${LIVE_FRAME_MOTION_CLASSES[liveStyleConfig.frameMotion]} ${liveStyleConfig.accentText}`}
+                    />
+                </>
+            )}
             
             {/* Hidden Poster Template */}
             <StreamerPosterTemplate 
@@ -628,12 +647,6 @@ function StreamerWorkbench({
                                 <div className={`pointer-events-none absolute right-0 top-0 z-30 h-[16px] w-[24px] ${liveStyleConfig.glowBg} ${isSoftFrame ? 'opacity-35' : 'opacity-75'} [clip-path:polygon(0_0,100%_0,100%_100%,15px_100%)]`}></div>
                                 <div className={`pointer-events-none absolute left-14 right-[280px] top-[1px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} ${liveFrameTopLineOpacity}`}></div>
                                 <div className={`pointer-events-none absolute inset-x-14 bottom-[4px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} ${liveFrameBottomLineOpacity}`}></div>
-                                {liveStyleConfig.frameMotion !== 'none' && (
-                                    <div
-                                        aria-hidden="true"
-                                        className={`live-frame-motion ${LIVE_FRAME_MOTION_CLASSES[liveStyleConfig.frameMotion]} ${liveStyleConfig.accentText}`}
-                                    />
-                                )}
                             </>
                         )}
                         {isLiveMode && (
@@ -948,7 +961,7 @@ function StreamerWorkbench({
                             <button
                                 key={s}
                                 onClick={() => setLiveStyle(s)}
-                                className={`w-9 h-9 p-0 border transition-all ${styleConfig.frameMotion !== 'none' ? 'live-theme-swatch--animated' : ''} ${s.startsWith('pixel') ? 'rounded-none border-2 shadow-[3px_3px_0_#111]' : 'rounded-lg shadow-sm'} ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
+                                className={`w-9 h-9 p-0 border transition-all ${s.startsWith('pixel') ? 'rounded-none border-2 shadow-[3px_3px_0_#111]' : 'rounded-lg shadow-sm'} ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
                                 style={{ background: LIVE_STYLE_SWATCHES[s] }}
                                 title={styleConfig.name}
                             >
