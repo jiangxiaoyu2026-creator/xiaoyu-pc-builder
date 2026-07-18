@@ -896,18 +896,46 @@
     border-radius: 0 0 28px;
   }
 
-  .live-mario-table-watermark {
+  .live-mario-config-header {
+    position: relative;
+    overflow: hidden;
+    padding-right: 96px !important;
+    background:
+      radial-gradient(ellipse at 24% 26%, rgba(255, 255, 255, 0.88) 0 20px, transparent 22px),
+      radial-gradient(ellipse at 31% 23%, rgba(255, 255, 255, 0.82) 0 15px, transparent 17px),
+      linear-gradient(180deg, #7ed3ff 0%, #c9efff 73%, #78cf68 74%, #43ab55 100%) !important;
+    border-bottom: 3px solid #258f46 !important;
+  }
+
+  .live-mario-config-header::before {
+    content: '';
     position: absolute;
-    left: 390px;
-    top: 185px;
-    z-index: 0;
-    width: 265px;
+    left: 108px;
+    bottom: -5px;
+    width: 196px;
+    height: 14px;
+    border-radius: 50% 50% 0 0;
+    background: #6cc45e;
+    box-shadow: 116px -1px 0 #5db852, 238px 1px 0 #75cb64;
+    opacity: 0.82;
+  }
+
+  .live-mario-config-header > .flex {
+    position: relative;
+    z-index: 2;
+    gap: 12px;
+  }
+
+  .live-mario-header-hero {
+    position: absolute;
+    right: -4px;
+    top: -12px;
+    z-index: 1;
+    width: 104px;
     max-width: none;
-    opacity: 0.075;
     pointer-events: none;
-    filter: saturate(0.9);
-    transform: rotate(-5deg);
-    animation: liveMarioIllustrationFloat 5.2s ease-in-out infinite;
+    filter: drop-shadow(0 8px 9px rgba(60, 48, 22, 0.2));
+    animation: liveMarioIllustrationFloat 4.8s ease-in-out infinite;
   }
 
   .live-mario-sidebar-art {
@@ -918,14 +946,19 @@
     min-height: 96px;
     align-items: center;
     overflow: hidden;
-    border-radius: 14px;
-    background: linear-gradient(145deg, #eef9ff 0%, #fff8dc 48%, #edfff2 100%);
+    border: 1px solid rgba(22, 101, 52, 0.2);
+    border-radius: 16px;
+    background:
+      radial-gradient(ellipse at 26% 20%, rgba(255, 255, 255, 0.92) 0 18px, transparent 20px),
+      radial-gradient(ellipse at 44% 17%, rgba(255, 255, 255, 0.82) 0 12px, transparent 14px),
+      linear-gradient(180deg, #81d4ff 0%, #c9efff 63%, #73cc63 64%, #43a94f 77%, #d7a151 78%, #bb793e 100%);
+    box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.42);
   }
 
   .live-mario-sidebar-art img {
-    width: 137px;
+    width: 151px;
     flex: none;
-    margin-left: -13px;
+    margin-left: -19px;
     filter: drop-shadow(0 7px 8px rgba(29, 78, 46, 0.16));
     animation: liveMarioIllustrationFloat 4.4s ease-in-out infinite;
   }
@@ -936,19 +969,24 @@
     flex: 1;
     flex-direction: column;
     gap: 4px;
-    padding-right: 6px;
+    margin-right: 6px;
+    padding: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 5px 14px rgba(28, 72, 42, 0.12);
     color: #3f2a18;
     text-align: left;
   }
 
   .live-mario-sidebar-art strong {
-    color: #166534;
+    color: #c93227;
     font-size: 15px;
     line-height: 1.1;
   }
 
   .live-mario-sidebar-art span {
-    color: #8b641f;
+    color: #38633d;
     font-size: 10px;
     font-weight: 800;
     line-height: 1.35;
@@ -969,6 +1007,26 @@
 
   [data-live-layout='pixel'] .live-config-rows > *:hover {
     background: rgba(34, 197, 94, 0.11);
+  }
+
+  [data-live-layout='pixel'] .live-hardware-category-icon {
+    border: 1px solid rgba(219, 157, 39, 0.6) !important;
+    border-radius: 10px !important;
+    background: linear-gradient(145deg, #fff8d8, #ffffff) !important;
+    color: #b66b17 !important;
+    box-shadow: 0 3px 9px rgba(148, 99, 20, 0.12) !important;
+  }
+
+  [data-live-layout='pixel'] .live-config-rows > *:nth-child(3n + 1) .live-hardware-category-icon {
+    border-color: rgba(34, 197, 94, 0.5) !important;
+    background: linear-gradient(145deg, #efffec, #ffffff) !important;
+    color: #258b42 !important;
+  }
+
+  [data-live-layout='pixel'] .live-config-rows > *:nth-child(3n + 2) .live-hardware-category-icon {
+    border-color: rgba(239, 68, 68, 0.38) !important;
+    background: linear-gradient(145deg, #fff0ed, #ffffff) !important;
+    color: #d54435 !important;
   }
 
   [data-live-layout='pixel'] input::placeholder {
@@ -1101,11 +1159,44 @@
     animation-direction: reverse;
   }
 
+  .live-frame-motion.live-frame-motion--pulse[data-live-theme='pixel'] {
+    inset: 4px;
+    border: 2px solid rgba(247, 191, 47, 0.78);
+    border-radius: 17px;
+    box-shadow: inset 0 0 0 3px rgba(39, 174, 80, 0.13), 0 0 16px rgba(250, 204, 21, 0.2);
+    animation: liveMarioFrameGlow 3.2s ease-in-out infinite;
+  }
+
+  .live-frame-motion.live-frame-motion--pulse[data-live-theme='pixel']::before,
+  .live-frame-motion.live-frame-motion--pulse[data-live-theme='pixel']::after {
+    width: 38px;
+    height: 9px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ed3f35, #ffd34d, #32b95d);
+    box-shadow: 0 3px 9px rgba(62, 52, 22, 0.18);
+  }
+
+  .live-frame-motion.live-frame-motion--pulse[data-live-theme='pixel']::before {
+    left: 12px;
+    top: 10px;
+  }
+
+  .live-frame-motion.live-frame-motion--pulse[data-live-theme='pixel']::after {
+    right: 12px;
+    bottom: 10px;
+  }
+
+  @keyframes liveMarioFrameGlow {
+    0%, 100% { filter: saturate(0.95) brightness(1); }
+    50% { filter: saturate(1.08) brightness(1.03); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .live-frame-motion,
     .live-frame-motion::before,
     .live-frame-motion::after,
-    .live-mario-table-watermark,
+    .live-mario-header-hero,
     .live-mario-sidebar-art img {
       animation: none !important;
     }

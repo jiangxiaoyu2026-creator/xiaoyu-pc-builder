@@ -39,7 +39,7 @@
       <path d="M72 140c6 4 13 4 19 0" fill="none" stroke="#cf8b65" stroke-width="3" stroke-linecap="round"/>
     </g>
 
-    <g transform="translate(228 53)">
+    <g transform="translate(202 62) scale(.82)">
       <ellipse cx="75" cy="177" rx="32" ry="13" fill="#d9862a" stroke="#784519" stroke-width="6"/>
       <ellipse cx="127" cy="177" rx="31" ry="13" fill="#d9862a" stroke="#784519" stroke-width="6"/>
       <path d="M55 118c5 27 7 39 3 55h30l10-53zM105 119l9 54h30c-4-17-2-32 4-47z" fill="#f4c842" stroke="#8f6615" stroke-width="6" stroke-linejoin="round"/>

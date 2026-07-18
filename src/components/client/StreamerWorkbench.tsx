@@ -637,13 +637,6 @@ function StreamerWorkbench({
 
                     {/* === Main Content Area === */}
                     <div className={`flex-1 min-w-0 flex flex-col relative ${isLiveMode ? liveStyleConfig.sectionBg : 'bg-white dark:bg-slate-900/50'}`}>
-                        {isLiveMode && isMarioLiveStyle && (
-                            <img
-                                aria-hidden="true"
-                                src="/assets/themes/mushroom-hero.svg"
-                                className="live-mario-table-watermark"
-                            />
-                        )}
 
                 {activeTab === 'builder' ? (
                     <>
@@ -667,7 +660,14 @@ function StreamerWorkbench({
                             </>
                         )}
                         {isLiveMode && (
-                            <div className={`px-4 py-2 ${liveStyleConfig.headerBg} border-b ${liveStyleConfig.border}`}>
+                            <div className={`px-4 py-2 ${liveStyleConfig.headerBg} border-b ${liveStyleConfig.border} ${isMarioLiveStyle ? 'live-mario-config-header' : ''}`}>
+                                {isMarioLiveStyle && (
+                                    <img
+                                        aria-hidden="true"
+                                        src="/assets/themes/mushroom-hero.svg"
+                                        className="live-mario-header-hero"
+                                    />
+                                )}
                                 <div className="flex items-center justify-start gap-5">
                                     <div className="flex flex-wrap items-center gap-3 min-w-0 shrink-0">
                                         <div className={`text-3xl font-black tracking-tight ${liveStyleConfig.modelText}`}>
