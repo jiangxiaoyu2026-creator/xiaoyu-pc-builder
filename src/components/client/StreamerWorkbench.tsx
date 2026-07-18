@@ -53,7 +53,7 @@ const LIVE_SCENARIO_ROWS = [
 
 const LIVE_STYLE_SWATCHES: Record<LiveStyleKey, string> = {
     cyber: 'linear-gradient(135deg, #070d18 0 42%, #22d3ee 43% 62%, #2563eb 63%)',
-    pixel: 'repeating-conic-gradient(#111827 0 25%, #38bdf8 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #172033, #93c5fd, #fbbf24)',
+    pixel: 'linear-gradient(135deg, #5c94fc 0 38%, #22c55e 39% 60%, #facc15 61% 78%, #ef4444 79%)',
     pixelWhite: 'repeating-conic-gradient(#f6f7f2 0 25%, #1e3a5f 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #ffffff, #1d4ed8, #0f766e)',
     pixelCream: 'repeating-conic-gradient(#fff7e6 0 25%, #584030 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #ffd98a, #0f766e, #d94832)',
     pixelOcean: 'repeating-conic-gradient(#eafaf7 0 25%, #164e63 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #dff7f1, #14b8a6, #38bdf8)',
@@ -491,8 +491,26 @@ function StreamerWorkbench({
             <div aria-hidden="true" className="live-outside-art" data-live-theme={liveStyle} />
         )}
         {isLiveMode && liveStyle === 'pixel' && (
-            <div aria-hidden="true" className="live-pixel-mushroom-row">
-                {Array.from({ length: 6 }, (_, index) => <span key={index} className="live-pixel-mushroom" />)}
+            <div aria-hidden="true" className="live-mario-scene">
+                <div className="live-mario-block-cluster">
+                    <span className="live-mario-block live-mario-block--brick" />
+                    <span className="live-mario-block live-mario-block--question">?</span>
+                    <span className="live-mario-block live-mario-block--brick" />
+                    <span className="live-mario-block live-mario-block--question">?</span>
+                </div>
+                <div className="live-mario-coin-row">
+                    {Array.from({ length: 3 }, (_, index) => <span key={index} className="live-mario-coin" />)}
+                </div>
+                <span className="live-mario-plant" />
+                <span className="live-mario-hero" />
+                <span className="live-mario-goomba" />
+                <span className="live-mario-koopa" />
+                <div className="live-mario-ground">
+                    {Array.from({ length: 18 }, (_, index) => <span key={index} className="live-mario-ground-brick" />)}
+                </div>
+                <div className="live-pixel-mushroom-row">
+                    {Array.from({ length: 5 }, (_, index) => <span key={index} className="live-pixel-mushroom" />)}
+                </div>
             </div>
         )}
         <div className={`${theme.cardBg} ${liveShellClass} relative z-[1] overflow-hidden transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
