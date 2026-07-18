@@ -218,7 +218,13 @@ function StreamerWorkbench({
     const [showAiModal, setShowAiModal] = useState(false);
     const [showChatSettings, setShowChatSettings] = useState(false);
     const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
+    const [marioScenarioAction, setMarioScenarioAction] = useState<{ index: number; serial: number } | null>(null);
     const posterRef = useRef<HTMLDivElement>(null);
+    const marioActionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => () => {
+        if (marioActionTimerRef.current) clearTimeout(marioActionTimerRef.current);
+    }, []);
 
     const handleGeneratePoster = async () => {
         if (!posterRef.current || isGeneratingPoster) return;
@@ -443,11 +449,16 @@ function StreamerWorkbench({
     const updateLiveMeta = (updates: Partial<StreamerLiveMeta>) => {
         onLiveMetaChange({ ...liveMeta, ...updates });
     };
-    const toggleScenario = (label: string) => {
+    const toggleScenario = (label: string, scenarioIndex: number) => {
         const scenarios = liveMeta.scenarios.includes(label)
             ? liveMeta.scenarios.filter(item => item !== label)
             : [...liveMeta.scenarios, label];
         updateLiveMeta({ scenarios });
+        if (isMarioLiveStyle) {
+            if (marioActionTimerRef.current) clearTimeout(marioActionTimerRef.current);
+            setMarioScenarioAction({ index: scenarioIndex, serial: Date.now() });
+            marioActionTimerRef.current = setTimeout(() => setMarioScenarioAction(null), 1050);
+        }
     };
     const serviceItems = [
         { label: '组装', positive: true },
@@ -497,9 +508,27 @@ function StreamerWorkbench({
         )}
         {isLiveMode && isMarioLiveStyle && (
             <div aria-hidden="true" className="live-mario-stage-decor">
+                <div className="live-mario-game-rail">
+                    <span className="live-mario-rail-cloud live-mario-rail-cloud--one" />
+                    <span className="live-mario-rail-cloud live-mario-rail-cloud--two" />
+                    <span className="live-mario-rail-bricks" />
+                    <span className="live-mario-rail-block">
+                        <img src="/assets/themes/mario-game/question-block.svg" alt="" />
+                        <img src="/assets/themes/mario-game/super-mushroom.svg" alt="" />
+                    </span>
+                    <span
+                        key={marioScenarioAction?.serial ?? 'patrol'}
+                        className={`live-mario-rail-runner ${marioScenarioAction ? 'is-action' : ''}`}
+                        style={marioScenarioAction ? { '--mario-target-x': `${128 + (marioScenarioAction.index % 3) * 58}px` } as React.CSSProperties : undefined}
+                    >
+                        <img src="/assets/themes/mario-game/mario-runner.svg" alt="" />
+                    </span>
+                </div>
                 <span className="live-mario-stage-balloon live-mario-stage-balloon--left" />
                 <span className="live-mario-stage-balloon live-mario-stage-balloon--right" />
                 <span className="live-mario-stage-bricks" />
+                <span className="live-mario-side-pipe" />
+                <span className="live-mario-side-flag" />
             </div>
         )}
         <div className={`${theme.cardBg} ${liveShellClass} relative z-[1] overflow-hidden transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
@@ -675,10 +704,6 @@ function StreamerWorkbench({
                                             <span className="live-mario-header-balloon live-mario-header-balloon--blue" />
                                             <span className="live-mario-header-brick-shadow" />
                                         </div>
-                                        <div aria-hidden="true" className="live-mario-header-hero">
-                                            <img src="/assets/themes/mushroom-hero.svg" alt="" />
-                                            <span>1UP</span>
-                                        </div>
                                     </>
                                 )}
                                 <div className="flex items-center justify-start gap-5">
@@ -691,16 +716,18 @@ function StreamerWorkbench({
                                         <div className="flex flex-col gap-1.5">
                                             {LIVE_SCENARIO_ROWS.map((row, rowIndex) => (
                                                 <div key={rowIndex} className="flex flex-wrap gap-x-3 gap-y-1.5">
-                                                    {row.map((label) => {
+                                                    {row.map((label, columnIndex) => {
                                                         const checked = liveMeta.scenarios.includes(label);
+                                                        const scenarioIndex = rowIndex * 3 + columnIndex;
+                                                        const isMarioHitTarget = marioScenarioAction?.index === scenarioIndex;
                                                         return (
                                                             <button
                                                                 key={label}
                                                                 type="button"
-                                                                onClick={() => toggleScenario(label)}
-                                                                className={`flex items-center gap-1.5 text-[14px] font-black transition-colors ${checked ? liveStyleConfig.modelText : liveStyleConfig.mutedText}`}
+                                                                onClick={() => toggleScenario(label, scenarioIndex)}
+                                                                className={`flex items-center gap-1.5 text-[14px] font-black transition-colors ${isMarioLiveStyle ? `live-mario-scenario-button ${checked ? 'is-active' : ''} ${isMarioHitTarget ? 'is-hit-target' : ''}` : ''} ${checked ? liveStyleConfig.modelText : liveStyleConfig.mutedText}`}
                                                             >
-                                                                <span className={`w-3.5 h-3.5 ${liveCheckRadius} border-2 flex items-center justify-center ${checked ? `${liveStyleConfig.glowBg} border-transparent` : liveStyleConfig.border}`}>
+                                                                <span className={`w-3.5 h-3.5 ${liveCheckRadius} border-2 flex items-center justify-center ${isMarioLiveStyle ? 'live-mario-scenario-check' : ''} ${isMarioHitTarget ? 'is-hit-target' : ''} ${checked ? `${liveStyleConfig.glowBg} border-transparent` : liveStyleConfig.border}`}>
                                                                     {checked && <span className={`text-[11px] leading-none ${liveCheckText}`}>✓</span>}
                                                                 </span>
                                                                 {label}
@@ -774,10 +801,10 @@ function StreamerWorkbench({
                         </div>
                         {isLiveMode && (
                             <div className={`px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg} ${liveStyleConfig.modelText} flex items-center justify-between gap-3 shrink-0`}>
-                                <div className="min-w-0 flex items-center justify-start gap-x-2 text-[13px] font-black tracking-wide whitespace-nowrap overflow-x-auto">
+                                <div className={`min-w-0 flex items-center justify-start gap-x-2 text-[13px] font-black tracking-wide whitespace-nowrap overflow-x-auto ${isMarioLiveStyle ? 'live-mario-service-strip' : ''}`}>
                                     {serviceItems.map(item => (
-                                        <span key={item.label} className="inline-flex items-center gap-1 shrink-0">
-                                            <span className={`w-4 h-4 text-[13px] ${liveBadgeRadius} flex items-center justify-center leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} ${liveCheckText}` : `${liveInputBg} border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
+                                        <span key={item.label} className={`inline-flex items-center gap-1 shrink-0 ${isMarioLiveStyle ? 'live-mario-service-item' : ''}`}>
+                                            <span className={`w-4 h-4 text-[13px] ${liveBadgeRadius} flex items-center justify-center leading-none font-black ${isMarioLiveStyle ? 'live-mario-service-check' : ''} ${item.positive ? `${liveStyleConfig.glowBg} ${liveCheckText}` : `${liveInputBg} border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
                                                 {item.positive ? '✓' : '×'}
                                             </span>
                                             {item.label}

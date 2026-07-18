@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="img" aria-label="问号方块">
+  <g style="image-rendering:pixelated">
+    <image width="48" height="16" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAQCAYAAABQrvyxAAAAAXNSR0IArs4c6QAAAt5JREFUSEuVVs152zAMBbNAlVOjjOFO0BztCWJ1iypTJN2iUiewc4qzgcewc5O8QNQPfyJAUknLiySKJPCA90AEAIDztprwSSMAwBRggole04ELdb7uR3p1+wt7lqZK++352T7xDYDdxf3htK2mer0CCPT3E/MeWGgO6LyinvdGJ/yZNC9T+H7bj7S/24+f2o2+xTPbMcAMIPw4wHt3N0c3c0Im8HHVHGDCtQZA3Q9wbiqyUwYQDdfiuD4RQDsCPFWyxuK2UZf5hxHg8RqgHRTAZuUi8LY7Gif4102yBol01bzAiTLgnSb6mUjnVORMcgauodsPzn6zTrMasjW4AUEH5O8NUYjPQOeFX6IH4riA+OZohplQACkHMLoqKbfGRJczYAEEaNZfyG7dRVrhGgxR9zw6lhMA0oCJrgUw/b6jw867I+FDg5FmAULzMoMr85sN6yCHhWYUpD8jnO99Brbrarb1xHEDzgjb1zmfAQLAoXnbH8kmLkae4yAAEhUCIN5aCpUyoJkrASAREwAvYnJWbJUBRJ20g1JIMqDiC80rgUEAmhE+9ALv3XcBwGI+mYiyowFu+4HiXgQgdNSIlqoQUgMHAmg2XBhsBpSFmQbSGszOB8AKo0Ozgt9WAx/Vb9UDZdOIXstovx+LBTzS6QIsewalw5VRjDA5YTwp6cFSZekekETEyAnX08uRNWAp5Muo5f6vmAgDQEUsVcgCiHQ6kDqQ+34slVG/CqNcolN2kRXuUZz6aeikJ0cKBSmjRsT2AtAMfN2sim1FRqGlNqTgnAWwRCEVdLe7uGrmNBDLaN7/WA1Y7s+RWGglYg7YlN64WaUqVCGLdal8Rg2YewD5XHYyViTr+EethHVUBWwr0txKGADcSjiFEfhWgm//UStR2Zs4axNyQWuJJCGKQKKIc8NyrWQtyVzN/rOZI34kVKQymrWg/9aUJs3h8qbyH9+taYlMKZZWMw2ivd3/AgqP6BXF13MwAAAAAElFTkSuQmCC" x="0">
+      <animate attributeName="x" values="0;-16;-32;-16" dur=".72s" repeatCount="indefinite" calcMode="discrete"/>
+    </image>
+  </g>
+</svg>

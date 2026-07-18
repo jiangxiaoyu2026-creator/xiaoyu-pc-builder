@@ -148,7 +148,14 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     } | null>(null);
     const [fpsData, setFpsData] = useState<any[]>([]);
     const [sidebarResolution, setSidebarResolution] = useState<number>(1080);
+    const [resolutionFxKey, setResolutionFxKey] = useState(0);
+    const [discountFxKey, setDiscountFxKey] = useState(0);
     const [loadingFps, setLoadingFps] = useState(false);
+
+    const changeSidebarResolution = (resolution: number) => {
+        setSidebarResolution(resolution);
+        setResolutionFxKey(key => key + 1);
+    };
 
     // Get item IDs string for effect dependency to avoid unnecessary calls
     const itemIds = buildList
@@ -363,7 +370,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                             <div className="live-mario-sidebar-art">
                                 <div className="live-mario-sidebar-mascot" aria-hidden="true">
                                     <span className="live-mario-sidebar-coin" />
-                                    <img src="/assets/themes/mushroom-world.svg" alt="" />
+                                    <img src="/assets/themes/mario-game/super-mushroom.svg" alt="" />
                                 </div>
                                 <div>
                                     <strong>冒险装机站</strong>
@@ -441,13 +448,14 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative flex-1 flex flex-col min-h-[330px]`}>
                         <div className="flex items-center justify-between mb-2 relative z-10">
                             <div className={`text-[12px] font-black tracking-widest ${liveStyleConfig.accentText}`}>游戏实测FPS</div>
-                            <div className={`grid grid-cols-3 gap-1 w-[122px] ${liveControlBg} border p-0.5 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} shadow-sm`} title="切换分辨率">
+                            <div className={`grid grid-cols-3 gap-1 w-[122px] ${liveControlBg} border p-0.5 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} shadow-sm ${isMarioLiveStyle ? 'live-mario-resolution-switch' : ''}`} title="切换分辨率">
                                 {[1080, 1440, 2160].map(res => (
                                     <button
                                         key={res}
-                                        onClick={() => setSidebarResolution(res)}
-                                        className={`text-[10px] font-black py-1 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} transition-all uppercase tracking-wider ${sidebarResolution === res ? `${liveStyleConfig.glowBg} ${activeResolutionText} shadow-sm scale-105` : `${liveStyleConfig.modelText} opacity-75 hover:opacity-100 ${liveControlHover}`}`}
+                                        onClick={() => changeSidebarResolution(res)}
+                                        className={`text-[10px] font-black py-1 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} transition-all uppercase tracking-wider ${isMarioLiveStyle ? `live-mario-resolution-button ${sidebarResolution === res ? 'is-active' : ''}` : ''} ${sidebarResolution === res ? `${liveStyleConfig.glowBg} ${activeResolutionText} shadow-sm scale-105` : `${liveStyleConfig.modelText} opacity-75 hover:opacity-100 ${liveControlHover}`}`}
                                     >
+                                        {isMarioLiveStyle && sidebarResolution === res && resolutionFxKey > 0 && <span key={resolutionFxKey} className="live-mario-resolution-burst" />}
                                         {res === 1080 ? '1K' : res === 1440 ? '2K' : '4K'}
                                     </button>
                                 ))}
@@ -489,14 +497,18 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'rounded-lg shadow-sm'} p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5`}>
                             <div className="flex items-center justify-between gap-2">
                                 <div className={`text-[12px] font-black ${liveStyleConfig.modelText}`}>优惠方案</div>
-                                <div className="relative group w-[118px]">
+                                <div className={`relative group w-[118px] ${isMarioLiveStyle ? 'live-mario-discount-control' : ''}`}>
                                     <select
                                         value={pricingProps.discountRate}
-                                        onChange={(e) => pricingProps.setDiscountRate(parseFloat(e.target.value))}
+                                        onChange={(e) => {
+                                            pricingProps.setDiscountRate(parseFloat(e.target.value));
+                                            setDiscountFxKey(key => key + 1);
+                                        }}
                                         className={`w-full appearance-none ${liveControlBg} ${liveStyleConfig.modelText} border text-[11px] font-black py-1 pl-2.5 pr-7 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} focus:outline-none focus:ring-1 focus:ring-slate-950/10 transition-all cursor-pointer shadow-sm`}
                                     >
                                         {pricingProps.strategies.map(opt => <option key={opt.value} value={opt.value} className={optionClassName}>{opt.label}</option>)}
                                     </select>
+                                    {isMarioLiveStyle && discountFxKey > 0 && <span key={discountFxKey} className="live-mario-discount-coin" aria-hidden="true">★</span>}
                                     <ChevronDown className={`absolute right-2 top-1.5 ${liveStyleConfig.accentText} opacity-80 pointer-events-none`} size={14} />
                                 </div>
                             </div>

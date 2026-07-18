@@ -903,6 +903,138 @@
     pointer-events: none;
   }
 
+  [data-live-layout='pixel'] {
+    margin-top: 32px;
+  }
+
+  .live-mario-game-rail {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    top: -43px;
+    height: 43px;
+    overflow: hidden;
+    border: 2px solid rgba(32, 117, 64, 0.72);
+    border-bottom: 0;
+    border-radius: 18px 18px 0 0;
+    background:
+      radial-gradient(ellipse at 10% 28%, rgba(255, 255, 255, 0.92) 0 15px, transparent 17px),
+      radial-gradient(ellipse at 14% 25%, rgba(255, 255, 255, 0.82) 0 10px, transparent 12px),
+      linear-gradient(180deg, #77d1ff 0%, #bceaff 69%, #6ac75d 70%, #37a84d 100%);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.52), 0 -4px 13px rgba(49, 139, 78, 0.16);
+  }
+
+  .live-mario-rail-cloud {
+    position: absolute;
+    width: 34px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: 10px -5px 0 rgba(255, 255, 255, 0.86), 22px 0 0 rgba(255, 255, 255, 0.86);
+    animation: liveMarioCloudSail 12s linear infinite;
+  }
+
+  .live-mario-rail-cloud--one {
+    left: 265px;
+    top: 9px;
+  }
+
+  .live-mario-rail-cloud--two {
+    left: 705px;
+    top: 15px;
+    opacity: 0.72;
+    animation-delay: -6s;
+  }
+
+  .live-mario-rail-bricks {
+    position: absolute;
+    inset: auto 0 0;
+    height: 8px;
+    background:
+      linear-gradient(90deg, transparent 46%, rgba(105, 59, 24, 0.48) 47% 53%, transparent 54%) 0 0 / 28px 100%,
+      linear-gradient(180deg, #efa64f, #a95b29);
+    border-top: 2px solid rgba(111, 63, 28, 0.64);
+    box-shadow: inset 0 2px 0 rgba(255, 222, 147, 0.54);
+  }
+
+  .live-mario-rail-block {
+    position: absolute;
+    left: 456px;
+    bottom: 8px;
+    width: 28px;
+    height: 28px;
+    filter: drop-shadow(0 3px 2px rgba(89, 54, 24, 0.24));
+  }
+
+  .live-mario-rail-block > img:first-child {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+  }
+
+  .live-mario-rail-block > img:last-child {
+    position: absolute;
+    left: 4px;
+    top: -18px;
+    z-index: 1;
+    width: 20px;
+    height: 20px;
+    image-rendering: pixelated;
+    animation: liveMarioRailMushroom 7.2s ease-in-out infinite;
+  }
+
+  .live-mario-rail-runner {
+    position: absolute;
+    left: 0;
+    bottom: 7px;
+    z-index: 4;
+    width: 25px;
+    height: 44px;
+    transform-origin: 50% 100%;
+    animation: liveMarioRailPatrol 7.2s linear infinite;
+  }
+
+  .live-mario-rail-runner.is-action {
+    animation: liveMarioRailHit 1.02s cubic-bezier(.4, 0, .2, 1) both;
+  }
+
+  .live-mario-rail-runner img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 3px 1px rgba(70, 45, 24, 0.3));
+  }
+
+  @keyframes liveMarioRailPatrol {
+    0% { transform: translateX(16px) translateY(0) scaleX(1); }
+    43% { transform: translateX(410px) translateY(0) scaleX(1); }
+    49% { transform: translateX(448px) translateY(-18px) scaleX(1); }
+    55% { transform: translateX(492px) translateY(0) scaleX(1); }
+    96% { transform: translateX(890px) translateY(0) scaleX(1); }
+    100% { transform: translateX(910px) translateY(0) scaleX(1); }
+  }
+
+  @keyframes liveMarioRailHit {
+    0% { transform: translateX(16px) translateY(0) scaleX(1); }
+    52% { transform: translateX(var(--mario-target-x)) translateY(0) scaleX(1); }
+    68% { transform: translateX(var(--mario-target-x)) translateY(-23px) scaleX(1); }
+    82% { transform: translateX(var(--mario-target-x)) translateY(0) scaleX(1); }
+    100% { transform: translateX(calc(var(--mario-target-x) + 30px)) translateY(0) scaleX(1); }
+  }
+
+  @keyframes liveMarioRailMushroom {
+    0%, 42%, 63%, 100% { transform: translateY(15px) scale(.72); opacity: 0; }
+    49%, 57% { transform: translateY(-4px) scale(1); opacity: 1; }
+  }
+
+  @keyframes liveMarioCloudSail {
+    from { transform: translateX(-40px); }
+    to { transform: translateX(190px); }
+  }
+
   .live-mario-stage-balloon,
   .live-mario-header-balloon {
     position: absolute;
@@ -974,10 +1106,80 @@
     animation: liveMarioBrickBreathe 4.6s ease-in-out infinite;
   }
 
+  .live-mario-side-pipe {
+    position: absolute;
+    left: -17px;
+    bottom: 74px;
+    width: 32px;
+    height: 76px;
+    border: 3px solid #17663a;
+    border-radius: 7px 7px 0 0;
+    background:
+      linear-gradient(90deg, rgba(223, 255, 188, 0.7) 0 6px, transparent 7px 21px, rgba(11, 99, 48, 0.42) 22px),
+      linear-gradient(145deg, #9cf074, #2bbb55 62%, #148140);
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.45), 3px 5px 8px rgba(40, 94, 52, 0.18);
+  }
+
+  .live-mario-side-pipe::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: -10px;
+    width: 40px;
+    height: 20px;
+    border: 3px solid #17663a;
+    border-radius: 8px;
+    background: linear-gradient(145deg, #aaf67c, #32bd59 62%, #138243);
+    box-shadow: inset 5px 2px 0 rgba(225, 255, 194, 0.5);
+  }
+
+  .live-mario-side-flag {
+    position: absolute;
+    right: -13px;
+    top: 188px;
+    width: 4px;
+    height: 152px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #f5f2d6, #9e8b62);
+    box-shadow: 0 0 0 1px rgba(94, 76, 47, 0.3), 2px 3px 7px rgba(73, 59, 36, 0.16);
+  }
+
+  .live-mario-side-flag::before {
+    content: '';
+    position: absolute;
+    right: 3px;
+    top: 16px;
+    width: 37px;
+    height: 24px;
+    background: linear-gradient(145deg, #ff6559, #d52925);
+    clip-path: polygon(0 0, 100% 12%, 78% 52%, 100% 92%, 0 100%);
+    transform-origin: 100% 50%;
+    animation: liveMarioFlagWave 2.2s ease-in-out infinite;
+    filter: drop-shadow(-2px 3px 2px rgba(93, 44, 29, 0.18));
+  }
+
+  .live-mario-side-flag::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -7px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #9f6718;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #fff28a, #f0ae22);
+    transform: translateX(-50%);
+  }
+
+  @keyframes liveMarioFlagWave {
+    0%, 100% { transform: perspective(45px) rotateY(-8deg) skewY(-2deg); }
+    50% { transform: perspective(45px) rotateY(20deg) skewY(2deg); }
+  }
+
   .live-mario-config-header {
     position: relative;
     overflow: hidden;
-    padding-right: 96px !important;
+    padding-right: 16px !important;
     background:
       radial-gradient(ellipse at 24% 26%, rgba(255, 255, 255, 0.88) 0 20px, transparent 22px),
       radial-gradient(ellipse at 31% 23%, rgba(255, 255, 255, 0.82) 0 15px, transparent 17px),
@@ -1061,36 +1263,46 @@
     gap: 12px;
   }
 
-  .live-mario-header-hero {
-    position: absolute;
-    right: 7px;
-    top: -5px;
-    z-index: 3;
-    width: 78px;
-    height: 78px;
-    pointer-events: none;
-    animation: liveMarioHeroJump 3.6s cubic-bezier(.45, 0, .25, 1) infinite;
+  .live-mario-scenario-button {
+    position: relative;
+    padding: 1px 4px;
+    border-radius: 6px;
+    transform-origin: 50% 100%;
   }
 
-  .live-mario-header-hero img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 7px 7px rgba(60, 48, 22, 0.25));
+  .live-mario-scenario-button:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
   }
 
-  .live-mario-header-hero span {
-    position: absolute;
-    right: -1px;
-    bottom: 3px;
-    padding: 2px 5px;
-    border: 2px solid #754319;
-    border-radius: 999px;
-    background: linear-gradient(180deg, #75dc6e, #25a849);
-    color: white;
-    font: 900 8px/1 Arial, sans-serif;
-    letter-spacing: 0.04em;
-    box-shadow: 0 2px 0 #754319;
+  .live-mario-scenario-button.is-active {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+  }
+
+  .live-mario-scenario-button.is-hit-target {
+    animation: liveMarioScenarioHit 1s cubic-bezier(.35, 0, .2, 1);
+  }
+
+  .live-mario-scenario-check {
+    border-radius: 4px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    transition: box-shadow 180ms ease, transform 180ms ease, filter 180ms ease;
+  }
+
+  .live-mario-scenario-check.is-hit-target {
+    animation: liveMarioScenarioLight 1s ease-out;
+  }
+
+  @keyframes liveMarioScenarioHit {
+    0%, 52%, 100% { transform: translateY(0); }
+    68% { transform: translateY(-4px); }
+    78% { transform: translateY(1px); }
+  }
+
+  @keyframes liveMarioScenarioLight {
+    0%, 50% { box-shadow: 0 0 0 rgba(255, 219, 64, 0); filter: brightness(1); }
+    68% { transform: scale(1.28); box-shadow: 0 0 0 5px rgba(255, 219, 64, 0.24), 0 0 12px #ffd83d; filter: brightness(1.45); }
+    100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 219, 64, 0); filter: brightness(1); }
   }
 
   .live-mario-sidebar-art {
@@ -1189,12 +1401,6 @@
     line-height: 1.35;
   }
 
-  @keyframes liveMarioHeroJump {
-    0%, 100% { transform: translateY(3px) rotate(-2deg); }
-    42% { transform: translateY(-7px) rotate(2deg); }
-    58% { transform: translateY(-7px) rotate(2deg); }
-  }
-
   @keyframes liveMarioMushroomPop {
     0%, 100% { transform: translateY(10px) scaleX(1.05) scaleY(.94); }
     38%, 62% { transform: translateY(-6px) scaleX(.97) scaleY(1.03); }
@@ -1213,6 +1419,126 @@
   @keyframes liveMarioBrickBreathe {
     0%, 100% { filter: brightness(.96); transform: translateY(0); }
     50% { filter: brightness(1.12); transform: translateY(-2px); }
+  }
+
+  .live-mario-resolution-switch {
+    position: relative;
+    overflow: visible;
+    border-color: rgba(126, 76, 22, 0.38) !important;
+    border-radius: 7px !important;
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.66), rgba(255, 244, 198, 0.72)) !important;
+    box-shadow: inset 0 1px 0 white, 0 3px 7px rgba(105, 70, 29, 0.12) !important;
+  }
+
+  .live-mario-resolution-button {
+    position: relative;
+    overflow: hidden;
+    border-radius: 5px !important;
+    isolation: isolate;
+  }
+
+  .live-mario-resolution-button::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: 3px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.54), rgba(255, 224, 130, 0.22));
+    opacity: 0;
+    transform: scale(.5) rotate(-12deg);
+    transition: opacity 180ms ease, transform 220ms ease;
+  }
+
+  .live-mario-resolution-button:hover::before,
+  .live-mario-resolution-button.is-active::before {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+
+  .live-mario-resolution-button.is-active {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 0 0 2px rgba(255, 216, 59, 0.3), 0 3px 7px rgba(33, 133, 66, 0.2) !important;
+    animation: liveMarioResolutionIdle 2.2s ease-in-out infinite;
+  }
+
+  .live-mario-resolution-burst {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #fff8a9;
+    box-shadow: 0 -16px 0 #ffd53d, 14px -9px 0 #fff8a9, 15px 8px 0 #ffd53d, 0 16px 0 #fff8a9, -15px 8px 0 #ffd53d, -14px -9px 0 #fff8a9;
+    transform: translate(-50%, -50%) scale(.2);
+    animation: liveMarioResolutionBurst .62s ease-out both;
+    pointer-events: none;
+  }
+
+  @keyframes liveMarioResolutionIdle {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.12); }
+  }
+
+  @keyframes liveMarioResolutionBurst {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(.15) rotate(0); }
+    32% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(.82) rotate(24deg); }
+  }
+
+  .live-mario-discount-control select {
+    border-radius: 6px !important;
+    border-color: rgba(129, 76, 22, 0.35) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(255, 240, 182, 0.72)) !important;
+    box-shadow: inset 0 1px 0 white, 0 3px 8px rgba(103, 66, 24, 0.12) !important;
+  }
+
+  .live-mario-discount-coin {
+    position: absolute;
+    right: 24px;
+    top: -4px;
+    z-index: 4;
+    display: grid;
+    width: 19px;
+    height: 19px;
+    place-items: center;
+    border: 2px solid #9d6317;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #fff18a, #ffc82f 48%, #e39416);
+    color: #fff9c5;
+    font-size: 9px;
+    line-height: 1;
+    box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.65), 0 4px 6px rgba(105, 67, 20, 0.2);
+    animation: liveMarioDiscountCoin .78s cubic-bezier(.3, .8, .3, 1) both;
+    pointer-events: none;
+  }
+
+  @keyframes liveMarioDiscountCoin {
+    0% { opacity: 0; transform: translateY(10px) rotateY(0) scale(.4); }
+    45% { opacity: 1; transform: translateY(-16px) rotateY(180deg) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-28px) rotateY(360deg) scale(.82); }
+  }
+
+  .live-mario-service-strip {
+    position: relative;
+    gap: 7px !important;
+  }
+
+  .live-mario-service-item {
+    position: relative;
+    padding: 2px 4px 2px 2px;
+    border-radius: 6px;
+    transition: transform 160ms ease, background 160ms ease;
+  }
+
+  .live-mario-service-item:hover {
+    background: rgba(255, 221, 86, 0.16);
+    transform: translateY(-2px);
+  }
+
+  .live-mario-service-check {
+    border-radius: 4px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 2px 4px rgba(60, 117, 55, 0.14);
   }
 
   [data-live-layout='pixel'] .live-config-rows > * {
@@ -1496,13 +1822,19 @@
     .live-frame-motion,
     .live-frame-motion::before,
     .live-frame-motion::after,
-    .live-mario-header-hero,
+    .live-mario-rail-runner,
+    .live-mario-rail-block > img:last-child,
+    .live-mario-rail-cloud,
     .live-mario-header-balloon,
     .live-mario-stage-balloon,
     .live-mario-stage-bricks,
+    .live-mario-side-flag::before,
     .live-mario-header-brick-shadow,
     .live-mario-sidebar-mascot img,
     .live-mario-sidebar-coin,
+    .live-mario-resolution-button.is-active,
+    .live-mario-resolution-burst,
+    .live-mario-discount-coin,
     [data-live-layout='pixel'] .live-config-rows > *::after {
       animation: none !important;
     }
