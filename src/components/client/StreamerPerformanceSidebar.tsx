@@ -370,7 +370,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                             <div className="live-mario-sidebar-art">
                                 <div className="live-mario-sidebar-mascot" aria-hidden="true">
                                     <span className="live-mario-sidebar-coin" />
-                                    <img src="/assets/themes/mario-game/super-mushroom.svg" alt="" />
+                                    <img src="/assets/themes/mario-game/power-mushroom.svg" alt="" />
                                 </div>
                                 <div>
                                     <strong>冒险装机站</strong>

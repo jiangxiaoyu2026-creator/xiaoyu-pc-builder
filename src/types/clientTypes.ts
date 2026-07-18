@@ -73,6 +73,7 @@ export interface StreamerLiveMeta {
     budget: string;
     customerName: string;
     scenarios: string[];
+    services: string[];
 }
 
 export interface ConfigTemplate {

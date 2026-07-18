@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 24" role="img" aria-label="行走的乌龟">
+  <g style="image-rendering:pixelated">
+    <image width="32" height="24" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAYCAYAAACbU/80AAAABHNCSVQICAgIfAhkiAAAAapJREFUSEvNVktSRDEITHYebDyD7vRoutMzOAdzFwMC1SHER541VZPd+xC6m28t7rR+aj/+/a2eB0fkXB2dAXEGvAFob5dWXr6M6C6As+AHAPXhWtqTiPD+WOrrNR0KBFA2bNkBs+/nLACy97Z8X4LAfQHAHNiR8V8KmPH35TcBKRF7DLMSWgghgXfsq8Y/qvNMDAd7AJ8lMABQh5aUlEQfxXqDgXwuc/WogsAkQ8AA4M/aE+pnLa1fTBmux54FxEpBu++AwFTndmGXkwBwjAXEACYAQE69ekcExlYs/YASUZ175tqo+HsHMTjEngLhCwnQxd1+6AOmswPgLyAQEYBIvSMC4yzQvyWbubstcoDfS6fjUgb5vYJ/EZhDIPUcJeAqEe09hJAbWYJACACdZxTAeaLdNEsgVkDQT/Fz4aAkwgYWle8RgbkMaSOS8hsu984liyMAKn+GQAiA2yiAiJJIL/eLC29FGwTiRuQGi3ZCW1bI+2Lp0MUkTcAPoWm4+B9kUkbDBvuAmUE+IQFVLly5EIQfKKtv4UxAJRWRI7Dc+SJHO85Xk9AD/QH/csEGCGCW7QAAAABJRU5ErkJggg==" x="0">
+      <animate attributeName="x" values="0;-16" dur=".34s" repeatCount="indefinite" calcMode="discrete"/>
+    </image>
+  </g>
+</svg>

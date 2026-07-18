@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 150" role="img" aria-labelledby="title desc">
+  <title id="title">红色超级蘑菇</title>
+  <desc id="desc">红白圆帽、米白身体和黑色椭圆眼睛组成的经典游戏蘑菇。</desc>
+  <defs>
+    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff564c"/>
+      <stop offset=".55" stop-color="#e6372f"/>
+      <stop offset="1" stop-color="#b91f1d"/>
+    </linearGradient>
+    <linearGradient id="stem" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8df"/>
+      <stop offset="1" stop-color="#e7c18c"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="170%" height="190%">
+      <feDropShadow dx="0" dy="7" stdDeviation="4" flood-color="#5b3820" flood-opacity=".24"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <path d="M45 78c-7 14-7 42 4 55 13 11 49 11 62-1 10-14 9-40 1-54z" fill="url(#stem)" stroke="#76503a" stroke-width="6"/>
+    <path d="M12 81C16 36 45 12 80 12s64 24 68 69c-27 21-109 21-136 0z" fill="url(#cap)" stroke="#7f211e" stroke-width="7" stroke-linejoin="round"/>
+    <ellipse cx="48" cy="49" rx="20" ry="24" fill="#fffaf0"/>
+    <ellipse cx="117" cy="55" rx="18" ry="22" fill="#fffaf0"/>
+    <ellipse cx="81" cy="21" rx="14" ry="8" fill="#fffaf0"/>
+    <path d="M20 78c29 11 91 11 120 0" fill="none" stroke="#ff8d83" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+    <ellipse cx="64" cy="108" rx="5.5" ry="11" fill="#27231f"/>
+    <ellipse cx="98" cy="108" rx="5.5" ry="11" fill="#27231f"/>
+    <circle cx="62" cy="105" r="1.6" fill="#fff"/>
+    <circle cx="96" cy="105" r="1.6" fill="#fff"/>
+  </g>
+</svg>

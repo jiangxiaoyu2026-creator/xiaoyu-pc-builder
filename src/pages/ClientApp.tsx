@@ -81,10 +81,12 @@ import { useIsMobile } from '../hooks/useIsMobile';
 export default function ClientApp() {
     const isMobile = useIsMobile();
     const LIVE_SCENARIO_OPTIONS = ['实用', '颜值', '游戏', '直播', '生产力', '海景房'];
+    const LIVE_SERVICE_OPTIONS = ['assembly', 'cabling', 'warranty', 'profit', 'shipping', 'noShipping'];
     const DEFAULT_LIVE_META: StreamerLiveMeta = {
         budget: '',
         customerName: '',
-        scenarios: []
+        scenarios: [],
+        services: []
     };
     const [viewMode, setViewMode] = useState<'visual' | 'streamer' | 'square' | 'used' | 'about' | 'gamefps' | 'trends' | 'leaderboard'>(() => {
         const path = window.location.pathname.toLowerCase();
@@ -477,15 +479,19 @@ export default function ClientApp() {
                 setLiveMeta({
                     budget: String(storedLiveMeta.budget || config.price || ''),
                     customerName: String(storedLiveMeta.customerName || config.author || ''),
-                    scenarios: Array.isArray(storedLiveMeta.scenarios) && storedLiveMeta.scenarios.length > 0
+                    scenarios: Array.isArray(storedLiveMeta.scenarios)
                         ? storedLiveMeta.scenarios.filter(label => LIVE_SCENARIO_OPTIONS.includes(label))
-                        : (configScenarioTags.length > 0 ? configScenarioTags : ['游戏'])
+                        : configScenarioTags,
+                    services: Array.isArray(storedLiveMeta.services)
+                        ? storedLiveMeta.services.filter(service => LIVE_SERVICE_OPTIONS.includes(service))
+                        : []
                 });
             } else {
                 setLiveMeta({
                     budget: config.price ? String(config.price) : liveMeta.budget,
                     customerName: config.author || liveMeta.customerName,
-                    scenarios: configScenarioTags.length > 0 ? configScenarioTags : liveMeta.scenarios
+                    scenarios: configScenarioTags.length > 0 ? configScenarioTags : liveMeta.scenarios,
+                    services: liveMeta.services
                 });
             }
             if (viewMode !== 'streamer') {
@@ -528,10 +534,7 @@ export default function ClientApp() {
             const templateItems = viewMode === 'streamer'
                 ? {
                     ...buildItems,
-                    __liveMeta: {
-                        ...liveMeta,
-                        scenarios: liveMeta.scenarios.length > 0 ? liveMeta.scenarios : ['游戏']
-                    }
+                    __liveMeta: liveMeta
                 }
                 : buildItems;
             // Create Client Template (for local optimistic UI)
