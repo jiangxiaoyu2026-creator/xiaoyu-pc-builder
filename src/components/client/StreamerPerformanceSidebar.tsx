@@ -352,7 +352,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
             {isLiveMode ? (
                 <>
                     {/* 1. Product Image Stamp */}
-                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[120px]`}>
+                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[120px] ${isMarioLiveStyle ? 'live-mario-product-stage' : ''}`}>
                         {/* Stamp inner dashed border */}
                         <div className={`absolute inset-2 border border-dashed ${activeProductImage ? liveStyleConfig.border : placeholderDashClassName} pointer-events-none ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} ${activeProductImage ? 'opacity-30' : ''}`}></div>
                         
@@ -370,7 +370,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                             <div className="live-mario-sidebar-art">
                                 <div className="live-mario-sidebar-mascot" aria-hidden="true">
                                     <span className="live-mario-sidebar-coin" />
-                                    <img src="/assets/themes/mario-game/power-mushroom.svg" alt="" />
+                                    <img src="/assets/themes/mario-game/pixel-mushroom.svg" alt="" />
                                 </div>
                                 <div>
                                     <strong>冒险装机站</strong>

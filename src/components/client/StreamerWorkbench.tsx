@@ -218,7 +218,9 @@ function StreamerWorkbench({
     const [showAiModal, setShowAiModal] = useState(false);
     const [showChatSettings, setShowChatSettings] = useState(false);
     const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
+    const [marioTotalFxKey, setMarioTotalFxKey] = useState(0);
     const posterRef = useRef<HTMLDivElement>(null);
+    const previousMarioPriceRef = useRef(Number(pricing?.standardPrice) || 0);
 
     const handleGeneratePoster = async () => {
         if (!posterRef.current || isGeneratingPoster) return;
@@ -467,6 +469,15 @@ function StreamerWorkbench({
     const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
     const isMarioLiveStyle = liveStyle === 'pixel';
     const isLightLiveStyle = liveStyleConfig.surface === 'light';
+
+    useEffect(() => {
+        const nextPrice = Number(pricing?.standardPrice) || 0;
+        if (isMarioLiveStyle && nextPrice > 0 && nextPrice !== previousMarioPriceRef.current) {
+            setMarioTotalFxKey(key => key + 1);
+        }
+        previousMarioPriceRef.current = nextPrice;
+    }, [pricing?.standardPrice, isMarioLiveStyle]);
+
     const isSoftFrame = liveStyleConfig.frameTreatment === 'soft';
     const liveControlBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} hover:brightness-110 shadow-[3px_3px_0_#050505]` : isLightLiveStyle ? 'bg-white/45 hover:bg-white/75 shadow-sm' : 'bg-white/[0.06] hover:bg-white/[0.1]';
     const liveInputBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} shadow-[2px_2px_0_#050505]` : isLightLiveStyle ? 'bg-white/45' : 'bg-white/[0.06]';
@@ -499,19 +510,17 @@ function StreamerWorkbench({
             data-live-layout={isLiveMode ? liveStyle : undefined}
             style={isLiveMode ? LIVE_CONFIG_SHEET_FRAME_STYLE : undefined}
         >
-        {isLiveMode && liveStyleConfig.frameMotion !== 'none' && (
+        {isLiveMode && liveStyleConfig.frameMotion !== 'none' && !isMarioLiveStyle && (
             <div aria-hidden="true" className="live-outside-art" data-live-theme={liveStyle} />
         )}
         {isLiveMode && isMarioLiveStyle && (
             <div aria-hidden="true" className="live-mario-stage-decor">
-                <span className="live-mario-top-brick-row" />
                 <img className="live-mario-side-pipe live-mario-side-pipe--left" src="/assets/themes/mario-game/pipe.svg" alt="" />
-                <img className="live-mario-side-pipe live-mario-side-pipe--right" src="/assets/themes/mario-game/pipe.svg" alt="" />
                 <img className="live-mario-flying-koopa" src="/assets/themes/mario-game/koopa.svg" alt="" />
             </div>
         )}
-        <div className={`${theme.cardBg} ${liveShellClass} relative z-[1] overflow-hidden transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
-            {isLiveMode && liveStyleConfig.frameMotion !== 'none' && (
+        <div className={`${theme.cardBg} ${liveShellClass} ${isMarioLiveStyle ? 'live-mario-sheet-shell' : ''} relative z-[1] overflow-hidden transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
+            {isLiveMode && liveStyleConfig.frameMotion !== 'none' && !isMarioLiveStyle && (
                 <>
                     <div
                         aria-hidden="true"
@@ -610,7 +619,7 @@ function StreamerWorkbench({
                 </div>
 
                 {/* === Layout Container === */}
-                <div className={`flex flex-col md:flex-row flex-1 min-h-0 ${isLiveMode ? liveStyleConfig.wrapperBg : ''}`}>
+                <div className={`flex flex-col md:flex-row flex-1 min-h-0 ${isLiveMode ? liveStyleConfig.wrapperBg : ''} ${isMarioLiveStyle ? 'live-mario-open-layout' : ''}`}>
                     {/* === Sidebar Navigation === */}
                     {!isLiveMode && (
                         <div className="flex flex-row md:flex-col gap-1.5 p-2.5 md:p-3 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 md:w-[150px] lg:w-[172px] shrink-0 overflow-x-auto hide-scrollbar">
@@ -651,7 +660,7 @@ function StreamerWorkbench({
                     )}
 
                     {/* === Main Content Area === */}
-                    <div className={`flex-1 min-w-0 flex flex-col relative ${isLiveMode ? liveStyleConfig.sectionBg : 'bg-white dark:bg-slate-900/50'}`}>
+                    <div className={`flex-1 min-w-0 flex flex-col relative ${isLiveMode ? liveStyleConfig.sectionBg : 'bg-white dark:bg-slate-900/50'} ${isMarioLiveStyle ? 'live-mario-main-surface' : ''}`}>
 
                 {activeTab === 'builder' ? (
                     <>
@@ -750,7 +759,7 @@ function StreamerWorkbench({
                         )}
                         <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-hidden' : 'overflow-x-auto'}`}>
                             <div className={`${isLiveMode ? 'w-full h-full flex flex-col' : 'min-w-[600px]'}`}>
-                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px]' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px]'} gap-2 px-3 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300 shrink-0`}>
+                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px]' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px]'} gap-2 px-3 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300 shrink-0 ${isMarioLiveStyle ? 'live-mario-column-header' : ''}`}>
                                     <div>类别</div>
                                     <div>硬件型号 {isLiveMode ? '' : '(智能搜索 / 自定义)'}</div>
                                     <div className="text-center">数量</div>
@@ -781,6 +790,7 @@ function StreamerWorkbench({
                                     <div aria-hidden="true" className="live-mario-bottom-chase">
                                         <img className="live-mario-bottom-koopa" src="/assets/themes/mario-game/koopa.svg" alt="" />
                                         <img className="live-mario-bottom-runner" src="/assets/themes/mario-game/mario-runner.svg" alt="" />
+                                        <img className="live-mario-goal-castle" src="/assets/themes/mario-game/castle.svg" alt="" />
                                     </div>
                                 )}
                                 <div className={`min-w-0 flex items-center justify-start gap-x-2 text-[13px] font-black tracking-wide whitespace-nowrap overflow-x-auto ${isMarioLiveStyle ? 'live-mario-service-strip' : ''}`}>
@@ -806,10 +816,13 @@ function StreamerWorkbench({
                                         );
                                     })}
                                 </div>
-                                <div className="shrink-0 pl-3 pr-6">
+                                <div className={`shrink-0 pl-3 pr-6 ${isMarioLiveStyle ? 'live-mario-total-zone' : ''}`}>
                                     <div className="flex items-baseline justify-end gap-2 leading-none">
                                         <span className={`text-[17px] font-black ${liveStyleConfig.modelText}`}>合计</span>
-                                        <span className={`text-[28px] font-black font-mono ${liveStyleConfig.priceText}`}>¥{Math.floor(pricing.standardPrice || 0)}</span>
+                                        <span className={`text-[28px] font-black font-mono ${liveStyleConfig.priceText}`}>
+                                            ¥{isMarioLiveStyle ? <RollingPrice value={Math.floor(pricing.standardPrice || 0)} /> : Math.floor(pricing.standardPrice || 0)}
+                                        </span>
+                                        {isMarioLiveStyle && marioTotalFxKey > 0 && <span key={marioTotalFxKey} className="live-mario-total-coin" aria-hidden="true">★</span>}
                                     </div>
                                 </div>
                             </div>

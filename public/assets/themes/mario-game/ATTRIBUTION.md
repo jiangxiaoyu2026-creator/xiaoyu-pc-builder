@@ -9,9 +9,11 @@ Source files:
 - `assets/entities/koopa.png`
 - `assets/scenery/pipe1.png`
 - `assets/blocks/overworld/block.png`
+- `assets/collectibles/super-mushroom.png`
+- `assets/scenery/castle.png`
 
-`power-mushroom.svg` and `mario-pointer.svg` are original theme illustrations
-created for this project and do not copy sprite pixels from the source repository.
+`mario-pointer.svg` is an original theme illustration created for this project
+and does not copy sprite pixels from the source repository.
 
 The source repository includes the MIT License reproduced in `LICENSE.txt`.
 Super Mario names, characters, and original game artwork remain associated with
