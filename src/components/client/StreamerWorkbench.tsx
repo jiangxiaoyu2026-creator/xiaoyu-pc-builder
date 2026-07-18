@@ -486,17 +486,27 @@ function StreamerWorkbench({
     const liveBadgeRadius = isPixelLiveStyle ? 'rounded-none' : 'rounded-[4px]';
 
     return (
-        <div className={isLiveMode ? 'mx-auto shrink-0' : 'w-full'} style={isLiveMode ? LIVE_CONFIG_SHEET_FRAME_STYLE : undefined}>
-        <div className={`${theme.cardBg} ${liveShellClass} overflow-hidden relative transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
+        <div className={isLiveMode ? 'relative isolate mx-auto shrink-0' : 'w-full'} style={isLiveMode ? LIVE_CONFIG_SHEET_FRAME_STYLE : undefined}>
+        {isLiveMode && liveStyleConfig.frameMotion !== 'none' && (
+            <div aria-hidden="true" className="live-outside-art" data-live-theme={liveStyle} />
+        )}
+        {isLiveMode && liveStyle === 'pixel' && (
+            <div aria-hidden="true" className="live-pixel-mushroom-row">
+                {Array.from({ length: 6 }, (_, index) => <span key={index} className="live-pixel-mushroom" />)}
+            </div>
+        )}
+        <div className={`${theme.cardBg} ${liveShellClass} relative z-[1] overflow-hidden transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
             {isLiveMode && liveStyleConfig.frameMotion !== 'none' && (
                 <>
                     <div
                         aria-hidden="true"
                         className={`live-sheet-frame ${LIVE_FRAME_FAMILY_CLASSES[liveFrameFamily]} ${liveStyleConfig.accentText}`}
+                        data-live-theme={liveStyle}
                     />
                     <div
                         aria-hidden="true"
                         className={`live-frame-motion ${LIVE_FRAME_MOTION_CLASSES[liveStyleConfig.frameMotion]} ${liveStyleConfig.accentText}`}
+                        data-live-theme={liveStyle}
                     />
                 </>
             )}
@@ -633,7 +643,7 @@ function StreamerWorkbench({
                     <div className={`flex ${isLiveMode ? 'flex-row h-full' : 'flex-col xl:flex-row'}`}>
                     {/* === Left: Config Table === */}
                     <div data-hardware-picker-boundary className={`flex-1 min-w-0 ${isLiveMode ? liveTableShellClass : 'max-w-[1550px]'}`}>
-                        {isLiveMode && (
+                        {isLiveMode && liveStyleConfig.frameMotion === 'none' && (
                             <>
                                 <div className={`pointer-events-none absolute inset-0 z-10 ${livePanelRadius} border ${isPixelLiveStyle ? 'border-black' : isSoftFrame ? liveStyleConfig.stampBorder : 'border-black/40'}`}></div>
                                 <div className={`pointer-events-none absolute inset-[4px] z-10 ${livePanelInsetRadius} border ${liveStyleConfig.stampBorder} opacity-80`}></div>

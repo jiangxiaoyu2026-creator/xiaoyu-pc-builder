@@ -480,115 +480,471 @@
 
   /* VIP live-theme frame overlays. They cover the fixed 964 x 790 sheet without taking layout space. */
   .live-sheet-frame,
-  .live-frame-motion {
+  .live-frame-motion,
+  .live-outside-art {
+    --frame-main: currentColor;
+    --frame-alt: white;
+    --frame-signal: white;
+    --frame-ink: #07111f;
+    --frame-glow: color-mix(in srgb, currentColor 54%, transparent);
     position: absolute;
     pointer-events: none;
-    border-radius: inherit;
     isolation: isolate;
   }
 
+  .live-sheet-frame,
+  .live-frame-motion {
+    border-radius: inherit;
+  }
+
   .live-sheet-frame {
-    inset: 2px;
+    inset: 0;
     z-index: 38;
-    border: 2px solid currentColor;
-    box-shadow:
-      inset 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent),
-      inset 0 0 22px color-mix(in srgb, currentColor 16%, transparent),
-      0 0 12px color-mix(in srgb, currentColor 40%, transparent);
+    overflow: hidden;
+    filter: drop-shadow(0 0 5px var(--frame-glow));
   }
 
   .live-sheet-frame::before,
   .live-sheet-frame::after,
   .live-frame-motion::before,
-  .live-frame-motion::after {
+  .live-frame-motion::after,
+  .live-outside-art::before,
+  .live-outside-art::after {
     content: '';
     position: absolute;
     display: block;
     pointer-events: none;
   }
 
-  /* Angular circuit frame: clipped rails, an inset trace and visible corner armour. */
-  .live-sheet-frame--tech {
-    clip-path: polygon(0 16px, 16px 0, calc(100% - 72px) 0, calc(100% - 58px) 10px, 100% 10px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 72px 100%, 58px calc(100% - 9px), 0 calc(100% - 9px));
+  /* Every editable theme gets a deliberate two- or three-colour art direction. */
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='cyber'] {
+    --frame-main: #24f4ff;
+    --frame-alt: #ff3de8;
+    --frame-signal: #d9ff4b;
+    --frame-ink: #06111f;
+    --frame-glow: rgba(36, 244, 255, 0.72);
   }
 
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='pixel'] {
+    --frame-main: #54e7ff;
+    --frame-alt: #ffd447;
+    --frame-signal: #ff5470;
+    --frame-ink: #08101d;
+    --frame-glow: rgba(84, 231, 255, 0.58);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='pixelWhite'] {
+    --frame-main: #087f8c;
+    --frame-alt: #ff6b4a;
+    --frame-signal: #172554;
+    --frame-ink: #f8fafc;
+    --frame-glow: rgba(8, 127, 140, 0.42);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='pixelOcean'] {
+    --frame-main: #0284c7;
+    --frame-alt: #84cc16;
+    --frame-signal: #fde047;
+    --frame-ink: #effaff;
+    --frame-glow: rgba(2, 132, 199, 0.5);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='pixelNight'] {
+    --frame-main: #38bdf8;
+    --frame-alt: #a78bfa;
+    --frame-signal: #f472b6;
+    --frame-ink: #080d21;
+    --frame-glow: rgba(56, 189, 248, 0.68);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='pixelSunset'] {
+    --frame-main: #f9736b;
+    --frame-alt: #facc15;
+    --frame-signal: #2563eb;
+    --frame-ink: #fff7ed;
+    --frame-glow: rgba(249, 115, 107, 0.52);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='gundam'] {
+    --frame-main: #2457d6;
+    --frame-alt: #e43636;
+    --frame-signal: #f7c948;
+    --frame-ink: #f8fafc;
+    --frame-glow: rgba(36, 87, 214, 0.48);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='mecha'] {
+    --frame-main: #fbbf24;
+    --frame-alt: #fb5b21;
+    --frame-signal: #f8fafc;
+    --frame-ink: #11100c;
+    --frame-glow: rgba(251, 191, 36, 0.62);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='pure'] {
+    --frame-main: #111827;
+    --frame-alt: #2563eb;
+    --frame-signal: #e11d48;
+    --frame-ink: #f8fafc;
+    --frame-glow: rgba(37, 99, 235, 0.35);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='aurora'] {
+    --frame-main: #5eead4;
+    --frame-alt: #c084fc;
+    --frame-signal: #67e8f9;
+    --frame-ink: #061c1d;
+    --frame-glow: rgba(94, 234, 212, 0.68);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='snow'] {
+    --frame-main: #2e6ca4;
+    --frame-alt: #8bd9ef;
+    --frame-signal: #e0f2fe;
+    --frame-ink: #f8fcff;
+    --frame-glow: rgba(139, 217, 239, 0.58);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='pink'] {
+    --frame-main: #7c3aed;
+    --frame-alt: #f43f8f;
+    --frame-signal: #fbbf24;
+    --frame-ink: #fff7fb;
+    --frame-glow: rgba(244, 63, 143, 0.5);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='orange'] {
+    --frame-main: #b45309;
+    --frame-alt: #f59e0b;
+    --frame-signal: #c2410c;
+    --frame-ink: #fff9ed;
+    --frame-glow: rgba(245, 158, 11, 0.54);
+  }
+
+  :is(.live-sheet-frame, .live-frame-motion, .live-outside-art)[data-live-theme='redline'] {
+    --frame-main: #b4232c;
+    --frame-alt: #111827;
+    --frame-signal: #f97316;
+    --frame-ink: #fff7f7;
+    --frame-glow: rgba(180, 35, 44, 0.5);
+  }
+
+  /* Default broken perimeter: four rails deliberately use different gaps and offsets. */
+  .live-sheet-frame::before {
+    inset: 2px;
+    background:
+      linear-gradient(90deg, var(--frame-main) 0 18%, transparent 18% 24%, var(--frame-alt) 24% 61%, transparent 61% 72%, var(--frame-main) 72% 100%) left top / 100% 4px no-repeat,
+      linear-gradient(90deg, var(--frame-alt) 0 11%, transparent 11% 36%, var(--frame-main) 36% 74%, transparent 74% 82%, var(--frame-alt) 82% 100%) left bottom / 100% 4px no-repeat,
+      linear-gradient(180deg, var(--frame-main) 0 24%, transparent 24% 34%, var(--frame-alt) 34% 68%, transparent 68% 81%, var(--frame-main) 81% 100%) left top / 4px 100% no-repeat,
+      linear-gradient(180deg, var(--frame-alt) 0 12%, transparent 12% 28%, var(--frame-main) 28% 62%, transparent 62% 73%, var(--frame-alt) 73% 100%) right top / 4px 100% no-repeat;
+    filter: drop-shadow(0 0 4px var(--frame-glow));
+  }
+
+  .live-sheet-frame::after {
+    inset: 4px;
+    background:
+      linear-gradient(90deg, var(--frame-main), transparent) 42px 0 / 92px 3px no-repeat,
+      linear-gradient(270deg, var(--frame-alt), transparent) calc(100% - 42px) 100% / 92px 3px no-repeat,
+      radial-gradient(circle, var(--frame-signal) 0 3px, var(--frame-main) 4px 6px, transparent 7px) 148px 0 / 14px 14px no-repeat,
+      radial-gradient(circle, var(--frame-signal) 0 3px, var(--frame-alt) 4px 6px, transparent 7px) calc(100% - 148px) 100% / 14px 14px no-repeat;
+    filter: drop-shadow(0 0 4px var(--frame-glow));
+  }
+
+  /* Tech themes use aggressive cut-outs instead of a closed rectangular cage. */
   .live-sheet-frame--tech::before {
-    inset: 7px;
-    border: 1px solid currentColor;
-    opacity: 0.72;
-    clip-path: polygon(0 11px, 11px 0, calc(100% - 48px) 0, calc(100% - 38px) 7px, 100% 7px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 48px 100%, 38px calc(100% - 6px), 0 calc(100% - 6px));
+    clip-path: polygon(0 18px, 18px 0, 19% 0, 21% 10px, 58% 10px, 60% 0, 91% 0, 100% 18px, 100% 31%, 94% 33%, 94% 72%, 100% 74%, 100% calc(100% - 18px), calc(100% - 18px) 100%, 69% 100%, 67% calc(100% - 10px), 31% calc(100% - 10px), 29% 100%, 18px 100%, 0 calc(100% - 18px), 0 71%, 6% 69%, 6% 34%, 0 32%);
   }
 
   .live-sheet-frame--tech::after {
-    inset: 0;
-    background:
-      linear-gradient(135deg, currentColor 0 54%, transparent 55%) left top / 42px 42px no-repeat,
-      linear-gradient(315deg, currentColor 0 54%, transparent 55%) right bottom / 42px 42px no-repeat,
-      linear-gradient(90deg, currentColor, transparent) 64px 7px / 178px 3px no-repeat,
-      linear-gradient(270deg, currentColor, transparent) calc(100% - 64px) calc(100% - 7px) / 178px 3px no-repeat,
-      radial-gradient(circle, white 0 2px, currentColor 3px 5px, transparent 6px) 252px 3px / 12px 12px no-repeat,
-      radial-gradient(circle, white 0 2px, currentColor 3px 5px, transparent 6px) calc(100% - 252px) calc(100% - 3px) / 12px 12px no-repeat;
-    opacity: 0.9;
-    filter: drop-shadow(0 0 5px currentColor);
+    clip-path: polygon(0 0, 41% 0, 43% 14px, 76% 14px, 78% 0, 100% 0, 100% 100%, 58% 100%, 56% calc(100% - 14px), 22% calc(100% - 14px), 20% 100%, 0 100%);
   }
 
-  /* Softer double rail: rounded inner line plus four bright bracket corners. */
-  .live-sheet-frame--soft {
-    inset: 3px;
-    border-color: color-mix(in srgb, currentColor 82%, white 18%);
-    box-shadow:
-      inset 0 0 0 5px color-mix(in srgb, currentColor 12%, transparent),
-      inset 0 0 26px color-mix(in srgb, currentColor 13%, transparent),
-      0 0 14px color-mix(in srgb, currentColor 32%, transparent);
-  }
-
+  /* Soft themes keep air around the corners, with unequal bracket lengths. */
   .live-sheet-frame--soft::before {
-    inset: 8px;
-    border: 1px solid currentColor;
-    border-radius: 6px;
-    opacity: 0.52;
+    inset: 3px;
+    border-radius: 8px;
   }
 
   .live-sheet-frame--soft::after {
-    inset: 6px;
+    inset: 8px;
     background:
-      linear-gradient(currentColor, currentColor) left top / 62px 4px no-repeat,
-      linear-gradient(currentColor, currentColor) left top / 4px 62px no-repeat,
-      linear-gradient(currentColor, currentColor) right top / 62px 4px no-repeat,
-      linear-gradient(currentColor, currentColor) right top / 4px 62px no-repeat,
-      linear-gradient(currentColor, currentColor) left bottom / 62px 4px no-repeat,
-      linear-gradient(currentColor, currentColor) left bottom / 4px 62px no-repeat,
-      linear-gradient(currentColor, currentColor) right bottom / 62px 4px no-repeat,
-      linear-gradient(currentColor, currentColor) right bottom / 4px 62px no-repeat;
-    opacity: 0.9;
-    filter: drop-shadow(0 0 4px currentColor);
+      linear-gradient(var(--frame-main), var(--frame-main)) left top / 88px 5px no-repeat,
+      linear-gradient(var(--frame-main), var(--frame-main)) left top / 5px 46px no-repeat,
+      linear-gradient(var(--frame-alt), var(--frame-alt)) right top / 42px 5px no-repeat,
+      linear-gradient(var(--frame-alt), var(--frame-alt)) right top / 5px 92px no-repeat,
+      linear-gradient(var(--frame-alt), var(--frame-alt)) left bottom / 48px 5px no-repeat,
+      linear-gradient(var(--frame-alt), var(--frame-alt)) left bottom / 5px 82px no-repeat,
+      linear-gradient(var(--frame-main), var(--frame-main)) right bottom / 94px 5px no-repeat,
+      linear-gradient(var(--frame-main), var(--frame-main)) right bottom / 5px 52px no-repeat,
+      linear-gradient(90deg, transparent, var(--frame-signal), transparent) 128px 7px / 126px 2px no-repeat,
+      linear-gradient(270deg, transparent, var(--frame-signal), transparent) calc(100% - 128px) calc(100% - 7px) / 126px 2px no-repeat;
   }
 
-  /* Pixel rail: square stepped outline and repeating edge blocks. */
+  /* Pixel themes use stepped blocks; each rail starts on a different beat. */
   .live-sheet-frame--pixel {
-    inset: 0;
-    border-width: 4px;
     border-radius: 0;
-    box-shadow:
-      inset 0 0 0 4px color-mix(in srgb, currentColor 25%, #050505 75%),
-      inset 0 0 0 7px color-mix(in srgb, currentColor 45%, transparent),
-      0 0 0 2px #050505;
+    box-shadow: inset 0 0 0 2px var(--frame-ink), inset 0 0 0 7px color-mix(in srgb, var(--frame-main) 28%, transparent), 0 0 0 2px var(--frame-ink);
   }
 
   .live-sheet-frame--pixel::before {
-    inset: 10px;
-    border: 2px dashed currentColor;
-    opacity: 0.58;
+    inset: 4px;
+    background:
+      repeating-linear-gradient(90deg, var(--frame-main) 0 14px, transparent 14px 22px, var(--frame-alt) 22px 30px, transparent 30px 48px) left top / 100% 5px no-repeat,
+      repeating-linear-gradient(90deg, transparent 0 10px, var(--frame-alt) 10px 24px, transparent 24px 38px, var(--frame-main) 38px 46px) 13px bottom / 100% 5px no-repeat,
+      repeating-linear-gradient(0deg, var(--frame-main) 0 18px, transparent 18px 31px, var(--frame-signal) 31px 37px, transparent 37px 54px) left 17px / 5px 100% no-repeat,
+      repeating-linear-gradient(0deg, transparent 0 12px, var(--frame-alt) 12px 28px, transparent 28px 44px, var(--frame-main) 44px 52px) right top / 5px 100% no-repeat;
   }
 
   .live-sheet-frame--pixel::after {
-    inset: 4px;
+    inset: 9px;
     background:
-      repeating-linear-gradient(90deg, currentColor 0 12px, transparent 12px 24px) left top / 100% 4px no-repeat,
-      repeating-linear-gradient(90deg, transparent 0 12px, currentColor 12px 24px) left bottom / 100% 4px no-repeat,
-      repeating-linear-gradient(0deg, currentColor 0 12px, transparent 12px 24px) left top / 4px 100% no-repeat,
-      repeating-linear-gradient(0deg, transparent 0 12px, currentColor 12px 24px) right top / 4px 100% no-repeat;
-    opacity: 0.86;
+      linear-gradient(var(--frame-main), var(--frame-main)) left top / 48px 8px no-repeat,
+      linear-gradient(var(--frame-alt), var(--frame-alt)) 48px top / 16px 16px no-repeat,
+      linear-gradient(var(--frame-signal), var(--frame-signal)) right 64px top / 22px 8px no-repeat,
+      linear-gradient(var(--frame-alt), var(--frame-alt)) right top / 64px 8px no-repeat,
+      linear-gradient(var(--frame-alt), var(--frame-alt)) left bottom / 28px 8px no-repeat,
+      linear-gradient(var(--frame-main), var(--frame-main)) 28px bottom / 76px 8px no-repeat,
+      linear-gradient(var(--frame-signal), var(--frame-signal)) right 78px bottom / 18px 14px no-repeat,
+      linear-gradient(var(--frame-main), var(--frame-main)) right bottom / 78px 8px no-repeat;
+  }
+
+  /* Decorations now grow outside the sheet. The sheet itself masks every inside-facing part. */
+  .live-outside-art {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 790px;
+    z-index: 0;
+    overflow: visible;
+  }
+
+  .live-outside-art::before,
+  .live-outside-art::after {
+    width: 250px;
+    height: 92px;
+    border-color: var(--frame-main);
+    border-style: solid;
+    filter: drop-shadow(0 0 5px var(--frame-glow));
+  }
+
+  .live-outside-art::before {
+    left: -18px;
+    top: -13px;
+    border-width: 4px 0 0 4px;
+    border-radius: 20px 0 0;
+    box-shadow: -5px -4px 0 -2px var(--frame-alt);
+  }
+
+  .live-outside-art::after {
+    right: -18px;
+    bottom: -13px;
+    border-width: 0 4px 4px 0;
+    border-radius: 0 0 20px;
+    box-shadow: 5px 4px 0 -2px var(--frame-alt);
+  }
+
+  /* Optical-fibre routes: smooth paired lines and soft luminous bends. */
+  .live-outside-art:is([data-live-theme='cyber'], [data-live-theme='aurora'], [data-live-theme='pink'])::before,
+  .live-outside-art:is([data-live-theme='cyber'], [data-live-theme='aurora'], [data-live-theme='pink'])::after {
+    width: 310px;
+    border-width: 5px;
+    border-style: solid;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--frame-alt) 72%, transparent), 0 0 16px var(--frame-glow);
+  }
+
+  .live-outside-art:is([data-live-theme='cyber'], [data-live-theme='aurora'], [data-live-theme='pink'])::before {
+    left: -20px;
+    top: -15px;
+    height: 116px;
+    border-width: 5px 0 0 5px;
+    border-radius: 28px 0 0;
+  }
+
+  .live-outside-art:is([data-live-theme='cyber'], [data-live-theme='aurora'], [data-live-theme='pink'])::after {
+    right: -20px;
+    bottom: -8px;
+    height: 116px;
+    border-width: 0 5px 5px 0;
+    border-radius: 0 0 28px;
+  }
+
+  .live-outside-art[data-live-theme='aurora']::before,
+  .live-outside-art[data-live-theme='aurora']::after {
+    transform: skewX(-12deg);
+    border-style: double;
+    border-width: 7px;
+  }
+
+  .live-outside-art[data-live-theme='pink']::before {
+    transform: translate(-5px, 5px) rotate(-1.5deg);
+  }
+
+  .live-outside-art[data-live-theme='pink']::after {
+    transform: translate(5px, -5px) rotate(-1.5deg);
+  }
+
+  /* Mechanical conduits: hard elbows, offset colour rails and unequal lengths. */
+  .live-outside-art:is([data-live-theme='gundam'], [data-live-theme='mecha'], [data-live-theme='orange'], [data-live-theme='redline'])::before,
+  .live-outside-art:is([data-live-theme='gundam'], [data-live-theme='mecha'], [data-live-theme='orange'], [data-live-theme='redline'])::after {
+    border-radius: 0;
+    border-width: 7px;
+    box-shadow: 7px 6px 0 -3px var(--frame-alt), 12px 10px 0 -6px var(--frame-signal);
+  }
+
+  .live-outside-art:is([data-live-theme='gundam'], [data-live-theme='mecha'], [data-live-theme='orange'], [data-live-theme='redline'])::before {
+    width: 192px;
+    height: 122px;
+    border-width: 7px 0 0 7px;
+  }
+
+  .live-outside-art:is([data-live-theme='gundam'], [data-live-theme='mecha'], [data-live-theme='orange'], [data-live-theme='redline'])::after {
+    width: 338px;
+    height: 76px;
+    border-width: 0 7px 7px 0;
+  }
+
+  .live-outside-art[data-live-theme='mecha']::before,
+  .live-outside-art[data-live-theme='mecha']::after,
+  .live-outside-art[data-live-theme='orange']::before,
+  .live-outside-art[data-live-theme='orange']::after {
+    border-style: dashed;
+  }
+
+  .live-outside-art[data-live-theme='redline']::before {
+    width: 360px;
+    transform: translateX(42px);
+  }
+
+  .live-outside-art[data-live-theme='redline']::after {
+    width: 218px;
+    transform: translateX(-40px);
+  }
+
+  /* Pixel rails stay stepped; each palette uses different dash cadence. */
+  .live-outside-art:is([data-live-theme='pixelWhite'], [data-live-theme='pixelOcean'], [data-live-theme='pixelNight'], [data-live-theme='pixelSunset'])::before,
+  .live-outside-art:is([data-live-theme='pixelWhite'], [data-live-theme='pixelOcean'], [data-live-theme='pixelNight'], [data-live-theme='pixelSunset'])::after {
+    border-radius: 0;
+    border-width: 6px;
+    border-style: dotted;
+    box-shadow: 8px 7px 0 -3px var(--frame-alt);
+  }
+
+  .live-outside-art[data-live-theme='pixelNight']::before,
+  .live-outside-art[data-live-theme='pixelNight']::after {
+    border-style: dashed;
+    transform: translateX(18px);
+  }
+
+  .live-outside-art[data-live-theme='pixelSunset']::before {
+    width: 330px;
+  }
+
+  .live-outside-art[data-live-theme='pixelSunset']::after {
+    width: 174px;
+  }
+
+  /* Editorial and ice themes are intentionally thin and asymmetric. */
+  .live-outside-art:is([data-live-theme='pure'], [data-live-theme='snow'])::before,
+  .live-outside-art:is([data-live-theme='pure'], [data-live-theme='snow'])::after {
+    border-width: 2px;
+    box-shadow: 6px 5px 0 -3px var(--frame-alt);
+  }
+
+  .live-outside-art[data-live-theme='pure']::before {
+    width: 420px;
+    height: 42px;
+    border-radius: 0;
+  }
+
+  .live-outside-art[data-live-theme='pure']::after {
+    width: 138px;
+    height: 148px;
+    border-radius: 0;
+  }
+
+  .live-outside-art[data-live-theme='snow']::before,
+  .live-outside-art[data-live-theme='snow']::after {
+    transform: skewX(-18deg);
+    border-style: double;
+    border-width: 5px;
+  }
+
+  /* Second theme: a retro platformer scene made from pipes and tiny pixel mushrooms. */
+  .live-outside-art[data-live-theme='pixel']::before,
+  .live-outside-art[data-live-theme='pixel']::after {
+    width: 38px;
+    height: 136px;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    filter: drop-shadow(3px 4px 0 #102a16);
+  }
+
+  .live-outside-art[data-live-theme='pixel']::before {
+    left: -36px;
+    top: 92px;
+    background:
+      linear-gradient(90deg, #ecfccb 0 18%, #4ade80 18% 72%, #16a34a 72%) 2px 3px / 34px 22px no-repeat,
+      linear-gradient(90deg, #dcfce7 0 18%, #22c55e 18% 72%, #15803d 72%) 9px 28px / 24px 108px no-repeat,
+      linear-gradient(#12351d, #12351d) left top / 38px 28px no-repeat,
+      linear-gradient(#12351d, #12351d) 7px 25px / 28px 111px no-repeat;
+  }
+
+  .live-outside-art[data-live-theme='pixel']::after {
+    right: -36px;
+    bottom: 104px;
+    transform: rotate(180deg);
+    background:
+      linear-gradient(90deg, #ecfccb 0 18%, #4ade80 18% 72%, #16a34a 72%) 2px 3px / 34px 22px no-repeat,
+      linear-gradient(90deg, #dcfce7 0 18%, #22c55e 18% 72%, #15803d 72%) 9px 28px / 24px 108px no-repeat,
+      linear-gradient(#12351d, #12351d) left top / 38px 28px no-repeat,
+      linear-gradient(#12351d, #12351d) 7px 25px / 28px 111px no-repeat;
+  }
+
+  .live-pixel-mushroom-row {
+    position: absolute;
+    left: 50%;
+    top: 782px;
+    z-index: 2;
+    display: flex;
+    gap: 9px;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .live-pixel-mushroom {
+    position: relative;
+    width: 22px;
+    height: 19px;
+  }
+
+  .live-pixel-mushroom::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 22px;
+    height: 12px;
+    background: #ef4444;
+    border: 2px solid #3b1515;
+    border-radius: 11px 11px 2px 2px;
+    box-shadow: inset 5px 0 #fff7d6, inset -5px 0 #fff7d6;
+  }
+
+  .live-pixel-mushroom::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 11px;
+    width: 8px;
+    height: 8px;
+    background: #fff7d6;
+    border: 2px solid #3b1515;
+    border-top: 0;
+  }
+
+  .live-pixel-mushroom:nth-child(even)::before {
+    background: #facc15;
   }
 
   .live-frame-motion {
@@ -608,11 +964,11 @@
     left: 2.5%;
     width: 95%;
     height: 9px;
-    background: repeating-linear-gradient(115deg, transparent 0 34px, currentColor 35px 62px, white 63px 68px, currentColor 69px 96px, transparent 97px 146px);
+    background: repeating-linear-gradient(115deg, transparent 0 34px, var(--frame-main) 35px 58px, var(--frame-signal) 59px 64px, var(--frame-alt) 65px 96px, transparent 97px 146px);
     background-size: 292px 100%;
     clip-path: polygon(0 0, 100% 0, 100% 32%, 97% 32%, 95% 100%, 91% 36%, 84% 36%, 81% 100%, 76% 36%, 69% 36%, 66% 100%, 61% 36%, 54% 36%, 51% 100%, 46% 36%, 39% 36%, 36% 100%, 31% 36%, 24% 36%, 21% 100%, 16% 36%, 9% 36%, 6% 100%, 0 100%);
     opacity: 0.96;
-    filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 9px currentColor);
+    filter: drop-shadow(0 0 4px var(--frame-glow)) drop-shadow(0 0 9px var(--frame-glow));
     animation: liveFrameChargeRail 2.2s linear infinite;
   }
 
@@ -634,10 +990,10 @@
     top: 2%;
     width: 8px;
     height: 96%;
-    background: repeating-linear-gradient(180deg, transparent 0 38px, currentColor 39px 76px, white 77px 85px, currentColor 86px 123px, transparent 124px 216px);
+    background: repeating-linear-gradient(180deg, transparent 0 38px, var(--frame-main) 39px 73px, var(--frame-signal) 74px 82px, var(--frame-alt) 83px 123px, transparent 124px 216px);
     background-size: 100% 216px;
     opacity: 0.94;
-    filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 8px currentColor);
+    filter: drop-shadow(0 0 4px var(--frame-glow)) drop-shadow(0 0 8px var(--frame-glow));
     animation: liveFrameScanRail 2.7s linear infinite;
   }
 
@@ -651,17 +1007,17 @@
   @keyframes liveFramePulse {
     0%, 100% {
       opacity: 0.62;
-      box-shadow: inset 0 0 0 2px currentColor, inset 0 0 10px color-mix(in srgb, currentColor 24%, transparent);
+      box-shadow: inset 0 0 0 2px var(--frame-main), inset 0 0 10px color-mix(in srgb, var(--frame-main) 24%, transparent);
     }
     50% {
       opacity: 1;
-      box-shadow: inset 0 0 0 4px currentColor, inset 0 0 28px color-mix(in srgb, currentColor 55%, transparent), 0 0 14px currentColor;
+      box-shadow: inset 0 0 0 4px var(--frame-alt), inset 0 0 28px color-mix(in srgb, var(--frame-main) 55%, transparent), 0 0 14px var(--frame-glow);
     }
   }
 
   .live-frame-motion--pulse {
     inset: 5px;
-    border: 2px solid currentColor;
+    border: 2px solid var(--frame-main);
     animation: liveFramePulse 2.1s ease-in-out infinite;
   }
 
@@ -669,9 +1025,9 @@
   .live-frame-motion--pulse::after {
     width: 13px;
     height: 13px;
-    border: 2px solid white;
-    background: currentColor;
-    box-shadow: 0 0 5px white, 0 0 14px currentColor;
+    border: 2px solid var(--frame-signal);
+    background: var(--frame-alt);
+    box-shadow: 0 0 5px var(--frame-signal), 0 0 14px var(--frame-glow);
   }
 
   .live-frame-motion--pulse::before { left: 10px; top: 10px; }
@@ -688,11 +1044,11 @@
     left: 1.5%;
     width: 97%;
     height: 9px;
-    border-block: 1px solid currentColor;
-    background: repeating-linear-gradient(120deg, currentColor 0 14px, transparent 14px 27px, currentColor 27px 41px, white 41px 45px, transparent 45px 72px);
+    border-block: 1px solid var(--frame-main);
+    background: repeating-linear-gradient(120deg, var(--frame-main) 0 14px, var(--frame-ink) 14px 27px, var(--frame-alt) 27px 41px, var(--frame-signal) 41px 45px, transparent 45px 72px);
     background-size: 72px 100%;
     opacity: 0.94;
-    filter: drop-shadow(0 0 6px currentColor);
+    filter: drop-shadow(0 0 6px var(--frame-glow));
     animation: liveFrameWarningRail 1.15s linear infinite;
   }
 
