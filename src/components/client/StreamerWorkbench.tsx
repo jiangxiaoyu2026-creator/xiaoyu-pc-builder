@@ -458,6 +458,7 @@ function StreamerWorkbench({
         { label: '不包邮', positive: false },
     ];
     const isPixelLiveStyle = liveStyle.startsWith('pixel');
+    const isMarioLiveStyle = liveStyle === 'pixel';
     const isLightLiveStyle = liveStyleConfig.surface === 'light';
     const isSoftFrame = liveStyleConfig.frameTreatment === 'soft';
     const liveControlBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} hover:brightness-110 shadow-[3px_3px_0_#050505]` : isLightLiveStyle ? 'bg-white/45 hover:bg-white/75 shadow-sm' : 'bg-white/[0.06] hover:bg-white/[0.1]';
@@ -486,11 +487,15 @@ function StreamerWorkbench({
     const liveBadgeRadius = isPixelLiveStyle ? 'rounded-none' : 'rounded-[4px]';
 
     return (
-        <div className={isLiveMode ? 'relative isolate mx-auto shrink-0' : 'w-full'} style={isLiveMode ? LIVE_CONFIG_SHEET_FRAME_STYLE : undefined}>
+        <div
+            className={isLiveMode ? 'relative isolate mx-auto shrink-0' : 'w-full'}
+            data-live-layout={isLiveMode ? liveStyle : undefined}
+            style={isLiveMode ? LIVE_CONFIG_SHEET_FRAME_STYLE : undefined}
+        >
         {isLiveMode && liveStyleConfig.frameMotion !== 'none' && (
             <div aria-hidden="true" className="live-outside-art" data-live-theme={liveStyle} />
         )}
-        {isLiveMode && liveStyle === 'pixel' && (
+        {isLiveMode && isMarioLiveStyle && (
             <div aria-hidden="true" className="live-mario-scene">
                 <div className="live-mario-block-cluster">
                     <span className="live-mario-block live-mario-block--brick" />
@@ -681,7 +686,10 @@ function StreamerWorkbench({
                             <div className={`px-4 py-2 ${liveStyleConfig.headerBg} border-b ${liveStyleConfig.border}`}>
                                 <div className="flex items-center justify-start gap-5">
                                     <div className="flex flex-wrap items-center gap-3 min-w-0 shrink-0">
-                                        <div className={`text-3xl font-black tracking-tight ${liveStyleConfig.modelText}`}>DIYXX</div>
+                                        <div className={`text-3xl font-black tracking-tight ${liveStyleConfig.modelText}`}>
+                                            DIYXX
+                                            {isMarioLiveStyle && <span className="live-mario-world-mark">WORLD 1-1</span>}
+                                        </div>
                                         <div className={`h-10 w-px ${liveStyleConfig.glowBg} opacity-70 shrink-0`}></div>
                                         <div className="flex flex-col gap-1.5">
                                             {LIVE_SCENARIO_ROWS.map((row, rowIndex) => (
@@ -750,7 +758,7 @@ function StreamerWorkbench({
                                     {!isLiveMode && <div></div>}
                                 </div>
 
-                        <div className={`divide-y-[1.5px] ${isLiveMode ? liveStyleConfig.divider : theme.divider} transition-colors duration-300 ${isLiveMode ? 'flex shrink-0 flex-col' : ''}`}>
+                        <div className={`live-config-rows divide-y-[1.5px] ${isLiveMode ? liveStyleConfig.divider : theme.divider} transition-colors duration-300 ${isLiveMode ? 'flex shrink-0 flex-col' : ''}`}>
                             <AnimatePresence mode="popLayout">
                                 {visibleBuildList.map((entry, index) => (
                                     <motion.div
