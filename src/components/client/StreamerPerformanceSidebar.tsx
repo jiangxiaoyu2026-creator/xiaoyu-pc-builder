@@ -361,11 +361,10 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                             />
                         ) : isMarioLiveStyle ? (
                             <div className="live-mario-sidebar-art">
-                                <img
-                                    src="/assets/themes/mushroom-world.svg"
-                                    alt=""
-                                    aria-hidden="true"
-                                />
+                                <div className="live-mario-sidebar-mascot" aria-hidden="true">
+                                    <span className="live-mario-sidebar-coin" />
+                                    <img src="/assets/themes/mushroom-world.svg" alt="" />
+                                </div>
                                 <div>
                                     <strong>冒险装机站</strong>
                                     <span>选择硬件，开启新关卡</span>

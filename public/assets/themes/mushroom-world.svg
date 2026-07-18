@@ -1,58 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 250" role="img" aria-labelledby="title desc">
-  <title id="title">绿色水管、红蘑菇和龟壳角色</title>
-  <desc id="desc">圆润卡通风格的绿色水管、红色蘑菇与黄色龟壳角色。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 170" role="img" aria-labelledby="title desc">
+  <title id="title">红色加速蘑菇</title>
+  <desc id="desc">圆润清晰的红白蘑菇角色，带经典黑色椭圆眼睛。</desc>
   <defs>
-    <linearGradient id="pipe" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#a8f276"/>
-      <stop offset="0.35" stop-color="#42c95a"/>
-      <stop offset="1" stop-color="#138143"/>
-    </linearGradient>
-    <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#72dc5d"/>
-      <stop offset="1" stop-color="#18833e"/>
-    </linearGradient>
     <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#ff6258"/>
-      <stop offset="1" stop-color="#cf2f28"/>
+      <stop offset=".58" stop-color="#e5362d"/>
+      <stop offset="1" stop-color="#bd211f"/>
     </linearGradient>
-    <filter id="shadow" x="-30%" y="-30%" width="170%" height="180%">
-      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#173c25" flood-opacity=".22"/>
+    <linearGradient id="stem" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8e8"/>
+      <stop offset="1" stop-color="#e8c69c"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="170%" height="190%">
+      <feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#64361e" flood-opacity=".26"/>
     </filter>
   </defs>
 
   <g filter="url(#shadow)">
-    <g transform="translate(18 49)">
-      <path d="M28 54h96v135H28z" fill="url(#pipe)" stroke="#17663a" stroke-width="7"/>
-      <rect x="4" y="19" width="144" height="58" rx="18" fill="url(#pipe)" stroke="#17663a" stroke-width="7"/>
-      <path d="M28 41h95M48 77v106" fill="none" stroke="#d8ffb5" stroke-width="8" stroke-linecap="round" opacity=".58"/>
-      <path d="M115 80v103" stroke="#0b6734" stroke-width="9" opacity=".45"/>
-    </g>
-
-    <g transform="translate(112 15)">
-      <path d="M45 91c-12 13-12 47 1 65 14 12 52 11 65-1 11-18 9-51-2-64z" fill="#fff4dc" stroke="#8b5d3d" stroke-width="6"/>
-      <path d="M19 89C22 40 58 16 82 16s61 24 65 73c-28 18-101 18-128 0z" fill="url(#cap)" stroke="#8e2a25" stroke-width="7"/>
-      <ellipse cx="55" cy="54" rx="18" ry="22" fill="#fff7e8"/>
-      <ellipse cx="116" cy="67" rx="15" ry="19" fill="#fff7e8"/>
-      <ellipse cx="78" cy="25" rx="12" ry="8" fill="#fff7e8"/>
-      <ellipse cx="64" cy="123" rx="4" ry="7" fill="#3e3025"/>
-      <ellipse cx="94" cy="123" rx="4" ry="7" fill="#3e3025"/>
-      <path d="M72 140c6 4 13 4 19 0" fill="none" stroke="#cf8b65" stroke-width="3" stroke-linecap="round"/>
-    </g>
-
-    <g transform="translate(202 62) scale(.82)">
-      <ellipse cx="75" cy="177" rx="32" ry="13" fill="#d9862a" stroke="#784519" stroke-width="6"/>
-      <ellipse cx="127" cy="177" rx="31" ry="13" fill="#d9862a" stroke="#784519" stroke-width="6"/>
-      <path d="M55 118c5 27 7 39 3 55h30l10-53zM105 119l9 54h30c-4-17-2-32 4-47z" fill="#f4c842" stroke="#8f6615" stroke-width="6" stroke-linejoin="round"/>
-      <ellipse cx="82" cy="110" rx="59" ry="56" fill="url(#shell)" stroke="#17663a" stroke-width="7"/>
-      <path d="M49 82l33 28 33-29M49 137l33-27 34 28" fill="none" stroke="#d2f5a0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
-      <path d="M105 95c21 4 33-3 42-19l10-43" fill="none" stroke="#f4cf48" stroke-width="26" stroke-linecap="round"/>
-      <circle cx="158" cy="30" r="29" fill="#f4cf48" stroke="#8f6615" stroke-width="6"/>
-      <path d="M150 8c10-9 26-5 32 6" fill="none" stroke="#db8a29" stroke-width="8" stroke-linecap="round"/>
-      <ellipse cx="171" cy="27" rx="7" ry="10" fill="#fff"/>
-      <ellipse cx="173" cy="28" rx="3.5" ry="6" fill="#27211d"/>
-      <path d="M178 47c-8 6-15 7-22 2" fill="none" stroke="#8f6615" stroke-width="4" stroke-linecap="round"/>
-      <path d="M47 111c-19 3-28 13-31 29" fill="none" stroke="#f4cf48" stroke-width="18" stroke-linecap="round"/>
-      <path d="M124 112c21 5 29 16 29 33" fill="none" stroke="#f4cf48" stroke-width="18" stroke-linecap="round"/>
-    </g>
+    <path d="M51 87c-9 15-9 45 3 59 15 13 58 13 73-1 11-16 10-44 1-58z" fill="url(#stem)" stroke="#815037" stroke-width="6"/>
+    <path d="M18 88C22 39 54 13 90 13s68 26 72 75c-28 24-115 24-144 0z" fill="url(#cap)" stroke="#84231f" stroke-width="7" stroke-linejoin="round"/>
+    <ellipse cx="54" cy="53" rx="22" ry="27" fill="#fff9e9"/>
+    <ellipse cx="130" cy="61" rx="19" ry="24" fill="#fff9e9"/>
+    <ellipse cx="91" cy="23" rx="16" ry="10" fill="#fff9e9"/>
+    <path d="M25 84c33 13 98 13 130 0" fill="none" stroke="#ff9187" stroke-width="5" stroke-linecap="round" opacity=".68"/>
+    <ellipse cx="70" cy="119" rx="6" ry="12" fill="#25211e"/>
+    <ellipse cx="111" cy="119" rx="6" ry="12" fill="#25211e"/>
+    <circle cx="68" cy="116" r="1.8" fill="#fff"/>
+    <circle cx="109" cy="116" r="1.8" fill="#fff"/>
   </g>
 </svg>

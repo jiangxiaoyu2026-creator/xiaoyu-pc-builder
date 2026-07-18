@@ -495,6 +495,13 @@ function StreamerWorkbench({
         {isLiveMode && liveStyleConfig.frameMotion !== 'none' && (
             <div aria-hidden="true" className="live-outside-art" data-live-theme={liveStyle} />
         )}
+        {isLiveMode && isMarioLiveStyle && (
+            <div aria-hidden="true" className="live-mario-stage-decor">
+                <span className="live-mario-stage-balloon live-mario-stage-balloon--left" />
+                <span className="live-mario-stage-balloon live-mario-stage-balloon--right" />
+                <span className="live-mario-stage-bricks" />
+            </div>
+        )}
         <div className={`${theme.cardBg} ${liveShellClass} relative z-[1] overflow-hidden transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
             {isLiveMode && liveStyleConfig.frameMotion !== 'none' && (
                 <>
@@ -662,11 +669,17 @@ function StreamerWorkbench({
                         {isLiveMode && (
                             <div className={`px-4 py-2 ${liveStyleConfig.headerBg} border-b ${liveStyleConfig.border} ${isMarioLiveStyle ? 'live-mario-config-header' : ''}`}>
                                 {isMarioLiveStyle && (
-                                    <img
-                                        aria-hidden="true"
-                                        src="/assets/themes/mushroom-hero.svg"
-                                        className="live-mario-header-hero"
-                                    />
+                                    <>
+                                        <div aria-hidden="true" className="live-mario-header-decor">
+                                            <span className="live-mario-header-balloon live-mario-header-balloon--red" />
+                                            <span className="live-mario-header-balloon live-mario-header-balloon--blue" />
+                                            <span className="live-mario-header-brick-shadow" />
+                                        </div>
+                                        <div aria-hidden="true" className="live-mario-header-hero">
+                                            <img src="/assets/themes/mushroom-hero.svg" alt="" />
+                                            <span>1UP</span>
+                                        </div>
+                                    </>
                                 )}
                                 <div className="flex items-center justify-start gap-5">
                                     <div className="flex flex-wrap items-center gap-3 min-w-0 shrink-0">
