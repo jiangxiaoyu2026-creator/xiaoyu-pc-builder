@@ -207,6 +207,7 @@ function calculatePosition(anchorElement: HTMLElement): PickerPosition {
 export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClose, onSelect }: StreamerHardwarePickerProps) {
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
     const isPixelLiveStyle = liveStyle.startsWith('pixel');
+    const isSoftLightLiveStyle = liveStyleConfig.surface === 'light' && liveStyleConfig.frameTreatment === 'soft';
     const pickerRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLInputElement>(null);
     const [position, setPosition] = useState<PickerPosition | null>(null);
@@ -398,7 +399,9 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
     const controlClass = isLiveMode
         ? isPixelLiveStyle
             ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} border-2 rounded-none`
-            : 'bg-black/15 border border-white/10 rounded-lg'
+            : isSoftLightLiveStyle
+                ? 'bg-white/65 border border-slate-900/10 rounded-lg'
+                : 'bg-black/15 border border-white/10 rounded-lg'
         : 'bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg';
     const chipClass = (active: boolean) => active
         ? `${liveStyleConfig.glowBg} ${isPixelLiveStyle ? 'text-gray-950 rounded-none' : 'text-white rounded-md'} border-transparent shadow-sm`

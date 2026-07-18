@@ -52,23 +52,31 @@ const LIVE_SCENARIO_ROWS = [
 ];
 
 const LIVE_STYLE_SWATCHES: Record<LiveStyleKey, string> = {
-    cyber: 'linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899)',
-    pixel: 'repeating-conic-gradient(#17243b 0 25%, #7dd3fc 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #162033, #ffd166, #ff8a7a)',
-    pixelWhite: 'repeating-conic-gradient(#ffffff 0 25%, #0f172a 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #ffffff, #38bdf8, #e34f3f)',
+    cyber: 'linear-gradient(135deg, #070d18 0 42%, #22d3ee 43% 62%, #2563eb 63%)',
+    pixel: 'repeating-conic-gradient(#111827 0 25%, #38bdf8 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #172033, #93c5fd, #fbbf24)',
+    pixelWhite: 'repeating-conic-gradient(#f6f7f2 0 25%, #1e3a5f 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #ffffff, #1d4ed8, #0f766e)',
     pixelCream: 'repeating-conic-gradient(#fff7e6 0 25%, #584030 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #ffd98a, #0f766e, #d94832)',
-    pixelOcean: 'repeating-conic-gradient(#092b33 0 25%, #99f6e4 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #0e3a43, #67e8f9, #ff8f70)',
-    pixelNight: 'repeating-conic-gradient(#101827 0 25%, #fbbf24 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #172033, #7dd3fc, #fb7185)',
-    pixelSunset: 'repeating-conic-gradient(#261833 0 25%, #fdba74 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #37214a, #fde68a, #67e8f9)',
-    gundam: 'linear-gradient(135deg, #dc2626, #f8fafc, #2563eb)',
-    mecha: 'linear-gradient(135deg, #111827, #f97316, #facc15)',
-    pure: 'linear-gradient(135deg, #ffffff, #4f46e5, #f97316)',
-    aurora: 'linear-gradient(135deg, #042f2e, #5eead4, #bef264)',
-    snow: 'linear-gradient(135deg, #f8fafc, #60a5fa, #10b981)',
-    pink: 'linear-gradient(135deg, #831843, #f9a8d4, #f0abfc)',
-    orange: 'linear-gradient(135deg, #431407, #fb923c, #fde047)',
+    pixelOcean: 'repeating-conic-gradient(#eafaf7 0 25%, #164e63 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #dff7f1, #14b8a6, #38bdf8)',
+    pixelNight: 'repeating-conic-gradient(#0b1220 0 25%, #d9b75f 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #121c2e, #8bd3f7, #d9b75f)',
+    pixelSunset: 'repeating-conic-gradient(#fff4ee 0 25%, #6b3049 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #ffe7d6, #fb7185, #fb923c)',
+    gundam: 'linear-gradient(135deg, #edf2f7 0 42%, #1d4ed8 43% 66%, #cf2f3b 67%)',
+    mecha: 'linear-gradient(135deg, #0d0f12 0 45%, #f97316 46% 70%, #f59e0b 71%)',
+    pure: 'linear-gradient(135deg, #fffdf7 0 46%, #111827 47% 69%, #1d4ed8 70%)',
+    aurora: 'linear-gradient(135deg, #041311 0 38%, #2dd4bf 39% 67%, #bef264 68%)',
+    snow: 'linear-gradient(135deg, #fbfdff 0 45%, #60a5fa 46% 72%, #1e3a5f 73%)',
+    pink: 'linear-gradient(135deg, #fff3f7 0 45%, #db2777 46% 71%, #7c3aed 72%)',
+    orange: 'linear-gradient(135deg, #fffaf0 0 45%, #f59e0b 46% 72%, #7c2d12 73%)',
     violet: 'linear-gradient(135deg, #ffffff, #7c3aed, #d946ef)',
-    redline: 'linear-gradient(135deg, #0f172a, #dc2626, #fb7185)',
+    redline: 'linear-gradient(135deg, #fcfcfb 0 45%, #1f2937 46% 70%, #b4232c 71%)',
 };
+
+const LIVE_FRAME_MOTION_CLASSES = {
+    none: '',
+    charge: 'live-frame-motion--charge',
+    scan: 'live-frame-motion--scan',
+    pulse: 'live-frame-motion--pulse',
+    warning: 'live-frame-motion--warning',
+} as const;
 
 // The live config sheet is used for capture/layout workflows. Keep this canvas fixed.
 const LIVE_CONFIG_SHEET_WIDTH = 964;
@@ -444,10 +452,17 @@ function StreamerWorkbench({
         { label: '不包邮', positive: false },
     ];
     const isPixelLiveStyle = liveStyle.startsWith('pixel');
-    const isLightLiveStyle = ['pure', 'snow', 'violet', 'redline', 'pixelWhite', 'pixelCream'].includes(liveStyle);
+    const isLightLiveStyle = liveStyleConfig.surface === 'light';
+    const isSoftFrame = liveStyleConfig.frameTreatment === 'soft';
     const liveControlBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} hover:brightness-110 shadow-[3px_3px_0_#050505]` : isLightLiveStyle ? 'bg-white/45 hover:bg-white/75 shadow-sm' : 'bg-white/[0.06] hover:bg-white/[0.1]';
     const liveInputBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} shadow-[2px_2px_0_#050505]` : isLightLiveStyle ? 'bg-white/45' : 'bg-white/[0.06]';
     const liveCheckText = isPixelLiveStyle ? 'text-gray-950' : isLightLiveStyle ? 'text-white' : 'text-gray-950';
+    const liveFrameBase = isSoftFrame ? `${liveStyleConfig.glowBg} opacity-[0.12]` : 'bg-black/70';
+    const liveFrameBaseMuted = isSoftFrame ? `${liveStyleConfig.glowBg} opacity-[0.09]` : 'bg-black/55';
+    const liveFrameAccentOpacity = isSoftFrame ? 'opacity-45' : 'opacity-85';
+    const liveFrameRailOpacity = isSoftFrame ? 'opacity-55' : 'opacity-85';
+    const liveFrameTopLineOpacity = isSoftFrame ? 'opacity-40' : 'opacity-70';
+    const liveFrameBottomLineOpacity = isSoftFrame ? 'opacity-45' : 'opacity-75';
     const liveShellClass = isLiveMode
         ? isPixelLiveStyle
             ? `rounded-none flex flex-col border-4 ${liveStyleConfig.stampBorder} shadow-[8px_8px_0_#050505]`
@@ -601,18 +616,24 @@ function StreamerWorkbench({
                     <div data-hardware-picker-boundary className={`flex-1 min-w-0 ${isLiveMode ? liveTableShellClass : 'max-w-[1550px]'}`}>
                         {isLiveMode && (
                             <>
-                                <div className={`pointer-events-none absolute inset-0 z-10 ${livePanelRadius} border ${isPixelLiveStyle ? 'border-black' : 'border-black/40'}`}></div>
+                                <div className={`pointer-events-none absolute inset-0 z-10 ${livePanelRadius} border ${isPixelLiveStyle ? 'border-black' : isSoftFrame ? liveStyleConfig.stampBorder : 'border-black/40'}`}></div>
                                 <div className={`pointer-events-none absolute inset-[4px] z-10 ${livePanelInsetRadius} border ${liveStyleConfig.stampBorder} opacity-80`}></div>
-                                <div className={`pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-[4px] ${liveStyleConfig.glowBg} opacity-85`}></div>
-                                <div className="pointer-events-none absolute left-[4px] top-[18px] bottom-[18px] z-20 w-[1.5px] bg-black/55"></div>
-                                <div className="pointer-events-none absolute left-0 top-0 z-20 h-[28px] w-[42px] bg-black/70 [clip-path:polygon(0_0,100%_0,30px_8px,17px_8px,5px_20px,5px_100%,0_100%)]"></div>
-                                <div className={`pointer-events-none absolute left-[5px] top-0 z-30 h-[20px] w-[31px] ${liveStyleConfig.glowBg} opacity-85 [clip-path:polygon(0_0,27px_0,19px_6px,9px_6px,0_16px)]`}></div>
-                                <div className="pointer-events-none absolute left-0 bottom-0 z-20 h-[28px] w-[42px] bg-black/70 [clip-path:polygon(0_0,5px_0,5px_12px,17px_20px,30px_20px,100%_28px,0_28px)]"></div>
-                                <div className={`pointer-events-none absolute left-[5px] bottom-0 z-30 h-[20px] w-[31px] ${liveStyleConfig.glowBg} opacity-85 [clip-path:polygon(0_8px,9px_15px,22px_15px,31px_20px,0_20px)]`}></div>
-                                <div className="pointer-events-none absolute right-0 top-0 z-20 h-[24px] w-[32px] bg-black/55 [clip-path:polygon(0_0,100%_0,100%_100%,24px_100%)]"></div>
-                                <div className={`pointer-events-none absolute right-0 top-0 z-30 h-[16px] w-[24px] ${liveStyleConfig.glowBg} opacity-75 [clip-path:polygon(0_0,100%_0,100%_100%,15px_100%)]`}></div>
-                                <div className={`pointer-events-none absolute left-14 right-[280px] top-[1px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} opacity-70`}></div>
-                                <div className={`pointer-events-none absolute inset-x-14 bottom-[4px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} opacity-75`}></div>
+                                <div className={`pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-[4px] ${liveStyleConfig.glowBg} ${liveFrameRailOpacity}`}></div>
+                                <div className={`pointer-events-none absolute left-[4px] top-[18px] bottom-[18px] z-20 w-[1.5px] ${liveFrameBaseMuted}`}></div>
+                                <div className={`pointer-events-none absolute left-0 top-0 z-20 h-[28px] w-[42px] ${liveFrameBase} [clip-path:polygon(0_0,100%_0,30px_8px,17px_8px,5px_20px,5px_100%,0_100%)]`}></div>
+                                <div className={`pointer-events-none absolute left-[5px] top-0 z-30 h-[20px] w-[31px] ${liveStyleConfig.glowBg} ${liveFrameAccentOpacity} [clip-path:polygon(0_0,27px_0,19px_6px,9px_6px,0_16px)]`}></div>
+                                <div className={`pointer-events-none absolute left-0 bottom-0 z-20 h-[28px] w-[42px] ${liveFrameBase} [clip-path:polygon(0_0,5px_0,5px_12px,17px_20px,30px_20px,100%_28px,0_28px)]`}></div>
+                                <div className={`pointer-events-none absolute left-[5px] bottom-0 z-30 h-[20px] w-[31px] ${liveStyleConfig.glowBg} ${liveFrameAccentOpacity} [clip-path:polygon(0_8px,9px_15px,22px_15px,31px_20px,0_20px)]`}></div>
+                                <div className={`pointer-events-none absolute right-0 top-0 z-20 h-[24px] w-[32px] ${liveFrameBaseMuted} [clip-path:polygon(0_0,100%_0,100%_100%,24px_100%)]`}></div>
+                                <div className={`pointer-events-none absolute right-0 top-0 z-30 h-[16px] w-[24px] ${liveStyleConfig.glowBg} ${isSoftFrame ? 'opacity-35' : 'opacity-75'} [clip-path:polygon(0_0,100%_0,100%_100%,15px_100%)]`}></div>
+                                <div className={`pointer-events-none absolute left-14 right-[280px] top-[1px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} ${liveFrameTopLineOpacity}`}></div>
+                                <div className={`pointer-events-none absolute inset-x-14 bottom-[4px] z-20 h-[2px] ${liveStyleConfig.fpsBarColor} ${liveFrameBottomLineOpacity}`}></div>
+                                {liveStyleConfig.frameMotion !== 'none' && (
+                                    <div
+                                        aria-hidden="true"
+                                        className={`live-frame-motion ${LIVE_FRAME_MOTION_CLASSES[liveStyleConfig.frameMotion]} ${liveStyleConfig.accentText}`}
+                                    />
+                                )}
                             </>
                         )}
                         {isLiveMode && (
@@ -927,7 +948,7 @@ function StreamerWorkbench({
                             <button
                                 key={s}
                                 onClick={() => setLiveStyle(s)}
-                                className={`w-9 h-9 p-0 border transition-all ${s.startsWith('pixel') ? 'rounded-none border-2 shadow-[3px_3px_0_#111]' : 'rounded-lg shadow-sm'} ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
+                                className={`w-9 h-9 p-0 border transition-all ${styleConfig.frameMotion !== 'none' ? 'live-theme-swatch--animated' : ''} ${s.startsWith('pixel') ? 'rounded-none border-2 shadow-[3px_3px_0_#111]' : 'rounded-lg shadow-sm'} ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
                                 style={{ background: LIVE_STYLE_SWATCHES[s] }}
                                 title={styleConfig.name}
                             >

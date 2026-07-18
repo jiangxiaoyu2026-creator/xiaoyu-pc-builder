@@ -124,7 +124,7 @@ export interface SidebarPricingProps {
 export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildList: BuildEntry[], pricingProps?: SidebarPricingProps }) {
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
     const isPixelLiveStyle = liveStyle.startsWith('pixel');
-    const isLightLiveStyle = ['pure', 'snow', 'violet', 'redline', 'pixelWhite', 'pixelCream'].includes(liveStyle);
+    const isLightLiveStyle = liveStyleConfig.surface === 'light';
     const liveControlBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} shadow-[2px_2px_0_#050505]` : isLightLiveStyle ? 'bg-white/55 border-slate-950/10' : 'bg-white/[0.06] border-white/10';
     const liveControlHover = isPixelLiveStyle ? 'hover:brightness-110' : isLightLiveStyle ? 'hover:bg-white/75' : 'hover:bg-white/[0.1]';
     const fpsTrackBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder}` : isLightLiveStyle ? 'bg-slate-950/12 border-slate-950/10' : 'bg-white/12 border-white/10';
