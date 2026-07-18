@@ -1,0 +1,11 @@
+Icons provided under the Creative Commons 3.0 BY or CC0 when specifically
+identified by the upstream project.
+
+The selected files in this folder are attributed to Delapouite and Lorc.
+Please retain the adjacent ATTRIBUTION.md file when redistributing them.
+
+Original license text and contributor list:
+https://github.com/game-icons/icons/blob/master/license.txt
+
+Creative Commons Attribution 3.0:
+https://creativecommons.org/licenses/by/3.0/

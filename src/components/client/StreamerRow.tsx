@@ -112,6 +112,33 @@ function PixelCategoryIcon({ category }: { category: string }) {
     );
 }
 
+const MARIO_CATEGORY_ICON_PATHS: Record<string, string> = {
+    cpu: '/assets/icons/game-icons/cpu.svg',
+    cooling: '/assets/icons/game-icons/cooling.svg',
+    mainboard: '/assets/icons/game-icons/mainboard.svg',
+    ram: '/assets/icons/game-icons/ram.svg',
+    disk: '/assets/icons/game-icons/disk.svg',
+    gpu: '/assets/icons/game-icons/gpu.svg',
+    power: '/assets/icons/game-icons/power.svg',
+    case: '/assets/icons/game-icons/case.svg',
+    fan: '/assets/icons/game-icons/fan.svg',
+    monitor: '/assets/icons/game-icons/monitor.svg',
+    mouse: '/assets/icons/game-icons/mouse.svg',
+    keyboard: '/assets/icons/game-icons/keyboard.svg',
+    accessory: '/assets/icons/game-icons/accessory.svg',
+};
+
+function MarioCategoryIcon({ category }: { category: string }) {
+    return (
+        <img
+            aria-hidden="true"
+            alt=""
+            src={MARIO_CATEGORY_ICON_PATHS[category] || MARIO_CATEGORY_ICON_PATHS.accessory}
+            className="h-5 w-5 object-contain"
+        />
+    );
+}
+
 export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPrev: () => void, onPreview: (img: string) => void, onOpenPicker?: (entry: BuildEntry, anchorElement: HTMLElement) => void }>(({ entry, index, onUpdate, onEnter, onPrev, onPreview, onOpenPicker }, ref) => {
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
     const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
@@ -411,7 +438,11 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
                     className={`live-hardware-category-icon ${isLiveMode ? `w-8 h-8 ${isPixelLiveStyle ? `rounded-none border-2 ${liveStyleConfig.stampBorder} ${liveStyleConfig.panelBg} shadow-[2px_2px_0_#050505]` : 'rounded-lg'}` : 'w-7 h-7 rounded-lg'} flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? (isLiveMode ? liveStyleConfig.accentText + (isPixelLiveStyle ? '' : ' bg-white/[0.06] border border-white/10') : `bg-gradient-to-br ${theme.gradient} text-white shadow-md`) : (isLiveMode ? liveStyleConfig.mutedText + (isPixelLiveStyle ? '' : ' bg-white/[0.04]') : `${style.bg} ${style.text}`)} ${!entry.item && !isLiveMode && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
                     onClick={() => entry.item?.image && onPreview(entry.item.image)}
                 >
-                    {isLiveMode && isPixelLiveStyle ? <PixelCategoryIcon category={entry.category} /> : getIconByCategory(entry.category)}
+                    {isLiveMode && liveStyle === 'pixel'
+                        ? <MarioCategoryIcon category={entry.category} />
+                        : isLiveMode && isPixelLiveStyle
+                            ? <PixelCategoryIcon category={entry.category} />
+                            : getIconByCategory(entry.category)}
                 </div>
                 <span>{CATEGORY_MAP[entry.category]}</span>
             </div>

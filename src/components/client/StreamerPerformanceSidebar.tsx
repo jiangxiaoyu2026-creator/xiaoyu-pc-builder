@@ -339,7 +339,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const now = new Date();
     const timeString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     return (
-        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isLiveMode ? `h-full w-[240px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} ${isPixelLiveStyle ? 'border-l-4 shadow-[6px_0_0_#050505]' : 'border-l-2 shadow-2xl'} overflow-hidden` : 'w-[260px] gap-2.5 p-3 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
+        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isMarioLiveStyle ? 'live-mario-sidebar' : ''} ${isLiveMode ? `h-full w-[240px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} ${isPixelLiveStyle ? 'border-l-4 shadow-[6px_0_0_#050505]' : 'border-l-2 shadow-2xl'} overflow-hidden` : 'w-[260px] gap-2.5 p-3 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
 
             {/* In Live Mode: Special Layout Order */}
             {isLiveMode ? (

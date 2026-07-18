@@ -642,7 +642,7 @@ function StreamerWorkbench({
                     <>
                     <div className={`flex ${isLiveMode ? 'flex-row h-full' : 'flex-col xl:flex-row'} ${isMarioLiveStyle ? 'relative z-[1]' : ''}`}>
                     {/* === Left: Config Table === */}
-                    <div data-hardware-picker-boundary className={`flex-1 min-w-0 ${isLiveMode ? liveTableShellClass : 'max-w-[1550px]'}`}>
+                    <div data-hardware-picker-boundary className={`flex-1 min-w-0 ${isMarioLiveStyle ? 'live-mario-table-shell' : ''} ${isLiveMode ? liveTableShellClass : 'max-w-[1550px]'}`}>
                         {isLiveMode && liveStyleConfig.frameMotion === 'none' && (
                             <>
                                 <div className={`pointer-events-none absolute inset-0 z-10 ${livePanelRadius} border ${isPixelLiveStyle ? 'border-black' : isSoftFrame ? liveStyleConfig.stampBorder : 'border-black/40'}`}></div>
