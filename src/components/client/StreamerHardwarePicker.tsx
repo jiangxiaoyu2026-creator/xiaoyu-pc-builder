@@ -206,7 +206,7 @@ function calculatePosition(anchorElement: HTMLElement): PickerPosition {
 
 export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClose, onSelect }: StreamerHardwarePickerProps) {
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
-    const isPixelLiveStyle = liveStyle.startsWith('pixel');
+    const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
     const isSoftLightLiveStyle = liveStyleConfig.surface === 'light' && liveStyleConfig.frameTreatment === 'soft';
     const pickerRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLInputElement>(null);

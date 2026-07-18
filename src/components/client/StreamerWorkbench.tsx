@@ -457,7 +457,7 @@ function StreamerWorkbench({
         { label: '济南发货', positive: true },
         { label: '不包邮', positive: false },
     ];
-    const isPixelLiveStyle = liveStyle.startsWith('pixel');
+    const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
     const isMarioLiveStyle = liveStyle === 'pixel';
     const isLightLiveStyle = liveStyleConfig.surface === 'light';
     const isSoftFrame = liveStyleConfig.frameTreatment === 'soft';
@@ -494,29 +494,6 @@ function StreamerWorkbench({
         >
         {isLiveMode && liveStyleConfig.frameMotion !== 'none' && (
             <div aria-hidden="true" className="live-outside-art" data-live-theme={liveStyle} />
-        )}
-        {isLiveMode && isMarioLiveStyle && (
-            <div aria-hidden="true" className="live-mario-scene">
-                <div className="live-mario-block-cluster">
-                    <span className="live-mario-block live-mario-block--brick" />
-                    <span className="live-mario-block live-mario-block--question">?</span>
-                    <span className="live-mario-block live-mario-block--brick" />
-                    <span className="live-mario-block live-mario-block--question">?</span>
-                </div>
-                <div className="live-mario-coin-row">
-                    {Array.from({ length: 3 }, (_, index) => <span key={index} className="live-mario-coin" />)}
-                </div>
-                <span className="live-mario-plant" />
-                <span className="live-mario-hero" />
-                <span className="live-mario-goomba" />
-                <span className="live-mario-koopa" />
-                <div className="live-mario-ground">
-                    {Array.from({ length: 18 }, (_, index) => <span key={index} className="live-mario-ground-brick" />)}
-                </div>
-                <div className="live-pixel-mushroom-row">
-                    {Array.from({ length: 5 }, (_, index) => <span key={index} className="live-pixel-mushroom" />)}
-                </div>
-            </div>
         )}
         <div className={`${theme.cardBg} ${liveShellClass} relative z-[1] overflow-hidden transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
             {isLiveMode && liveStyleConfig.frameMotion !== 'none' && (
@@ -660,10 +637,17 @@ function StreamerWorkbench({
 
                     {/* === Main Content Area === */}
                     <div className={`flex-1 min-w-0 flex flex-col relative ${isLiveMode ? liveStyleConfig.sectionBg : 'bg-white dark:bg-slate-900/50'}`}>
+                        {isLiveMode && isMarioLiveStyle && (
+                            <img
+                                aria-hidden="true"
+                                src="/assets/themes/mushroom-hero.svg"
+                                className="live-mario-table-watermark"
+                            />
+                        )}
 
                 {activeTab === 'builder' ? (
                     <>
-                    <div className={`flex ${isLiveMode ? 'flex-row h-full' : 'flex-col xl:flex-row'}`}>
+                    <div className={`flex ${isLiveMode ? 'flex-row h-full' : 'flex-col xl:flex-row'} ${isMarioLiveStyle ? 'relative z-[1]' : ''}`}>
                     {/* === Left: Config Table === */}
                     <div data-hardware-picker-boundary className={`flex-1 min-w-0 ${isLiveMode ? liveTableShellClass : 'max-w-[1550px]'}`}>
                         {isLiveMode && liveStyleConfig.frameMotion === 'none' && (
@@ -997,11 +981,11 @@ function StreamerWorkbench({
                             <button
                                 key={s}
                                 onClick={() => setLiveStyle(s)}
-                                className={`w-9 h-9 p-0 border transition-all ${s.startsWith('pixel') ? 'rounded-none border-2 shadow-[3px_3px_0_#111]' : 'rounded-lg shadow-sm'} ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
+                                className={`w-9 h-9 p-0 border transition-all ${s.startsWith('pixel') && s !== 'pixel' ? 'rounded-none border-2 shadow-[3px_3px_0_#111]' : 'rounded-lg shadow-sm'} ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
                                 style={{ background: LIVE_STYLE_SWATCHES[s] }}
                                 title={styleConfig.name}
                             >
-                                <span className={`block h-full w-full ${s.startsWith('pixel') ? 'rounded-none' : 'rounded-[7px]'} ${isActive ? 'bg-white/0' : 'bg-black/0'}`} />
+                                <span className={`block h-full w-full ${s.startsWith('pixel') && s !== 'pixel' ? 'rounded-none' : 'rounded-[7px]'} ${isActive ? 'bg-white/0' : 'bg-black/0'}`} />
                             </button>
                         );
                     })}

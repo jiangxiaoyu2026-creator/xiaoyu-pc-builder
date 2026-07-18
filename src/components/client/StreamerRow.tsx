@@ -114,7 +114,7 @@ function PixelCategoryIcon({ category }: { category: string }) {
 
 export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPrev: () => void, onPreview: (img: string) => void, onOpenPicker?: (entry: BuildEntry, anchorElement: HTMLElement) => void }>(({ entry, index, onUpdate, onEnter, onPrev, onPreview, onOpenPicker }, ref) => {
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
-    const isPixelLiveStyle = liveStyle.startsWith('pixel');
+    const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
     const isSoftLightLiveStyle = liveStyleConfig.surface === 'light' && liveStyleConfig.frameTreatment === 'soft';
     const [query, setQuery] = useState(entry.customName || entry.item?.model || '');
     const [showSuggestions, setShowSuggestions] = useState(false);

@@ -123,7 +123,8 @@ export interface SidebarPricingProps {
 
 export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildList: BuildEntry[], pricingProps?: SidebarPricingProps }) {
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
-    const isPixelLiveStyle = liveStyle.startsWith('pixel');
+    const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
+    const isMarioLiveStyle = liveStyle === 'pixel';
     const isLightLiveStyle = liveStyleConfig.surface === 'light';
     const liveControlBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} shadow-[2px_2px_0_#050505]` : isLightLiveStyle ? 'bg-white/55 border-slate-950/10' : 'bg-white/[0.06] border-white/10';
     const liveControlHover = isPixelLiveStyle ? 'hover:brightness-110' : isLightLiveStyle ? 'hover:bg-white/75' : 'hover:bg-white/[0.1]';
@@ -358,6 +359,18 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.35 }}
                             />
+                        ) : isMarioLiveStyle ? (
+                            <div className="live-mario-sidebar-art">
+                                <img
+                                    src="/assets/themes/mushroom-world.svg"
+                                    alt=""
+                                    aria-hidden="true"
+                                />
+                                <div>
+                                    <strong>冒险装机站</strong>
+                                    <span>选择硬件，开启新关卡</span>
+                                </div>
+                            </div>
                         ) : (
                             <div className="relative z-10 flex h-full min-h-[96px] w-full flex-col items-center justify-center gap-1 px-3 text-center">
                                 <div className={`text-[18px] font-black leading-tight ${placeholderTitleTextClassName} drop-shadow-[0_1px_3px_rgba(148,163,184,0.25)]`}>
