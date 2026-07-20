@@ -817,7 +817,18 @@ function StreamerWorkbench({
                                                 <span className={`live-mario-service-check w-4 h-4 text-[13px] flex items-center justify-center leading-none font-black ${selected ? `${liveStyleConfig.glowBg} ${liveCheckText}` : ''}`}>
                                                     {selected ? '✓' : '?'}
                                                 </span>
-                                                <span className="live-mario-service-label">{item.label}</span>
+                                                <span className="live-mario-service-label" aria-label={item.label}>
+                                                    {Array.from(item.label).map((character, characterIndex) => (
+                                                        <span
+                                                            key={`${item.id}-${characterIndex}`}
+                                                            aria-hidden="true"
+                                                            className="live-mario-service-character"
+                                                            style={{ '--mario-character-delay': `${characterIndex * 0.09}s` } as React.CSSProperties}
+                                                        >
+                                                            {character}
+                                                        </span>
+                                                    ))}
+                                                </span>
                                             </button>
                                         );
                                     })}

@@ -325,7 +325,8 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const productImages = buildList
         .filter(e => e.item?.image)
         .map(e => ({ src: e.item!.image!, label: e.item!.model }));
-    const hasSelectedHardware = buildList.some(entry => Boolean(entry.item));
+    const selectedHardwareCount = buildList.filter(entry => Boolean(entry.item)).length;
+    const hasSelectedHardware = selectedHardwareCount > 0;
     const productImagesKey = productImages.map(image => image.src).join('|');
     const [productImageIndex, setProductImageIndex] = useState(0);
 
@@ -357,7 +358,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         {/* Stamp inner dashed border */}
                         <div className={`absolute inset-2 border border-dashed ${activeProductImage ? liveStyleConfig.border : placeholderDashClassName} pointer-events-none ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} ${activeProductImage ? 'opacity-30' : ''}`}></div>
                         
-                        {isMarioLiveStyle && <span className="live-mario-item-box-title">ITEM BOX · 当前装备</span>}
+                        {isMarioLiveStyle && <span className="live-mario-item-box-title">当前装备 · {selectedHardwareCount}</span>}
                         {activeProductImage ? (
                             <>
                                 <motion.img
@@ -373,10 +374,10 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                             </>
                         ) : isMarioLiveStyle ? (
                             <div className="live-mario-item-box-empty">
-                                <span className={`live-mario-question-block ${hasSelectedHardware ? 'is-ready' : ''}`} aria-hidden="true">{hasSelectedHardware ? '✓' : '?'}</span>
+                                <span className={`live-mario-question-block ${hasSelectedHardware ? 'is-ready' : ''}`} aria-hidden="true">?</span>
                                 <div>
-                                    <strong>{hasSelectedHardware ? '硬件清单已载入' : '等待选择硬件'}</strong>
-                                    <span>{hasSelectedHardware ? '商品图补齐后自动轮播' : '装备图片会在这里轮播'}</span>
+                                    <strong>{hasSelectedHardware ? `${selectedHardwareCount} 件装备已就位` : '等待选择硬件'}</strong>
+                                    <span>{hasSelectedHardware ? '商品图补齐后浮动展示' : '从左侧挑选你的装备'}</span>
                                 </div>
                             </div>
                         ) : (
