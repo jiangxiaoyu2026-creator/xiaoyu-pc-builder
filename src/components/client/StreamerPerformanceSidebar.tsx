@@ -494,7 +494,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
 
                     {/* 4. Pricing at bottom */}
                     {pricingProps && (
-                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'rounded-lg shadow-sm'} p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5`}>
+                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'rounded-lg shadow-sm'} p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5 ${isMarioLiveStyle ? 'live-mario-pricing-panel' : ''}`}>
                             <div className="flex items-center justify-between gap-2">
                                 <div className={`text-[12px] font-black ${liveStyleConfig.modelText}`}>优惠方案</div>
                                 <div className={`relative group w-[118px] ${isMarioLiveStyle ? 'live-mario-discount-control' : ''}`}>

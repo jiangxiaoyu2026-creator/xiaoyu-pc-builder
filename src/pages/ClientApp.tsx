@@ -81,7 +81,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 export default function ClientApp() {
     const isMobile = useIsMobile();
     const LIVE_SCENARIO_OPTIONS = ['实用', '颜值', '游戏', '直播', '生产力', '海景房'];
-    const LIVE_SERVICE_OPTIONS = ['assembly', 'cabling', 'warranty', 'profit', 'shipping', 'noShipping'];
+    const LIVE_SERVICE_OPTIONS = ['assembly', 'cabling', 'warranty', 'profit', 'shipping', 'freeShipping'];
     const DEFAULT_LIVE_META: StreamerLiveMeta = {
         budget: '',
         customerName: '',

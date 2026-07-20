@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Recycle, Monitor, FolderOpen, PackageOpen } from 'lucide-react';
+import { Zap, X, Sparkles, Trash2, ChevronDown, Save, RefreshCw, Share2, Download, Recycle, Monitor, FolderOpen, PackageOpen, CircleDollarSign, UserRound } from 'lucide-react';
 import { BuildEntry, Category, HardwareItem, StreamerLiveMeta } from '../../types/clientTypes';
 import { storage } from '../../services/storage';
 import { aiBuilder, AIBuildResult } from '../../services/aiBuilder';
@@ -219,6 +219,7 @@ function StreamerWorkbench({
     const [showChatSettings, setShowChatSettings] = useState(false);
     const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
     const [marioTotalFxKey, setMarioTotalFxKey] = useState(0);
+    const [marioServiceFx, setMarioServiceFx] = useState<{ id: string; serial: number } | null>(null);
     const posterRef = useRef<HTMLDivElement>(null);
     const previousMarioPriceRef = useRef(Number(pricing?.standardPrice) || 0);
 
@@ -457,17 +458,18 @@ function StreamerWorkbench({
             ? currentServices.filter(item => item !== serviceId)
             : [...currentServices, serviceId];
         updateLiveMeta({ services });
+        setMarioServiceFx({ id: serviceId, serial: Date.now() });
     };
+    const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
+    const isMarioLiveStyle = liveStyle === 'pixel';
     const serviceItems = [
         { id: 'assembly', label: '组装', positive: true },
         { id: 'cabling', label: '走线', positive: true },
         { id: 'warranty', label: '三年质保', positive: true },
         { id: 'profit', label: `${serviceFeePercent}% 利润`, positive: true },
         { id: 'shipping', label: '济南发货', positive: true },
-        { id: 'noShipping', label: '不包邮', positive: false },
+        { id: 'freeShipping', label: isMarioLiveStyle ? '包邮' : '不包邮', positive: isMarioLiveStyle },
     ];
-    const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
-    const isMarioLiveStyle = liveStyle === 'pixel';
     const isLightLiveStyle = liveStyleConfig.surface === 'light';
 
     useEffect(() => {
@@ -516,7 +518,7 @@ function StreamerWorkbench({
         {isLiveMode && isMarioLiveStyle && (
             <div aria-hidden="true" className="live-mario-stage-decor">
                 <img className="live-mario-side-pipe live-mario-side-pipe--left" src="/assets/themes/mario-game/pipe.svg" alt="" />
-                <img className="live-mario-flying-koopa" src="/assets/themes/mario-game/koopa.svg" alt="" />
+                <img className="live-mario-flying-paratroopa" src="/assets/themes/mario-game/paratroopa.svg" alt="" />
             </div>
         )}
         <div className={`${theme.cardBg} ${liveShellClass} ${isMarioLiveStyle ? 'live-mario-sheet-shell' : ''} relative z-[1] overflow-hidden transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
@@ -690,6 +692,11 @@ function StreamerWorkbench({
                                         <div aria-hidden="true" className="live-mario-header-decor">
                                             <span className="live-mario-header-cloud live-mario-header-cloud--front" />
                                             <span className="live-mario-header-cloud live-mario-header-cloud--back" />
+                                            <span className="live-mario-header-chimney">
+                                                <i className="live-mario-smoke live-mario-smoke--one" />
+                                                <i className="live-mario-smoke live-mario-smoke--two" />
+                                                <i className="live-mario-smoke live-mario-smoke--three" />
+                                            </span>
                                         </div>
                                     </>
                                 )}
@@ -734,21 +741,23 @@ function StreamerWorkbench({
                                             载入配置
                                         </button>
                                         <div className="grid gap-1 w-[154px]">
-                                            <label className={`h-6 px-2 ${liveInputRadius} ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
-                                                <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>预算</span>
+                                            <label className={`h-6 px-2 ${liveInputRadius} ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText} ${isMarioLiveStyle ? 'live-mario-meta-field live-mario-meta-field--budget' : ''}`}>
+                                                {isMarioLiveStyle ? <CircleDollarSign size={14} aria-label="预算" /> : <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>预算</span>}
                                                 <input
                                                     value={liveMeta.budget}
                                                     onChange={(e) => updateLiveMeta({ budget: e.target.value })}
-                                                    placeholder="填写"
+                                                    placeholder={isMarioLiveStyle ? '输入金额' : '填写'}
+                                                    aria-label="预算"
                                                     className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[12px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
                                                 />
                                             </label>
-                                            <label className={`h-6 px-2 ${liveInputRadius} ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText}`}>
-                                                <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>姓名</span>
+                                            <label className={`h-6 px-2 ${liveInputRadius} ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText} ${isMarioLiveStyle ? 'live-mario-meta-field live-mario-meta-field--name' : ''}`}>
+                                                {isMarioLiveStyle ? <UserRound size={14} aria-label="姓名" /> : <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>姓名</span>}
                                                 <input
                                                     value={liveMeta.customerName}
                                                     onChange={(e) => updateLiveMeta({ customerName: e.target.value })}
-                                                    placeholder="填写"
+                                                    placeholder={isMarioLiveStyle ? '输入姓名' : '填写'}
+                                                    aria-label="姓名"
                                                     className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[12px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
                                                 />
                                             </label>
@@ -757,7 +766,7 @@ function StreamerWorkbench({
                                 </div>
                             </div>
                         )}
-                        <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-hidden' : 'overflow-x-auto'}`}>
+                        <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-hidden' : 'overflow-x-auto'} ${isMarioLiveStyle ? 'live-mario-table-content' : ''}`}>
                             <div className={`${isLiveMode ? 'w-full h-full flex flex-col' : 'min-w-[600px]'}`}>
                                 <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px]' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px]'} gap-2 px-3 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300 shrink-0 ${isMarioLiveStyle ? 'live-mario-column-header' : ''}`}>
                                     <div>类别</div>
@@ -808,6 +817,7 @@ function StreamerWorkbench({
                                         const selected = (liveMeta.services ?? []).includes(item.id);
                                         return (
                                             <button key={item.id} type="button" onClick={() => toggleService(item.id)} className={`live-mario-service-item inline-flex items-center gap-1 shrink-0 ${selected ? 'is-active' : ''}`}>
+                                                {marioServiceFx?.id === item.id && <span key={marioServiceFx.serial} className="live-mario-service-coin" aria-hidden="true">★</span>}
                                                 <span className={`live-mario-service-check w-4 h-4 text-[13px] flex items-center justify-center leading-none font-black ${selected ? `${liveStyleConfig.glowBg} ${liveCheckText}` : ''}`}>
                                                     {selected ? '✓' : '?'}
                                                 </span>
