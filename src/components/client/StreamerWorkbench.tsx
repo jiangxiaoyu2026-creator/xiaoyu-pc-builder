@@ -51,12 +51,6 @@ const LIVE_SCENARIO_ROWS = [
     ['游戏', '直播', '生产力'],
 ];
 
-const MARIO_CHASE_TARGETS = [
-    { id: 'sparrow', src: '/assets/themes/mario-game/gameicon-sparrow.png' },
-    { id: 'chicken', src: '/assets/themes/mario-game/gameicon-chicken.png' },
-    { id: 'goomba', src: '/assets/themes/mario-game/mario-goomba-frame.png' },
-] as const;
-
 const LIVE_STYLE_SWATCHES: Record<LiveStyleKey, string> = {
     cyber: 'linear-gradient(135deg, #070d18 0 42%, #22d3ee 43% 62%, #2563eb 63%)',
     pixel: 'linear-gradient(135deg, #5c94fc 0 38%, #22c55e 39% 60%, #facc15 61% 78%, #ef4444 79%)',
@@ -226,7 +220,6 @@ function StreamerWorkbench({
     const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
     const [marioTotalFxKey, setMarioTotalFxKey] = useState(0);
     const [marioServiceFx, setMarioServiceFx] = useState<{ id: string; serial: number } | null>(null);
-    const [marioChaseTargetIndex, setMarioChaseTargetIndex] = useState(0);
     const posterRef = useRef<HTMLDivElement>(null);
     const previousMarioPriceRef = useRef(Number(pricing?.standardPrice) || 0);
 
@@ -478,20 +471,6 @@ function StreamerWorkbench({
         { id: 'freeShipping', label: isMarioLiveStyle ? '包邮' : '不包邮', positive: isMarioLiveStyle },
     ];
     const isLightLiveStyle = liveStyleConfig.surface === 'light';
-
-    useEffect(() => {
-        if (!isMarioLiveStyle) {
-            setMarioChaseTargetIndex(0);
-            return;
-        }
-
-        const timer = window.setInterval(() => {
-            setMarioChaseTargetIndex(index => (index + 1) % MARIO_CHASE_TARGETS.length);
-        }, 15000);
-        return () => window.clearInterval(timer);
-    }, [isMarioLiveStyle]);
-
-    const marioChaseTarget = MARIO_CHASE_TARGETS[marioChaseTargetIndex];
 
     useEffect(() => {
         const nextPrice = Number(pricing?.standardPrice) || 0;
@@ -818,24 +797,13 @@ function StreamerWorkbench({
                                 {isMarioLiveStyle && (
                                     <div aria-hidden="true" className="live-mario-bottom-chase">
                                         <div className="live-mario-bottom-target-track">
-                                            <span className={`live-mario-bottom-target-motion live-mario-bottom-target-motion--${marioChaseTarget.id}`}>
-                                                <img
-                                                    key={marioChaseTarget.id}
-                                                    className="live-mario-bottom-target"
-                                                    src={marioChaseTarget.src}
-                                                    alt=""
-                                                />
+                                            <span className="live-mario-bottom-target-motion">
+                                                <span className="live-mario-bottom-goomba" />
                                             </span>
                                         </div>
                                         <div className="live-mario-bottom-runner-track">
                                             <img className="live-mario-bottom-runner" src="/assets/themes/mario-game/mario-runner.svg" alt="" />
                                         </div>
-                                        <span className="live-mario-ground-plant">
-                                            <img className="live-mario-ground-plant-sprite" src="/assets/themes/mario-game/gameicon-plant.png" alt="" />
-                                        </span>
-                                        <span className="live-mario-ground-gap">
-                                            <img className="live-mario-ground-gap-spikes" src="/assets/themes/mario-game/gameicon-spiky-pit.png" alt="" />
-                                        </span>
                                     </div>
                                 )}
                                 <div className={`min-w-0 flex items-center justify-start gap-x-2 text-[13px] font-black tracking-wide whitespace-nowrap overflow-x-auto ${isMarioLiveStyle ? 'live-mario-service-strip' : ''}`}>
