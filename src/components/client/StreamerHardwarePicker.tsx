@@ -465,9 +465,9 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
 
                 {entry.category === 'cpu' && (
                     <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
-                        {renderFilterGroup('品牌', ['全部', 'Intel', 'AMD'], cpuBrand, setCpuBrand)}
+                        {renderFilterGroup('品牌', ['全部', 'Intel', 'AMD'], cpuBrand, setCpuBrand, 'min-[720px]:col-span-2')}
                         {renderFilterGroup('接口', sockets, cpuSocket, setCpuSocket)}
-                        {renderFilterGroup('系列', ['全部', 'Core i5', 'Core i7', 'Core i9', 'Ultra', 'Ryzen 5', 'Ryzen 7', 'Ryzen 9', 'X3D'], cpuSeries, setCpuSeries, 'min-[720px]:col-span-2')}
+                        {renderFilterGroup('系列', ['全部', 'Core i5', 'Core i7', 'Core i9', 'Ultra', 'Ryzen 5', 'Ryzen 7', 'Ryzen 9', 'X3D'], cpuSeries, setCpuSeries)}
                     </div>
                 )}
 
@@ -480,9 +480,9 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
 
                 {entry.category === 'ram' && (
                     <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
-                        {renderFilterGroup('品牌', brands, brand, setBrand)}
+                        {renderFilterGroup('品牌', brands, brand, setBrand, 'min-[720px]:col-span-2')}
                         {renderFilterGroup('代际', ramMemoryTypes, ramMemoryType, setRamMemoryType)}
-                        {renderFilterGroup('容量', ramCapacities, ramCapacity, setRamCapacity, 'min-[720px]:col-span-2')}
+                        {renderFilterGroup('容量', ramCapacities, ramCapacity, setRamCapacity)}
                     </div>
                 )}
 
@@ -497,17 +497,17 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
 
                 {entry.category === 'cooling' && (
                     <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
-                        {renderFilterGroup('品牌', brands, brand, setBrand)}
+                        {renderFilterGroup('品牌', brands, brand, setBrand, 'min-[720px]:col-span-2')}
                         {renderFilterGroup('类型', coolerTypes, coolerType, setCoolerType)}
-                        {renderFilterGroup('冷排', coolerSizes, coolerSize, setCoolerSize, 'min-[720px]:col-span-2')}
+                        {renderFilterGroup('冷排', coolerSizes, coolerSize, setCoolerSize)}
                     </div>
                 )}
 
                 {entry.category === 'disk' && (
                     <div className="grid grid-cols-1 gap-x-3 gap-y-1.5 min-[720px]:grid-cols-2">
-                        {renderFilterGroup('品牌', brands, brand, setBrand)}
+                        {renderFilterGroup('品牌', brands, brand, setBrand, 'min-[720px]:col-span-2')}
                         {renderFilterGroup('协议', diskProtocols, diskProtocol, setDiskProtocol)}
-                        {renderFilterGroup('容量', diskCapacities, diskCapacity, setDiskCapacity, 'min-[720px]:col-span-2')}
+                        {renderFilterGroup('容量', diskCapacities, diskCapacity, setDiskCapacity)}
                     </div>
                 )}
 
