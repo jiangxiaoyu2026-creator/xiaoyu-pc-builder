@@ -818,24 +818,24 @@ function StreamerWorkbench({
                                 {isMarioLiveStyle && (
                                     <div aria-hidden="true" className="live-mario-bottom-chase">
                                         <div className="live-mario-bottom-target-track">
-                                            <img
-                                                key={marioChaseTarget.id}
-                                                className={`live-mario-bottom-target live-mario-bottom-target--${marioChaseTarget.id}`}
-                                                src={marioChaseTarget.src}
-                                                alt=""
-                                            />
+                                            <span className={`live-mario-bottom-target-motion live-mario-bottom-target-motion--${marioChaseTarget.id}`}>
+                                                <img
+                                                    key={marioChaseTarget.id}
+                                                    className="live-mario-bottom-target"
+                                                    src={marioChaseTarget.src}
+                                                    alt=""
+                                                />
+                                            </span>
                                         </div>
                                         <div className="live-mario-bottom-runner-track">
                                             <img className="live-mario-bottom-runner" src="/assets/themes/mario-game/mario-runner.svg" alt="" />
                                         </div>
                                         <span className="live-mario-ground-plant">
                                             <img className="live-mario-ground-plant-sprite" src="/assets/themes/mario-game/gameicon-plant.png" alt="" />
-                                            <img className="live-mario-ground-plant-pipe" src="/assets/themes/mario-game/pipe.svg" alt="" />
                                         </span>
                                         <span className="live-mario-ground-gap">
                                             <img className="live-mario-ground-gap-spikes" src="/assets/themes/mario-game/gameicon-spiky-pit.png" alt="" />
                                         </span>
-                                        <img className="live-mario-goal-castle" src="/assets/themes/mario-game/castle.svg" alt="" />
                                     </div>
                                 )}
                                 <div className={`min-w-0 flex items-center justify-start gap-x-2 text-[13px] font-black tracking-wide whitespace-nowrap overflow-x-auto ${isMarioLiveStyle ? 'live-mario-service-strip' : ''}`}>

@@ -1386,6 +1386,24 @@
   .live-mario-pricing-panel {
     margin-bottom: 78px !important;
     transform: none;
+    overflow: visible !important;
+  }
+
+  .live-mario-pricing-panel > :not(.live-mario-pricing-castle) {
+    position: relative;
+    z-index: 2;
+  }
+
+  .live-mario-pricing-castle {
+    position: absolute;
+    right: -7px;
+    bottom: -66px;
+    z-index: 1;
+    width: 76px;
+    height: 76px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: drop-shadow(-2px 3px 2px rgba(85, 47, 24, 0.25));
   }
 
   .live-mario-metric-card,
@@ -1471,7 +1489,8 @@
   .live-mario-service-footer {
     position: relative;
     overflow: visible;
-    padding-bottom: 31px !important;
+    min-height: 76px;
+    padding: 10px 18px 40px !important;
     border: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
@@ -1480,13 +1499,14 @@
   .live-mario-service-strip {
     position: relative;
     z-index: 4;
-    gap: 7px !important;
+    gap: 12px !important;
+    padding: 3px 0;
     overflow: visible !important;
   }
 
   .live-mario-service-item {
     position: relative;
-    padding: 2px 4px 2px 2px;
+    padding: 4px 7px 4px 3px;
     border: 0;
     border-radius: 6px;
     background: transparent;
@@ -1553,10 +1573,10 @@
     left: 0;
     right: auto;
     bottom: -4px;
-    z-index: 2;
+    z-index: 6;
     width: 964px;
-    height: 102px;
-    overflow: hidden;
+    height: 134px;
+    overflow: visible;
     pointer-events: none;
   }
 
@@ -1567,7 +1587,7 @@
     right: 0;
     bottom: 0;
     z-index: 1;
-    height: 32px;
+    height: 34px;
     background: url('/assets/themes/mario-game/mario-floorbricks.png') repeat-x center / 128px 32px;
     filter: drop-shadow(0 -2px 2px rgba(95, 57, 25, 0.16));
   }
@@ -1576,7 +1596,7 @@
   .live-mario-bottom-target-track {
     position: absolute;
     z-index: 3;
-    bottom: 32px;
+    bottom: 34px;
     transform-origin: left bottom;
   }
 
@@ -1589,13 +1609,14 @@
 
   .live-mario-bottom-target-track {
     left: 14px;
-    width: 36px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     animation: liveMarioBottomTargetAcross 15s linear infinite;
   }
 
   .live-mario-bottom-runner,
-  .live-mario-bottom-target {
+  .live-mario-bottom-target,
+  .live-mario-bottom-target-motion {
     display: block;
     width: 100%;
     height: 100%;
@@ -1609,56 +1630,48 @@
     animation: liveMarioBottomRunnerJump 15s cubic-bezier(.32, 0, .68, 1) infinite;
   }
 
-  .live-mario-bottom-target {
+  .live-mario-bottom-target-motion {
     animation: liveMarioBottomTargetHop 15s cubic-bezier(.32, 0, .68, 1) infinite;
   }
 
-  .live-mario-bottom-target--sparrow {
-    width: 38px;
-    height: 28px;
+  .live-mario-bottom-target {
+    animation: liveMarioBottomTargetFlutter .48s steps(2, end) infinite;
   }
 
-  .live-mario-bottom-target--chicken {
+  .live-mario-bottom-target-motion--sparrow {
+    width: 42px;
+    height: 30px;
+  }
+
+  .live-mario-bottom-target-motion--chicken {
     width: 34px;
     height: 30px;
   }
 
-  .live-mario-bottom-target--goomba {
+  .live-mario-bottom-target-motion--goomba {
     width: 32px;
     height: 32px;
   }
 
   .live-mario-ground-plant {
     position: absolute;
-    left: 51.5%;
-    bottom: 32px;
+    left: 51%;
+    bottom: 34px;
     z-index: 3;
-    width: 44px;
-    height: 64px;
+    width: 34px;
+    height: 42px;
   }
 
   .live-mario-ground-plant-sprite {
     position: absolute;
-    left: 7px;
+    left: 1px;
     top: 0;
-    z-index: 2;
+    z-index: 1;
     width: 32px;
-    height: 44px;
+    height: 42px;
     object-fit: contain;
     image-rendering: pixelated;
     filter: drop-shadow(0 2px 0 #763827) drop-shadow(2px 0 0 #763827) drop-shadow(-2px 0 0 #763827);
-  }
-
-  .live-mario-ground-plant-pipe {
-    position: absolute;
-    left: 2px;
-    bottom: 0;
-    z-index: 1;
-    width: 40px;
-    height: 38px;
-    object-fit: fill;
-    image-rendering: pixelated;
-    filter: drop-shadow(1px 2px 1px rgba(29, 78, 46, 0.26));
   }
 
   .live-mario-ground-gap {
@@ -1684,18 +1697,6 @@
     filter: drop-shadow(0 -1px 0 rgba(240, 178, 88, 0.22));
   }
 
-  .live-mario-goal-castle {
-    position: absolute;
-    right: -2px;
-    bottom: 32px;
-    z-index: 4;
-    width: 70px;
-    height: 70px;
-    object-fit: contain;
-    image-rendering: pixelated;
-    filter: drop-shadow(-2px 3px 2px rgba(85, 47, 24, 0.22));
-  }
-
   @keyframes liveMarioBottomRunnerAcross {
     0%, 7% { opacity: 0; transform: translateX(0); }
     11% { opacity: 1; transform: translateX(0); }
@@ -1711,29 +1712,35 @@
   }
 
   @keyframes liveMarioBottomRunnerJump {
-    0%, 51% { transform: translateY(0); }
-    54% { transform: translateY(-13px); }
-    57% { transform: translateY(-38px); }
-    59% { transform: translateY(-45px); }
-    62% { transform: translateY(-29px); }
-    65% { transform: translateY(0); }
-    70% { transform: translateY(0); }
-    73% { transform: translateY(-18px); }
-    76% { transform: translateY(-48px); }
-    78% { transform: translateY(-55px); }
-    81% { transform: translateY(-31px); }
-    87%, 100% { transform: translateY(0); }
+    0%, 50% { transform: translateY(0); }
+    52% { transform: translateY(-20px); }
+    54.5% { transform: translateY(-58px); }
+    56.5% { transform: translateY(-74px); }
+    58.5% { transform: translateY(-55px); }
+    61% { transform: translateY(-20px); }
+    63%, 69% { transform: translateY(0); }
+    71% { transform: translateY(-24px); }
+    72.5% { transform: translateY(-62px); }
+    74.5% { transform: translateY(-82px); }
+    76.5% { transform: translateY(-61px); }
+    79% { transform: translateY(-22px); }
+    81%, 100% { transform: translateY(0); }
   }
 
   @keyframes liveMarioBottomTargetHop {
     0%, 50% { transform: translateY(0); }
-    54% { transform: translateY(-10px); }
-    58% { transform: translateY(-22px); }
+    54% { transform: translateY(-12px); }
+    58% { transform: translateY(-26px); }
     63% { transform: translateY(0); }
     70% { transform: translateY(0); }
-    74% { transform: translateY(-11px); }
-    78% { transform: translateY(-25px); }
+    74% { transform: translateY(-14px); }
+    78% { transform: translateY(-30px); }
     83%, 100% { transform: translateY(0); }
+  }
+
+  @keyframes liveMarioBottomTargetFlutter {
+    0%, 100% { transform: translateY(0) rotate(-4deg) scaleX(1); }
+    50% { transform: translateY(-4px) rotate(5deg) scaleX(.9); }
   }
 
   .live-mario-total-zone {
@@ -2045,6 +2052,7 @@
     .live-mario-bottom-runner-track,
     .live-mario-bottom-target-track,
     .live-mario-bottom-runner,
+    .live-mario-bottom-target-motion,
     .live-mario-bottom-target,
     .live-mario-smoke,
     .live-mario-sidebar-mascot img,
