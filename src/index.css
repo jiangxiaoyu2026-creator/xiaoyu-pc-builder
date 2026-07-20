@@ -1387,11 +1387,11 @@
     min-height: 128px;
     margin-bottom: 22px !important;
     gap: 2px !important;
-    padding: 6px 10px 6px 76px !important;
+    padding: 6px 76px 6px 10px !important;
     transform: none;
-    overflow: hidden !important;
+    overflow: visible !important;
     background:
-      linear-gradient(90deg, rgba(117, 177, 90, 0.08) 0 66px, transparent 66px),
+      linear-gradient(270deg, rgba(117, 177, 90, 0.1) 0 66px, transparent 66px),
       linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(255, 247, 211, 0.74)) !important;
   }
 
@@ -1402,18 +1402,18 @@
 
   .live-mario-pricing-castle {
     position: absolute;
-    left: 8px;
-    bottom: 8px;
-    z-index: 1;
-    width: 62px;
-    height: 62px;
+    right: -8px;
+    bottom: -7px;
+    z-index: 3;
+    width: 76px;
+    height: 76px;
     object-fit: contain;
     image-rendering: pixelated;
-    filter: drop-shadow(-2px 3px 2px rgba(85, 47, 24, 0.25));
+    filter: drop-shadow(-3px 4px 2px rgba(85, 47, 24, 0.28));
   }
 
   .live-mario-pricing-header {
-    margin-left: -66px;
+    margin-right: -66px;
   }
 
   .live-mario-pricing-values {
@@ -1422,7 +1422,7 @@
 
   .live-mario-pricing-meta {
     flex-direction: column;
-    align-items: flex-end !important;
+    align-items: flex-start !important;
     gap: 1px !important;
   }
 
@@ -1527,6 +1527,7 @@
   .live-mario-service-item {
     position: relative;
     --mario-service-base-color: #3e614f;
+    --mario-wave-delay: 2.45s;
     padding: 4px 7px 4px 3px;
     border: 0;
     border-radius: 6px;
@@ -1534,22 +1535,14 @@
     color: var(--mario-service-base-color);
     font: inherit;
     transition: transform 160ms ease, background 160ms ease, color 160ms ease;
-    animation: liveMarioServiceTouch 15s linear infinite;
   }
 
-  .live-mario-service-item:nth-child(1) { animation-delay: 2.45s; }
-  .live-mario-service-item:nth-child(2) { animation-delay: 3.45s; }
-  .live-mario-service-item:nth-child(3) { animation-delay: 4.55s; }
-  .live-mario-service-item:nth-child(4) { animation-delay: 5.65s; }
-  .live-mario-service-item:nth-child(5) { animation-delay: 6.85s; }
-  .live-mario-service-item:nth-child(6) { animation-delay: 7.95s; }
-
-  @keyframes liveMarioServiceTouch {
-    0%, 100% { transform: translateY(0) scale(1); color: var(--mario-service-base-color); }
-    1.5% { transform: translateY(-5px) scale(1.07); color: #198447; }
-    3% { transform: translateY(1px) scale(.98); color: #9a5e15; }
-    5% { transform: translateY(0) scale(1); color: var(--mario-service-base-color); }
-  }
+  .live-mario-service-item:nth-child(1) { --mario-wave-delay: 2.45s; }
+  .live-mario-service-item:nth-child(2) { --mario-wave-delay: 3.45s; }
+  .live-mario-service-item:nth-child(3) { --mario-wave-delay: 4.55s; }
+  .live-mario-service-item:nth-child(4) { --mario-wave-delay: 5.65s; }
+  .live-mario-service-item:nth-child(5) { --mario-wave-delay: 6.85s; }
+  .live-mario-service-item:nth-child(6) { --mario-wave-delay: 7.95s; }
 
   .live-mario-service-coin {
     position: absolute;
@@ -1595,21 +1588,32 @@
     color: #fff2b0;
     text-shadow: 0 1px 0 rgba(88, 48, 20, 0.55);
     box-shadow: var(--mario-check-shadow);
-    animation: liveMarioServiceCheckTouch 15s linear infinite;
+    transform-origin: 50% 100%;
+    will-change: transform, filter;
+    animation: liveMarioServiceBrickWave 15s cubic-bezier(.37, .01, .2, 1) var(--mario-wave-delay) infinite;
   }
 
-  .live-mario-service-item:nth-child(1) .live-mario-service-check { animation-delay: 2.45s; }
-  .live-mario-service-item:nth-child(2) .live-mario-service-check { animation-delay: 3.45s; }
-  .live-mario-service-item:nth-child(3) .live-mario-service-check { animation-delay: 4.55s; }
-  .live-mario-service-item:nth-child(4) .live-mario-service-check { animation-delay: 5.65s; }
-  .live-mario-service-item:nth-child(5) .live-mario-service-check { animation-delay: 6.85s; }
-  .live-mario-service-item:nth-child(6) .live-mario-service-check { animation-delay: 7.95s; }
+  .live-mario-service-label {
+    display: inline-block;
+    transform-origin: 0 100%;
+    will-change: transform, filter;
+    animation: liveMarioServiceTextWave 15s cubic-bezier(.37, .01, .2, 1) calc(var(--mario-wave-delay) + .1s) infinite;
+  }
 
-  @keyframes liveMarioServiceCheckTouch {
-    0%, 100% { filter: brightness(1); box-shadow: var(--mario-check-shadow); }
-    1.5% { filter: brightness(1.45) saturate(1.2); box-shadow: inset 0 1px 0 white, 0 0 0 3px rgba(255, 206, 53, .3), 0 0 12px rgba(255, 192, 36, .7); }
-    3% { filter: brightness(.94); box-shadow: var(--mario-check-shadow); }
-    5% { filter: brightness(1); box-shadow: var(--mario-check-shadow); }
+  @keyframes liveMarioServiceBrickWave {
+    0%, 7%, 100% { transform: translateY(0) rotate(0); filter: brightness(1); box-shadow: var(--mario-check-shadow); }
+    1.4% { transform: translateY(-2px) rotate(-3deg); filter: brightness(1.08); }
+    2.8% { transform: translateY(-7px) rotate(-7deg); filter: brightness(1.38) saturate(1.15); box-shadow: inset 0 1px 0 white, 0 0 0 2px rgba(255, 206, 53, .25), 0 0 10px rgba(255, 192, 36, .62); }
+    4.2% { transform: translateY(-4px) rotate(4deg); filter: brightness(1.15); }
+    5.6% { transform: translateY(1px) rotate(-1deg); filter: brightness(.98); }
+  }
+
+  @keyframes liveMarioServiceTextWave {
+    0%, 7%, 100% { transform: translateY(0) rotate(0); filter: brightness(1); }
+    1.6% { transform: translateY(-1px) rotate(-1deg); }
+    3.1% { transform: translateY(-5px) rotate(-2deg); filter: brightness(1.22); }
+    4.6% { transform: translateY(-3px) rotate(1deg); }
+    6% { transform: translateY(0) rotate(0); filter: brightness(1); }
   }
 
   .live-mario-service-item.is-active .live-mario-service-check {
@@ -1712,14 +1716,16 @@
     z-index: 5;
     padding-right: 72px !important;
     transform-origin: center;
-    animation: liveMarioTotalTouch 15s linear 9.7s infinite;
+    will-change: transform, filter;
+    animation: liveMarioTotalWave 15s cubic-bezier(.37, .01, .2, 1) 9.7s infinite;
   }
 
-  @keyframes liveMarioTotalTouch {
-    0%, 100% { transform: translateY(0) scale(1); filter: brightness(1); }
-    1.5% { transform: translateY(-6px) scale(1.08); filter: brightness(1.25); }
-    3% { transform: translateY(1px) scale(.98); filter: brightness(.96); }
-    5% { transform: translateY(0) scale(1); filter: brightness(1); }
+  @keyframes liveMarioTotalWave {
+    0%, 7%, 100% { transform: translateY(0) rotate(0) scale(1); filter: brightness(1); }
+    1.5% { transform: translateY(-2px) rotate(-.5deg) scale(1.015); }
+    3% { transform: translateY(-7px) rotate(-1deg) scale(1.055); filter: brightness(1.22); }
+    4.5% { transform: translateY(-3px) rotate(.6deg) scale(1.025); }
+    6% { transform: translateY(0) rotate(0) scale(1); filter: brightness(1); }
   }
 
   .live-mario-total-coin {
@@ -2027,8 +2033,8 @@
     .live-mario-bottom-runner,
     .live-mario-bottom-target-motion,
     .live-mario-bottom-goomba,
-    .live-mario-service-item,
     .live-mario-service-check,
+    .live-mario-service-label,
     .live-mario-total-zone,
     .live-mario-smoke,
     .live-mario-sidebar-mascot img,

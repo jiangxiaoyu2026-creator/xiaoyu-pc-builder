@@ -825,7 +825,7 @@ function StreamerWorkbench({
                                                 <span className={`live-mario-service-check w-4 h-4 text-[13px] flex items-center justify-center leading-none font-black ${selected ? `${liveStyleConfig.glowBg} ${liveCheckText}` : ''}`}>
                                                     {selected ? '✓' : '?'}
                                                 </span>
-                                                {item.label}
+                                                <span className="live-mario-service-label">{item.label}</span>
                                             </button>
                                         );
                                     })}
