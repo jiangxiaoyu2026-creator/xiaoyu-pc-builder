@@ -70,6 +70,17 @@ const LIVE_STYLE_SWATCHES: Record<LiveStyleKey, string> = {
     redline: 'linear-gradient(135deg, #fcfcfb 0 45%, #1f2937 46% 70%, #b4232c 71%)',
 };
 
+const VISIBLE_LIVE_STYLES: LiveStyleKey[] = [
+    'pixel',
+    'pixelCream',
+    'gundam',
+    'pure',
+    'snow',
+    'pink',
+    'orange',
+    'violet',
+];
+
 const LIVE_FRAME_MOTION_CLASSES = {
     none: '',
     charge: 'live-frame-motion--charge',
@@ -580,7 +591,7 @@ function StreamerWorkbench({
                         {/* Live Mode Style Switcher */}
                         {isLiveMode && (
                             <div className="hidden 2xl:flex items-center gap-1.5 bg-slate-900 px-2 py-1 rounded-full border border-slate-700 max-w-[620px] overflow-x-auto hide-scrollbar">
-                                {(Object.keys(LIVE_STYLES) as LiveStyleKey[]).map(s => (
+                                {VISIBLE_LIVE_STYLES.map(s => (
                                     <button
                                         key={s}
                                         onClick={() => setLiveStyle(s)}
@@ -1037,21 +1048,25 @@ function StreamerWorkbench({
         </div>
         {isLiveMode && (
             <div className="mt-3 flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-1.5">
-                    {(Object.keys(LIVE_STYLES) as LiveStyleKey[]).map(s => {
+                <div className="flex min-w-0 flex-1 items-start gap-1.5 overflow-x-auto px-1 pb-1 hide-scrollbar">
+                    {VISIBLE_LIVE_STYLES.map((s, themeIndex) => {
                         const isActive = liveStyle === s;
                         const styleConfig = LIVE_STYLES[s];
                         // 使用 glowBg 作为按钮背景色，选中时加深
                         return (
-                            <button
-                                key={s}
-                                onClick={() => setLiveStyle(s)}
-                                className={`w-9 h-9 p-0 border transition-all ${s.startsWith('pixel') && s !== 'pixel' ? 'rounded-none border-2 shadow-[3px_3px_0_#111]' : 'rounded-lg shadow-sm'} ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
-                                style={{ background: LIVE_STYLE_SWATCHES[s] }}
-                                title={styleConfig.name}
-                            >
-                                <span className={`block h-full w-full ${s.startsWith('pixel') && s !== 'pixel' ? 'rounded-none' : 'rounded-[7px]'} ${isActive ? 'bg-white/0' : 'bg-black/0'}`} />
-                            </button>
+                            <div key={s} className="flex w-9 shrink-0 flex-col items-center gap-1">
+                                <button
+                                    onClick={() => setLiveStyle(s)}
+                                    className={`w-9 h-9 p-0 border transition-all ${s.startsWith('pixel') && s !== 'pixel' ? 'rounded-none border-2 shadow-[3px_3px_0_#111]' : 'rounded-lg shadow-sm'} ${isActive ? 'scale-110 ring-2 ring-white ring-offset-2 ring-offset-slate-900 border-white/80' : 'opacity-80 hover:opacity-100 hover:scale-105 border-white/50'}`}
+                                    style={{ background: LIVE_STYLE_SWATCHES[s] }}
+                                    title={`${themeIndex + 1}. ${styleConfig.name}`}
+                                >
+                                    <span className={`block h-full w-full ${s.startsWith('pixel') && s !== 'pixel' ? 'rounded-none' : 'rounded-[7px]'} ${isActive ? 'bg-white/0' : 'bg-black/0'}`} />
+                                </button>
+                                <span className={`min-w-[18px] rounded-full border px-1 py-0.5 text-center text-[10px] font-black leading-none tabular-nums shadow-sm ${isActive ? 'border-slate-800 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-950' : 'border-slate-200 bg-white/90 text-slate-600 dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-300'}`} aria-hidden="true">
+                                    {themeIndex + 1}
+                                </span>
+                            </div>
                         );
                     })}
                 </div>
