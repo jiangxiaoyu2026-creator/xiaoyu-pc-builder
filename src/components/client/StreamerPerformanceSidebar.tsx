@@ -496,7 +496,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     {pricingProps && (
                         <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'rounded-lg shadow-sm'} p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5 ${isMarioLiveStyle ? 'live-mario-pricing-panel' : ''}`}>
                             {isMarioLiveStyle && <img className="live-mario-pricing-castle" src="/assets/themes/mario-game/castle.svg" alt="" aria-hidden="true" />}
-                            <div className="flex items-center justify-between gap-2">
+                            <div className={`flex items-center justify-between gap-2 ${isMarioLiveStyle ? 'live-mario-pricing-header' : ''}`}>
                                 <div className={`text-[12px] font-black ${liveStyleConfig.modelText}`}>优惠方案</div>
                                 <div className={`relative group w-[118px] ${isMarioLiveStyle ? 'live-mario-discount-control' : ''}`}>
                                     <select
@@ -514,7 +514,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-[70px_1fr] gap-2 items-end">
+                            <div className={`grid grid-cols-[70px_1fr] gap-2 items-end ${isMarioLiveStyle ? 'live-mario-pricing-values' : ''}`}>
                                 <div className="flex flex-col gap-0.5">
                                     <span className={`text-[10px] font-black ${liveStyleConfig.mutedText}`}>原价</span>
                                     <span className={`text-lg font-black line-through decoration-2 ${liveStyleConfig.mutedText}`}>¥{Math.floor(pricingProps.pricing.standardPrice)}</span>
@@ -529,7 +529,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between gap-2">
+                            <div className={`flex items-center justify-between gap-2 ${isMarioLiveStyle ? 'live-mario-pricing-meta' : ''}`}>
                                 <span className={`${pricingProps.pricing.savedAmount > 0 ? liveStyleConfig.savedBadge : `bg-white/20 ${liveStyleConfig.modelText} opacity-75`} px-2 py-0.5 rounded-full text-[11px] font-black`}>
                                     已省 ¥{pricingProps.pricing.savedAmount}
                                 </span>
