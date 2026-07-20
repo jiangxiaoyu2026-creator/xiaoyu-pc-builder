@@ -352,20 +352,23 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
             {isLiveMode ? (
                 <>
                     {/* 1. Product Image Stamp */}
-                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[120px] ${isMarioLiveStyle ? 'live-mario-product-stage' : ''}`}>
+                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[120px] ${isMarioLiveStyle ? `live-mario-product-stage ${activeProductImage ? 'is-filled' : 'is-empty'}` : ''}`}>
                         {/* Stamp inner dashed border */}
                         <div className={`absolute inset-2 border border-dashed ${activeProductImage ? liveStyleConfig.border : placeholderDashClassName} pointer-events-none ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} ${activeProductImage ? 'opacity-30' : ''}`}></div>
                         
                         {activeProductImage ? (
-                            <motion.img
-                                key={activeProductImage.src}
-                                src={activeProductImage.src}
-                                alt={activeProductImage.label}
-                                className="w-full h-full max-h-[105px] object-contain relative z-10"
-                                initial={{ opacity: 0, x: 18 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.35 }}
-                            />
+                            <>
+                                <motion.img
+                                    key={activeProductImage.src}
+                                    src={activeProductImage.src}
+                                    alt={activeProductImage.label}
+                                    className={`w-full h-full max-h-[105px] object-contain relative z-10 ${isMarioLiveStyle ? 'live-mario-product-image' : ''}`}
+                                    initial={{ opacity: 0, x: 18 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.35 }}
+                                />
+                                {isMarioLiveStyle && <span className="live-mario-product-label">{activeProductImage.label}</span>}
+                            </>
                         ) : isMarioLiveStyle ? (
                             <div className="live-mario-sidebar-art">
                                 <div className="live-mario-sidebar-mascot" aria-hidden="true">
@@ -373,8 +376,9 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                     <img src="/assets/themes/mario-game/pixel-mushroom.svg" alt="" />
                                 </div>
                                 <div>
-                                    <strong>冒险装机站</strong>
-                                    <span>选择硬件，开启新关卡</span>
+                                    <small>WORLD 1 · 道具屋</small>
+                                    <strong>硬件补给站</strong>
+                                    <span>选择硬件，解锁新装备</span>
                                 </div>
                             </div>
                         ) : (
@@ -392,7 +396,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                             </div>
                         )}
                         {productImages.length > 1 && (
-                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1">
+                            <div className={`absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex gap-1 ${isMarioLiveStyle ? 'live-mario-product-dots' : ''}`}>
                                 {productImages.map((image, index) => (
                                     <button
                                         key={image.src}
@@ -405,10 +409,10 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         )}
                         
                         {/* Stamp corner cutouts effect (CSS trick) */}
-                        <div className={`absolute -top-3 -left-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
-                        <div className={`absolute -top-3 -right-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
-                        <div className={`absolute -bottom-3 -left-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
-                        <div className={`absolute -bottom-3 -right-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
+                        <div className={`live-product-stamp-cutout absolute -top-3 -left-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
+                        <div className={`live-product-stamp-cutout absolute -top-3 -right-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
+                        <div className={`live-product-stamp-cutout absolute -bottom-3 -left-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
+                        <div className={`live-product-stamp-cutout absolute -bottom-3 -right-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
                     </div>
 
                     {/* 2. Score & Power Cards Side-by-Side */}
@@ -497,7 +501,9 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'rounded-lg shadow-sm'} p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5 ${isMarioLiveStyle ? 'live-mario-pricing-panel' : ''}`}>
                             {isMarioLiveStyle && <img className="live-mario-pricing-castle" src="/assets/themes/mario-game/castle.svg" alt="" aria-hidden="true" />}
                             <div className={`flex items-center justify-between gap-2 ${isMarioLiveStyle ? 'live-mario-pricing-header' : ''}`}>
-                                <div className={`text-[12px] font-black ${liveStyleConfig.modelText}`}>优惠方案</div>
+                                <div className={`text-[12px] font-black ${liveStyleConfig.modelText} ${isMarioLiveStyle ? 'live-mario-pricing-title' : ''}`}>
+                                    {isMarioLiveStyle ? <><span>关卡结算</span><small>优惠方案</small></> : '优惠方案'}
+                                </div>
                                 <div className={`relative group w-[118px] ${isMarioLiveStyle ? 'live-mario-discount-control' : ''}`}>
                                     <select
                                         value={pricingProps.discountRate}

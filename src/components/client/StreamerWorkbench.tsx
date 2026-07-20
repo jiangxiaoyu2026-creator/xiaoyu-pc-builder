@@ -521,14 +521,6 @@ function StreamerWorkbench({
                     <img className="live-mario-header-cloud live-mario-header-cloud--front" src="/assets/themes/mario-game/mario-cloud-1.png" alt="" />
                     <img className="live-mario-header-cloud live-mario-header-cloud--back" src="/assets/themes/mario-game/mario-cloud-2.png" alt="" />
                 </div>
-                <div className="live-mario-right-rooftop">
-                    <span className="live-mario-rooftop-wall" />
-                    <img className="live-mario-rooftop-pipe" src="/assets/themes/mario-game/pipe.svg" alt="" />
-                    <img className="live-mario-rooftop-chimney" src="/assets/themes/mario-game/gameicon-chimney.png" alt="" />
-                    <i className="live-mario-smoke live-mario-smoke--one" />
-                    <i className="live-mario-smoke live-mario-smoke--two" />
-                    <i className="live-mario-smoke live-mario-smoke--three" />
-                </div>
                 <img className="live-mario-side-pipe live-mario-side-pipe--left" src="/assets/themes/mario-game/pipe.svg" alt="" />
                 <img className="live-mario-flying-paratroopa" src="/assets/themes/mario-game/paratroopa.svg" alt="" />
             </div>
