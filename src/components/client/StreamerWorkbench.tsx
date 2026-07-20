@@ -51,6 +51,12 @@ const LIVE_SCENARIO_ROWS = [
     ['游戏', '直播', '生产力'],
 ];
 
+const MARIO_CHASE_TARGETS = [
+    { id: 'sparrow', src: '/assets/themes/mario-game/gameicon-sparrow.png' },
+    { id: 'chicken', src: '/assets/themes/mario-game/gameicon-chicken.png' },
+    { id: 'goomba', src: '/assets/themes/mario-game/mario-goomba-frame.png' },
+] as const;
+
 const LIVE_STYLE_SWATCHES: Record<LiveStyleKey, string> = {
     cyber: 'linear-gradient(135deg, #070d18 0 42%, #22d3ee 43% 62%, #2563eb 63%)',
     pixel: 'linear-gradient(135deg, #5c94fc 0 38%, #22c55e 39% 60%, #facc15 61% 78%, #ef4444 79%)',
@@ -220,6 +226,7 @@ function StreamerWorkbench({
     const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
     const [marioTotalFxKey, setMarioTotalFxKey] = useState(0);
     const [marioServiceFx, setMarioServiceFx] = useState<{ id: string; serial: number } | null>(null);
+    const [marioChaseTargetIndex, setMarioChaseTargetIndex] = useState(0);
     const posterRef = useRef<HTMLDivElement>(null);
     const previousMarioPriceRef = useRef(Number(pricing?.standardPrice) || 0);
 
@@ -473,6 +480,20 @@ function StreamerWorkbench({
     const isLightLiveStyle = liveStyleConfig.surface === 'light';
 
     useEffect(() => {
+        if (!isMarioLiveStyle) {
+            setMarioChaseTargetIndex(0);
+            return;
+        }
+
+        const timer = window.setInterval(() => {
+            setMarioChaseTargetIndex(index => (index + 1) % MARIO_CHASE_TARGETS.length);
+        }, 15000);
+        return () => window.clearInterval(timer);
+    }, [isMarioLiveStyle]);
+
+    const marioChaseTarget = MARIO_CHASE_TARGETS[marioChaseTargetIndex];
+
+    useEffect(() => {
         const nextPrice = Number(pricing?.standardPrice) || 0;
         if (isMarioLiveStyle && nextPrice > 0 && nextPrice !== previousMarioPriceRef.current) {
             setMarioTotalFxKey(key => key + 1);
@@ -517,6 +538,18 @@ function StreamerWorkbench({
         )}
         {isLiveMode && isMarioLiveStyle && (
             <div aria-hidden="true" className="live-mario-stage-decor">
+                <div className="live-mario-cloud-lane">
+                    <img className="live-mario-header-cloud live-mario-header-cloud--front" src="/assets/themes/mario-game/mario-cloud-1.png" alt="" />
+                    <img className="live-mario-header-cloud live-mario-header-cloud--back" src="/assets/themes/mario-game/mario-cloud-2.png" alt="" />
+                </div>
+                <div className="live-mario-right-rooftop">
+                    <span className="live-mario-rooftop-wall" />
+                    <img className="live-mario-rooftop-pipe" src="/assets/themes/mario-game/pipe.svg" alt="" />
+                    <img className="live-mario-rooftop-chimney" src="/assets/themes/mario-game/gameicon-chimney.png" alt="" />
+                    <i className="live-mario-smoke live-mario-smoke--one" />
+                    <i className="live-mario-smoke live-mario-smoke--two" />
+                    <i className="live-mario-smoke live-mario-smoke--three" />
+                </div>
                 <img className="live-mario-side-pipe live-mario-side-pipe--left" src="/assets/themes/mario-game/pipe.svg" alt="" />
                 <img className="live-mario-flying-paratroopa" src="/assets/themes/mario-game/paratroopa.svg" alt="" />
             </div>
@@ -687,19 +720,6 @@ function StreamerWorkbench({
                         )}
                         {isLiveMode && (
                             <div className={`px-4 py-2 ${liveStyleConfig.headerBg} border-b ${liveStyleConfig.border} ${isMarioLiveStyle ? 'live-mario-config-header' : ''}`}>
-                                {isMarioLiveStyle && (
-                                    <>
-                                        <div aria-hidden="true" className="live-mario-header-decor">
-                                            <span className="live-mario-header-cloud live-mario-header-cloud--front" />
-                                            <span className="live-mario-header-cloud live-mario-header-cloud--back" />
-                                            <span className="live-mario-header-chimney">
-                                                <i className="live-mario-smoke live-mario-smoke--one" />
-                                                <i className="live-mario-smoke live-mario-smoke--two" />
-                                                <i className="live-mario-smoke live-mario-smoke--three" />
-                                            </span>
-                                        </div>
-                                    </>
-                                )}
                                 <div className="flex items-center justify-start gap-5">
                                     <div className="flex flex-wrap items-center gap-3 min-w-0 shrink-0">
                                         <div className={`text-3xl font-black tracking-tight ${isMarioLiveStyle ? 'live-mario-brand' : liveStyleConfig.modelText}`}>
@@ -797,8 +817,24 @@ function StreamerWorkbench({
                             <div className={`px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg} ${liveStyleConfig.modelText} flex items-center justify-between gap-3 shrink-0 ${isMarioLiveStyle ? 'live-mario-service-footer' : ''}`}>
                                 {isMarioLiveStyle && (
                                     <div aria-hidden="true" className="live-mario-bottom-chase">
-                                        <img className="live-mario-bottom-koopa" src="/assets/themes/mario-game/koopa.svg" alt="" />
-                                        <img className="live-mario-bottom-runner" src="/assets/themes/mario-game/mario-runner.svg" alt="" />
+                                        <div className="live-mario-bottom-target-track">
+                                            <img
+                                                key={marioChaseTarget.id}
+                                                className={`live-mario-bottom-target live-mario-bottom-target--${marioChaseTarget.id}`}
+                                                src={marioChaseTarget.src}
+                                                alt=""
+                                            />
+                                        </div>
+                                        <div className="live-mario-bottom-runner-track">
+                                            <img className="live-mario-bottom-runner" src="/assets/themes/mario-game/mario-runner.svg" alt="" />
+                                        </div>
+                                        <span className="live-mario-ground-plant">
+                                            <img className="live-mario-ground-plant-sprite" src="/assets/themes/mario-game/gameicon-plant.png" alt="" />
+                                            <img className="live-mario-ground-plant-pipe" src="/assets/themes/mario-game/pipe.svg" alt="" />
+                                        </span>
+                                        <span className="live-mario-ground-gap">
+                                            <img className="live-mario-ground-gap-spikes" src="/assets/themes/mario-game/gameicon-spiky-pit.png" alt="" />
+                                        </span>
                                         <img className="live-mario-goal-castle" src="/assets/themes/mario-game/castle.svg" alt="" />
                                     </div>
                                 )}

@@ -46,6 +46,7 @@ __pycache__/
 # AI & Agent Temporary Files
 .agent/
 .agents/
+.asset-cache/
 .gemini/
 .claude/
 CLAUDE.md

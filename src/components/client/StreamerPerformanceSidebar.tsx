@@ -414,7 +414,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     {/* 2. Score & Power Cards Side-by-Side */}
                     <div className="flex flex-row gap-2 shrink-0">
                         {/* 鲁大师跑分 */}
-                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px]`}>
+                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px] ${isMarioLiveStyle ? 'live-mario-metric-card live-mario-metric-card--score' : ''}`}>
                             <div className={`absolute right-0 top-0 w-32 h-32 ${liveStyleConfig.glowBg} opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2`}></div>
                             <div className={`absolute left-2 top-1.5 flex items-center gap-1 text-[10px] font-black ${liveStyleConfig.modelText}`}>
                                 <Activity size={12} className={liveStyleConfig.accentText}/>
@@ -429,7 +429,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         </div>
 
                         {/* 整机功耗 */}
-                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px]`}>
+                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px] ${isMarioLiveStyle ? 'live-mario-metric-card live-mario-metric-card--power' : ''}`}>
                             <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2"></div>
                             <div className={`absolute left-2 top-1.5 flex items-center gap-1 text-[10px] font-black ${liveStyleConfig.modelText}`}>
                                 <Zap size={12} className={liveStyleConfig.accentText}/>
@@ -445,7 +445,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     </div>
 
                     {/* 3. FPS single column */}
-                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative flex-1 flex flex-col min-h-[330px]`}>
+                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative flex-1 flex flex-col min-h-[330px] ${isMarioLiveStyle ? 'live-mario-fps-panel' : ''}`}>
                         <div className="flex items-center justify-between mb-2 relative z-10">
                             <div className={`text-[12px] font-black tracking-widest ${liveStyleConfig.accentText}`}>游戏实测FPS</div>
                             <div className={`grid grid-cols-3 gap-1 w-[122px] ${liveControlBg} border p-0.5 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} shadow-sm ${isMarioLiveStyle ? 'live-mario-resolution-switch' : ''}`} title="切换分辨率">
