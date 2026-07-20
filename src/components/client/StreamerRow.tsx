@@ -141,9 +141,11 @@ function MarioCategoryIcon({ category }: { category: string }) {
 
 export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEntry, index: number, onUpdate: (id: string, d: Partial<BuildEntry>) => void, onEnter: () => void, onPrev: () => void, onPreview: (img: string) => void, onOpenPicker?: (entry: BuildEntry, anchorElement: HTMLElement) => void }>(({ entry, index, onUpdate, onEnter, onPrev, onPreview, onOpenPicker }, ref) => {
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
+    const isMarioLiveStyle = liveStyle === 'pixel';
     const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
     const isSoftLightLiveStyle = liveStyleConfig.surface === 'light' && liveStyleConfig.frameTreatment === 'soft';
     const [query, setQuery] = useState(entry.customName || entry.item?.model || '');
+    const [isModelInputFocused, setIsModelInputFocused] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [highlightIndex, setHighlightIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -432,7 +434,7 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
     };
 
     return (
-        <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px] h-full px-3 py-0' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px] px-3 py-2'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
+        <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px] h-full px-3 py-0' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px] px-3 py-2'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isMarioLiveStyle ? 'live-mario-hardware-row' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}>
             <div className={`flex items-center gap-1.5 font-bold whitespace-nowrap ${isLiveMode ? 'text-[14px]' : 'text-[13px]'} transition-all ${isLiveMode ? liveStyleConfig.categoryText : theme.primary}`}>
                 <div
                     className={`live-hardware-category-icon ${isLiveMode ? `w-8 h-8 ${isPixelLiveStyle ? `rounded-none border-2 ${liveStyleConfig.stampBorder} ${liveStyleConfig.panelBg} shadow-[2px_2px_0_#050505]` : 'rounded-lg'}` : 'w-7 h-7 rounded-lg'} flex items-center justify-center transition-all shadow-sm overflow-hidden relative group/icon ${entry.item?.image ? 'cursor-zoom-in hover:scale-110 hover:shadow-md' : ''} ${entry.item ? (isLiveMode ? liveStyleConfig.accentText + (isPixelLiveStyle ? '' : ' bg-white/[0.06] border border-white/10') : `bg-gradient-to-br ${theme.gradient} text-white shadow-md`) : (isLiveMode ? liveStyleConfig.mutedText + (isPixelLiveStyle ? '' : ' bg-white/[0.04]') : `${style.bg} ${style.text}`)} ${!entry.item && !isLiveMode && 'group-hover:bg-white dark:group-hover:bg-slate-800 group-hover:shadow-md'}`}
@@ -444,11 +446,17 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
                             ? <PixelCategoryIcon category={entry.category} />
                             : getIconByCategory(entry.category)}
                 </div>
-                <span>{CATEGORY_MAP[entry.category]}</span>
+                <span className={isMarioLiveStyle ? 'live-mario-category-label' : ''}>{CATEGORY_MAP[entry.category]}</span>
             </div>
 
-            <div className="relative">
-                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 ${isLiveMode ? liveStyleConfig.modelText + ' text-[20px]' : 'text-slate-800 dark:text-slate-200 text-[15px]'} font-semibold tracking-wide ${isLiveMode ? 'placeholder-white/20' : 'placeholder-slate-300 dark:placeholder-slate-600'} focus:ring-0 focus:outline-none ${isLiveMode ? (hasRowContent ? 'pr-16' : 'pr-8') : (entry.item ? 'pr-14' : '')}`} placeholder={isLiveMode ? `${CATEGORY_MAP[entry.category]}...` : (entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`)} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onKeyDown={handleKeyDown} />
+            <div className={`relative ${isMarioLiveStyle ? 'live-mario-model-field' : ''}`}>
+                <input ref={inputRef} type="text" className={`w-full bg-transparent border-none p-0 ${isLiveMode ? liveStyleConfig.modelText + (isMarioLiveStyle ? ' text-[15px]' : ' text-[20px]') : 'text-slate-800 dark:text-slate-200 text-[15px]'} font-semibold tracking-wide ${isLiveMode ? 'placeholder-white/20' : 'placeholder-slate-300 dark:placeholder-slate-600'} focus:ring-0 focus:outline-none ${isLiveMode ? (hasRowContent ? 'pr-16' : 'pr-8') : (entry.item ? 'pr-14' : '')} ${isMarioLiveStyle ? `live-mario-model-input ${entry.item && !isModelInputFocused ? 'is-visualized' : ''}` : ''}`} placeholder={isLiveMode ? `${CATEGORY_MAP[entry.category]}...` : (entry.category === 'accessory' ? "输入配件名称..." : `输入/搜索 ${CATEGORY_MAP[entry.category]}...`)} value={query} onChange={e => { handleCustomInput(e.target.value); setShowSuggestions(true); setHighlightIndex(0); }} onFocus={() => { setIsModelInputFocused(true); setShowSuggestions(true); loadCategoryProducts(); }} onBlur={() => { setIsModelInputFocused(false); setTimeout(() => setShowSuggestions(false), 200); }} onKeyDown={handleKeyDown} />
+                {isMarioLiveStyle && entry.item && !isModelInputFocused && (
+                    <div className={`live-mario-model-display ${hasRowContent ? 'has-actions' : ''}`} aria-hidden="true">
+                        <span className="live-mario-model-brand">{entry.item.brand}</span>
+                        <span className="live-mario-model-name">{entry.item.model}</span>
+                    </div>
+                )}
                 {isLiveMode && onOpenPicker && (
                     <button
                         type="button"
@@ -524,7 +532,7 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
             <div className="flex flex-col items-end justify-center leading-none">
                 <div className="flex items-center gap-1 justify-end">
                     <span className={`${isLiveMode ? liveStyleConfig.priceText + ' opacity-60' : 'text-slate-300 dark:text-slate-600'} text-sm`}>¥</span>
-                    <input ref={priceRef} type="text" className={`${isLiveMode ? 'w-[58px] text-[20px] font-black' : 'w-12 text-[14px]'} text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${isLiveMode ? liveStyleConfig.priceText : (entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300')}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
+                    <input ref={priceRef} type="text" className={`${isLiveMode ? 'w-[58px] text-[20px] font-black' : 'w-12 text-[14px]'} text-right bg-transparent border-b border-dashed border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-transparent ${theme.ring} focus:outline-none transition-colors ${isLiveMode ? liveStyleConfig.priceText : (entry.customPrice ? 'text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300')} ${isMarioLiveStyle ? 'live-mario-row-price' : ''}`} value={displayPrice} onChange={(e) => handlePriceChange(e.target.value)} onFocus={(e) => e.target.select()} onKeyDown={handlePriceKeyDown} />
                 </div>
             </div>
 

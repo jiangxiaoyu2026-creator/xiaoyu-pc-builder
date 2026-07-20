@@ -325,6 +325,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const productImages = buildList
         .filter(e => e.item?.image)
         .map(e => ({ src: e.item!.image!, label: e.item!.model }));
+    const hasSelectedHardware = buildList.some(entry => Boolean(entry.item));
     const productImagesKey = productImages.map(image => image.src).join('|');
     const [productImageIndex, setProductImageIndex] = useState(0);
 
@@ -356,6 +357,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         {/* Stamp inner dashed border */}
                         <div className={`absolute inset-2 border border-dashed ${activeProductImage ? liveStyleConfig.border : placeholderDashClassName} pointer-events-none ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} ${activeProductImage ? 'opacity-30' : ''}`}></div>
                         
+                        {isMarioLiveStyle && <span className="live-mario-item-box-title">ITEM BOX · 当前装备</span>}
                         {activeProductImage ? (
                             <>
                                 <motion.img
@@ -370,15 +372,11 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                 {isMarioLiveStyle && <span className="live-mario-product-label">{activeProductImage.label}</span>}
                             </>
                         ) : isMarioLiveStyle ? (
-                            <div className="live-mario-sidebar-art">
-                                <div className="live-mario-sidebar-mascot" aria-hidden="true">
-                                    <span className="live-mario-sidebar-coin" />
-                                    <img src="/assets/themes/mario-game/pixel-mushroom.svg" alt="" />
-                                </div>
+                            <div className="live-mario-item-box-empty">
+                                <span className={`live-mario-question-block ${hasSelectedHardware ? 'is-ready' : ''}`} aria-hidden="true">{hasSelectedHardware ? '✓' : '?'}</span>
                                 <div>
-                                    <small>WORLD 1 · 道具屋</small>
-                                    <strong>硬件补给站</strong>
-                                    <span>选择硬件，解锁新装备</span>
+                                    <strong>{hasSelectedHardware ? '硬件清单已载入' : '等待选择硬件'}</strong>
+                                    <span>{hasSelectedHardware ? '商品图补齐后自动轮播' : '装备图片会在这里轮播'}</span>
                                 </div>
                             </div>
                         ) : (
@@ -521,13 +519,13 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                             </div>
 
                             <div className={`grid grid-cols-[70px_1fr] gap-2 items-end ${isMarioLiveStyle ? 'live-mario-pricing-values' : ''}`}>
-                                <div className="flex flex-col gap-0.5">
+                                <div className={`flex flex-col gap-0.5 ${isMarioLiveStyle ? 'live-mario-price-original' : ''}`}>
                                     <span className={`text-[10px] font-black ${liveStyleConfig.mutedText}`}>原价</span>
                                     <span className={`text-lg font-black line-through decoration-2 ${liveStyleConfig.mutedText}`}>¥{Math.floor(pricingProps.pricing.standardPrice)}</span>
                                 </div>
-                                <div className="flex flex-col items-end">
+                                <div className={`flex flex-col items-end ${isMarioLiveStyle ? 'live-mario-price-final' : ''}`}>
                                     <span className={`text-[10px] font-black ${liveStyleConfig.accentText}`}>优惠后</span>
-                                    <div className="flex items-baseline gap-1 leading-none">
+                                    <div className={`flex items-baseline gap-1 leading-none ${isMarioLiveStyle ? 'live-mario-final-price-line' : ''}`}>
                                         <span className={`text-xl font-bold ${liveStyleConfig.totalPriceText}`}>¥</span>
                                         <span className={`text-4xl font-black drop-shadow-md ${liveStyleConfig.totalPriceText} font-mono tracking-tighter`}>
                                             <SidebarRollingPrice value={pricingProps.pricing.finalPrice} />
