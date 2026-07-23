@@ -11,7 +11,10 @@ from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from sqlmodel import Session, select
 
+from ..db import get_session
+from ..models import Hardware
 from ..models import User
 from .auth import get_current_admin
 
@@ -25,6 +28,16 @@ MODEL_REVIEW_FILE = "model-review-decisions.json"
 MODEL_FILES_DIR = "model-files"
 PERSISTENT_DATA_DIR = ROOT_DIR / "data" / "pc3d"
 SEEDED_DATA_FILES = [MAPPING_FILE, DECISIONS_FILE, MODEL_CATALOG_FILE, MODEL_REVIEW_FILE, "assets.json"]
+
+CATEGORY_LABELS = {
+    "case": "机箱",
+    "mainboard": "主板",
+    "gpu": "显卡",
+    "cooling": "散热器",
+    "power": "电源",
+    "fan": "风扇",
+    "ram": "内存",
+}
 
 
 class ProductIdRequest(BaseModel):
@@ -206,6 +219,66 @@ def _read_model_catalog() -> Dict[str, Any]:
 
 def _read_model_review() -> Dict[str, Any]:
     return _read_json(_model_review_path(), {"version": 1, "updated_at": "", "assets": {}})
+
+
+def _new_product_mapping(product: Hardware) -> Dict[str, Any]:
+    category = str(product.category or "")
+    return {
+        "product_id": str(product.id),
+        "category": category,
+        "category_label": CATEGORY_LABELS.get(category, category),
+        "brand": product.brand or "",
+        "model": product.model or "",
+        "price": float(product.price or 0),
+        "isRecommended": bool(product.isRecommended),
+        "isDiscount": bool(product.isDiscount),
+        "asset_id": "",
+        "asset_label": "",
+        "asset_source_name": "",
+        "asset_model_url": "",
+        "match_kind": "none",
+        "match_label": "未关联",
+        "review_status": "unmapped",
+        "confidence": 0,
+        "reason": "后台新增产品，等待关联 3D 模型",
+        "risk": "",
+    }
+
+
+def _mapping_with_current_products(mapping: Dict[str, Any], session: Session) -> Dict[str, Any]:
+    products_by_id = {
+        str(product.get("product_id")): product
+        for product in mapping.get("products", [])
+        if product.get("product_id")
+    }
+    current_products = session.exec(select(Hardware)).all()
+    products = list(mapping.get("products", []))
+
+    for hardware in current_products:
+        product_id = str(hardware.id)
+        current_values = _new_product_mapping(hardware)
+        existing = products_by_id.get(product_id)
+        if existing:
+            existing.update({
+                key: current_values[key]
+                for key in ("category", "category_label", "brand", "model", "price", "isRecommended", "isDiscount")
+            })
+        else:
+            products.append(current_values)
+
+    return _recalculate_mapping({**mapping, "products": products})
+
+
+def _ensure_product_in_mapping(mapping: Dict[str, Any], product_id: str, session: Session) -> Dict[str, Any]:
+    try:
+        _find_product_index(mapping, product_id)
+        return mapping
+    except HTTPException:
+        hardware = session.get(Hardware, product_id)
+        if not hardware:
+            raise HTTPException(status_code=404, detail="找不到产品")
+        mapping.setdefault("products", []).append(_new_product_mapping(hardware))
+        return mapping
 
 
 def _recalculate_mapping(mapping: Dict[str, Any]) -> Dict[str, Any]:
@@ -1177,8 +1250,8 @@ def _save(mapping: Dict[str, Any], decisions: Dict[str, Any]) -> None:
 
 
 @router.get("/mapping")
-def get_mapping() -> Dict[str, Any]:
-    mapping = _read_mapping()
+def get_mapping(session: Session = Depends(get_session)) -> Dict[str, Any]:
+    mapping = _mapping_with_current_products(_read_mapping(), session)
     catalog = _read_model_catalog()
     decisions = _read_decisions()
     enriched_mapping = _mapping_with_model_availability(mapping, catalog)
@@ -1191,8 +1264,8 @@ def get_mapping() -> Dict[str, Any]:
 
 
 @router.get("/model-catalog")
-def get_model_catalog() -> Dict[str, Any]:
-    mapping = _read_mapping()
+def get_model_catalog(session: Session = Depends(get_session)) -> Dict[str, Any]:
+    mapping = _mapping_with_current_products(_read_mapping(), session)
     catalog = _read_model_catalog()
     review = _read_model_review()
     return {
@@ -1202,8 +1275,8 @@ def get_model_catalog() -> Dict[str, Any]:
 
 
 @router.get("/model-match-suggestions")
-def get_model_match_suggestions() -> Dict[str, Any]:
-    mapping = _read_mapping()
+def get_model_match_suggestions(session: Session = Depends(get_session)) -> Dict[str, Any]:
+    mapping = _mapping_with_current_products(_read_mapping(), session)
     catalog = _read_model_catalog()
     review = _read_model_review()
     return {
@@ -1287,8 +1360,13 @@ def approve_product(request: ProductIdRequest, admin: User = Depends(get_current
 
 
 @router.post("/link")
-def link_asset_to_product(request: AssetProductLinkRequest, admin: User = Depends(get_current_admin)) -> Dict[str, Any]:
+def link_asset_to_product(
+    request: AssetProductLinkRequest,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin),
+) -> Dict[str, Any]:
     mapping = _read_mapping()
+    _ensure_product_in_mapping(mapping, request.product_id, session)
     decisions = _read_decisions()
     asset = _find_asset(mapping, request.asset_id)
     index = _find_product_index(mapping, request.product_id)
@@ -1301,8 +1379,12 @@ def link_asset_to_product(request: AssetProductLinkRequest, admin: User = Depend
 
 
 @router.post("/model-link")
-def link_model_for_review(request: ModelLinkRequest, admin: User = Depends(get_current_admin)) -> Dict[str, Any]:
-    mapping = _read_mapping()
+def link_model_for_review(
+    request: ModelLinkRequest,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin),
+) -> Dict[str, Any]:
+    mapping = _mapping_with_current_products(_read_mapping(), session)
     catalog = _read_model_catalog()
     review = _read_model_review()
     asset = _find_asset(mapping, request.asset_id)
@@ -1323,8 +1405,13 @@ def link_model_for_review(request: ModelLinkRequest, admin: User = Depends(get_c
 
 
 @router.post("/model-replace-product-asset")
-def replace_product_model_asset(request: ModelLinkRequest, admin: User = Depends(get_current_admin)) -> Dict[str, Any]:
+def replace_product_model_asset(
+    request: ModelLinkRequest,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin),
+) -> Dict[str, Any]:
     mapping = _read_mapping()
+    _ensure_product_in_mapping(mapping, request.product_id, session)
     decisions = _read_decisions()
     review = _read_model_review()
     asset = _find_asset(mapping, request.asset_id)

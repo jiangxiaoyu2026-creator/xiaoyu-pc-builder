@@ -1047,6 +1047,9 @@ export default function PC3DMappingReview() {
                                             {linkableProducts.map((product) => {
                                                 const linkedProduct = selectedAssetProducts.find((link) => String(link.product_id) === String(product.product_id));
                                                 const draftLink = linkedProduct?.source === 'review' ? linkedProduct : null;
+                                                const draftRelation: ModelRelation = draftLink?.relation === 'exact' || draftLink?.relation === 'appearance'
+                                                    ? draftLink.relation
+                                                    : 'similar';
                                                 const publishedLink = linkedProduct?.source === 'published' || product.asset_id === selectedAsset.asset_id;
                                                 const sameAsset = Boolean(linkedProduct || publishedLink);
                                                 const brandDifferent = Boolean(assetBrand(selectedAsset) && product.brand && normalizeBrand(product.brand) !== normalizeBrand(assetBrand(selectedAsset)));
@@ -1076,6 +1079,14 @@ export default function PC3DMappingReview() {
                                                                             <CheckCircle2 size={13} />
                                                                             草稿
                                                                         </span>
+                                                                        <button
+                                                                            onClick={() => replaceProductModel(selectedAsset.asset_id, product.product_id, draftRelation)}
+                                                                            disabled={Boolean(actingId) || !apiWritable}
+                                                                            className="inline-flex items-center justify-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white transition hover:bg-emerald-500 disabled:opacity-50"
+                                                                        >
+                                                                            <CheckCircle2 size={13} />
+                                                                            发布
+                                                                        </button>
                                                                         <button
                                                                             onClick={() => unlinkModelForReview(selectedAsset.asset_id, product.product_id)}
                                                                             disabled={Boolean(actingId) || !apiWritable}
