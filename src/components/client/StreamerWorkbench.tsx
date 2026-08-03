@@ -16,6 +16,10 @@ import { StreamerPosterTemplate } from './StreamerPosterTemplate';
 import { StreamerPermissionWall } from './StreamerPermissionWall';
 import { StreamerHardwarePicker } from './StreamerHardwarePicker';
 import { areMemoryIncompatible, areSocketIncompatible, getBuildItem } from '../../utils/hardwareCompatibility';
+import rogAnniversaryBadge from '../../../reference/rog-official-2026-07-21/edition-20-landing/940ed1ebac046154.svg';
+import rogEye from '../../../reference/rog-official-2026-07-21/edition-20-landing/e4deb6948830b6e6.png';
+import rogMotherboardArmor from '../../../reference/rog-official-2026-07-21/deconstructed/motherboard-armor-cluster.png';
+import { RogLabBoardStack, RogLabCircuitLayer, RogLabTotalBus } from './RogLabVisuals';
 // --------------------
 
 const STREAMER_BUILD_CATEGORY_ORDER: Category[] = [
@@ -59,12 +63,12 @@ const LIVE_STYLE_SWATCHES: Record<LiveStyleKey, string> = {
     pixelOcean: 'repeating-conic-gradient(#eafaf7 0 25%, #164e63 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #dff7f1, #14b8a6, #38bdf8)',
     pixelNight: 'repeating-conic-gradient(#0b1220 0 25%, #d9b75f 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #121c2e, #8bd3f7, #d9b75f)',
     pixelSunset: 'repeating-conic-gradient(#fff4ee 0 25%, #6b3049 0 50%) 0 0 / 10px 10px, linear-gradient(135deg, #ffe7d6, #fb7185, #fb923c)',
-    gundam: 'linear-gradient(135deg, #edf2f7 0 42%, #1d4ed8 43% 66%, #cf2f3b 67%)',
+    gundam: 'linear-gradient(135deg, #fff8e5 0 38%, #4b91c9 39% 58%, #f4c750 59% 74%, #df5848 75%)',
     mecha: 'linear-gradient(135deg, #0d0f12 0 45%, #f97316 46% 70%, #f59e0b 71%)',
-    pure: 'linear-gradient(135deg, #fffdf7 0 46%, #111827 47% 69%, #1d4ed8 70%)',
+    pure: 'linear-gradient(135deg, #75c9f5 0 31%, #ffffff 32% 62%, #75c9f5 63% 82%, #d6a84b 83%)',
     aurora: 'linear-gradient(135deg, #041311 0 38%, #2dd4bf 39% 67%, #bef264 68%)',
     snow: 'linear-gradient(135deg, #fbfdff 0 45%, #60a5fa 46% 72%, #1e3a5f 73%)',
-    pink: 'linear-gradient(135deg, #fff3f7 0 45%, #db2777 46% 71%, #7c3aed 72%)',
+    pink: 'linear-gradient(135deg, #071112 0 44%, #bfe9ee 45% 58%, #d9b872 59% 79%, #d91d3f 80%)',
     orange: 'linear-gradient(135deg, #fffaf0 0 45%, #f59e0b 46% 72%, #7c2d12 73%)',
     violet: 'linear-gradient(135deg, #ffffff, #7c3aed, #d946ef)',
     redline: 'linear-gradient(135deg, #fcfcfb 0 45%, #1f2937 46% 70%, #b4232c 71%)',
@@ -473,6 +477,9 @@ function StreamerWorkbench({
     };
     const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
     const isMarioLiveStyle = liveStyle === 'pixel';
+    const isGundamLiveStyle = liveStyle === 'gundam';
+    const isMessiLiveStyle = liveStyle === 'pure';
+    const isRogLiveStyle = liveStyle === 'pink';
     const serviceItems = [
         { id: 'assembly', label: '组装', positive: true },
         { id: 'cabling', label: '走线', positive: true },
@@ -536,7 +543,51 @@ function StreamerWorkbench({
                 <img className="live-mario-flying-paratroopa" src="/assets/themes/mario-game/paratroopa.svg" alt="" />
             </div>
         )}
-        <div className={`${theme.cardBg} ${liveShellClass} ${isMarioLiveStyle ? 'live-mario-sheet-shell' : ''} relative z-[1] overflow-hidden transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
+        {isLiveMode && isMessiLiveStyle && (
+            <>
+                <div aria-hidden="true" className="live-messi-stadium-backdrop">
+                    <img src="/assets/themes/messi-worldcup/stadium.svg" alt="" />
+                </div>
+                <div aria-hidden="true" className="live-messi-stage-decor">
+                    <span className="live-messi-stadium-light live-messi-stadium-light--left" />
+                    <span className="live-messi-stadium-light live-messi-stadium-light--right" />
+                    <img className="live-messi-flag live-messi-flag--left" src="/assets/themes/messi-worldcup/argentina-flag.svg" alt="" />
+                    <img className="live-messi-flag live-messi-flag--right" src="/assets/themes/messi-worldcup/argentina-flag.svg" alt="" />
+                    <div className="live-messi-scoreboard">
+                        <span>ARG</span><strong>3</strong><i>★ ★ ★</i><b>CAMPEONES 2022</b>
+                    </div>
+                    <img className="live-messi-player live-messi-player--dribble" src="/assets/themes/messi-worldcup/messi-dribble.png" alt="" />
+                    <div className="live-messi-goal"><span /></div>
+                    <img className="live-messi-player live-messi-player--champion" src="/assets/themes/messi-worldcup/messi-champion.png" alt="" />
+                    <div className="live-messi-confetti">
+                        {Array.from({ length: 14 }).map((_, index) => <span key={index} />)}
+                    </div>
+                </div>
+            </>
+        )}
+        {isLiveMode && isRogLiveStyle && (
+            <div aria-hidden="true" className="live-rog-outside-art">
+                <div className="live-rog-stage-backdrop" />
+                <span className="live-rog-crystal-plane live-rog-crystal-plane--north" />
+                <span className="live-rog-crystal-plane live-rog-crystal-plane--south" />
+                <span className="live-rog-outside-rail live-rog-outside-rail--left" />
+                <span className="live-rog-outside-rail live-rog-outside-rail--right" />
+                <img className="live-rog-outside-eye" src={rogEye} alt="" />
+                <div className="live-rog-outside-copy"><strong>CRYSTAL LENS</strong><span>EDITION / 20 / 2006—2026</span></div>
+                <div className="live-rog-outside-index"><span>CROSSHAIR</span><span>ASTRAL</span><span>AZOTH</span><span>HARPE</span></div>
+                <img className="live-rog-outside-badge" src={rogAnniversaryBadge} alt="" />
+            </div>
+        )}
+        <div className={`${theme.cardBg} ${liveShellClass} ${isMarioLiveStyle ? 'live-mario-sheet-shell' : ''} ${isGundamLiveStyle ? 'live-gundam-sheet-shell' : ''} ${isMessiLiveStyle ? 'live-messi-sheet-shell' : ''} ${isRogLiveStyle ? 'live-rog-sheet-shell' : ''} relative z-[1] overflow-hidden transition-colors duration-300`} style={isLiveMode ? LIVE_CONFIG_SHEET_SHELL_STYLE : undefined}>
+            {isLiveMode && isRogLiveStyle && (
+                <div className="live-rog-frame-assembly" aria-hidden="true">
+                    <i className="live-rog-frame-corner live-rog-frame-corner--tl" />
+                    <i className="live-rog-frame-corner live-rog-frame-corner--tr" />
+                    <i className="live-rog-frame-corner live-rog-frame-corner--bl" />
+                    <i className="live-rog-frame-corner live-rog-frame-corner--br" />
+                    <i className="live-rog-frame-index">20 / 2006—2026</i>
+                </div>
+            )}
             {isLiveMode && liveStyleConfig.frameMotion !== 'none' && !isMarioLiveStyle && (
                 <>
                     <div
@@ -636,7 +687,7 @@ function StreamerWorkbench({
                 </div>
 
                 {/* === Layout Container === */}
-                <div className={`flex flex-col md:flex-row flex-1 min-h-0 ${isLiveMode ? liveStyleConfig.wrapperBg : ''} ${isMarioLiveStyle ? 'live-mario-open-layout' : ''}`}>
+                <div className={`flex flex-col md:flex-row flex-1 min-h-0 ${isLiveMode ? liveStyleConfig.wrapperBg : ''} ${isMarioLiveStyle ? 'live-mario-open-layout' : ''} ${isGundamLiveStyle ? 'live-gundam-open-layout' : ''} ${isMessiLiveStyle ? 'live-messi-open-layout' : ''} ${isRogLiveStyle ? 'live-rog-open-layout' : ''}`}>
                     {/* === Sidebar Navigation === */}
                     {!isLiveMode && (
                         <div className="flex flex-row md:flex-col gap-1.5 p-2.5 md:p-3 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 md:w-[150px] lg:w-[172px] shrink-0 overflow-x-auto hide-scrollbar">
@@ -677,14 +728,24 @@ function StreamerWorkbench({
                     )}
 
                     {/* === Main Content Area === */}
-                    <div className={`flex-1 min-w-0 flex flex-col relative ${isLiveMode ? liveStyleConfig.sectionBg : 'bg-white dark:bg-slate-900/50'} ${isMarioLiveStyle ? 'live-mario-main-surface' : ''}`}>
+                    <div className={`flex-1 min-w-0 flex flex-col relative ${isLiveMode ? liveStyleConfig.sectionBg : 'bg-white dark:bg-slate-900/50'} ${isMarioLiveStyle ? 'live-mario-main-surface' : ''} ${isGundamLiveStyle ? 'live-gundam-main-surface' : ''} ${isMessiLiveStyle ? 'live-messi-main-surface' : ''} ${isRogLiveStyle ? 'live-rog-main-surface' : ''}`}>
 
                 {activeTab === 'builder' ? (
                     <>
                     <div className={`flex ${isLiveMode ? 'flex-row h-full' : 'flex-col xl:flex-row'} ${isMarioLiveStyle ? 'relative z-[1]' : ''}`}>
                     {/* === Left: Config Table === */}
-                    <div data-hardware-picker-boundary className={`flex-1 min-w-0 ${isMarioLiveStyle ? 'live-mario-table-shell' : ''} ${isLiveMode ? liveTableShellClass : 'max-w-[1550px]'}`}>
-                        {isLiveMode && liveStyleConfig.frameMotion === 'none' && (
+                    <div data-hardware-picker-boundary className={`flex-1 min-w-0 ${isMarioLiveStyle ? 'live-mario-table-shell' : ''} ${isGundamLiveStyle ? 'live-gundam-table-shell' : ''} ${isRogLiveStyle ? 'live-rog-table-shell' : ''} ${isLiveMode ? liveTableShellClass : 'max-w-[1550px]'}`}>
+                        {isRogLiveStyle && (
+                            <>
+                                <RogLabCircuitLayer className="live-rog-table-circuit" />
+                                <RogLabBoardStack className="live-rog-table-board" />
+                                <img className="live-rog-table-backplate" src={rogMotherboardArmor} alt="" aria-hidden="true" />
+                                <span className="live-rog-table-glass" aria-hidden="true" />
+                                <span className="live-rog-table-connector live-rog-table-connector--top" aria-hidden="true" />
+                                <span className="live-rog-table-connector live-rog-table-connector--side" aria-hidden="true" />
+                            </>
+                        )}
+                        {isLiveMode && liveStyleConfig.frameMotion === 'none' && !isRogLiveStyle && (
                             <>
                                 <div className={`pointer-events-none absolute inset-0 z-10 ${livePanelRadius} border ${isPixelLiveStyle ? 'border-black' : isSoftFrame ? liveStyleConfig.stampBorder : 'border-black/40'}`}></div>
                                 <div className={`pointer-events-none absolute inset-[4px] z-10 ${livePanelInsetRadius} border ${liveStyleConfig.stampBorder} opacity-80`}></div>
@@ -701,12 +762,21 @@ function StreamerWorkbench({
                             </>
                         )}
                         {isLiveMode && (
-                            <div className={`px-4 py-2 ${liveStyleConfig.headerBg} border-b ${liveStyleConfig.border} ${isMarioLiveStyle ? 'live-mario-config-header' : ''}`}>
+                            <div className={`px-4 py-2 ${liveStyleConfig.headerBg} border-b ${liveStyleConfig.border} ${isMarioLiveStyle ? 'live-mario-config-header' : ''} ${isGundamLiveStyle ? 'live-gundam-config-header' : ''} ${isMessiLiveStyle ? 'live-messi-config-header' : ''} ${isRogLiveStyle ? 'live-rog-config-header' : ''}`}>
                                 <div className="flex items-center justify-start gap-5">
                                     <div className="flex flex-wrap items-center gap-3 min-w-0 shrink-0">
-                                        <div className={`text-3xl font-black tracking-tight ${isMarioLiveStyle ? 'live-mario-brand' : liveStyleConfig.modelText}`}>
-                                            {isMarioLiveStyle ? <span aria-label="DIYXX">DIYXX</span> : 'DIYXX'}
+                                        <div className={`text-3xl font-black tracking-tight ${isMarioLiveStyle ? 'live-mario-brand' : liveStyleConfig.modelText} ${isGundamLiveStyle ? 'live-gundam-brand' : ''} ${isMessiLiveStyle ? 'live-messi-brand' : ''} ${isRogLiveStyle ? 'live-rog-brand' : ''}`}>
+                                            {isMarioLiveStyle ? <span aria-label="DIYXX">DIYXX</span> : isGundamLiveStyle ? <span>DIYXX</span> : isMessiLiveStyle ? <span>DIYXX</span> : isRogLiveStyle ? <><span className="live-rog-diyxx">DIYXX</span><span className="live-rog-wordmark"><strong>ROG</strong><small>REPUBLIC OF GAMERS</small></span><span className="live-rog-header-20"><img src={rogAnniversaryBadge} alt="ROG 20 周年" /></span></> : 'DIYXX'}
                                             {isMarioLiveStyle && <span className="live-mario-world-mark">WORLD 1-1</span>}
+                                            {isMessiLiveStyle && (
+                                                <span className="live-messi-champion-mark">
+                                                    <img src="/assets/themes/messi-worldcup/argentina-flag.svg" alt="" aria-hidden="true" />
+                                                    <span className="live-messi-stars">★ ★ ★</span>
+                                                    <span>MESSI <strong>10</strong></span>
+                                                    <small>CAMPEÓN DEL MUNDO</small>
+                                                    <img src="/assets/themes/messi-worldcup/trophy.svg" alt="" aria-hidden="true" />
+                                                </span>
+                                            )}
                                         </div>
                                         <div className={`h-10 w-px ${liveStyleConfig.glowBg} opacity-70 shrink-0`}></div>
                                         <div className="flex flex-col gap-1.5">
@@ -719,9 +789,9 @@ function StreamerWorkbench({
                                                                 key={label}
                                                                 type="button"
                                                                 onClick={() => toggleScenario(label)}
-                                                                className={`flex items-center gap-1.5 text-[14px] font-black transition-colors ${isMarioLiveStyle ? `live-mario-scenario-button ${checked ? 'is-active' : ''}` : ''} ${checked ? liveStyleConfig.modelText : liveStyleConfig.mutedText}`}
+                                                            className={`flex items-center gap-1.5 text-[14px] font-black transition-colors ${isMarioLiveStyle ? `live-mario-scenario-button ${checked ? 'is-active' : ''}` : ''} ${isGundamLiveStyle ? `live-gundam-scenario-button ${checked ? 'is-active' : ''}` : ''} ${isMessiLiveStyle ? `live-messi-scenario-button ${checked ? 'is-active' : ''}` : ''} ${isRogLiveStyle ? `live-rog-scenario-button ${checked ? 'is-active' : ''}` : ''} ${checked ? liveStyleConfig.modelText : liveStyleConfig.mutedText}`}
                                                             >
-                                                                <span className={`w-3.5 h-3.5 ${liveCheckRadius} border-2 flex items-center justify-center ${isMarioLiveStyle ? 'live-mario-scenario-check' : ''} ${checked ? `${liveStyleConfig.glowBg} border-transparent` : liveStyleConfig.border}`}>
+                                                                <span className={`w-3.5 h-3.5 ${liveCheckRadius} border-2 flex items-center justify-center ${isMarioLiveStyle ? 'live-mario-scenario-check' : ''} ${isGundamLiveStyle ? `live-gundam-scenario-check ${checked ? 'is-active' : ''}` : ''} ${checked ? `${liveStyleConfig.glowBg} border-transparent` : liveStyleConfig.border}`}>
                                                                     {checked && <span className={`text-[11px] leading-none ${liveCheckText}`}>✓</span>}
                                                                 </span>
                                                                 {label}
@@ -736,14 +806,13 @@ function StreamerWorkbench({
                                     <div className="ml-5 flex items-center gap-1.5 shrink-0">
                                         <button
                                             onClick={onOpenLibrary}
-                                            className={`h-[54px] px-3 ${liveControlRadius} ${liveControlBg} border ${liveStyleConfig.border} ${liveStyleConfig.modelText} transition-all text-[12px] font-black flex flex-col items-center justify-center gap-0.5`}
+                                            className={`h-[54px] px-3 ${liveControlRadius} ${liveControlBg} border ${liveStyleConfig.border} ${liveStyleConfig.modelText} transition-all text-[12px] font-black flex flex-col items-center justify-center gap-0.5 ${isGundamLiveStyle ? 'live-gundam-load-button' : ''}`}
                                             title="载入配置"
                                         >
-                                            {isMarioLiveStyle ? <PackageOpen size={17} /> : <FolderOpen size={16} />}
-                                            载入配置
+                                            {isGundamLiveStyle ? '载入' : <>{isMarioLiveStyle ? <PackageOpen size={17} /> : <FolderOpen size={16} />}载入配置</>}
                                         </button>
                                         <div className="grid gap-1 w-[154px]">
-                                            <label className={`h-6 px-2 ${liveInputRadius} ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText} ${isMarioLiveStyle ? 'live-mario-meta-field live-mario-meta-field--budget' : ''}`}>
+                                            <label className={`h-6 px-2 ${liveInputRadius} ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText} ${isMarioLiveStyle ? 'live-mario-meta-field live-mario-meta-field--budget' : ''} ${isGundamLiveStyle ? 'live-gundam-meta-field live-gundam-meta-field--budget' : ''}`}>
                                                 {isMarioLiveStyle ? <CircleDollarSign size={14} aria-label="预算" /> : <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>预算</span>}
                                                 <input
                                                     value={liveMeta.budget}
@@ -753,7 +822,7 @@ function StreamerWorkbench({
                                                     className={`min-w-0 flex-1 bg-transparent border-0 p-0 text-[12px] font-black ${liveStyleConfig.modelText} placeholder:text-current placeholder:opacity-40 focus:ring-0 focus:outline-none`}
                                                 />
                                             </label>
-                                            <label className={`h-6 px-2 ${liveInputRadius} ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText} ${isMarioLiveStyle ? 'live-mario-meta-field live-mario-meta-field--name' : ''}`}>
+                                            <label className={`h-6 px-2 ${liveInputRadius} ${liveInputBg} border ${liveStyleConfig.border} flex items-center gap-1 ${liveStyleConfig.modelText} ${isMarioLiveStyle ? 'live-mario-meta-field live-mario-meta-field--name' : ''} ${isGundamLiveStyle ? 'live-gundam-meta-field live-gundam-meta-field--name' : ''}`}>
                                                 {isMarioLiveStyle ? <UserRound size={14} aria-label="姓名" /> : <span className={`${liveStyleConfig.mutedText} text-[12px] font-black`}>姓名</span>}
                                                 <input
                                                     value={liveMeta.customerName}
@@ -768,9 +837,9 @@ function StreamerWorkbench({
                                 </div>
                             </div>
                         )}
-                        <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-hidden' : 'overflow-x-auto'} ${isMarioLiveStyle ? 'live-mario-table-content' : ''}`}>
+                        <div className={`${isLiveMode ? 'flex-1 min-h-0 overflow-hidden' : 'overflow-x-auto'} ${isMarioLiveStyle ? 'live-mario-table-content' : ''} ${isGundamLiveStyle ? 'live-gundam-table-content' : ''} ${isRogLiveStyle ? 'live-rog-table-content' : ''}`}>
                             <div className={`${isLiveMode ? 'w-full h-full flex flex-col' : 'min-w-[600px]'}`}>
-                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px]' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px]'} gap-2 px-3 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300 shrink-0 ${isMarioLiveStyle ? 'live-mario-column-header' : ''}`}>
+                                <div className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px]' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px]'} gap-2 px-3 py-1.5 ${isLiveMode ? liveStyleConfig.headerBg : theme.tableHeaderBg + ' border-b ' + theme.borderColor} text-xs font-bold ${isLiveMode ? liveStyleConfig.mutedText : theme.primary} uppercase tracking-widest transition-colors duration-300 shrink-0 ${isMarioLiveStyle ? 'live-mario-column-header' : ''} ${isGundamLiveStyle ? 'live-gundam-column-header' : ''} ${isMessiLiveStyle ? 'live-messi-column-header' : ''} ${isRogLiveStyle ? 'live-rog-column-header' : ''}`}>
                                     <div>类别</div>
                                     <div>硬件型号 {isLiveMode ? '' : '(智能搜索 / 自定义)'}</div>
                                     <div className="text-center">数量</div>
@@ -778,7 +847,7 @@ function StreamerWorkbench({
                                     {!isLiveMode && <div></div>}
                                 </div>
 
-                        <div className={`live-config-rows divide-y-[1.5px] ${isLiveMode ? liveStyleConfig.divider : theme.divider} transition-colors duration-300 ${isLiveMode ? 'flex shrink-0 flex-col' : ''}`}>
+                        <div className={`live-config-rows divide-y-[1.5px] ${isLiveMode ? liveStyleConfig.divider : theme.divider} transition-colors duration-300 ${isLiveMode ? 'flex shrink-0 flex-col' : ''} ${isGundamLiveStyle ? 'live-gundam-config-rows' : ''} ${isMessiLiveStyle ? 'live-messi-config-rows' : ''} ${isRogLiveStyle ? 'live-rog-config-rows' : ''}`}>
                             <AnimatePresence mode="popLayout">
                                 {visibleBuildList.map((entry, index) => (
                                     <motion.div
@@ -796,7 +865,7 @@ function StreamerWorkbench({
                             </AnimatePresence>
                         </div>
                         {isLiveMode && (
-                            <div className={`px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg} ${liveStyleConfig.modelText} flex items-center justify-between gap-3 shrink-0 ${isMarioLiveStyle ? 'live-mario-service-footer' : ''}`}>
+                            <div className={`px-4 py-2.5 border-t ${liveStyleConfig.border} ${liveStyleConfig.headerBg} ${liveStyleConfig.modelText} flex items-center justify-between gap-3 shrink-0 ${isMarioLiveStyle ? 'live-mario-service-footer' : ''} ${isGundamLiveStyle ? 'live-gundam-service-footer' : ''} ${isMessiLiveStyle ? 'live-messi-service-footer' : ''} ${isRogLiveStyle ? 'live-rog-service-footer' : ''}`}>
                                 {isMarioLiveStyle && (
                                     <div aria-hidden="true" className="live-mario-bottom-chase">
                                         <div className="live-mario-bottom-target-track">
@@ -813,11 +882,15 @@ function StreamerWorkbench({
                                     {serviceItems.map(item => {
                                         if (!isMarioLiveStyle) {
                                             return (
-                                                <span key={item.id} className="inline-flex items-center gap-1 shrink-0">
-                                                    <span className={`w-4 h-4 text-[13px] ${liveBadgeRadius} flex items-center justify-center leading-none font-black ${item.positive ? `${liveStyleConfig.glowBg} ${liveCheckText}` : `${liveInputBg} border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
-                                                        {item.positive ? '✓' : '×'}
-                                                    </span>
-                                                    {item.label}
+                                                <span key={item.id} className={`inline-flex items-center gap-1 shrink-0 ${isMessiLiveStyle ? 'live-messi-service-item' : ''} ${isRogLiveStyle ? 'live-rog-service-item' : ''}`}>
+                                                    {isGundamLiveStyle ? (
+                                                        <span aria-hidden="true" className={`live-gundam-service-check ${item.positive ? 'is-selected' : ''}`} />
+                                                    ) : (
+                                                        <span className={`w-4 h-4 text-[13px] ${liveBadgeRadius} flex items-center justify-center leading-none font-black ${isMessiLiveStyle ? 'live-messi-service-check' : ''} ${isRogLiveStyle ? 'live-rog-service-check' : ''} ${item.positive ? `${liveStyleConfig.glowBg} ${liveCheckText}` : `${liveInputBg} border ${liveStyleConfig.border} ${liveStyleConfig.accentText}`}`}>
+                                                            {item.positive ? '✓' : '×'}
+                                                        </span>
+                                                    )}
+                                                    <span className={isMessiLiveStyle ? 'live-messi-service-label' : ''}>{item.label}</span>
                                                 </span>
                                             );
                                         }
@@ -844,7 +917,8 @@ function StreamerWorkbench({
                                         );
                                     })}
                                 </div>
-                                <div className={`shrink-0 pl-3 pr-6 ${isMarioLiveStyle ? 'live-mario-total-zone' : ''}`}>
+                                <div className={`shrink-0 pl-3 pr-6 ${isMarioLiveStyle ? 'live-mario-total-zone' : ''} ${isGundamLiveStyle ? 'live-gundam-total-zone' : ''} ${isMessiLiveStyle ? 'live-messi-total-zone' : ''} ${isRogLiveStyle ? 'live-rog-total-zone' : ''}`}>
+                                    {isRogLiveStyle && <RogLabTotalBus />}
                                     <div className="flex items-baseline justify-end gap-2 leading-none">
                                         <span className={`text-[17px] font-black ${liveStyleConfig.modelText}`}>合计</span>
                                         <span className={`text-[28px] font-black font-mono ${liveStyleConfig.priceText}`}>
@@ -1047,8 +1121,8 @@ function StreamerWorkbench({
             </div >
         </div>
         {isLiveMode && (
-            <div className="mt-3 flex items-center justify-between gap-3">
-                <div className="flex min-w-0 flex-1 items-start gap-1.5 overflow-x-auto px-1 pb-1 hide-scrollbar">
+            <div className={`mt-3 flex items-center justify-between gap-3 ${isGundamLiveStyle ? 'live-gundam-action-strip' : ''}`}>
+                <div className={`flex min-w-0 flex-1 items-start gap-1.5 overflow-x-auto px-1 pb-1 hide-scrollbar ${isGundamLiveStyle ? 'live-gundam-style-picker' : ''}`}>
                     {VISIBLE_LIVE_STYLES.map((s, themeIndex) => {
                         const isActive = liveStyle === s;
                         const styleConfig = LIVE_STYLES[s];
@@ -1070,7 +1144,7 @@ function StreamerWorkbench({
                         );
                     })}
                 </div>
-                <div className="flex shrink-0 justify-end gap-2">
+                <div className={`flex shrink-0 justify-end gap-2 ${isGundamLiveStyle ? 'live-gundam-action-buttons' : ''}`}>
                     <button
                         onClick={() => {
                             setLiveMode(false);

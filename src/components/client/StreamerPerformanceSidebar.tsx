@@ -4,6 +4,8 @@ import { Activity, Zap, Gamepad2, RefreshCw, ChevronDown } from 'lucide-react';
 import { BuildEntry, HardwareItem } from '../../types/clientTypes';
 import { ThemeContext } from './StreamerThemeContext';
 import { Resolution } from '../../data/gameFpsData';
+import rogCrosshairBoard from '../../../reference/rog-official-2026-07-21/edition-20-landing/56febf6a1bcaaaa0.png';
+import { RogLabCircuitLayer, RogLabScanFrame } from './RogLabVisuals';
 
 // Bouncy number animation component
 export const BouncyNumber = ({ value, className }: { value: number; className?: string }) => {
@@ -125,6 +127,9 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
     const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
     const isMarioLiveStyle = liveStyle === 'pixel';
+    const isGundamLiveStyle = liveStyle === 'gundam';
+    const isMessiLiveStyle = liveStyle === 'pure';
+    const isRogLiveStyle = liveStyle === 'pink';
     const isLightLiveStyle = liveStyleConfig.surface === 'light';
     const liveControlBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} shadow-[2px_2px_0_#050505]` : isLightLiveStyle ? 'bg-white/55 border-slate-950/10' : 'bg-white/[0.06] border-white/10';
     const liveControlHover = isPixelLiveStyle ? 'hover:brightness-110' : isLightLiveStyle ? 'hover:bg-white/75' : 'hover:bg-white/[0.1]';
@@ -136,7 +141,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const placeholderTitleTextClassName = isLightLiveStyle ? 'text-slate-500' : 'text-slate-200';
     const placeholderMainTextClassName = isLightLiveStyle ? 'text-slate-600' : 'text-slate-100';
     const placeholderAccentTextClassName = isLightLiveStyle ? 'text-slate-400' : 'text-slate-300';
-    
+
     // === Performance Sidebar State ===
     const [simResult, setSimResult] = useState<{
         totalLuScore: number;
@@ -150,7 +155,9 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const [sidebarResolution, setSidebarResolution] = useState<number>(1080);
     const [resolutionFxKey, setResolutionFxKey] = useState(0);
     const [discountFxKey, setDiscountFxKey] = useState(0);
+    const [isGundamDiscountOpen, setIsGundamDiscountOpen] = useState(false);
     const [loadingFps, setLoadingFps] = useState(false);
+    const selectedDiscountStrategy = pricingProps?.strategies.find(strategy => strategy.value === pricingProps.discountRate);
 
     const changeSidebarResolution = (resolution: number) => {
         setSidebarResolution(resolution);
@@ -190,12 +197,12 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
 
     // Simulator: FPS estimation using lazy loaded gamesFpsData
     useEffect(() => {
-        if (!cpuItem && !gpuItem) { 
+        if (!cpuItem && !gpuItem) {
             import('../../data/gameFpsData').then(({ gamesList }) => {
                 setFpsData(gamesList.map((gameName: string) => ({ name: gameName, fps: 0 })));
             });
             setLoadingFps(false);
-            return; 
+            return;
         }
 
         setLoadingFps(true);
@@ -215,7 +222,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     if (type === 'cpu' && /13400EF/.test(rawModel) && !/13400EF|13400F/.test(upperKey)) return false;
                     return true;
                 };
-                
+
                 for (const game of Object.keys(gamesFpsData)) {
                     const entries = Object.keys(gamesFpsData[game][type] || {});
                     for (const key of entries) {
@@ -225,7 +232,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         }
                     }
                 }
-                
+
                 if (type === 'cpu') {
                     const match = rawModel.match(/\d{4,5}[A-Z]{0,3}/);
                     if (match) {
@@ -247,7 +254,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         }
                     }
                 }
-                
+
                 if (type === 'gpu') {
                     const numMatch = item.model.match(/\d{4}/);
                     if (numMatch) {
@@ -257,7 +264,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         const isXTX = /XTX/i.test(item.model);
                         const isXT = /XT\b/i.test(item.model) && !isXTX;
                         const isGRE = /GRE/i.test(item.model);
-                        
+
                         for (const game of Object.keys(gamesFpsData)) {
                             const entries = Object.keys(gamesFpsData[game][type] || {});
                             for (const key of entries) {
@@ -268,7 +275,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                     const keyXTX = /XTX/i.test(upperKey);
                                     const keyXT = /XT\b/i.test(upperKey) && !keyXTX;
                                     const keyGRE = /GRE/i.test(upperKey);
-                                    
+
                                     if (isTi === keyTi && isSuper === keySuper && isXTX === keyXTX && isXT === keyXT && isGRE === keyGRE) {
                                         if (canUseKey(key)) return key;
                                     }
@@ -283,7 +290,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         }
                     }
                 }
-                
+
                 return null;
             };
 
@@ -292,13 +299,13 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
 
             const results: { name: string; fps: number; lowFps?: number }[] = [];
             const preferredGames = [
-                "黑神话：悟空", "赛博朋克 2077", "绝地求生", "无畏契约", "反恐精英 2", 
-                "英雄联盟", "Apex 英雄", "荒野大镖客：救赎 2", "三角洲行动", "刀塔 2", 
-                "侠盗猎车手 5", "艾尔登法环", "守望先锋 2", "使命召唤：战区 2.0", "我的世界", 
-                "魔兽世界", "逃离塔科夫", "彩虹六号：围攻", "堡垒之夜", "命运 2", 
+                "黑神话：悟空", "赛博朋克 2077", "绝地求生", "无畏契约", "反恐精英 2",
+                "英雄联盟", "Apex 英雄", "荒野大镖客：救赎 2", "三角洲行动", "刀塔 2",
+                "侠盗猎车手 5", "艾尔登法环", "守望先锋 2", "使命召唤：战区 2.0", "我的世界",
+                "魔兽世界", "逃离塔科夫", "彩虹六号：围攻", "堡垒之夜", "命运 2",
                 "腐蚀", "火箭联盟"
             ];
-            
+
             for (const gameName of preferredGames) {
                 const gd = gamesFpsData[gameName];
                 if (!gd) continue;
@@ -323,8 +330,14 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const displayFpsData = isLiveMode ? fpsData.slice(0, 10) : fpsData.slice(0, 12);
 
     const productImages = buildList
-        .filter(e => e.item?.image)
-        .map(e => ({ src: e.item!.image!, label: e.item!.model }));
+        .filter(e => e.item)
+        .map(e => ({
+            src: e.item!.image || rogCrosshairBoard,
+            label: e.item!.model,
+            brand: e.item!.brand,
+            category: e.category,
+            hasProductImage: Boolean(e.item!.image),
+        }));
     const selectedHardwareCount = buildList.filter(entry => Boolean(entry.item)).length;
     const hasSelectedHardware = selectedHardwareCount > 0;
     const productImagesKey = productImages.map(image => image.src).join('|');
@@ -348,16 +361,19 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const now = new Date();
     const timeString = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     return (
-        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isMarioLiveStyle ? 'live-mario-sidebar' : ''} ${isLiveMode ? `h-full w-[240px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} ${isPixelLiveStyle ? 'border-l-4 shadow-[6px_0_0_#050505]' : 'border-l-2 shadow-2xl'} overflow-hidden` : 'w-[260px] gap-2.5 p-3 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
+        <div className={`${isLiveMode ? 'flex' : 'hidden xl:flex'} flex-col shrink-0 border-l ${isMarioLiveStyle ? 'live-mario-sidebar' : ''} ${isGundamLiveStyle ? 'live-gundam-sidebar' : ''} ${isMessiLiveStyle ? 'live-messi-sidebar' : ''} ${isRogLiveStyle ? 'live-rog-sidebar' : ''} ${isLiveMode ? `h-full w-[240px] gap-2 p-2 ${liveStyleConfig.sectionBg} ${liveStyleConfig.stampBorder} ${isPixelLiveStyle ? 'border-l-4 shadow-[6px_0_0_#050505]' : 'border-l-2 shadow-2xl'} overflow-hidden` : 'w-[260px] gap-2.5 p-3 border-slate-200 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/20 xl:sticky xl:top-0 xl:max-h-screen overflow-y-auto hide-scrollbar'}`}>
 
             {/* In Live Mode: Special Layout Order */}
             {isLiveMode ? (
                 <>
                     {/* 1. Product Image Stamp */}
-                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[120px] ${isMarioLiveStyle ? `live-mario-product-stage ${activeProductImage ? 'is-filled' : 'is-empty'}` : ''}`}>
+                    <div className={`${activeProductImage ? `bg-white ${liveStyleConfig.stampBorder} border-4` : placeholderBoxClassName} ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} p-2 relative shadow-lg overflow-hidden mb-1 flex items-center justify-center min-h-[120px] ${isMarioLiveStyle ? `live-mario-product-stage ${activeProductImage ? 'is-filled' : 'is-empty'}` : ''} ${isGundamLiveStyle ? 'live-gundam-product-stage' : ''} ${isMessiLiveStyle ? 'live-messi-product-stage' : ''} ${isRogLiveStyle ? 'live-rog-product-stage' : ''}`}>
+                        {isRogLiveStyle && <RogLabCircuitLayer compact className="live-rog-product-circuit" />}
+                        {isRogLiveStyle && <RogLabScanFrame />}
+                        {isRogLiveStyle && <><span className="live-rog-product-glass" aria-hidden="true" /><span className="live-rog-product-connector" aria-hidden="true" /></>}
                         {/* Stamp inner dashed border */}
                         <div className={`absolute inset-2 border border-dashed ${activeProductImage ? liveStyleConfig.border : placeholderDashClassName} pointer-events-none ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} ${activeProductImage ? 'opacity-30' : ''}`}></div>
-                        
+
                         {isMarioLiveStyle && <span className="live-mario-item-box-title">当前装备 · {selectedHardwareCount}</span>}
                         {activeProductImage ? (
                             <>
@@ -371,6 +387,12 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                     transition={{ duration: 0.35 }}
                                 />
                                 {isMarioLiveStyle && <span className="live-mario-product-label">{activeProductImage.label}</span>}
+                                {isRogLiveStyle && (
+                                    <div className="live-rog-selected-product">
+                                        <span>{activeProductImage.category.toUpperCase()} / ACTIVE SLOT</span>
+                                        <strong>{activeProductImage.brand} {activeProductImage.label}{activeProductImage.hasProductImage ? '' : ' / LAB PLACEHOLDER'}</strong>
+                                    </div>
+                                )}
                             </>
                         ) : isMarioLiveStyle ? (
                             <div className="live-mario-item-box-empty">
@@ -378,6 +400,24 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                 <div>
                                     <strong>{hasSelectedHardware ? `${selectedHardwareCount} 件装备已就位` : '等待选择硬件'}</strong>
                                     <span>{hasSelectedHardware ? '商品图补齐后浮动展示' : '从左侧挑选你的装备'}</span>
+                                </div>
+                            </div>
+                        ) : isGundamLiveStyle ? (
+                            <span className="text-[12px] text-slate-500">未选择硬件</span>
+                        ) : isMessiLiveStyle ? (
+                            <div className="live-messi-product-empty">
+                                <img src="/assets/themes/messi-worldcup/messi-champion.png" alt="" aria-hidden="true" />
+                                <div>
+                                    <strong>冠军阵容</strong>
+                                    <span>选择硬件，组建你的 10 号主机</span>
+                                </div>
+                            </div>
+                        ) : isRogLiveStyle ? (
+                            <div className="live-rog-product-empty">
+                                <img className="live-rog-product-board" src={rogCrosshairBoard} alt="ROG Crosshair X870E Edition 20" />
+                                <div>
+                                    <strong>CROSSHAIR X870E</strong>
+                                    <span>EDITION 20 / ARSENAL READY</span>
                                 </div>
                             </div>
                         ) : (
@@ -406,7 +446,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                 ))}
                             </div>
                         )}
-                        
+
                         {/* Stamp corner cutouts effect (CSS trick) */}
                         <div className={`live-product-stamp-cutout absolute -top-3 -left-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
                         <div className={`live-product-stamp-cutout absolute -top-3 -right-3 w-6 h-6 ${liveStyleConfig.wrapperBg.split(' ')[0]} rounded-full z-20`}></div>
@@ -417,10 +457,10 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     {/* 2. Score & Power Cards Side-by-Side */}
                     <div className="flex flex-row gap-2 shrink-0">
                         {/* 鲁大师跑分 */}
-                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px] ${isMarioLiveStyle ? 'live-mario-metric-card live-mario-metric-card--score' : ''}`}>
+                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px] ${isMarioLiveStyle ? 'live-mario-metric-card live-mario-metric-card--score' : ''} ${isGundamLiveStyle ? 'live-gundam-metric-card live-gundam-metric-card--score' : ''} ${isMessiLiveStyle ? 'live-messi-metric-card live-messi-metric-card--score' : ''} ${isRogLiveStyle ? 'live-rog-metric-card live-rog-metric-card--score' : ''}`}>
                             <div className={`absolute right-0 top-0 w-32 h-32 ${liveStyleConfig.glowBg} opacity-10 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2`}></div>
                             <div className={`absolute left-2 top-1.5 flex items-center gap-1 text-[10px] font-black ${liveStyleConfig.modelText}`}>
-                                <Activity size={12} className={liveStyleConfig.accentText}/>
+                                {!isGundamLiveStyle && <Activity size={12} className={liveStyleConfig.accentText}/>}
                                 鲁大师跑分
                             </div>
                             <div className="flex items-center gap-1 mb-1 z-10">
@@ -432,10 +472,10 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         </div>
 
                         {/* 整机功耗 */}
-                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px] ${isMarioLiveStyle ? 'live-mario-metric-card live-mario-metric-card--power' : ''}`}>
+                        <div className={`flex-1 ${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative overflow-hidden group flex flex-col justify-end items-center h-[68px] ${isMarioLiveStyle ? 'live-mario-metric-card live-mario-metric-card--power' : ''} ${isGundamLiveStyle ? 'live-gundam-metric-card live-gundam-metric-card--power' : ''} ${isMessiLiveStyle ? 'live-messi-metric-card live-messi-metric-card--power' : ''} ${isRogLiveStyle ? 'live-rog-metric-card live-rog-metric-card--power' : ''}`}>
                             <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 translate-y-1/2"></div>
                             <div className={`absolute left-2 top-1.5 flex items-center gap-1 text-[10px] font-black ${liveStyleConfig.modelText}`}>
-                                <Zap size={12} className={liveStyleConfig.accentText}/>
+                                {!isGundamLiveStyle && <Zap size={12} className={liveStyleConfig.accentText}/>}
                                 整机功耗
                             </div>
                             <div className="flex items-center gap-1 mb-1 z-10">
@@ -448,15 +488,15 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     </div>
 
                     {/* 3. FPS single column */}
-                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative flex-1 flex flex-col min-h-[330px] ${isMarioLiveStyle ? 'live-mario-fps-panel' : ''}`}>
+                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'shadow-sm rounded-lg'} p-2 relative flex-1 flex flex-col min-h-[330px] ${isMarioLiveStyle ? 'live-mario-fps-panel' : ''} ${isGundamLiveStyle ? 'live-gundam-fps-panel' : ''} ${isMessiLiveStyle ? 'live-messi-fps-panel' : ''} ${isRogLiveStyle ? 'live-rog-fps-panel' : ''}`}>
                         <div className="flex items-center justify-between mb-2 relative z-10">
-                            <div className={`text-[12px] font-black tracking-widest ${liveStyleConfig.accentText}`}>游戏实测FPS</div>
-                            <div className={`grid grid-cols-3 gap-1 w-[122px] ${liveControlBg} border p-0.5 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} shadow-sm ${isMarioLiveStyle ? 'live-mario-resolution-switch' : ''}`} title="切换分辨率">
+                            <div className={`text-[12px] font-black tracking-widest ${liveStyleConfig.accentText}`}>{isGundamLiveStyle ? 'FPS' : isMessiLiveStyle ? '冠军赛场 FPS' : isRogLiveStyle ? 'ROG BENCHMARK FPS' : '游戏实测FPS'}</div>
+                            <div className={`grid grid-cols-3 gap-1 w-[122px] ${liveControlBg} border p-0.5 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-lg'} shadow-sm ${isMarioLiveStyle ? 'live-mario-resolution-switch' : ''} ${isGundamLiveStyle ? 'live-gundam-resolution-switch' : ''}`} title="切换分辨率">
                                 {[1080, 1440, 2160].map(res => (
                                     <button
                                         key={res}
                                         onClick={() => changeSidebarResolution(res)}
-                                        className={`text-[10px] font-black py-1 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} transition-all uppercase tracking-wider ${isMarioLiveStyle ? `live-mario-resolution-button ${sidebarResolution === res ? 'is-active' : ''}` : ''} ${sidebarResolution === res ? `${liveStyleConfig.glowBg} ${activeResolutionText} shadow-sm scale-105` : `${liveStyleConfig.modelText} opacity-75 hover:opacity-100 ${liveControlHover}`}`}
+                                        className={`text-[10px] font-black py-1 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} transition-all uppercase tracking-wider ${isMarioLiveStyle ? `live-mario-resolution-button ${sidebarResolution === res ? 'is-active' : ''}` : ''} ${isGundamLiveStyle ? `live-gundam-resolution-button ${sidebarResolution === res ? 'is-active' : ''}` : ''} ${sidebarResolution === res ? `${liveStyleConfig.glowBg} ${activeResolutionText} shadow-sm scale-105` : `${liveStyleConfig.modelText} opacity-75 hover:opacity-100 ${liveControlHover}`}`}
                                     >
                                         {isMarioLiveStyle && sidebarResolution === res && resolutionFxKey > 0 && <span key={resolutionFxKey} className="live-mario-resolution-burst" />}
                                         {res === 1080 ? '1K' : res === 1440 ? '2K' : '4K'}
@@ -472,9 +512,9 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                             ) : fpsData.length > 0 ? (
                                 displayFpsData.map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-2">
-                                        <div className="relative shrink-0">
+                                        {!isGundamLiveStyle && <div className="relative shrink-0">
                                             <GameFpsIcon name={item.name} className={`w-8 h-8 rounded-full object-cover border-2 ${liveStyleConfig.border}`} />
-                                        </div>
+                                        </div>}
                                         <div className="flex-1 min-w-0">
                                             <div className={`text-[11px] font-black ${liveStyleConfig.modelText} truncate mb-0.5`}>{item.name}</div>
                                             <div className={`w-full ${fpsTrackBg} border ${isPixelLiveStyle ? 'rounded-none h-2' : 'rounded-full h-1.5'} overflow-hidden relative`}>
@@ -488,7 +528,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                 ))
                             ) : (
                                 <div className="py-8 flex flex-col items-center justify-center text-gray-600 gap-2 h-full">
-                                    <Gamepad2 size={24} />
+                                    {!isGundamLiveStyle && <Gamepad2 size={24} />}
                                     <span className="text-[10px] font-bold">暂无帧率数据</span>
                                 </div>
                             )}
@@ -497,26 +537,60 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
 
                     {/* 4. Pricing at bottom */}
                     {pricingProps && (
-                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'rounded-lg shadow-sm'} p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5 ${isMarioLiveStyle ? 'live-mario-pricing-panel' : ''}`}>
+                        <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'rounded-lg shadow-sm'} p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5 ${isMarioLiveStyle ? 'live-mario-pricing-panel' : ''} ${isGundamLiveStyle ? 'live-gundam-pricing-panel' : ''} ${isMessiLiveStyle ? 'live-messi-pricing-panel' : ''} ${isRogLiveStyle ? 'live-rog-pricing-panel' : ''}`}>
                             {isMarioLiveStyle && <img className="live-mario-pricing-castle" src="/assets/themes/mario-game/castle.svg" alt="" aria-hidden="true" />}
+                            {isMessiLiveStyle && <img className="live-messi-pricing-trophy" src="/assets/themes/messi-worldcup/trophy.svg" alt="" aria-hidden="true" />}
                             <div className={`flex items-center justify-between gap-2 ${isMarioLiveStyle ? 'live-mario-pricing-header' : ''}`}>
-                                <div className={`text-[12px] font-black ${liveStyleConfig.modelText} ${isMarioLiveStyle ? 'live-mario-pricing-title' : ''}`}>
-                                    {isMarioLiveStyle ? <><span>关卡结算</span><small>优惠方案</small></> : '优惠方案'}
+                                <div className={`text-[12px] font-black ${liveStyleConfig.modelText} ${isMarioLiveStyle ? 'live-mario-pricing-title' : ''} ${isGundamLiveStyle ? 'live-gundam-pricing-title' : ''} ${isMessiLiveStyle ? 'live-messi-pricing-title' : ''} ${isRogLiveStyle ? 'live-rog-pricing-title' : ''}`}>
+                                    {isMarioLiveStyle ? <><span>关卡结算</span><small>优惠方案</small></> : isGundamLiveStyle ? '结算' : isMessiLiveStyle ? <><span>冠军结算</span><small>优惠方案</small></> : isRogLiveStyle ? <><span>ROG FINAL BUILD</span><small>20TH ANNIVERSARY</small></> : '优惠方案'}
                                 </div>
-                                <div className={`relative group w-[118px] ${isMarioLiveStyle ? 'live-mario-discount-control' : ''}`}>
-                                    <select
-                                        value={pricingProps.discountRate}
-                                        onChange={(e) => {
-                                            pricingProps.setDiscountRate(parseFloat(e.target.value));
-                                            setDiscountFxKey(key => key + 1);
-                                        }}
-                                        className={`w-full appearance-none ${liveControlBg} ${liveStyleConfig.modelText} border text-[11px] font-black py-1 pl-2.5 pr-7 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} focus:outline-none focus:ring-1 focus:ring-slate-950/10 transition-all cursor-pointer shadow-sm`}
-                                    >
-                                        {pricingProps.strategies.map(opt => <option key={opt.value} value={opt.value} className={optionClassName}>{opt.label}</option>)}
-                                    </select>
-                                    {isMarioLiveStyle && discountFxKey > 0 && <span key={discountFxKey} className="live-mario-discount-coin" aria-hidden="true">★</span>}
-                                    <ChevronDown className={`absolute right-2 top-1.5 ${liveStyleConfig.accentText} opacity-80 pointer-events-none`} size={14} />
-                                </div>
+                                {isGundamLiveStyle ? (
+                                    <div className="live-gundam-discount-control relative w-[118px]">
+                                        <button
+                                            type="button"
+                                            aria-haspopup="listbox"
+                                            aria-expanded={isGundamDiscountOpen}
+                                            onClick={() => setIsGundamDiscountOpen(open => !open)}
+                                            className="live-gundam-discount-button"
+                                        >
+                                            {selectedDiscountStrategy?.label ?? '标准售价'}
+                                        </button>
+                                        {isGundamDiscountOpen && (
+                                            <div className="live-gundam-discount-menu" role="listbox" aria-label="优惠方案">
+                                                {pricingProps.strategies.map(strategy => (
+                                                    <button
+                                                        key={strategy.value}
+                                                        type="button"
+                                                        role="option"
+                                                        aria-selected={strategy.value === pricingProps.discountRate}
+                                                        className={strategy.value === pricingProps.discountRate ? 'is-selected' : ''}
+                                                        onClick={() => {
+                                                            pricingProps.setDiscountRate(strategy.value);
+                                                            setIsGundamDiscountOpen(false);
+                                                        }}
+                                                    >
+                                                        {strategy.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className={`relative group w-[118px] ${isMarioLiveStyle ? 'live-mario-discount-control' : ''}`}>
+                                        <select
+                                            value={pricingProps.discountRate}
+                                            onChange={(e) => {
+                                                pricingProps.setDiscountRate(parseFloat(e.target.value));
+                                                setDiscountFxKey(key => key + 1);
+                                            }}
+                                            className={`w-full appearance-none ${liveControlBg} ${liveStyleConfig.modelText} border text-[11px] font-black py-1 pl-2.5 pr-7 ${isPixelLiveStyle ? 'rounded-none' : 'rounded-md'} focus:outline-none focus:ring-1 focus:ring-slate-950/10 transition-all cursor-pointer shadow-sm`}
+                                        >
+                                            {pricingProps.strategies.map(opt => <option key={opt.value} value={opt.value} className={optionClassName}>{opt.label}</option>)}
+                                        </select>
+                                        {isMarioLiveStyle && discountFxKey > 0 && <span key={discountFxKey} className="live-mario-discount-coin" aria-hidden="true">★</span>}
+                                        <ChevronDown className={`absolute right-2 top-1.5 ${liveStyleConfig.accentText} opacity-80 pointer-events-none`} size={14} />
+                                    </div>
+                                )}
                             </div>
 
                             <div className={`grid grid-cols-[70px_1fr] gap-2 items-end ${isMarioLiveStyle ? 'live-mario-pricing-values' : ''}`}>
@@ -620,7 +694,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                                 <div className={`flex items-baseline gap-0.5 ml-1 w-14 justify-end`}>
                                                     <span className={`font-display font-black text-sm ${
                                                         item.fps === 0 ? 'text-slate-400 dark:text-slate-500' :
-                                                        item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' : 
+                                                        item.fps >= 200 ? 'text-emerald-500 dark:text-emerald-400' :
                                                         item.fps >= 100 ? 'text-blue-500 dark:text-blue-400' :
                                                         item.fps >= 60 ? 'text-yellow-600 dark:text-yellow-400' :
                                                         'text-red-500 dark:text-red-400'
@@ -633,7 +707,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                                             <div
                                                 className={`h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden ${
                                                     item.fps === 0 ? 'bg-slate-300 dark:bg-slate-600' :
-                                                    item.fps >= 200 ? 'bg-emerald-500' : 
+                                                    item.fps >= 200 ? 'bg-emerald-500' :
                                                     item.fps >= 100 ? 'bg-blue-500' :
                                                     item.fps >= 60 ? 'bg-yellow-500' :
                                                     'bg-red-500'

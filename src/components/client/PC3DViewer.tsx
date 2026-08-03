@@ -65,6 +65,8 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
     const modalIframeRef = useRef<HTMLIFrameElement | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isCaseHintDismissed, setIsCaseHintDismissed] = useState(false);
+    const [selectedFallbackImage, setSelectedFallbackImage] = useState<{ name: string; image: string } | null>(null);
     const [summary, setSummary] = useState<MatchSummary>(emptySummary);
     const pc3dItems = useMemo(() => toPc3dItems(buildList), [buildList]);
     const payloadKey = useMemo(() => JSON.stringify(pc3dItems), [pc3dItems]);
@@ -85,6 +87,7 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
     );
     const selectedCaseName = `${selectedCase?.item?.brand || ''} ${selectedCase?.item?.model || selectedCase?.customName || ''}`.trim();
     const showCaseRequirementHint = isReady && (!selectedCase || caseModelUnavailable);
+    const shouldShowCaseRequirementHint = showCaseRequirementHint && !isCaseHintDismissed;
     const caseRequirementCopy = selectedCase
         ? {
             badge: '机箱缺少 3D',
@@ -150,12 +153,23 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
         ? '需要选择带 3D 图片/模型的机箱，才能生成完整装机预览效果。'
         : '先用已选产品图片展示外观，模型补齐后自动切换为 3D。';
 
+    useEffect(() => {
+        setIsCaseHintDismissed(false);
+    }, [selectedCase?.item?.id, selectedCase?.customName]);
+
     const renderImageFallbackGrid = (expanded = false) => (
         <div className={`grid min-h-0 flex-1 gap-2 overflow-y-auto pr-1 ${expanded ? 'grid-cols-2 md:grid-cols-4 auto-rows-[150px]' : 'grid-cols-2 auto-rows-[88px]'}`}>
             {imageFallbackItems.map(item => (
                 <div key={`${item.category}-${item.name}`} className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-[#1E293B] dark:bg-[#121218]">
                     {item.image ? (
-                        <img src={item.image} alt={item.name} className="h-full w-full object-contain p-2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        <button
+                            type="button"
+                            onClick={() => setSelectedFallbackImage({ name: item.name, image: item.image })}
+                            className="h-full w-full cursor-zoom-in"
+                            title={`放大查看 ${item.name}`}
+                        >
+                            <img src={item.image} alt={item.name} className="h-full w-full object-contain p-2" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        </button>
                     ) : (
                         <div className="flex h-full w-full items-center justify-center px-3 text-center text-[11px] font-black text-slate-400 dark:text-slate-500">
                             暂无图片
@@ -233,6 +247,17 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
                     : 'border-white/85 bg-white/94 text-slate-900 ring-1 ring-slate-950/5 dark:border-white/10 dark:bg-[#121218]/92 dark:text-white dark:ring-white/10'
             }`}>
                 <div className={`absolute inset-y-0 left-0 w-1 ${selectedCase ? 'bg-amber-400' : 'bg-indigo-500'}`} />
+                <button
+                    type="button"
+                    onClick={() => setIsCaseHintDismissed(true)}
+                    className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md transition-colors ${
+                        expanded ? 'text-slate-400 hover:bg-white/10 hover:text-white' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white'
+                    }`}
+                    title="关闭提示"
+                    aria-label="关闭提示"
+                >
+                    <X size={15} />
+                </button>
                 <div className="flex items-start gap-3">
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                         selectedCase
@@ -314,12 +339,12 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
                                     </div>
                                 </div>
                                 {renderImageFallbackGrid(true)}
-                                {showCaseRequirementHint && renderCaseRequirementHint(true)}
+                                {shouldShowCaseRequirementHint && renderCaseRequirementHint(true)}
                             </div>
                         ) : (
                             <>
                             {renderIframe(modalIframeRef, '放大查看当前配置 3D 装机效果', true)}
-                            {showCaseRequirementHint && renderCaseRequirementHint(true)}
+                            {shouldShowCaseRequirementHint && renderCaseRequirementHint(true)}
                             {isEmpty && !showCaseRequirementHint && (
                             <div className="absolute left-5 bottom-5 max-w-md rounded-lg border border-white/10 bg-slate-950/85 p-3 text-slate-300 shadow-xl backdrop-blur">
                                 <div className="text-xs font-black text-white">还没有可生成的装机效果</div>
@@ -328,6 +353,29 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
                             )}
                             </>
                         )}
+                    </div>
+                </div>
+            </div>,
+            document.body
+        )
+        : null;
+
+    const imageLightbox = selectedFallbackImage && typeof document !== 'undefined'
+        ? createPortal(
+            <div className="fixed inset-0 z-[160] flex items-center justify-center bg-slate-950/80 p-6 backdrop-blur-sm" onClick={() => setSelectedFallbackImage(null)}>
+                <div className="relative flex max-h-full max-w-4xl flex-col overflow-hidden rounded-xl border border-white/15 bg-white shadow-2xl dark:bg-[#0B0B10]" onClick={(event) => event.stopPropagation()}>
+                    <button
+                        type="button"
+                        onClick={() => setSelectedFallbackImage(null)}
+                        className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-lg bg-slate-950/75 text-white transition-colors hover:bg-slate-950"
+                        title="关闭图片"
+                        aria-label="关闭图片"
+                    >
+                        <X size={18} />
+                    </button>
+                    <img src={selectedFallbackImage.image} alt={selectedFallbackImage.name} className="min-h-0 max-h-[78vh] w-full object-contain p-6" />
+                    <div className="border-t border-slate-100 px-5 py-3 text-sm font-black text-slate-700 dark:border-white/10 dark:text-slate-200">
+                        {selectedFallbackImage.name}
                     </div>
                 </div>
             </div>,
@@ -394,7 +442,7 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
                         {renderImageFallbackGrid()}
                     </div>
                 )}
-                {showCaseRequirementHint && renderCaseRequirementHint()}
+                {shouldShowCaseRequirementHint && renderCaseRequirementHint()}
                 {showMissingImageStrip && (
                     <div className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-2 overflow-hidden rounded-lg border border-white/70 bg-white/92 p-2 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#121218]/92">
                         <div className="shrink-0 text-[10px] font-black leading-tight text-slate-500 dark:text-slate-400">缺少模型<br />图片参考</div>
@@ -458,6 +506,7 @@ export default function PC3DViewer({ buildList, className = '' }: PC3DViewerProp
             </div>
         </section>
         {expandedLayer}
+        {imageLightbox}
         </>
     );
 }
