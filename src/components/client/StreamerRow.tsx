@@ -160,7 +160,7 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
     const { theme, isLiveMode, liveStyle, liveStyleConfig } = React.useContext(ThemeContext);
     const isMarioLiveStyle = liveStyle === 'pixel';
     const isGundamLiveStyle = liveStyle === 'gundam';
-    const isMessiLiveStyle = liveStyle === 'pure';
+    const isMessiLiveStyle = isLiveMode && liveStyle === 'pure';
     const isRogLiveStyle = liveStyle === 'pink';
     const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
     const isSoftLightLiveStyle = liveStyleConfig.surface === 'light' && liveStyleConfig.frameTreatment === 'soft';
@@ -236,7 +236,7 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
 
             // 3. 价格从低到高
             return a.price - b.price;
-        }).slice(0, 20);
+        });
     }, [query, entry.category, hardwareList]);
 
     useEffect(() => {
@@ -456,18 +456,9 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
     return (
         <div
             className={`grid ${isLiveMode ? 'grid-cols-[72px_minmax(0,1fr)_44px_76px] h-full px-3 py-0' : 'grid-cols-[68px_minmax(0,1fr)_56px_64px_18px] px-3 py-2'} gap-2 items-center group transition-colors relative ${showSuggestions ? 'z-[100]' : ''} ${isMarioLiveStyle ? 'live-mario-hardware-row' : ''} ${isGundamLiveStyle ? 'live-gundam-hardware-row' : ''} ${isMessiLiveStyle ? 'live-messi-hardware-row' : ''} ${isRogLiveStyle ? 'live-rog-hardware-row' : ''} ${isLiveMode ? 'bg-transparent hover:bg-white/[0.04] transition-colors' : (entry.item ? `${theme.bgLight} dark:bg-opacity-20` : 'hover:bg-slate-50 dark:hover:bg-slate-800/50')}`}
-            style={isMessiLiveStyle ? { '--messi-row-index': index } as React.CSSProperties : undefined}
             data-rog-index={isRogLiveStyle ? String(index + 1).padStart(2, '0') : undefined}
             data-rog-variant={isRogLiveStyle ? ['a', 'b', 'c'][index % 3] : undefined}
         >
-            {isMessiLiveStyle && (
-                <img
-                    className="live-messi-row-hover-ball"
-                    src="/assets/themes/messi-worldcup/football.svg"
-                    alt=""
-                    aria-hidden="true"
-                />
-            )}
             {isRogLiveStyle && <RogLabRowTrace />}
             <div className={`flex items-center gap-1.5 font-bold whitespace-nowrap ${isLiveMode ? 'text-[14px]' : 'text-[13px]'} transition-all ${isLiveMode ? liveStyleConfig.categoryText : theme.primary} ${isRogLiveStyle ? 'live-rog-category-module' : ''}`}>
                 {!isGundamLiveStyle && <div
@@ -479,7 +470,6 @@ export const StreamerRow = React.forwardRef<StreamerRowHandle, { entry: BuildEnt
                         : isLiveMode && isPixelLiveStyle
                             ? <PixelCategoryIcon category={entry.category} />
                             : getIconByCategory(entry.category)}
-                    {isMessiLiveStyle && <span className="live-messi-icon-star" aria-hidden="true">★</span>}
                     {isRogLiveStyle && <span className="live-rog-icon-slash" aria-hidden="true" />}
                 </div>
                 }

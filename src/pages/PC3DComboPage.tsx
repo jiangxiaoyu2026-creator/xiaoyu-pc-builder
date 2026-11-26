@@ -1,8 +1,15 @@
 import { ArrowLeft, ExternalLink, Box } from 'lucide-react';
+import Seo from '../components/common/Seo';
 
 export default function PC3DComboPage() {
     return (
         <div className="flex h-[100dvh] flex-col overflow-hidden bg-slate-950 text-slate-100">
+            <Seo
+                title="3D 模型校准工作台 - 蒋小鱼装机平台"
+                description="蒋小鱼装机平台内部 3D 模型校准工具。"
+                canonicalPath="/pc3d"
+                noIndex
+            />
             <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/10 bg-slate-950/95 px-3 md:px-5">
                 <a
                     href="/"

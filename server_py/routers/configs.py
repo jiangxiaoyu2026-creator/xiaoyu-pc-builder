@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from typing import List, Optional
 from ..db import get_session
 from ..models import Config, User
-from .auth import get_current_user, get_current_user_optional, get_current_admin
+from .auth import get_current_user, get_current_user_optional, get_current_user_optional_strict, get_current_admin
 import uuid
 import json
 from datetime import datetime
@@ -13,7 +13,7 @@ router = APIRouter()
 def _parse_config(config: Config, current_user: Optional[User] = None, session: Session = None):
     c_dict = config.model_dump()
     # Parse JSON strings if they are not already dicts/lists
-    for key in ["items", "tags", "evaluation", "showcaseImages"]:
+    for key in ["items", "tags", "evaluation", "showcaseImages", "buildMeta"]:
         if isinstance(c_dict.get(key), str):
             try: c_dict[key] = json.loads(c_dict[key])
             except: c_dict[key] = [] if key in ["tags", "showcaseImages"] else {}
@@ -51,11 +51,14 @@ def _dedupe_key(config: Config):
     title = (config.title or "").strip()
     items_key = _stable_json(items)
 
+    build_meta_key = _stable_json(_json_value(config.buildMeta, {}))
+    base = (title, items_key, build_meta_key, config.totalPrice, config.status)
+
     if config.showcaseStatus == "approved" and images:
-        return ("showcase", title, items_key, _stable_json(images))
+        return ("showcase",) + base + (_stable_json(images),)
 
     author_key = config.userId or config.userName or ""
-    return ("config", author_key, title, items_key)
+    return ("config", author_key) + base
 
 def _dedupe_configs(configs: List[Config]):
     seen = set()
@@ -80,12 +83,27 @@ async def get_configs(
     status: Optional[str] = "published", # Default to published for client
     sort_by: str = "recommend", # recommend, hot, new
     is_recommended: Optional[bool] = None,
+    mine: bool = False,  # 仅返回当前登录用户自己的方案（修复越权）
     page: int = 1,
     page_size: int = 20,
     session: Session = Depends(get_session),
     current_user: Optional[User] = Depends(get_current_user_optional)
 ):
+    page = max(1, page)
+    page_size = min(100, max(1, page_size))
     query = select(Config)
+
+    # 我的方案：仅返回当前登录用户自己的配置（含草稿），修复隐私越权
+    if mine:
+        if not current_user:
+            raise HTTPException(status_code=401, detail="请先登录")
+        query = query.where(Config.userId == current_user.id)
+        status = "all"
+
+    # 非管理员不能通过 status=all 读取全站草稿/隐藏配置。
+    if status == "all" and not (current_user and current_user.role == "admin") and not mine:
+        status = "published"
+
     if status != "all":
         query = query.where(Config.status == status)
     
@@ -139,9 +157,15 @@ async def get_configs(
         query = query.order_by(Config.sortOrder.desc(), Config.isRecommended.desc(), Config.createdAt.desc())
 
     offset = (page - 1) * page_size
-    configs = _dedupe_configs(session.exec(query).all())
-    total = len(configs)
-    page_configs = configs[offset:offset + page_size]
+    if mine:
+        # Mine is a private library: preserve every row and paginate in SQL.
+        from sqlalchemy import func
+        total = session.scalar(select(func.count()).select_from(query.order_by(None).subquery())) or 0
+        page_configs = session.exec(query.offset(offset).limit(page_size)).all()
+    else:
+        configs = _dedupe_configs(session.exec(query).all())
+        total = len(configs)
+        page_configs = configs[offset:offset + page_size]
     
     return {
         "items": [_parse_config(c, current_user, session) for c in page_configs],
@@ -168,7 +192,7 @@ async def share_config(
     session.add(config)
     session.commit()
     session.refresh(config)
-    return _parse_config(config, session=session)
+    return _parse_config(config, user, session)
 
 @router.get("/admin", response_model=List[dict])
 async def get_admin_configs(session: Session = Depends(get_session), admin: User = Depends(get_current_admin)):
@@ -181,14 +205,21 @@ async def get_user_configs(
     user_id: str, 
     page: int = 1,
     page_size: int = 20,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """Get configs for a specific user with pagination"""
     from sqlalchemy import func
-    total = session.scalar(select(func.count()).select_from(Config).where(Config.userId == user_id))
+    can_view_private = current_user and (current_user.id == user_id or current_user.role == "admin")
+    visibility = Config.userId == user_id
+    if not can_view_private:
+        visibility = visibility & (Config.status == "published")
+    page = max(1, page)
+    page_size = min(100, max(1, page_size))
+    total = session.scalar(select(func.count()).select_from(Config).where(visibility))
     
     offset = (page - 1) * page_size
-    configs = session.exec(select(Config).where(Config.userId == user_id).order_by(Config.createdAt.desc()).offset(offset).limit(page_size)).all()
+    configs = session.exec(select(Config).where(visibility).order_by(Config.createdAt.desc()).offset(offset).limit(page_size)).all()
     
     return {
         "items": [_parse_config(c, current_user, session) for c in configs],
@@ -202,15 +233,26 @@ async def get_user_configs(
 async def create_config(
     config_data: dict, 
     session: Session = Depends(get_session),
-    user: Optional[User] = Depends(get_current_user_optional)
+    user: Optional[User] = Depends(get_current_user_optional_strict)
 ):
     user_id = user.id if user else "guest"
     user_name = user.username if user else (config_data.get("userName") or "游客")
     title = config_data.get("title", "未命名配置")
+    requested_status = config_data.get("status", "draft")
+    if not user:
+        saved_status = "draft"
+    elif requested_status in {"draft", "published"}:
+        saved_status = requested_status
+    elif user.role == "admin" and requested_status == "hidden":
+        saved_status = "hidden"
+    else:
+        saved_status = "draft"
 
     # --- Dedup Guard: prevent identical configs within 5 minutes ---
     items_raw = config_data.get("items", {})
+    build_meta_raw = config_data.get("buildMeta", {})
     items_str = json.dumps(items_raw, sort_keys=True) if isinstance(items_raw, dict) else str(items_raw)
+    build_meta_str = json.dumps(build_meta_raw, sort_keys=True) if isinstance(build_meta_raw, dict) else str(build_meta_raw)
     from datetime import timedelta
     dedup_window = datetime.utcnow() - timedelta(minutes=5)
     existing = session.exec(
@@ -227,7 +269,18 @@ async def create_config(
             try: ex_items = json.loads(ex_items)
             except: pass
         ex_items_str = json.dumps(ex_items, sort_keys=True) if isinstance(ex_items, dict) else str(ex_items)
-        if ex_items_str == items_str:
+        ex_build_meta = ex.buildMeta
+        if isinstance(ex_build_meta, str):
+            try: ex_build_meta = json.loads(ex_build_meta)
+            except Exception: pass
+        ex_build_meta_str = json.dumps(ex_build_meta, sort_keys=True) if isinstance(ex_build_meta, dict) else str(ex_build_meta)
+        if (
+            ex_items_str == items_str
+            and ex_build_meta_str == build_meta_str
+            and ex.totalPrice == config_data.get("totalPrice")
+            and ex.status == saved_status
+            and ex.title == title
+        ):
             result = _parse_config(ex, user, session)
             result["deduplicated"] = True
             return result
@@ -260,13 +313,14 @@ async def create_config(
         totalPrice=config_data.get("totalPrice"),
         title=title,
         description=config_data.get("description", ""),
-        status=config_data.get("status", "draft"),
+        status=saved_status,
         evaluation=config_data.get("evaluation", {}) if isinstance(config_data.get("evaluation"), dict) else {},
         items=config_data.get("items", {}),
         tags=config_data.get("tags", []),
         isRecommended=config_data.get("isRecommended", False),
         showcaseImages=showcase_images_str,
-        showcaseStatus=showcase_status
+        showcaseStatus=showcase_status if showcase_status in ("none", "pending") else "none",
+        buildMeta=config_data.get("buildMeta", {}) if isinstance(config_data.get("buildMeta"), dict) else {}
     )
     session.add(new_config)
     session.commit()
@@ -281,6 +335,10 @@ async def get_config(
 ):
     config = session.get(Config, config_id)
     if not config:
+        raise HTTPException(status_code=404, detail="配置未找到")
+    if config.status != "published" and not (
+        current_user and (current_user.id == config.userId or current_user.role == "admin")
+    ):
         raise HTTPException(status_code=404, detail="配置未找到")
     return _parse_config(config, current_user, session)
 
@@ -298,9 +356,24 @@ async def update_config(
     if config.userId != user.id and user.role != "admin":
         raise HTTPException(status_code=403, detail="无权操作")
 
+    editable_fields = {
+        "cpuId", "gpuId", "mbId", "ramId", "diskId", "psuId", "caseId", "coolId", "monId",
+        "totalPrice", "title", "description", "evaluation", "items", "tags", "buildMeta", "status",
+    }
+    if user.role == "admin":
+        editable_fields.update({"isRecommended", "sortOrder"})
     for key, value in config_data.items():
-        if hasattr(config, key):
-            setattr(config, key, value)
+        if key not in editable_fields:
+            continue
+        if key in {"evaluation", "items", "buildMeta"} and not isinstance(value, dict):
+            raise HTTPException(status_code=422, detail=f"{key} 必须是对象")
+        if key == "tags" and not isinstance(value, list):
+            raise HTTPException(status_code=422, detail="tags 必须是数组")
+        if key == "status":
+            allowed_statuses = {"draft", "published", "hidden"} if user.role == "admin" else {"draft", "published"}
+            if value not in allowed_statuses:
+                raise HTTPException(status_code=422, detail="无效的配置状态")
+        setattr(config, key, value)
 
     config.updatedAt = datetime.utcnow().isoformat()
     session.add(config)
@@ -344,8 +417,13 @@ async def submit_showcase(
     if not config:
         raise HTTPException(status_code=404, detail="配置未找到")
         
-    if config.userId != user.id:
+    if config.userId != user.id and user.role != "admin":
         raise HTTPException(status_code=403, detail="只能为自己的配置提交晒单")
+
+    if not data.images or len(data.images) > 9 or any(not isinstance(image, str) or len(image) > 1000 for image in data.images):
+        raise HTTPException(status_code=422, detail="晒单至少需要一张图片，最多九张")
+    if data.message is not None and len(data.message) > 1000:
+        raise HTTPException(status_code=422, detail="晒单内容过长")
 
     config.showcaseImages = json.dumps(data.images, ensure_ascii=False)
     config.showcaseMessage = data.message

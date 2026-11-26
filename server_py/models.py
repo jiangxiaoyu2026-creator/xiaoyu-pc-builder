@@ -12,6 +12,8 @@ class User(SQLModel, table=True):
     mobile: Optional[str] = Field(default=None, unique=True, index=True)
     email: Optional[str] = Field(default=None, unique=True, index=True) # Added email field
     wechatOpenId: Optional[str] = Field(default=None, unique=True, index=True) # Added WeChat OpenID
+    nickname: Optional[str] = Field(default=None, max_length=64)
+    avatarUrl: Optional[str] = Field(default=None, max_length=500)
     password: str
     role: str = Field(default="user")
     status: str = Field(default="active")
@@ -83,6 +85,7 @@ class Config(SQLModel, table=True):
     title: Optional[str] = None
     description: Optional[str] = None
     items: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
+    buildMeta: Dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON))
     tags: List[str] = Field(default_factory=list, sa_column=Column(JSON))
     isRecommended: bool = Field(default=False)
     views: int = Field(default=0)
@@ -91,6 +94,13 @@ class Config(SQLModel, table=True):
     showcaseMessage: Optional[str] = None
     showcaseStatus: str = Field(default="none") # 'none', 'pending', 'approved', 'rejected'
     sortOrder: int = Field(default=0)
+
+class ConfigPoster(SQLModel, table=True):
+    __tablename__ = "config_posters"
+    scene: str = Field(primary_key=True)
+    fingerprint: str = Field(unique=True, index=True)
+    snapshot: Dict[str, Any] = Field(sa_column=Column(JSON, nullable=False))
+    codeImage: bytes
 
 class Comment(SQLModel, table=True):
     __tablename__ = "comments"

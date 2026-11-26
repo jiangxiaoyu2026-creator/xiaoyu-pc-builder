@@ -10,6 +10,7 @@ import ChatWidget from '../components/common/ChatWidget';
 import { ShareFormModal, SavePreviewModal, ConfigLibraryModal } from '../components/client/Modals';
 import { UsedItem } from '../types/adminTypes';
 import DailyPopup from '../components/client/DailyPopup';
+import MiniProgramPromo from '../components/client/MiniProgramPromo';
 import { getCompatibilityIssues } from '../utils/hardwareCompatibility';
 // Removed ArticleList
 // Client trends page reuses the full admin trend center.
@@ -77,8 +78,9 @@ function AnimatedPriceNumber({ value, className }: { value: number; className?: 
 // ...
 import { useTheme } from '../hooks/useTheme';
 import { useIsMobile } from '../hooks/useIsMobile';
+import Seo from '../components/common/Seo';
 
-export default function ClientApp() {
+export default function ClientApp({ noIndex = false }: { noIndex?: boolean }) {
     const isMobile = useIsMobile();
     const LIVE_SCENARIO_OPTIONS = ['实用', '颜值', '游戏', '直播', '生产力', '海景房'];
     const LIVE_SERVICE_OPTIONS = ['assembly', 'cabling', 'warranty', 'profit', 'shipping', 'freeShipping'];
@@ -144,6 +146,41 @@ export default function ClientApp() {
             setIsScrolling(false);
         }, 250);
     };
+
+    const seoByViewMode = {
+        visual: {
+            title: '蒋小鱼装机平台 - 专业 DIY 电脑配置与 AI 智选推荐',
+            description: '使用 AI 智能生成 DIY 电脑配置，查看硬件价格与兼容性，轻松完成适合预算和用途的装机方案。',
+        },
+        streamer: {
+            title: '主播装机工作台 - 蒋小鱼装机平台',
+            description: '面向电脑装机主播的专业配单工作台，快速选择硬件、核算预算并展示完整配置方案。',
+        },
+        trends: {
+            title: '电脑硬件价格行情 - 蒋小鱼装机平台',
+            description: '查看 CPU、显卡、内存、硬盘等电脑硬件的价格走势与市场变化。',
+        },
+        leaderboard: {
+            title: '电脑硬件性能天梯图 - 蒋小鱼装机平台',
+            description: '查看 CPU、显卡等电脑硬件性能排行，快速比较不同型号的性能定位。',
+        },
+        square: {
+            title: 'DIY 电脑配置广场 - 蒋小鱼装机平台',
+            description: '浏览玩家、主播与官方分享的 DIY 电脑配置方案，按预算和用途寻找装机灵感。',
+        },
+        gamefps: {
+            title: '游戏 FPS 帧率查询 - 蒋小鱼装机平台',
+            description: '查询热门游戏在不同 CPU、显卡、分辨率与画质设置下的 FPS 帧率表现。',
+        },
+        used: {
+            title: '二手电脑硬件闲置市场 - 蒋小鱼装机平台',
+            description: '浏览玩家发布的二手电脑硬件信息，了解闲置配件与参考价格。',
+        },
+        about: {
+            title: '关于我们 - 蒋小鱼装机平台',
+            description: '了解蒋小鱼装机平台提供的 AI 配单、硬件行情、配置分享与装机服务。',
+        },
+    }[viewMode];
 
     useEffect(() => {
         return () => {
@@ -638,7 +675,11 @@ export default function ClientApp() {
                     setViewMode('square');
                 }
             }
-            clearBuild();
+            if (viewMode === 'streamer') {
+                clearStreamerBuild();
+            } else {
+                clearBuild();
+            }
 
         } catch (error) {
             console.error("Publish failed:", error);
@@ -664,22 +705,28 @@ export default function ClientApp() {
 
     return (
         <div className={`flex flex-col h-[100dvh] overflow-hidden font-sans selection:bg-indigo-100 selection:text-indigo-700 text-slate-800 dark:text-slate-200 transition-colors duration-300 ${viewMode === 'streamer' ? 'streamer-center-grid-bg' : 'bg-[#FAFAFA] dark:bg-[#0B0B10]'}`}>
+            <Seo
+                title={noIndex ? '页面未找到 - 蒋小鱼装机平台' : seoByViewMode.title}
+                description={noIndex ? '你访问的页面不存在，请返回蒋小鱼装机平台首页。' : seoByViewMode.description}
+                canonicalPath={noIndex ? '/' : viewMode === 'streamer' ? '/VIP' : '/'}
+                noIndex={noIndex}
+            />
             <header className="relative md:sticky top-0 z-40 bg-white/70 dark:bg-[#0B0B10]/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-[#1E293B]/50 transition-all duration-300">
-                <div className={`max-w-7xl mx-auto px-4 flex items-center justify-between ${compactGameFpsHeader ? 'h-12' : 'h-16'}`}>
-                    <div className="flex items-center gap-2.5">
-                        <div className={`${compactGameFpsHeader ? 'h-8 w-8 rounded-lg' : 'w-9 h-9 rounded-xl'} bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] flex items-center justify-center shadow-sm dark:shadow-none`}>
+                <div className={`max-w-7xl mx-auto px-4 flex items-center justify-between gap-2 ${compactGameFpsHeader ? 'h-12' : 'h-16'}`}>
+                    <div className="flex shrink-0 items-center gap-2.5">
+                        <div className={`${compactGameFpsHeader ? 'h-8 w-8 rounded-lg' : 'w-9 h-9 rounded-xl'} shrink-0 bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] flex items-center justify-center shadow-sm dark:shadow-none`}>
                             {compactGameFpsHeader ? (
                                 <Gamepad2 className="text-indigo-600 dark:text-indigo-400" size={18} />
                             ) : (
                                 <Monitor className="text-indigo-600 dark:text-indigo-400" size={20} />
                             )}
                         </div>
-                        <span className={`${compactGameFpsHeader ? 'text-base' : 'text-xl'} font-display font-bold text-slate-900 dark:text-white tracking-tight`}>
+                        <h1 className={`${compactGameFpsHeader ? 'text-base' : 'text-xl'} whitespace-nowrap font-display font-bold text-slate-900 dark:text-white tracking-tight`}>
                             {compactGameFpsHeader ? '游戏 FPS' : '蒋小鱼装机平台'}
-                        </span>
+                        </h1>
                     </div>
                     {/* Navigation Tabs - Hidden on mobile, visible on tablet/desktop */}
-                    <div className="hidden md:flex bg-slate-100/50 dark:bg-[#1A1A24]/50 p-1.5 rounded-xl border border-slate-200/50 dark:border-[#2D3748]/50 backdrop-blur-xl gap-1">
+                    <div className="hidden shrink-0 md:flex bg-slate-100/50 dark:bg-[#1A1A24]/50 p-1.5 rounded-xl border border-slate-200/50 dark:border-[#2D3748]/50 backdrop-blur-xl gap-0.5 xl:gap-1">
                         <TabButton
                             active={viewMode === 'streamer'}
                             onClick={() => {
@@ -696,18 +743,18 @@ export default function ClientApp() {
                         <TabButton active={viewMode === 'used'} onClick={() => setViewMode('used')} icon={<ShoppingBag />} label="二手闲置" />
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                         {/* Theme Toggle */}
                         <button
                             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                            className={`flex items-center justify-center ${compactGameFpsHeader ? 'h-9 w-9 rounded-lg' : 'w-10 h-10 rounded-xl'} bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2D3748] transition-colors`}
+                            className={`flex shrink-0 items-center justify-center ${compactGameFpsHeader ? 'h-9 w-9 rounded-lg' : 'w-10 h-10 rounded-xl'} bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2D3748] transition-colors`}
                             title="切换深浅色主题"
                         >
                             {theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
                         </button>
                         
                         {currentUser ? (
-                            <div className={`flex items-center gap-2 border p-1 rounded-2xl shadow-sm transition-all cursor-pointer hover:shadow-md active:scale-95 duration-300 ${['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())
+                            <div className={`flex shrink-0 items-center gap-2 border p-1 rounded-2xl shadow-sm transition-all cursor-pointer hover:shadow-md active:scale-95 duration-300 ${['admin', 'streamer', 'sub_admin'].includes(currentUser.role) || (currentUser.vipExpireAt && currentUser.vipExpireAt > Date.now())
                                 ? 'bg-slate-900 dark:bg-[#1A1A24] border-amber-500/40 dark:border-amber-500/20'
                                 : 'bg-white dark:bg-[#1A1A24] border-slate-200 dark:border-[#2D3748]'
                                 } `}
@@ -729,14 +776,14 @@ export default function ClientApp() {
                         ) : (
                             <button
                                 onClick={() => setShowLoginModal(true)}
-                                className={`flex items-center justify-center ${compactGameFpsHeader ? 'h-9 w-9 rounded-lg' : 'w-10 h-10 rounded-xl'} bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2D3748] transition-colors`}
+                                className={`flex shrink-0 items-center justify-center ${compactGameFpsHeader ? 'h-9 w-9 rounded-lg' : 'w-10 h-10 rounded-xl'} bg-white dark:bg-[#1A1A24] border border-slate-200 dark:border-[#2D3748] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#2D3748] transition-colors`}
                             >
                                 <User size={20} />
                             </button>
                         )}
 
                         <button
-                            className="hidden md:flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 dark:bg-[#1A1A24] border border-transparent dark:border-[#2D3748] text-white dark:text-slate-300 shadow-sm dark:shadow-none active:scale-90 transition-all tap-active"
+                            className="hidden shrink-0 md:flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 dark:bg-[#1A1A24] border border-transparent dark:border-[#2D3748] text-white dark:text-slate-300 shadow-sm dark:shadow-none active:scale-90 transition-all tap-active"
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
                         >
                             {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
@@ -744,6 +791,8 @@ export default function ClientApp() {
                     </div>
                 </div>
             </header>
+
+            {viewMode !== 'streamer' && <MiniProgramPromo />}
 
             {/* Mobile Slide-Up More Menu */}
             {showMobileMenu && (
@@ -1019,8 +1068,8 @@ export default function ClientApp() {
                     {viewMode === 'about' && <AboutUs />}
                     {viewMode === 'leaderboard' && <LeaderboardCenter />}
                     {viewMode === 'trends' && (
-                        <div className="min-h-full bg-slate-50/70 dark:bg-slate-950/60 px-2 py-4 md:px-4 md:py-6">
-                            <PriceTrendChart />
+                        <div className="min-h-full bg-[#f7f8fa] px-3 py-5 md:px-6 md:py-8">
+                            <PriceTrendChart marketCenterMode />
                         </div>
                     )}
                     </Suspense>
@@ -1330,13 +1379,14 @@ export default function ClientApp() {
             {/* Global Chat Widget */}
             {!hideChatWidget && (
                 <ChatWidget
+                    hasBottomBar={viewMode === 'visual'}
                     isOpen={isChatOpen}
                     onToggle={setIsChatOpen}
                     initialMessage={chatInitialMessage}
                     onInitialMessageSent={() => setChatInitialMessage('')}
                 />
             )}
-            {!hideDailyPopup && viewMode !== 'leaderboard' && <DailyPopup />}
+            {!hideDailyPopup && viewMode !== 'leaderboard' && viewMode !== 'streamer' && <DailyPopup />}
 
             {/* Footer - About Us link */}
             {viewMode !== 'streamer' && (

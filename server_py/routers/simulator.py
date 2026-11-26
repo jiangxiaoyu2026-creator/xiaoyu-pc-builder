@@ -131,6 +131,72 @@ class ValidationResult(BaseModel):
     warnings: List[str]
     items: List[Dict[str, Any]]
 
+
+def _spec_value(specs: Dict[str, Any], *keys: str):
+    for key in keys:
+        value = specs.get(key)
+        if value not in (None, ""):
+            return value
+    return None
+
+
+def _normalized_socket(value: Any) -> str:
+    return str(value or "").upper().replace(" ", "")
+
+
+def _normalized_memory_type(value: Any) -> str:
+    text = str(value or "").upper().replace(" ", "")
+    if "DDR5" in text or text == "D5":
+        return "DDR5"
+    if "DDR4" in text or text == "D4":
+        return "DDR4"
+    return text
+
+
+def _infer_socket(category: str, name: str) -> str:
+    model = str(name or "").upper()
+    if category == "mainboard":
+        if re.search(r"X870|B850|B840|B650|X670|A620", model):
+            return "AM5"
+        if re.search(r"B550|X570|B450|A520|A320", model):
+            return "AM4"
+        if re.search(r"Z890|B860|H810", model):
+            return "LGA1851"
+        if re.search(r"Z790|B760|Z690|B660|H610|Z590|B560|H510", model):
+            return "LGA1700"
+    if category == "cpu":
+        if re.search(r"\b(245|250|265|270|285)[A-Z0-9]*\b", model):
+            return "LGA1851"
+        if re.search(r"\b(12100|12400|12600|12900|13100|13400|13500|13600|13700|13900|14100|14400|14500|14600|14700|14900)[A-Z0-9]*\b", model):
+            return "LGA1700"
+        if re.search(r"\b(7500|7600|7700|7800|7900|7950|8400|8500|8600|8700|9600|9700|9800|9900|9950)[A-Z0-9]*\b", model):
+            return "AM5"
+        if re.search(r"\b(2200|2400|2600|2700|3100|3200|3300|3400|3500|3600|3700|3900|4500|4600|4650|5500|5600|5700|5800|5900|5950)[A-Z0-9]*\b", model):
+            return "AM4"
+    return ""
+
+
+def _infer_memory_type(category: str, name: str, socket: str = "") -> str:
+    model = str(name or "").upper()
+    explicit = _normalized_memory_type(model)
+    if explicit in {"DDR4", "DDR5"}:
+        return explicit
+    if category == "ram":
+        speed = re.search(r"(?:^|\D)(2133|2400|2666|2800|3000|3200|3600|4000|4800|5200|5600|6000|6200|6400|6800|7200|7600|8000|8200|8400)(?:\D|$)", model)
+        if speed:
+            return "DDR5" if int(speed.group(1)) >= 4800 else "DDR4"
+    if category == "mainboard":
+        if re.search(r"X870|B850|B840|B650|X670|A620|Z890|B860|H810", model):
+            return "DDR5"
+        if socket in {"AM4", "LGA1200"}:
+            return "DDR4"
+    return ""
+
+
+def _infer_wattage(name: str) -> int:
+    match = re.search(r"(\d{3,4})\s*W\b", str(name or ""), flags=re.IGNORECASE)
+    return int(match.group(1)) if match else 0
+
 @router.post("/validate", response_model=ValidationResult)
 async def validate_bom(request: ValidationRequest, db: Session = Depends(get_session)):
     """
@@ -206,7 +272,11 @@ async def validate_bom(request: ValidationRequest, db: Session = Depends(get_ses
         total_lu_score += base_score
         
         # 累加功耗 (如果部分硬件没功耗比如主板，取个默认值)
-        draw = int(specs.get("power_draw", 0))
+        draw = int(_spec_value(specs, "power_draw", "powerDraw", "actualPower") or 0)
+        if draw == 0 and cat == "cpu":
+            draw = int(_spec_value(specs, "tdp", "wattage") or 0)
+        if draw == 0 and cat == "gpu":
+            draw = int(_spec_value(specs, "maxWattage", "tdp") or 0)
         if draw == 0:
             if cat == "ram":
                 draw = 5
@@ -231,23 +301,24 @@ async def validate_bom(request: ValidationRequest, db: Session = Depends(get_ses
 
     # 法则一：CPU与主板插槽
     if cpu and mb:
-        cpu_socket = cpu['specs'].get('socket_type') or cpu['specs'].get('socket')
-        mb_socket = mb['specs'].get('socket_type') or mb['specs'].get('socket')
+        cpu_socket = _normalized_socket(_spec_value(cpu['specs'], 'socket', 'socket_type', 'socketType', 'cpuSocket') or _infer_socket('cpu', cpu['name']))
+        mb_socket = _normalized_socket(_spec_value(mb['specs'], 'socket', 'socket_type', 'socketType', 'cpuSocket') or _infer_socket('mainboard', mb['name']))
         
         if cpu_socket and mb_socket and str(cpu_socket).upper() != str(mb_socket).upper():
             errors.append(f"物理防呆警报：CPU【{cpu['name']}】的 {cpu_socket} 插槽 与 主板【{mb['name']}】的 {mb_socket} 插槽不兼容，强行上机将断针！")
 
     # 法则二：内存与主板代数
     if ram and mb:
-        ram_type = ram['specs'].get('ram_type', '').upper()
-        mb_ram_type = mb['specs'].get('ram_type', '').upper()
+        mb_socket_for_memory = _normalized_socket(_spec_value(mb['specs'], 'socket', 'socket_type', 'socketType', 'cpuSocket') or _infer_socket('mainboard', mb['name']))
+        ram_type = _normalized_memory_type(_spec_value(ram['specs'], 'memoryType', 'memory_type', 'ram_type', 'ramType', 'type') or _infer_memory_type('ram', ram['name']))
+        mb_ram_type = _normalized_memory_type(_spec_value(mb['specs'], 'memoryType', 'memory_type', 'ram_type', 'ramType', 'type') or _infer_memory_type('mainboard', mb['name'], mb_socket_for_memory))
         if ram_type and mb_ram_type and (ram_type not in mb_ram_type):
             errors.append(f"物理防呆警报：内存【{ram['name']}】({ram_type}) 与 主板【{mb['name']}】({mb_ram_type}) 代数不同，无法插入插槽。")
             
     # 法则三：电源功率红线预警
     recommended_power = int(total_power_draw * 1.3) # 留出 30% 峰值余量
     if psu:
-        rated_wattage = int(psu['specs'].get('wattage', 0) or psu['specs'].get('wattageRated', 0))
+        rated_wattage = int(_spec_value(psu['specs'], 'wattage', 'wattageRated') or _infer_wattage(psu['name']))
         if rated_wattage > 0 and rated_wattage < total_power_draw:
             errors.append(f"供电危急警报：总峰值功耗 {total_power_draw}W 已经超过电源【{psu['name']}】的额定 {rated_wattage}W！满载打游戏必黑屏重启。")
         elif rated_wattage > 0 and rated_wattage < recommended_power:

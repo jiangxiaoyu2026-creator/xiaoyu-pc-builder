@@ -12,6 +12,9 @@ services:
       - PORT=8000
       - RELOAD=false
       - SQLITE_DB_PATH=/app/data/xiaoyu.db
+      - WECHAT_APP_ID
+      - WECHAT_APP_SECRET
+      - WECHAT_MINIPROGRAM_ENV_VERSION
     restart: unless-stopped
     volumes:
       - ./data:/app/data

@@ -11,6 +11,7 @@ import { AiGenerateModal } from './AiGenerateModal';
 import PC3DViewer from './PC3DViewer';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { gamesFpsData, gamesList, Resolution } from '../../data/gameFpsData';
+import { normalizeBrand } from '../../utils/hardwareCompatibility';
 
 const MODAL_ITEM_BATCH_SIZE = 40;
 const DESKTOP_VISUAL_COLUMN_HEIGHT = 'lg:h-[clamp(720px,calc(100dvh-196px),860px)]';
@@ -543,7 +544,7 @@ function VisualBuilder({
 
         let items = modalItems.filter(i => {
             if (i.category !== modalCategory) return false;
-            if (modalBrand !== 'all' && i.brand !== modalBrand) return false;
+            if (modalBrand !== 'all' && normalizeBrand(i.brand) !== modalBrand) return false;
             if (modalPc3dFilter === 'with3d') {
                 const pc3dMatch = pc3dProductMatches[String(i.id)];
                 if (!isCustomerVisiblePc3dMatch(pc3dMatch)) return false;
@@ -673,7 +674,7 @@ function VisualBuilder({
 
     const availableBrands = useMemo(() => {
         if (!modalCategory) return [];
-        const brands = new Set(modalItems.filter(i => i.category === modalCategory).map(i => i.brand));
+        const brands = new Set(modalItems.filter(i => i.category === modalCategory).map(i => normalizeBrand(i.brand)).filter(Boolean));
         return ['all', ...Array.from(brands)];
     }, [modalCategory, modalItems]);
     const pc3dAvailableCount = useMemo(() => {
@@ -815,23 +816,23 @@ function VisualBuilder({
     };
 
     const renderBuildSummarySection = () => (
-        <div className="hidden lg:flex shrink-0 flex-col gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-[#1E293B] dark:bg-[#121218] dark:shadow-none">
+        <div className="hidden lg:flex shrink-0 flex-col gap-2 rounded-xl border border-slate-200/80 bg-white p-2 dark:border-[#1E293B] dark:bg-[#121218]">
             <div className="grid grid-cols-4 gap-2">
-                <div className="min-w-0 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5 dark:border-[#1E293B] dark:bg-[#0B0B10]">
+                <div className="min-w-0 rounded-lg border border-transparent px-2.5 py-1.5">
                     <div className="text-[9px] font-black text-slate-400">已选配件</div>
                     <div className="mt-1 flex items-baseline gap-1 text-slate-900 dark:text-white">
                         <span className="text-[16px] font-black leading-none">{selectedItemCount}</span>
                         <span className="text-[10px] font-bold text-slate-400">/{buildList.length}</span>
                     </div>
                 </div>
-                <div className={`min-w-0 rounded-lg border px-2.5 py-1.5 ${isBuildHealthy ? 'border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300' : hasSelectedItems ? 'border-amber-100 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300' : 'border-slate-100 bg-slate-50 text-slate-500 dark:border-[#1E293B] dark:bg-[#0B0B10] dark:text-slate-300'}`}>
+                <div className={`min-w-0 rounded-lg border border-transparent px-2.5 py-1.5 ${isBuildHealthy ? 'text-emerald-700 dark:text-emerald-300' : hasSelectedItems ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-slate-300'}`}>
                     <div className="flex items-center gap-1 text-[9px] font-black opacity-80">
                         <CheckCircle2 size={11} />
                         兼容状态
                     </div>
                     <div className="mt-1 truncate text-[13px] font-black">{isBuildHealthy ? '通过' : hasSelectedItems ? `${issueCount || 0} 项提示` : '待配置'}</div>
                 </div>
-                <div className="min-w-0 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5 dark:border-[#1E293B] dark:bg-[#0B0B10]">
+                <div className="min-w-0 rounded-lg border border-transparent px-2.5 py-1.5">
                     <div className="flex items-center gap-1 text-[9px] font-black text-slate-400">
                         <Activity size={11} className="text-indigo-500" />
                         鲁大师跑分
@@ -840,7 +841,7 @@ function VisualBuilder({
                         {simResult && simResult.totalLuScore > 0 ? <BouncyNumber value={simResult.totalLuScore} /> : '---'}
                     </div>
                 </div>
-                <div className="min-w-0 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-1.5 dark:border-[#1E293B] dark:bg-[#0B0B10]">
+                <div className="min-w-0 rounded-lg border border-transparent px-2.5 py-1.5">
                     <div className="flex items-center gap-1 text-[9px] font-black text-slate-400">
                         <Zap size={11} className="text-amber-500" />
                         整机功耗
@@ -851,7 +852,7 @@ function VisualBuilder({
                 </div>
             </div>
 
-            <div className={`flex min-h-[36px] items-center justify-between gap-3 rounded-lg border px-2.5 py-1.5 ${isBuildHealthy ? 'border-emerald-100 bg-emerald-50/80 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200' : issueCount > 0 ? 'border-amber-100 bg-amber-50/90 text-amber-900 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200' : 'border-slate-100 bg-slate-50 text-slate-600 dark:border-[#1E293B] dark:bg-[#0B0B10] dark:text-slate-300'}`}>
+            <div className={`flex min-h-[36px] items-center justify-between gap-3 rounded-lg border border-transparent px-2.5 py-1.5 ${isBuildHealthy ? 'bg-emerald-50/70 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-200' : issueCount > 0 ? 'bg-amber-50/80 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200' : 'bg-slate-50 text-slate-600 dark:bg-[#0B0B10] dark:text-slate-300'}`}>
                 <div className="flex min-w-0 items-center gap-2">
                     {isBuildHealthy ? <CheckCircle2 size={15} className="shrink-0" /> : issueCount > 0 ? <AlertCircle size={15} className="shrink-0" /> : <Info size={15} className="shrink-0" />}
                     <div className="min-w-0">
@@ -861,7 +862,7 @@ function VisualBuilder({
                         </div>
                     </div>
                 </div>
-                <div className="shrink-0 rounded-md border border-current/10 bg-white/45 px-2 py-1 text-[10px] font-black dark:bg-black/10">
+                <div className="shrink-0 rounded-md border border-transparent px-2 py-1 text-[10px] font-black">
                     {recommendedPower > 0 ? `推荐电源 ${recommendedPower}W+` : '功耗待测'}
                 </div>
             </div>
@@ -1174,12 +1175,12 @@ function VisualBuilder({
                             ref={(el: any) => { if (el) rowRefs[entry.id] = el; }}
                             onClick={() => openSelector(entry)}
                             className={`relative rounded-lg px-2 py-1 border transition-all duration-200 cursor-pointer group flex items-center gap-2 min-h-[40px] ${entry.item || entry.customName
-                                ? 'bg-white dark:bg-[#121218] border-slate-200 dark:border-[#1E293B] shadow-sm dark:shadow-none hover:bg-slate-50/80 dark:hover:bg-[#15151d] hover:border-slate-300 dark:hover:border-slate-600'
-                                : 'bg-white/50 dark:bg-[#121218]/50 border-dashed border-slate-300/70 dark:border-[#2D3748] hover:bg-white dark:hover:bg-[#121218] hover:border-indigo-300 dark:hover:border-indigo-500/30'
+                                ? 'bg-white dark:bg-[#121218] border-slate-100 dark:border-white/5 hover:bg-slate-50/80 dark:hover:bg-[#15151d] hover:border-slate-200 dark:hover:border-white/15'
+                                : 'bg-white/50 dark:bg-[#121218]/50 border-dashed border-slate-200/70 dark:border-white/10 hover:bg-white dark:hover:bg-[#121218] hover:border-indigo-200 dark:hover:border-indigo-500/30'
                                 }`}
                         >
                             <div 
-                                className={`w-7 h-7 rounded-md flex items-center justify-center text-sm shrink-0 transition-all duration-300 relative overflow-hidden ${entry.item ? 'bg-indigo-600 text-white group-hover:bg-indigo-500' : 'bg-slate-100 dark:bg-[#1A1A24] text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-500'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
+                                className={`w-7 h-7 rounded-md flex items-center justify-center text-sm shrink-0 transition-all duration-300 relative overflow-hidden ${entry.item ? 'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:group-hover:bg-indigo-500/20' : 'bg-slate-100 dark:bg-[#1A1A24] text-slate-400 dark:text-slate-500 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:text-indigo-500'} ${entry.item?.image ? 'cursor-zoom-in hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1 hover:z-10' : ''}`}
                                 onClick={(e) => {
                                     if (entry.item?.image) {
                                         e.stopPropagation();
@@ -1220,10 +1221,10 @@ function VisualBuilder({
                                 <div className="hidden md:flex" onClick={e => e.stopPropagation()}>
                                     {entry.category === 'accessory' ? null : (
                                         !entry.isLockedQty ? (
-                                            <div className="flex items-center bg-slate-100/80 rounded-md p-0.5 border border-slate-200/80">
-                                                <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-[18px] h-5 flex items-center justify-center hover:bg-white rounded text-slate-500 font-black hover:shadow-sm transition-all">-</button>
-                                                <span className="w-4 text-center text-[10px] font-black text-slate-700">{entry.quantity}</span>
-                                                <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-[18px] h-5 flex items-center justify-center hover:bg-white rounded text-slate-500 font-black hover:shadow-sm transition-all">+</button>
+                                            <div className="flex items-center bg-slate-50 rounded-md p-0.5 border border-slate-100 dark:bg-white/5 dark:border-white/10">
+                                                <button onClick={() => onUpdate(entry.id, { quantity: Math.max(1, entry.quantity - 1) })} className="w-[18px] h-5 flex items-center justify-center hover:bg-white rounded text-slate-500 font-black hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-indigo-300 transition-all">-</button>
+                                                <span className="w-4 text-center text-[10px] font-black text-slate-600 dark:text-slate-300">{entry.quantity}</span>
+                                                <button onClick={() => onUpdate(entry.id, { quantity: entry.quantity + 1 })} className="w-[18px] h-5 flex items-center justify-center hover:bg-white rounded text-slate-500 font-black hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-indigo-300 transition-all">+</button>
                                             </div>
                                         ) : null
                                     )}
@@ -1251,7 +1252,15 @@ function VisualBuilder({
             </div>
             {/* Merged Sidebar */}
             <div className={`w-full min-w-0 flex flex-col gap-3 mt-2 lg:mt-0 mb-28 lg:mb-0 ${DESKTOP_VISUAL_COLUMN_HEIGHT} lg:overflow-hidden relative z-10`}>
-                <PC3DViewer buildList={buildList} issues={health.issues} className="hidden lg:flex min-h-0 flex-1" />
+                <PC3DViewer
+                    buildList={buildList}
+                    issues={health.issues}
+                    className="hidden lg:flex min-h-0 flex-1"
+                    onSelectCase={() => {
+                        const entry = buildList.find(item => item.category === 'case');
+                        if (entry) openSelector(entry);
+                    }}
+                />
                 {renderBuildSummarySection()}
             </div>
 

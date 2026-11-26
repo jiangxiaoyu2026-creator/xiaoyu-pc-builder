@@ -2,6 +2,7 @@ import { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { storage } from './services/storage';
 import { useVisitTracker } from './hooks/useVisitTracker';
+import Seo from './components/common/Seo';
 
 const ClientApp = lazy(() => import('./pages/ClientApp'));
 const AdminApp = lazy(() => import('./pages/AdminApp'));
@@ -31,8 +32,18 @@ function App() {
                 <Route path="/vip" element={<ClientApp />} />
                 <Route path="/pc3d" element={<PC3DComboPage />} />
                 <Route path="/article/:id" element={<ArticleDetail />} />
-                <Route path="/admin" element={<AdminApp />} />
-                <Route path="*" element={<ClientApp />} />
+                <Route path="/admin" element={
+                    <>
+                        <Seo
+                            title="管理后台 - 蒋小鱼装机平台"
+                            description="蒋小鱼装机平台管理后台。"
+                            canonicalPath="/admin"
+                            noIndex
+                        />
+                        <AdminApp />
+                    </>
+                } />
+                <Route path="*" element={<ClientApp noIndex />} />
             </Routes>
         </Suspense>
     );

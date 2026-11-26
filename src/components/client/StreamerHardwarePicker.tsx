@@ -4,7 +4,7 @@ import { RefreshCw, RotateCcw, Search, Sparkles, X } from 'lucide-react';
 import { BuildEntry, Category, HardwareItem } from '../../types/clientTypes';
 import { CATEGORY_MAP } from '../../data/clientData';
 import { storage } from '../../services/storage';
-import { getBuildItem, getHardwareCompatibility, hasOverlap } from '../../utils/hardwareCompatibility';
+import { getBuildItem, getHardwareCompatibility, hasOverlap, normalizeBrand } from '../../utils/hardwareCompatibility';
 import { ThemeContext } from './StreamerThemeContext';
 
 type SortOrder = 'default' | 'asc' | 'desc';
@@ -169,6 +169,16 @@ function getDiskCapacity(item: HardwareItem) {
     return `${Number(match[1])}${match[2].startsWith('T') ? 'T' : 'G'}`;
 }
 
+function getPowerEfficiency(item: HardwareItem) {
+    const text = `${getSpecValue(item, ['efficiency', 'efficiencyRating', 'certification', 'certificate', '80Plus', '80plus', '80_plus', 'rating'])} ${item.model}`.toUpperCase();
+    if (/白金(?:牌)?|PLATINUM/.test(text)) return '白金';
+    if (/金牌|GOLD/.test(text)) return '金牌';
+    if (/银牌|SILVER/.test(text)) return '银牌';
+    if (/铜牌|BRONZE/.test(text)) return '铜牌';
+    if (/白牌|WHITE|STANDARD/.test(text)) return '白牌';
+    return '';
+}
+
 function productMeta(item: HardwareItem) {
     const compatibility = getHardwareCompatibility(item);
     if (item.category === 'monitor') return [getMonitorSize(item), getMonitorResolution(item), getMonitorRefreshRate(item)].filter(Boolean);
@@ -230,6 +240,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
     const [coolerSize, setCoolerSize] = useState('全部');
     const [diskProtocol, setDiskProtocol] = useState('全部');
     const [diskCapacity, setDiskCapacity] = useState('全部');
+    const [powerEfficiency, setPowerEfficiency] = useState('全部');
 
     const selectedCpu = getBuildItem(buildList, 'cpu');
     const selectedMainboard = getBuildItem(buildList, 'mainboard');
@@ -303,7 +314,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
         return true;
     }), [entry.category, products, requiredMemoryTypes, requiredSockets]);
 
-    const brands = useMemo(() => ['全部', ...Array.from(new Set(strictItems.map((item) => item.brand))).sort()], [strictItems]);
+    const brands = useMemo(() => ['全部', ...Array.from(new Set(strictItems.map((item) => normalizeBrand(item.brand)).filter(Boolean))).sort()], [strictItems]);
     const sockets = useMemo(() => ['全部', ...Array.from(new Set(strictItems.flatMap((item) => getHardwareCompatibility(item).sockets))).sort()], [strictItems]);
     const ramCapacities = useMemo(() => {
         const values = Array.from(new Set(strictItems.map(getRamCapacity)));
@@ -334,7 +345,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
             const compatibility = getHardwareCompatibility(item);
             const searchable = `${item.brand} ${item.model} ${JSON.stringify(item.specs || {})}`.toLowerCase();
             if (terms.length > 0 && !terms.every((term) => searchable.includes(term))) return false;
-            if (brand !== '全部' && item.brand !== brand) return false;
+            if (brand !== '全部' && normalizeBrand(item.brand) !== brand) return false;
             if (entry.category === 'cpu') {
                 if (cpuBrand !== '全部' && getCpuBrand(item) !== cpuBrand) return false;
                 if (cpuSocket !== '全部' && !compatibility.sockets.includes(cpuSocket)) return false;
@@ -358,6 +369,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
                 if (diskProtocol !== '全部' && getDiskProtocol(item) !== diskProtocol) return false;
                 if (diskCapacity !== '全部' && getDiskCapacity(item) !== diskCapacity) return false;
             }
+            if (entry.category === 'power' && powerEfficiency !== '全部' && getPowerEfficiency(item) !== powerEfficiency) return false;
             return true;
         });
         return next.sort((left, right) => {
@@ -368,7 +380,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
             if (leftSpecial !== rightSpecial) return leftSpecial ? -1 : 1;
             return left.price - right.price;
         });
-    }, [boardFormFactor, brand, coolerSize, coolerType, cpuBrand, cpuSeries, cpuSocket, diskCapacity, diskProtocol, entry.category, monitorRefreshBand, monitorResolution, monitorSize, ramCapacity, ramMemoryType, search, sortOrder, strictItems]);
+    }, [boardFormFactor, brand, coolerSize, coolerType, cpuBrand, cpuSeries, cpuSocket, diskCapacity, diskProtocol, entry.category, monitorRefreshBand, monitorResolution, monitorSize, powerEfficiency, ramCapacity, ramMemoryType, search, sortOrder, strictItems]);
 
     const resetFilters = () => {
         setSearch('');
@@ -387,6 +399,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
         setCoolerSize('全部');
         setDiskProtocol('全部');
         setDiskCapacity('全部');
+        setPowerEfficiency('全部');
     };
 
     const panelClass = isLiveMode
@@ -511,7 +524,14 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
                     </div>
                 )}
 
-                {!['cpu', 'mainboard', 'ram', 'monitor', 'cooling', 'disk'].includes(entry.category) && renderFilterGroup('品牌', brands, brand, setBrand)}
+                {entry.category === 'power' && (
+                    <div className="grid grid-cols-1 gap-y-1.5">
+                        {renderFilterGroup('品牌', brands, brand, setBrand)}
+                        {renderFilterGroup('认证', ['全部', '白牌', '铜牌', '银牌', '金牌', '白金'], powerEfficiency, setPowerEfficiency)}
+                    </div>
+                )}
+
+                {!['cpu', 'mainboard', 'ram', 'monitor', 'cooling', 'disk', 'power'].includes(entry.category) && renderFilterGroup('品牌', brands, brand, setBrand)}
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-2 hide-scrollbar">
@@ -525,7 +545,7 @@ export function StreamerHardwarePicker({ anchorElement, buildList, entry, onClos
                                 <button key={item.id} type="button" onClick={() => onSelect(item)} className={`flex min-h-[52px] w-full items-center gap-2 border px-2.5 py-1.5 text-left transition-colors ${isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} border-2 hover:brightness-110 rounded-none` : `${controlClass} hover:bg-white/10`}`}>
                                     <div className="min-w-0 flex-1">
                                         <div className="flex min-w-0 items-center gap-1.5">
-                                            <span className={`shrink-0 text-[9px] font-black ${isLiveMode ? liveStyleConfig.accentText : theme.primary}`}>{item.brand}</span>
+                                            <span className={`shrink-0 text-[9px] font-black ${isLiveMode ? liveStyleConfig.accentText : theme.primary}`}>{normalizeBrand(item.brand)}</span>
                                             <span className={`truncate text-[13px] font-black ${modelText}`}>{item.model}</span>
                                             {item.isRecommended && <span className="inline-flex shrink-0 items-center gap-0.5 text-[8px] font-black text-amber-400"><Sparkles size={9} /> 推荐</span>}
                                             {item.isDiscount && <span className="shrink-0 text-[8px] font-black text-rose-400">特惠</span>}
