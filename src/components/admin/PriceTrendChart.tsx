@@ -2,13 +2,14 @@
  * 价格趋势图表组件
  * 展示硬件价格变化趋势和今日涨跌统计
  */
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { Fragment, useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import {
     XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer,
     LineChart, Line
 } from 'recharts';
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter, Minus, Download, Calendar, Thermometer, Activity, Clock } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter, Minus, Download, Calendar, Thermometer, Activity, Clock, Search, SlidersHorizontal, ChevronRight, X, Cpu, CircuitBoard, MemoryStick, HardDrive, ArrowUpDown } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 interface PriceTrendData {
@@ -67,6 +68,7 @@ interface ProductPriceTrendData {
         price: number;
         category: string;
     }>;
+    historicalExtremes?: { minPrice: number | null; maxPrice: number | null };
     historicalLows?: Array<{
         hardwareId: string;
         name: string;
@@ -126,8 +128,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 // Only show specific core components in the category filter
-const ALLOWED_CATEGORIES = ['cpu', 'ram', 'disk', 'gpu', 'all'];
-const CATEGORY_ORDER = ['cpu', 'ram', 'disk', 'gpu'];
+const ALLOWED_CATEGORIES = ['cpu', 'gpu', 'mainboard', 'ram', 'disk', 'all'];
+const CATEGORY_ORDER = ['cpu', 'gpu', 'mainboard', 'ram', 'disk'];
 
 const sortCategories = (categories: string[]) => {
     return categories
@@ -146,7 +148,115 @@ const sortCategories = (categories: string[]) => {
 
 
 
-export default function PriceTrendChart({ hideSummaryPanel = false, publicMode = false }: { hideSummaryPanel?: boolean, publicMode?: boolean }) {
+function MarketDrawer({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+    const dialog = useRef<HTMLDialogElement>(null);
+    useEffect(() => {
+        const element = dialog.current;
+        element?.showModal();
+        return () => element?.close();
+    }, []);
+    return createPortal(
+        <dialog ref={dialog} onCancel={onClose} onClick={event => {
+            if (event.target === event.currentTarget) onClose();
+        }} className="fixed inset-y-0 left-auto right-0 m-0 h-[100dvh] max-h-none w-full max-w-xl border-0 bg-white p-0 text-slate-800 shadow-2xl backdrop:bg-slate-900/25">
+            <div className="min-h-full p-5 sm:p-7">
+                <div className="mb-6 flex items-start justify-between gap-4">
+                    <h3 className="text-lg font-bold">{title}</h3>
+                    <button autoFocus onClick={onClose} aria-label="关闭面板" className="rounded-lg border border-slate-200 p-2 text-slate-500 hover:bg-slate-50"><X size={18} /></button>
+                </div>
+                {children}
+            </div>
+        </dialog>, document.body
+    );
+}
+
+function AnimatedMarketPriceLine({ points = [], prices }: {
+    points?: ReadonlyArray<{ x: number | null; y: number | null }>;
+    prices: Array<{ date: string; price: number }>;
+}) {
+    const reducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const [progress, setProgress] = useState(reducedMotion ? 1 : 0);
+
+    useEffect(() => {
+        if (reducedMotion) {
+            setProgress(1);
+            return;
+        }
+        const start = performance.now();
+        let frame = 0;
+        const animate = (now: number) => {
+            const fraction = Math.min(1, (now - start) / 2200);
+            setProgress(fraction);
+            if (fraction < 1) frame = requestAnimationFrame(animate);
+        };
+        frame = requestAnimationFrame(animate);
+        return () => cancelAnimationFrame(frame);
+    }, [reducedMotion]);
+
+    const coordinates = points.flatMap((point, index) => point.x === null || point.y === null || !prices[index]
+        ? [] : [{ x: point.x, y: point.y, price: prices[index].price }]);
+    if (coordinates.length < 2) return null;
+
+    const corners = [{ ...coordinates[0], position: 'start', distance: 0 }];
+    const addCorner = (x: number, y: number, price: number, position: string) => {
+        const previous = corners[corners.length - 1];
+        corners.push({ x, y, price, position, distance: previous.distance + Math.abs(x - previous.x) + Math.abs(y - previous.y) });
+    };
+    for (let index = 1; index < coordinates.length; index++) {
+        const point = coordinates[index];
+        const previous = coordinates[index - 1];
+        if (point.price !== previous.price) {
+            addCorner(point.x, previous.y, previous.price, 'before');
+            addCorner(point.x, point.y, point.price, 'after');
+        } else if (index === coordinates.length - 1) {
+            addCorner(point.x, point.y, point.price, 'end');
+        }
+    }
+
+    const last = corners[corners.length - 1];
+    const path = corners.map((corner, index) => `${index === 0 ? 'M' : 'L'}${corner.x},${corner.y}`).join(' ');
+    const distance = last.distance * progress;
+    const nextIndex = corners.findIndex(corner => corner.distance > distance);
+    const next = nextIndex > 0 ? corners[nextIndex] : null;
+    const previous = nextIndex > 0 ? corners[nextIndex - 1] : null;
+    const fraction = next && previous ? (distance - previous.distance) / (next.distance - previous.distance) : 0;
+    const tip = next && previous ? {
+        x: previous.x + (next.x - previous.x) * fraction,
+        y: previous.y + (next.y - previous.y) * fraction,
+        label: `¥${previous.price.toLocaleString('zh-CN')}`
+    } : null;
+    const tipLabelWidth = tip ? tip.label.length * 7 + 16 : 0;
+    const tipLabelX = tip ? Math.max(corners[0].x, Math.min(tip.x - tipLabelWidth / 2, last.x - tipLabelWidth)) : 0;
+    let lastUpperLabelX = -Infinity;
+    let lastLowerLabelX = -Infinity;
+
+    return <g pointerEvents="none">
+        <path className="recharts-line-curve" d={path} fill="none" stroke="#4f46e5" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+            strokeDasharray={last.distance || undefined} strokeDashoffset={last.distance - distance} />
+        {corners.filter(corner => corner.distance <= distance).map((corner, index) => {
+            const isAfter = corner.position === 'after';
+            const alignLeft = corner.position === 'before' || corner.position === 'end' || last.x - corner.x < 60;
+            const previousLabelX = isAfter ? lastLowerLabelX : lastUpperLabelX;
+            const showLabel = prices.length <= 91 || index === 0 || corner === last || (corner.x - previousLabelX >= 70 && last.x - corner.x >= 70);
+            if (showLabel) {
+                if (isAfter) lastLowerLabelX = corner.x;
+                else lastUpperLabelX = corner.x;
+            }
+            return <g key={index}>
+                <circle cx={corner.x} cy={corner.y} r={3} fill="white" stroke="#4f46e5" strokeWidth={1.5} />
+                {showLabel && <text x={corner.x + (alignLeft ? -6 : 6)} y={corner.y + (isAfter ? 16 : -9)} textAnchor={alignLeft ? 'end' : 'start'} fontSize={11} fontWeight={600} fill="#4338ca" stroke="white" strokeWidth={3} paintOrder="stroke">¥{corner.price.toLocaleString('zh-CN')}</text>}
+            </g>;
+        })}
+        {tip && <g>
+            <circle cx={tip.x} cy={tip.y} r={8} fill="#4f46e5" opacity={0.14} />
+            <circle cx={tip.x} cy={tip.y} r={4.5} fill="#4f46e5" stroke="white" strokeWidth={1.5} />
+            <rect x={tipLabelX} y={tip.y - 34} width={tipLabelWidth} height={20} rx={5} fill="#4f46e5" />
+            <text x={tipLabelX + tipLabelWidth / 2} y={tip.y - 20} textAnchor="middle" fontSize={11} fontWeight={600} fill="white">{tip.label}</text>
+        </g>}
+    </g>;
+}
+
+export default function PriceTrendChart({ hideSummaryPanel = false, publicMode = false, marketCenterMode = false }: { hideSummaryPanel?: boolean, publicMode?: boolean, marketCenterMode?: boolean }) {
     const [data, setData] = useState<PriceTrendData | null>(null);
     const [trendData, setTrendData] = useState<ProductPriceTrendData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -154,6 +264,20 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
     const [ramGeneration, setRamGeneration] = useState('');
     const [subcategory, setSubcategory] = useState('');
     const [selectedProductId, setSelectedProductId] = useState<string>('');
+    const [productSearchTerm, setProductSearchTerm] = useState('');
+    const [showMarketFilters, setShowMarketFilters] = useState(false);
+    const [marketVisibleCount, setMarketVisibleCount] = useState(40);
+    const [marketScrollRequest, setMarketScrollRequest] = useState<'table' | 'product' | null>(null);
+    const [marketProductDays, setMarketProductDays] = useState<number | null>(null);
+    const [marketProductHistory, setMarketProductHistory] = useState<{
+        productId: string;
+        endDate: string;
+        status: 'loading' | 'ready' | 'error';
+        points: ProductPriceTrendData['productTrends'][number]['points'];
+        historicalExtremes?: ProductPriceTrendData['historicalExtremes'];
+    } | null>(null);
+    const [marketProductHistoryRetry, setMarketProductHistoryRetry] = useState(0);
+    const requestSequence = useRef(0);
     const [days, setDays] = useState(30);
     const [brandFilter, setBrandFilter] = useState<string>(''); // AMD / Intel / NVIDIA etc.
     const [actualBrandFilter, setActualBrandFilter] = useState<string>(''); // ASUS, Kingston, Samsung, etc.
@@ -164,6 +288,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
     const [customStartDate, setCustomStartDate] = useState('');
     const [customEndDate, setCustomEndDate] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const marketProductHistoryEndDate = useCustomRange && customEndDate ? customEndDate : '';
 
     // Market overview for "all" category
     const [marketOverview, setMarketOverview] = useState<MarketOverviewData | null>(null);
@@ -171,6 +296,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
     // Refs for downloadable sections
     const chartRef = useRef<HTMLDivElement>(null);
     const tableRef = useRef<HTMLDivElement>(null);
+    const marketProductDetailRef = useRef<HTMLDivElement>(null);
     const lowRef = useRef<HTMLDivElement>(null);
     const highRef = useRef<HTMLDivElement>(null);
     const [downloading, setDownloading] = useState<string | null>(null);
@@ -197,6 +323,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
     }, []);
 
     const fetchData = async () => {
+        const requestId = ++requestSequence.current;
         setLoading(true);
         try {
             let token: string | null = null;
@@ -212,7 +339,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
             }
             
             // Pass the most specific filter: if subcat exists, pass it; else if ramGen exists, pass it
-            const backendFilter = (category === 'all' ? '' : subcategory) || (category === 'ram' ? ramGeneration : '');
+            const backendFilter = marketCenterMode ? '' : (category === 'all' ? '' : subcategory) || (category === 'ram' ? ramGeneration : '');
 
             // Build date params: custom range or fixed days (minimum 30 for comparison tables)
             const fetchDays = Math.max(days, 30);
@@ -223,8 +350,11 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
 
             // If category is 'all', fetch market overview instead of per-product data
             if (category === 'all') {
-                const overviewRes = await fetch(`/api/stats/market-overview?days=${fetchDays}`, { headers });
+                const overviewDateParams = useCustomRange && customStartDate && customEndDate ? dateParams : `days=${fetchDays}`;
+                const overviewRes = await fetch(`/api/stats/market-overview?${overviewDateParams}`, { headers });
                 const statsRes = await fetch(`/api/stats/price-trends?${dateParams}`, { headers });
+                if (requestId !== requestSequence.current) return;
+                if (!overviewRes.ok || !statsRes.ok) throw new Error('行情请求失败');
                 if (overviewRes.ok) {
                     setMarketOverview(await overviewRes.json());
                 }
@@ -239,6 +369,8 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                     fetch(`/api/stats/product-price-history?${dateParams}&category=${category}&subcategory=${backendFilter}`, { headers })
                 ]);
 
+                if (requestId !== requestSequence.current) return;
+                if (!resStats.ok || !resHistory.ok) throw new Error('行情请求失败');
                 if (resStats.ok && resHistory.ok) {
                     setData(await resStats.json());
                     const hData = await resHistory.json();
@@ -258,21 +390,66 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
             }
         } catch (e) {
             console.error('Failed to load price trends:', e);
+            if (requestId === requestSequence.current) setData(null);
         } finally {
-            setLoading(false);
+            if (requestId === requestSequence.current) setLoading(false);
         }
     };
 
     useEffect(() => { 
         // Whenever category changes, we should reset subcategory unless we want it sticky
         if (category !== 'ram') setRamGeneration('');
-        setBrandFilter('');
-        setActualBrandFilter('');
-        setGpuChipFilter('');
+        if (!marketCenterMode) {
+            setBrandFilter('');
+            setActualBrandFilter('');
+            setGpuChipFilter('');
+        } else {
+            setMarketProductDays(null);
+        }
         fetchData(); 
-    }, [category, subcategory, ramGeneration, days, useCustomRange, customStartDate, customEndDate]);
+    }, [category, marketCenterMode ? '' : subcategory, marketCenterMode ? '' : ramGeneration, days, useCustomRange, customStartDate, customEndDate]);
 
 
+
+    useEffect(() => { setMarketVisibleCount(40); }, [category, productSearchTerm, brandFilter, actualBrandFilter, gpuChipFilter, ramGeneration, subcategory, sortConfig]);
+
+    useEffect(() => {
+        if (!marketCenterMode || loading || !marketScrollRequest) return;
+        const target = marketScrollRequest === 'table' ? tableRef.current : marketProductDetailRef.current;
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+        setMarketScrollRequest(null);
+    }, [marketCenterMode, loading, marketScrollRequest]);
+
+    useEffect(() => {
+        if (!marketCenterMode || !selectedProductId || loading) {
+            setMarketProductHistory(null);
+            return;
+        }
+        const controller = new AbortController();
+        const historyKey = { productId: selectedProductId, endDate: marketProductHistoryEndDate };
+        setMarketProductHistory({ ...historyKey, status: 'loading', points: [] });
+        const params = new URLSearchParams({ hardware_id: selectedProductId, days: '365' });
+        if (marketProductHistoryEndDate) {
+            const startDate = new Date(Date.parse(marketProductHistoryEndDate) - 365 * 86400000).toISOString().slice(0, 10);
+            params.set('start_date', startDate);
+            params.set('end_date', marketProductHistoryEndDate);
+        }
+        fetch(`/api/stats/product-price-history?${params}`, { signal: controller.signal })
+            .then(response => {
+                if (!response.ok) throw new Error('单品历史请求失败');
+                return response.json() as Promise<ProductPriceTrendData>;
+            })
+            .then(result => {
+                if (controller.signal.aborted) return;
+                const points = result.productTrends.find(trend => String(trend.hardwareId) === selectedProductId)?.points;
+                if (!points?.length) throw new Error('单品历史数据为空');
+                setMarketProductHistory({ ...historyKey, status: 'ready', points, historicalExtremes: result.historicalExtremes });
+            })
+            .catch(() => {
+                if (!controller.signal.aborted) setMarketProductHistory({ ...historyKey, status: 'error', points: [] });
+            });
+        return () => controller.abort();
+    }, [marketCenterMode, selectedProductId, loading, marketProductHistoryEndDate, marketProductHistoryRetry]);
 
     // Helper: does a product name match the actual hardware brand?
     const matchesActualBrand = (name: string): boolean => {
@@ -688,6 +865,505 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
         avgDownAmount: 0
     };
 
+    const marketCenterCategoryTabs = ['all', ...sortCategories(data?.categories || []).filter(c => c !== 'all')];
+    const marketCenterFilterCount = [brandFilter, actualBrandFilter, gpuChipFilter, ramGeneration, subcategory].filter(Boolean).length;
+    const marketTrendMap = new Map(trendData?.productTrends.map(item => [String(item.hardwareId), item.points]) || []);
+    const marketCenterCategoryTrend = marketCenterFilterCount > 0
+        ? (trendData?.categoryTotalAvgTrend || []).map(point => ({
+            date: point.date,
+            avgPrice: productTableData.length ? productTableData.reduce((sum, product) => {
+                const history = marketTrendMap.get(String(product.id));
+                return sum + (history?.find(item => item.date === point.date)?.price ?? product.currentPrice);
+            }, 0) / productTableData.length : 0
+        }))
+        : trendData?.categoryTotalAvgTrend || [];
+    const marketCenterDateMatches = (date: string) => useCustomRange && customStartDate && customEndDate
+        ? date >= customStartDate && date <= customEndDate
+        : true;
+    const marketCenterCategoryTrendWindow = useCustomRange && customStartDate && customEndDate
+        ? marketCenterCategoryTrend.filter(point => marketCenterDateMatches(point.date))
+        : marketCenterCategoryTrend.slice(-(days + 1));
+    const marketCenterChartData = category === 'all'
+        ? (data?.chartData || []).filter(point => useCustomRange && customStartDate && customEndDate
+            ? marketCenterDateMatches(point.date)
+            : point.date >= new Date(Date.now() - days * 86400000).toISOString().slice(0, 10))
+        : productTableData.length ? marketCenterCategoryTrendWindow : [];
+    const marketCenterCurrentAvg = productTableData.length ? marketCenterCategoryTrendWindow[marketCenterCategoryTrendWindow.length - 1]?.avgPrice ?? null : null;
+    const marketCenterStartAvg = productTableData.length ? marketCenterCategoryTrendWindow[0]?.avgPrice ?? null : null;
+    const marketCenterChange = marketCenterCurrentAvg !== null && marketCenterStartAvg !== null
+        ? marketCenterCurrentAvg - marketCenterStartAvg : null;
+    const marketCenterChangePct = marketCenterStartAvg && marketCenterChange !== null
+        ? (marketCenterChange / marketCenterStartAvg) * 100 : null;
+    const marketCenterUpCount = category === 'all' ? marketOverview?.todaySummary.upCount ?? 0 : todaySummary.todayUpCount ?? todaySummary.upCount;
+    const marketCenterDownCount = category === 'all' ? marketOverview?.todaySummary.downCount ?? 0 : todaySummary.todayDownCount ?? todaySummary.downCount;
+    const marketCenterTotalChanges = marketCenterUpCount + marketCenterDownCount;
+    const marketCenterBrands = Array.from(new Set(trendData?.products.map(product => product.name.match(/^([^\s\(（]+)/)?.[1] || '').filter(Boolean) || [])).sort();
+    const marketCenterMatchingRows = productTableData.filter(product => product.name.toLowerCase().includes(productSearchTerm.trim().toLowerCase()));
+    const marketCenterProductRows = marketCenterMatchingRows.slice(0, marketVisibleCount);
+    const marketCenterSelectedProduct = trendData?.products.find(item => String(item.id) === selectedProductId);
+    const selectedHistory = marketProductHistory?.productId === selectedProductId && marketProductHistory.endDate === marketProductHistoryEndDate ? marketProductHistory : null;
+    const marketProductHistoryStatus = selectedHistory?.status ?? 'loading';
+    const marketCenterSelectedTrendPoints = selectedHistory?.status === 'ready' && selectedHistory.points.length
+        ? selectedHistory.points : marketTrendMap.get(selectedProductId) || [];
+    const activeMarketProductDays = marketProductDays ?? (useCustomRange ? null : days);
+    const waitingForLongHistory = marketProductDays !== null && marketProductDays > 90 && marketProductHistoryStatus !== 'ready';
+    const marketCenterSelectedTrend = waitingForLongHistory ? [] : marketProductDays !== null
+        ? marketCenterSelectedTrendPoints.slice(-(marketProductDays + 1))
+        : useCustomRange && customStartDate && customEndDate
+        ? marketCenterSelectedTrendPoints.filter(point => marketCenterDateMatches(point.date))
+        : marketCenterSelectedTrendPoints.slice(-(days + 1));
+    const marketCenterDownRows = category !== 'all' ? productTableData.filter(row => {
+        const points = marketTrendMap.get(String(row.id)) || [];
+        const window = useCustomRange && customStartDate && customEndDate
+            ? points.filter(point => marketCenterDateMatches(point.date))
+            : points.slice(-(days + 1));
+        return window.length > 1 && window[window.length - 1].price < window[0].price;
+    }) : [];
+    const marketCenterChartWithDownData = marketCenterChartData.map(point => {
+        if (category === 'all' || !marketCenterDownRows.length) return point;
+        const prices = marketCenterDownRows.map(row => marketTrendMap.get(String(row.id))?.find(item => item.date === point.date)?.price ?? row.currentPrice);
+        return { ...point, downAvgPrice: prices.length ? prices.reduce((sum, price) => sum + price, 0) / prices.length : null };
+    });
+    const marketCenterWindowLabel = useCustomRange && customStartDate && customEndDate
+        ? `${customStartDate} 至 ${customEndDate}`
+        : `近 ${Math.max(days, 30)} 天`;
+    const marketLastEvent = data?.recentChanges[0]?.changedAt;
+    const marketRowIds = new Set(productTableData.map(item => String(item.id)));
+    const marketLows = (trendData?.historicalLows || []).filter(item => marketRowIds.has(String(item.hardwareId)));
+    const marketHighs = (trendData?.historicalHighs || []).filter(item => marketRowIds.has(String(item.hardwareId)));
+    const clearMarketFilters = () => {
+        setBrandFilter(''); setActualBrandFilter(''); setGpuChipFilter(''); setRamGeneration(''); setSubcategory('');
+        setSelectedProductId('');
+    };
+
+    const changeMarketCenterCategory = (nextCategory: string) => {
+        setCategory(nextCategory);
+        setSubcategory('');
+        setBrandFilter('');
+        setActualBrandFilter('');
+        setGpuChipFilter('');
+        setRamGeneration('');
+        setSelectedProductId('');
+        setProductSearchTerm('');
+    };
+
+    const openMarketProduct = (id: string) => {
+        const index = marketCenterMatchingRows.findIndex(row => String(row.id) === id);
+        if (index >= marketVisibleCount) setMarketVisibleCount(index + 1);
+        if (id !== selectedProductId) setMarketProductDays(null);
+        setSelectedProductId(id);
+        setMarketScrollRequest('product');
+    };
+
+    if (marketCenterMode && !data) {
+        return (
+            <div className="flex min-h-[420px] flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white text-center shadow-sm">
+                <TrendingUp size={30} className="mb-4 text-slate-300" />
+                <p className="text-sm font-black text-slate-600">暂时无法获取行情数据</p>
+                <p className="mt-1 text-xs text-slate-400">请稍后重试，或检查行情服务是否正常。</p>
+                <button onClick={() => fetchData()} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-black text-white transition hover:bg-indigo-700"><RefreshCw size={14} /> 重新加载</button>
+            </div>
+        );
+    }
+
+    if (marketCenterMode) {
+        const selectedChartData = marketCenterSelectedTrend;
+        const historicalExtremes = selectedHistory?.historicalExtremes;
+        const extremePrices = [
+            { label: '区间最低', price: selectedChartData.length ? Math.min(...selectedChartData.map(point => point.price)) : null, color: 'text-emerald-600' },
+            { label: '区间最高', price: selectedChartData.length ? Math.max(...selectedChartData.map(point => point.price)) : null, color: 'text-rose-600' },
+            { label: '历史最低价', price: historicalExtremes?.minPrice ?? null, color: 'text-emerald-600' },
+            { label: '历史最高价', price: historicalExtremes?.maxPrice ?? null, color: 'text-rose-600' },
+        ];
+        const productRangeLabel = activeMarketProductDays === 180 ? '近半年' : activeMarketProductDays === 365 ? '近一年' : activeMarketProductDays !== null ? `近 ${activeMarketProductDays} 天` : `${customStartDate} 至 ${customEndDate}`;
+        const latestPricePoint = marketCenterSelectedTrendPoints[marketCenterSelectedTrendPoints.length - 1];
+        const selectedPriceChanges = [7, 14, 30, 180, 365].map(period => {
+            const date = latestPricePoint && new Date(Date.parse(latestPricePoint.date) - period * 86400000).toISOString().slice(0, 10);
+            const previous = marketCenterSelectedTrendPoints.find(point => point.date === date);
+            if (!latestPricePoint || !previous || previous.price <= 0) return { period, amount: null, percent: null };
+            const amount = latestPricePoint.price - previous.price;
+            return { period, amount, percent: amount / previous.price * 100 };
+        });
+        const marketProductDetails = marketCenterSelectedProduct && (
+            <div ref={marketProductDetailRef} className="min-w-0 scroll-mt-4 bg-indigo-50/30 p-4 text-slate-800 sm:p-6">
+                <div className="flex items-start justify-between gap-4">
+                    <div>
+                        <p className="text-xs font-semibold text-indigo-500">单品价格档案</p>
+                        <h3 className="mt-1 text-lg font-bold">{marketCenterSelectedProduct.name}</h3>
+                        <div className="mt-2 text-3xl font-semibold tabular-nums text-slate-900">¥{marketCenterSelectedProduct.price.toLocaleString('zh-CN')}</div>
+                        <p className="mt-1 text-xs text-slate-500">当前报价 · {productRangeLabel}日终价格</p>
+                    </div>
+                    <button onClick={() => setSelectedProductId('')} aria-label="收起单品价格走势" className="flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:border-indigo-300"><X size={14} />收起</button>
+                </div>
+                {useCustomRange && latestPricePoint && <p className="mt-3 text-xs text-slate-500">涨跌以 {latestPricePoint.date} 日终价格为基准</p>}
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
+                    {selectedPriceChanges.map(({ period, amount, percent }) => {
+                        const color = amount === null || amount === 0 ? 'text-slate-500' : amount > 0 ? 'text-rose-600' : 'text-emerald-600';
+                        const sign = amount === null || amount === 0 ? '' : amount > 0 ? '+' : '−';
+                        const active = activeMarketProductDays === period;
+                        const label = period === 180 ? '近半年' : period === 365 ? '近一年' : `近 ${period} 天`;
+                        const missingHistory = period > 90 && marketProductHistoryStatus !== 'ready';
+                        return <button key={period} type="button" aria-pressed={active} onClick={() => {
+                            setMarketProductDays(period);
+                            if (period > 90 && marketProductHistoryStatus === 'error') setMarketProductHistoryRetry(value => value + 1);
+                        }} className={`rounded-xl border p-3 text-left transition-colors sm:p-4 ${active ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500/30' : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/30'}`}>
+                            <p className={`flex items-center justify-between gap-1 text-xs font-semibold ${active ? 'text-indigo-600' : 'text-slate-500'}`}><span>{label}涨跌</span>{active && <span className="h-2 w-2 shrink-0 rounded-full bg-indigo-500" />}</p>
+                            <div className={`mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 tabular-nums ${color}`}>
+                                <strong className="text-lg sm:text-xl">{amount === null ? '—' : `${sign}¥${Math.abs(amount).toLocaleString('zh-CN', { maximumFractionDigits: 2 })}`}</strong>
+                                <span className="text-xs font-semibold">{missingHistory ? marketProductHistoryStatus === 'loading' ? '加载中' : '点击重试' : percent === null ? '数据不足' : `${sign}${Math.abs(percent).toFixed(2)}%`}</span>
+                            </div>
+                        </button>;
+                    })}
+                </div>
+                <div className="mt-4 h-[280px] rounded-xl border border-slate-200 bg-white py-3 sm:h-[320px]">
+                    {selectedChartData.length > 1 ? <ResponsiveContainer width="100%" height="100%">
+                        <LineChart key={`${selectedProductId}-${productRangeLabel}`} data={selectedChartData} margin={{ top: 12, right: 18, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={(value: string) => value.slice(5)} axisLine={false} tickLine={false} />
+                            <YAxis domain={['auto', 'auto']} padding={{ top: 22, bottom: 24 }} tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={(value: number) => `¥${Math.round(value)}`} axisLine={false} tickLine={false} width={60} />
+                            <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #e2e8f0' }} />
+                            <Line type="stepAfter" dataKey="price" name="价格（元）" stroke="#4f46e5" strokeWidth={2} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} shape={<AnimatedMarketPriceLine prices={selectedChartData} />} />
+                        </LineChart>
+                    </ResponsiveContainer> : <div className="flex h-full items-center justify-center text-sm text-slate-500">{waitingForLongHistory ? marketProductHistoryStatus === 'loading' ? '正在加载历史价格…' : '历史价格加载失败，请点击时间卡片重试' : '当前范围没有调价历史可展示'}</div>}
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-4 rounded-xl bg-white p-4 text-sm sm:grid-cols-4">
+                    {extremePrices.map(({ label, price, color }, index) => <div key={label} className={index === 2 ? 'sm:border-l sm:border-slate-200 sm:pl-4' : ''}>
+                        <p className="text-xs text-slate-500">{label}</p>
+                        <strong className={`mt-1 block tabular-nums ${price === null ? 'text-slate-400' : color}`}>{price === null ? '—' : `¥${price.toLocaleString('zh-CN')}`}</strong>
+                        {index >= 2 && price === null && <span className="mt-1 block text-xs text-slate-400">{marketProductHistoryStatus === 'loading' ? '加载中' : marketProductHistoryStatus === 'error' ? '加载失败' : '数据不足'}</span>}
+                    </div>)}
+                </div>
+                <p className="mt-4 text-xs leading-6 text-slate-400">价格走势由平台调价记录还原；无调价记录的日期沿用已知价格。历史最高、最低价基于本站保留的有效报价，排除异常调价记录。</p>
+            </div>
+        );
+        return (
+            <div className="market-center-shell min-h-full bg-[#f7f8fa] pb-16 text-slate-800 [color-scheme:light]">
+                <div className="max-w-[1500px] mx-auto space-y-5">
+                    <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-600">
+                                <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                                Hardware market desk
+                            </div>
+                            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">行情中心</h2>
+                            <p className="mt-1 text-sm text-slate-500">用真实调价记录，快速判断现在该买什么。</p>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                            <span>数据范围：{useCustomRange && customStartDate && customEndDate ? `${customStartDate} 至 ${customEndDate}` : `近 ${days} 天`}</span>
+                            <button
+                                onClick={() => fetchData()}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-600  transition hover:border-indigo-300 hover:text-indigo-600"
+                            >
+                                <RefreshCw size={13} /> 刷新行情
+                            </button>
+                        </div>
+                    </header>
+
+                    <section className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white md:grid-cols-[1.15fr_1fr]">
+                        <div className="border-b border-slate-100 p-5 md:border-b-0 md:border-r">
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500"><span className="h-1.5 w-1.5 rounded-full bg-indigo-500" /> 今日行情简报</div>
+                            <h3 className="mt-3 text-xl font-bold tracking-tight text-slate-900">
+                                {!marketCenterTotalChanges ? '今日暂无调价记录' : marketCenterUpCount > marketCenterDownCount ? '今日涨价记录更多' : marketCenterDownCount > marketCenterUpCount ? '今日降价记录更多' : '今日涨跌记录数相当'}
+                            </h3>
+                            <p className="mt-2 text-xs leading-6 text-slate-500">{category === 'all' ? '全品类' : CATEGORY_LABELS[category]}统计 · 同一型号多次调价分别计数</p>
+                            <p className="text-xs text-slate-400">{marketLastEvent ? `最近调价记录：${marketLastEvent.slice(0, 16).replace('T', ' ')}` : '当前范围暂无调价记录'}</p>
+                        </div>
+                        <div className="grid grid-cols-3 items-center gap-3 p-5">
+                            {[{ label: '涨价记录', value: marketCenterUpCount, color: 'text-rose-600', icon: TrendingUp }, { label: '降价记录', value: marketCenterDownCount, color: 'text-emerald-600', icon: TrendingDown }, { label: '调价总数', value: marketCenterTotalChanges, color: 'text-slate-900', icon: Activity }].map(item => (
+                                <div key={item.label}>
+                                    <div className="mb-3 flex items-center gap-1.5 text-xs text-slate-500"><item.icon size={13} />{item.label}</div>
+                                    <span className={`text-3xl font-semibold tabular-nums ${item.color}`}>{item.value}</span><span className="ml-1 text-xs text-slate-400">次</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {category === 'all' && (
+                        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+                            {(marketOverview?.categoryStats || []).map(stat => {
+                                const Icon = ({ cpu: Cpu, gpu: CircuitBoard, mainboard: CircuitBoard, ram: MemoryStick, disk: HardDrive })[stat.category] || Cpu;
+                                return <button key={stat.category} onClick={() => changeMarketCenterCategory(stat.category)} className="rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-indigo-400 hover:bg-indigo-50/30">
+                                    <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-sm font-bold"><Icon size={17} className="text-indigo-500" />{CATEGORY_LABELS[stat.category]}</span><ChevronRight size={15} className="text-slate-400" /></div>
+                                    <div className="mt-4 text-xs text-slate-400">在售均价 · {stat.productCount} 款</div>
+                                    <div className="mt-1 text-2xl font-semibold tabular-nums">¥{stat.currentAvg.toLocaleString('zh-CN', { maximumFractionDigits: 0 })}</div>
+                                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">{[['7天', stat.change7dPct], ['30天', stat.change30dPct]].map(([label, value]) => <span key={label}><span className="mr-1 text-slate-400">{label}</span><strong className={Number(value) > 0 ? 'text-rose-600' : Number(value) < 0 ? 'text-emerald-600' : 'text-slate-500'}>{value === null ? '—' : `${Number(value) > 0 ? '+' : ''}${value}%`}</strong></span>)}</div>
+                                </button>;
+                            })}
+                        </div>
+                    )}
+
+                    {category === 'all' && marketOverview && (
+                        <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                            <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                <div className="text-xs font-bold text-slate-400">今日总变动</div>
+                                <div className="mt-2 text-2xl font-semibold tabular-nums text-slate-900">{marketOverview.todaySummary.totalChanges}</div>
+                                <div className="mt-1 text-xs text-slate-400">涨 {marketOverview.todaySummary.upCount} · 降 {marketOverview.todaySummary.downCount}</div>
+                            </div>
+                            <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-4">
+                                <div className="text-xs font-bold text-rose-500">平均涨幅</div>
+                                <div className="mt-2 text-2xl font-semibold tabular-nums text-rose-600">¥{marketOverview.todaySummary.avgUpAmount.toFixed(2)}</div>
+                                <div className="mt-1 text-xs text-rose-400">按今日涨价记录计算</div>
+                            </div>
+                            <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
+                                <div className="text-xs font-bold text-emerald-600">平均降幅</div>
+                                <div className="mt-2 text-2xl font-semibold tabular-nums text-emerald-600">¥{Math.abs(marketOverview.todaySummary.avgDownAmount).toFixed(2)}</div>
+                                <div className="mt-1 text-xs text-emerald-500">按今日降价记录计算</div>
+                            </div>
+                            <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                <div className="flex items-center justify-between text-xs font-bold text-slate-400"><span>市场温度</span><Thermometer size={14} className={marketOverview.temperature > 50 ? 'text-rose-500' : 'text-emerald-500'} /></div>
+                                <div className="mt-2 text-2xl font-semibold tabular-nums text-slate-900">{marketOverview.temperature}°</div>
+                                <div className="mt-2 flex h-1.5 overflow-hidden rounded-full bg-slate-100"><div className="bg-rose-500" style={{ width: `${marketOverview.temperature}%` }} /><div className="bg-emerald-500" style={{ width: `${100 - marketOverview.temperature}%` }} /></div>
+                            </div>
+                        </section>
+                    )}
+
+                    <nav aria-label="行情品类" className="flex items-center gap-2 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2  no-scrollbar">
+                        {marketCenterCategoryTabs.map(tab => (
+                            <button
+                                key={tab}
+                                aria-current={category === tab ? 'page' : undefined}
+                                onClick={() => changeMarketCenterCategory(tab)}
+                                className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${category === tab ? 'bg-indigo-600 text-white  ' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+                            >
+                                {tab === 'all' ? '全品类' : CATEGORY_LABELS[tab] || tab}
+                            </button>
+                        ))}
+                    </nav>
+
+                    <section className="rounded-2xl border border-slate-200 bg-white p-4  sm:p-5">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="relative min-w-[220px] flex-1 sm:flex-none">
+                                    <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                    <input
+                                        value={productSearchTerm}
+                                        onChange={event => { setProductSearchTerm(event.target.value); setSelectedProductId(''); }}
+                                        disabled={category === 'all'}
+                                        aria-label="搜索型号"
+                                        placeholder={category === 'all' ? '先选择品类，再搜索型号' : '搜索型号，例如 9800X3D'}
+                                        className="disabled:opacity-50 w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                                    />
+                                </div>
+                                <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+                                    {[7, 14, 30, 60, 90].map(value => (
+                                        <button
+                                            key={value}
+                                            onClick={() => { setDays(value); setUseCustomRange(false); setShowDatePicker(false); }}
+                                            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${days === value && !useCustomRange ? 'bg-white text-indigo-600 ' : 'text-slate-500 hover:text-slate-900'}`}
+                                        >
+                                            {value}天
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={() => setShowDatePicker(value => !value)}
+                                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${useCustomRange ? 'bg-white text-indigo-600' : 'text-slate-500 hover:text-slate-900'}`}
+                                    >
+                                        <span className="inline-flex items-center gap-1"><Calendar size={12} />{useCustomRange && customStartDate && customEndDate ? `${customStartDate.slice(5)} → ${customEndDate.slice(5)}` : '自定义'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                                    <button disabled={category === 'all'} onClick={() => setShowMarketFilters(true)} className="disabled:cursor-not-allowed disabled:opacity-40 flex cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-indigo-300 hover:text-indigo-600">
+                                        <SlidersHorizontal size={14} /> 高级筛选 {marketCenterFilterCount > 0 ? `(${marketCenterFilterCount})` : ''}
+                                    </button>
+                            {showMarketFilters && <MarketDrawer title="筛选型号" onClose={() => setShowMarketFilters(false)}>
+                                <p className="mb-5 text-sm text-slate-500">筛选同步应用于均价走势、阶段榜单和型号列表。</p>
+                                <div className="grid gap-3">
+                                    {['cpu', 'gpu'].includes(category) && (
+                                        <div className="flex gap-1 rounded-xl bg-white p-1 ">
+                                            {['', ...(category === 'gpu' ? ['NVIDIA', 'AMD'] : ['AMD', 'Intel'])].map(brand => (
+                                                <button key={brand} onClick={() => { setBrandFilter(brand); setSelectedProductId(''); }} className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold ${brandFilter === brand ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}>
+                                                    {brand || '全部阵营'}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {category === 'ram' && (
+                                        <select aria-label="内存代数" value={ramGeneration} onChange={event => { setRamGeneration(event.target.value); setSubcategory(''); setSelectedProductId(''); }} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold outline-none">
+                                            <option value="">全部内存代数</option><option value="DDR4">DDR4</option><option value="DDR5">DDR5</option>
+                                        </select>
+                                    )}
+                                    {category === 'gpu' && gpuChipSeries.length > 0 && (
+                                        <select aria-label="芯片组" value={gpuChipFilter} onChange={event => { setGpuChipFilter(event.target.value); setSelectedProductId(''); }} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold outline-none">
+                                            <option value="">全部芯片组</option>{gpuChipSeries.map(chip => <option key={chip} value={chip}>{chip}</option>)}
+                                        </select>
+                                    )}
+                                    {marketCenterBrands.length > 0 && category !== 'all' && (
+                                        <select aria-label="品牌" value={actualBrandFilter} onChange={event => { setActualBrandFilter(event.target.value); setSelectedProductId(''); }} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold outline-none">
+                                            <option value="">全部品牌</option>{marketCenterBrands.map(brand => <option key={brand} value={brand}>{brand}</option>)}
+                                        </select>
+                                    )}
+                                    {category !== 'gpu' && category !== 'all' && specPriceTable && specPriceTable.length > 0 && (
+                                        <select aria-label="规格或代数" value={subcategory} onChange={event => { setSubcategory(event.target.value); setSelectedProductId(''); }} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold outline-none">
+                                            <option value="">全部{category === 'cpu' ? '代数' : '规格'}</option>{specPriceTable.map(row => <option key={row.label} value={row.label}>{row.label}</option>)}
+                                        </select>
+                                    )}
+                                    <button onClick={clearMarketFilters} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 hover:text-indigo-600">清除筛选</button>
+                                </div>
+                                <button onClick={() => setShowMarketFilters(false)} className="mt-6 w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white">查看结果</button>
+                            </MarketDrawer>}
+                        </div>
+                        {showDatePicker && (
+                            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                <Calendar size={14} className="text-slate-400" />
+                                <input aria-label="开始日期" type="date" value={customStartDate} onChange={event => setCustomStartDate(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none" />
+                                <span className="text-xs font-bold text-slate-400">至</span>
+                                <input aria-label="结束日期" type="date" value={customEndDate} onChange={event => setCustomEndDate(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none" />
+                                <button
+                                    onClick={() => { if (customStartDate && customEndDate && customStartDate <= customEndDate) { setUseCustomRange(true); setShowDatePicker(false); } }}
+                                    disabled={!customStartDate || !customEndDate || customStartDate > customEndDate}
+                                    className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
+                                >应用日期</button>
+                                {useCustomRange && <button onClick={() => { setUseCustomRange(false); setShowDatePicker(false); }} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-indigo-600">恢复快捷范围</button>}
+                            </div>
+                        )}
+                    </section>
+
+                    {category !== 'all' && marketCenterCurrentAvg !== null && (
+                        <div className="grid gap-3 sm:grid-cols-3">
+                            <div className="rounded-2xl border border-slate-200 bg-white p-4 "><div className="text-xs font-bold text-slate-400">当前在售均价</div><div className="mt-2 text-2xl font-semibold text-slate-900">¥{marketCenterCurrentAvg.toFixed(0)}</div><div className="mt-1 text-xs text-slate-400">{productTableData.length} 款匹配型号</div></div>
+                            <div className={`rounded-2xl border p-4  ${marketCenterChange !== null && marketCenterChange > 0 ? 'border-rose-100 bg-rose-50/60' : 'border-emerald-100 bg-emerald-50/60'}`}><div className="text-xs font-bold text-slate-500">近 {days} 天均价变化</div><div className={`mt-2 text-2xl font-semibold ${marketCenterChange !== null && marketCenterChange > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{marketCenterChange === null ? '—' : `${marketCenterChange > 0 ? '+' : ''}¥${marketCenterChange.toFixed(0)}`}</div><div className="mt-1 text-xs font-bold text-slate-500">{marketCenterChangePct === null ? '数据不足' : `${marketCenterChangePct > 0 ? '+' : ''}${marketCenterChangePct.toFixed(2)}%`}</div></div>
+                            <div className="rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 "><div className="text-xs font-bold text-indigo-500">今日品类调价记录</div><div className="mt-2 text-2xl font-semibold text-indigo-700">{marketCenterTotalChanges}</div><div className="mt-1 text-xs font-bold text-indigo-500">涨 {marketCenterUpCount} · 降 {marketCenterDownCount}</div></div>
+                        </div>
+                    )}
+
+                    {category !== 'all' && trendData && (
+                        <section className="grid gap-3 sm:grid-cols-3">
+                            {[
+                                ['窗口涨价记录', todaySummary.monthUpCount ?? todaySummary.upCount, 'rose', todaySummary.todayUpCount ?? todaySummary.upCount],
+                                ['窗口降价记录', todaySummary.monthDownCount ?? todaySummary.downCount, 'emerald', todaySummary.todayDownCount ?? todaySummary.downCount],
+                                ['窗口总变动', todaySummary.monthTotalChanges ?? todaySummary.totalChanges, 'indigo', todaySummary.todayTotalChanges ?? todaySummary.totalChanges],
+                            ].map(([label, value, tone, todayValue]) => (
+                                <div key={String(label)} className={`rounded-2xl border p-4 ${tone === 'rose' ? 'border-rose-100 bg-rose-50/50' : tone === 'emerald' ? 'border-emerald-100 bg-emerald-50/50' : 'border-indigo-100 bg-indigo-50/50'}`}>
+                                    <div className={`text-xs font-bold ${tone === 'rose' ? 'text-rose-500' : tone === 'emerald' ? 'text-emerald-600' : 'text-indigo-500'}`}>{label}</div>
+                                    <div className={`mt-2 text-2xl font-semibold tabular-nums ${tone === 'rose' ? 'text-rose-600' : tone === 'emerald' ? 'text-emerald-600' : 'text-indigo-700'}`}>{value}</div>
+                                    <div className="mt-1 text-xs text-slate-400">{marketCenterWindowLabel} · 今日 {todayValue}</div>
+                                </div>
+                            ))}
+                        </section>
+                    )}
+
+                    {category !== 'all' && specPriceTable && specPriceTable.length > 0 && (
+                        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                            <div className="flex items-center justify-between border-b border-slate-100 p-5">
+                                <div><h3 className="text-lg font-bold text-slate-900">{CATEGORY_LABELS[category]} 规格行情对比</h3><p className="mt-1 text-xs text-slate-500">按规格聚合均价，点击一行可筛选型号列表</p></div>
+                                <span className="text-xs text-slate-400">{specPriceTable.length} 组</span>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full min-w-[720px] text-sm tabular-nums">
+                                    <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="px-5 py-3 text-left">规格 / 代数</th><th className="px-4 py-3 text-right">在售数</th><th className="px-4 py-3 text-right">当前均价</th><th className="px-4 py-3 text-right">今日涨跌</th>{['7日', '30日'].map(period => <th key={period} className="px-4 py-3 text-right">较{period}前</th>)}</tr></thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {specPriceTable.map(row => {
+                                            const change7 = row.changes.find(item => item.period === '7日')?.pct;
+                                            const change30 = row.changes.find(item => item.period === '30日')?.pct;
+                                            const isSelected = (category === 'gpu' ? gpuChipFilter : subcategory) === row.label;
+                                            return <tr key={row.label} onClick={() => { if (category === 'gpu') setGpuChipFilter(row.label); else setSubcategory(row.label); setSelectedProductId(''); setMarketScrollRequest('table'); }} className={`cursor-pointer transition hover:bg-indigo-50/50 ${isSelected ? 'bg-indigo-50' : ''}`}>
+                                                <td className="px-5 py-3 font-semibold text-slate-700">{row.label}</td><td className="px-4 py-3 text-right text-slate-500">{row.count}</td><td className="px-4 py-3 text-right font-semibold text-slate-900">¥{row.currentAvg.toFixed(0)}</td>
+                                                <td className="px-4 py-3 text-right"><span className="text-rose-600">↑{row.todayUp}</span><span className="mx-1 text-slate-300">/</span><span className="text-emerald-600">↓{row.todayDown}</span></td>
+                                                {[change7, change30].map((value, index) => <td key={index} className={`px-4 py-3 text-right font-semibold ${value === null || value === undefined ? 'text-slate-300' : value > 0 ? 'text-rose-600' : value < 0 ? 'text-emerald-600' : 'text-slate-400'}`}>{value === null || value === undefined ? '—' : `${value > 0 ? '+' : ''}${value.toFixed(2)}%`}</td>)}
+                                            </tr>;
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    )}
+
+                    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.7fr)]">
+                        <section ref={chartRef} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4  sm:p-6">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                <div><div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400"><Activity size={14} className="text-indigo-500" /> 趋势观察</div><h3 className="mt-1 text-lg font-semibold text-slate-900">{category === 'all' ? '全品类调价节奏' : `${CATEGORY_LABELS[category] || category}均价走势`}</h3></div>
+                                <button disabled={!!downloading} onClick={() => handleDownloadImage(chartRef, `行情走势_${CATEGORY_LABELS[category] || '全品类'}_${new Date().toISOString().slice(0, 10)}.png`)} className="inline-flex items-center gap-1.5 self-start rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-500 hover:border-indigo-300 hover:text-indigo-600"><Download size={13} /> 导出</button>
+                            </div>
+                            <p className="mt-2 text-xs text-slate-400">{category === 'all' ? '红色：涨价记录 · 绿色：降价记录' : `当前筛选：${[brandFilter, actualBrandFilter, ramGeneration, gpuChipFilter, subcategory].filter(Boolean).join(' / ') || '全部在售型号'} · ${marketCenterWindowLabel}`}</p>
+                            {category !== 'all' && <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-400"><span><i className="mr-1 inline-block h-2 w-5 rounded-full bg-indigo-500 align-middle" />整体均价</span><span><i className="mr-1 inline-block h-0 w-5 border-t-2 border-dashed border-emerald-500 align-middle" />降价商品均价（{marketCenterDownRows.length} 款）</span>{marketCenterChange !== null && <span className={marketCenterChange > 0 ? 'text-rose-600' : marketCenterChange < 0 ? 'text-emerald-600' : 'text-slate-500'}>区间变化 {marketCenterChange > 0 ? '+' : ''}¥{marketCenterChange.toFixed(0)} ({marketCenterChangePct === null ? '—' : `${marketCenterChangePct > 0 ? '+' : ''}${marketCenterChangePct.toFixed(2)}%`})</span>}</div>}
+                            <div className="mt-5 h-[300px] w-full">
+                                {marketCenterChartData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <LineChart data={marketCenterChartWithDownData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(value: string) => value.slice(5)} axisLine={false} tickLine={false} />
+                                            <YAxis domain={category === 'all' ? [0, 'auto'] : ['auto', 'auto']} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={(value: number) => category === 'all' ? `${value}` : `¥${Math.round(value)}`} width={category === 'all' ? 32 : 54} />
+                                            <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', boxShadow: '0 12px 30px rgba(15,23,42,.10)' }} labelFormatter={(value) => `日期 ${value}`} />
+                                            {category === 'all' ? <><Line type="linear" dataKey="upCount" name="涨价" stroke="#f43f5e" strokeWidth={2.5} dot={false} /><Line type="linear" dataKey="downCount" name="降价" stroke="#10b981" strokeWidth={2.5} dot={false} /></> : <><Line type="linear" dataKey="avgPrice" name="整体均价（元）" stroke="#4f46e5" strokeWidth={3} dot={false} activeDot={{ r: 5 }} />{marketCenterDownRows.length > 0 && <Line type="linear" dataKey="downAvgPrice" name="降价商品均价（元）" stroke="#10b981" strokeWidth={2.5} strokeDasharray="5 5" dot={false} activeDot={{ r: 4 }} />}</>}
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                ) : <div className="flex h-full items-center justify-center text-sm font-semibold text-slate-400">当前时间范围暂无足够趋势数据</div>}
+                            </div>
+                        </section>
+
+                        <section className="rounded-2xl border border-slate-200 bg-white p-4  sm:p-6">
+                            <div className="flex items-start justify-between gap-3"><div><div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400"><TrendingDown size={14} className="text-emerald-500" /> 价格机会</div><h3 className="mt-1 text-lg font-semibold text-slate-900">{category === 'all' ? '最新调价动态' : '阶段高低位'}</h3></div><span className="rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-500">{Math.max(days, 30)} 天</span></div>
+                            {category !== 'all' && trendData ? (
+                                <div className="mt-5 space-y-5">
+                                    <div ref={lowRef}><div className="mb-2 flex items-center justify-between text-xs font-semibold text-emerald-700"><span>触及阶段低位</span><div className="flex items-center gap-2"><span>{marketLows.length} 款</span><button disabled={!!downloading} onClick={() => handleDownloadImage(lowRef, `史低榜单_${new Date().toISOString().slice(0, 10)}.png`)} className="rounded-md border border-emerald-200 px-2 py-1 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100">导出</button></div></div><div className="space-y-2">{marketLows.slice(0, 5).map((item, index) => <button key={item.hardwareId} onClick={() => openMarketProduct(String(item.hardwareId))} className="flex w-full items-center justify-between gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-left transition hover:bg-emerald-100/70"><span className="flex min-w-0 items-center gap-2 truncate text-xs font-bold text-slate-700"><span className="text-emerald-600">{index + 1}.</span>{item.name}</span><span className="shrink-0 text-xs font-semibold text-emerald-600">¥{item.currentPrice}</span></button>)}{marketLows.length === 0 && <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-400">暂时没有阶段低位型号</div>}</div></div>
+                                    <div ref={highRef}><div className="mb-2 flex items-center justify-between text-xs font-semibold text-rose-700"><span>触及阶段高位</span><div className="flex items-center gap-2"><span>{marketHighs.length} 款</span><button disabled={!!downloading} onClick={() => handleDownloadImage(highRef, `破价榜单_${new Date().toISOString().slice(0, 10)}.png`)} className="rounded-md border border-rose-200 px-2 py-1 text-[10px] font-bold text-rose-700 hover:bg-rose-100">导出</button></div></div><div className="space-y-2">{marketHighs.slice(0, 5).map((item, index) => <button key={item.hardwareId} onClick={() => openMarketProduct(String(item.hardwareId))} className="flex w-full items-center justify-between gap-2 rounded-xl border border-rose-100 bg-rose-50/60 px-3 py-2 text-left transition hover:bg-rose-100/70"><span className="flex min-w-0 items-center gap-2 truncate text-xs font-bold text-slate-700"><span className="text-rose-600">{index + 1}.</span>{item.name}</span><span className="shrink-0 text-xs font-semibold text-rose-600">¥{item.currentPrice}</span></button>)}{marketHighs.length === 0 && <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-400">暂时没有阶段高位型号</div>}</div></div>
+                                </div>
+                            ) : (
+                                <div className="mt-5 space-y-2">{(marketOverview?.recentEvents || []).slice(0, 6).map((event, index) => <div key={`${event.id}-${index}`} className="flex items-center justify-between gap-3 border-b border-slate-100 pb-2 last:border-0"><div className="min-w-0"><div className="truncate text-xs font-bold text-slate-700">{event.name}</div><div className="mt-1 text-[10px] text-slate-400">{CATEGORY_LABELS[event.category] || event.category} · {event.changedAt.slice(5, 16)}</div></div><span className={`shrink-0 text-xs font-semibold ${event.changeAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{event.changeAmount > 0 ? '+' : ''}¥{event.changeAmount.toFixed(0)}</span></div>)}{(!marketOverview?.recentEvents || marketOverview.recentEvents.length === 0) && <div className="rounded-xl bg-slate-50 p-3 text-xs text-slate-400">近期没有调价记录</div>}</div>
+                            )}
+                        </section>
+                    </div>
+
+                    {category !== 'all' && trendData && (
+                        <section ref={tableRef} className="scroll-mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                            <div className="flex flex-col gap-2 border-b border-slate-100 p-5 sm:flex-row sm:items-end sm:justify-between">
+                                <div><h3 className="text-lg font-bold">{subcategory || gpuChipFilter || CATEGORY_LABELS[category]} 在售型号</h3><p className="mt-1 text-xs text-slate-500">按涨跌金额排序 · 点击型号展开日终价格走势</p></div>
+                                <span className="text-xs text-slate-500">已显示 {marketCenterProductRows.length} / {marketCenterMatchingRows.length} 款</span>
+                            </div>
+                            {marketCenterSelectedProduct && !marketCenterProductRows.some(row => String(row.id) === selectedProductId) && marketProductDetails}
+                            <div className="overflow-x-auto [container-type:inline-size]">
+                                <table className="w-full min-w-[700px] text-sm tabular-nums">
+                                    <thead className="bg-slate-50 text-xs text-slate-500"><tr>
+                                        <th className="px-5 py-3 text-left">型号</th>
+                                        <th className="px-4 py-3 text-right">当前价格</th>
+                                        <th className="px-4 py-3">近 {days} 天走势</th>
+                                        {(['1d', '7d', '14d', '30d'] as const).map(key => <th key={key} className="px-4 py-3 text-right" aria-sort={sortConfig?.key === key ? sortConfig.direction === 'asc' ? 'ascending' : 'descending' : 'none'}>
+                                            <button className="inline-flex items-center gap-1 whitespace-nowrap hover:text-indigo-600" onClick={() => setSortConfig(previous => ({ key, direction: previous?.key === key && previous.direction === 'asc' ? 'desc' : 'asc' }))}>
+                                                近 {key.replace('d', '')} 天 <ArrowUpDown size={12} className={sortConfig?.key === key ? 'text-indigo-600' : 'text-slate-300'} />
+                                            </button>
+                                        </th>)}
+                                    </tr></thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {marketCenterProductRows.map(row => {
+                                            const points = (marketTrendMap.get(String(row.id)) || []).slice(-(days + 1));
+                                            const values = points.map(point => point.price);
+                                            const min = Math.min(...values), max = Math.max(...values);
+                                            const range = max - min;
+                                            const delta = values.length ? values[values.length - 1] - values[0] : 0;
+                                            const path = values.map((value, index) => `${index / (values.length - 1) * 64},${range ? 20 - (value - min) / range * 16 : 11}`).join(' ');
+                                            const isExpanded = String(row.id) === selectedProductId;
+                                            return <Fragment key={row.id}>
+                                                <tr className={isExpanded ? 'bg-indigo-50' : 'hover:bg-indigo-50/40'}>
+                                                    <td className="max-w-[290px] px-5 py-3"><button aria-expanded={isExpanded} onClick={() => isExpanded ? setSelectedProductId('') : openMarketProduct(String(row.id))} className="flex items-center gap-2 text-left font-semibold text-slate-700 hover:text-indigo-600"><ChevronRight size={15} className={`shrink-0 text-indigo-500 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />{row.name}</button></td>
+                                                    <td className="px-4 py-3 text-right font-semibold text-slate-900">¥{row.currentPrice.toLocaleString('zh-CN')}</td>
+                                                    <td className="px-4 py-3 text-center">{values.length > 1 ? <svg width="64" height="22" viewBox="0 0 64 22" className="inline-block" aria-label="价格走势"><polyline fill="none" stroke={delta > 0 ? '#e11d48' : delta < 0 ? '#059669' : '#94a3b8'} strokeWidth="1.7" points={path} /></svg> : <span className="text-slate-400">暂无记录</span>}</td>
+                                                    {(['1d', '7d', '14d', '30d'] as const).map(key => {
+                                                        const change = row.changes[key];
+                                                        const covered = (trendData.categoryTotalAvgTrend?.length || 0) > Number(key.replace('d', ''));
+                                                        return <td key={key} className={`whitespace-nowrap px-4 py-3 text-right text-xs ${change.amt > 0 ? 'text-rose-600' : change.amt < 0 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                                            <span className="font-semibold">{!covered ? '—' : change.amt === 0 ? '持平' : `${change.amt > 0 ? '+' : ''}${change.pct.toFixed(2)}%`}</span>
+                                                            {covered && change.amt !== 0 && <span className="mt-1 block text-[10px]">{change.amt > 0 ? '+' : '−'}¥{Math.abs(change.amt).toLocaleString('zh-CN', { maximumFractionDigits: 2 })}</span>}
+                                                        </td>;
+                                                    })}
+                                                </tr>
+                                                {isExpanded && <tr><td colSpan={7} className="p-0"><div className="sticky left-0 w-[100cqw] max-w-full">{marketProductDetails}</div></td></tr>}
+                                            </Fragment>;
+                                        })}
+                                    </tbody>
+                                </table>
+                                {!marketCenterProductRows.length && <div className="p-12 text-center text-sm text-slate-500">没有符合条件的型号，请调整搜索或筛选。</div>}
+                            </div>
+                            {marketVisibleCount < marketCenterMatchingRows.length && <div className="border-t border-slate-100 p-4 text-center"><button onClick={() => setMarketVisibleCount(count => count + 40)} className="rounded-lg border border-slate-200 px-5 py-2 text-xs font-semibold text-slate-600 hover:border-indigo-400">加载更多型号</button></div>}
+                        </section>
+                    )}
+                    <footer className="flex flex-wrap justify-between gap-2 border-t border-slate-200 pt-4 text-xs text-slate-400">
+                        <span>DIYXX · 硬件价格观察</span><span>数据来自本站在售报价与调价记录 · 品类均价受在售型号构成影响</span>
+                    </footer>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 mb-20 lg:mb-0 lg:h-[calc(100vh-8rem)] px-3 sm:px-4 lg:px-0">
             {/* ====== 中间主内容区（可滚动） ====== */}
@@ -773,7 +1449,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                     )}
 
                                     {/* Dynamic OEM Brands */}
-                                    {['ram', 'disk', 'gpu', 'motherboard', 'monitor', 'cooler', 'power', 'case', 'peripheral'].includes(category) && trendData && trendData.products && (
+                                    {['ram', 'disk', 'gpu', 'mainboard', 'motherboard', 'monitor', 'cooler', 'power', 'case', 'peripheral'].includes(category) && trendData && trendData.products && (
                                         (() => {
                                             const brands = Array.from(new Set(
                                                 trendData.products
@@ -815,7 +1491,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
 
                                 {/* 第二组：品牌组和单品列表 */}
                                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                                    {['cpu', 'gpu', 'mainboard'].includes(category) && (
+                                    {['cpu', 'gpu'].includes(category) && (
                                         <div className="flex gap-1 p-1 bg-slate-200/60 dark:bg-slate-800/60 rounded-xl shadow-inner shrink-0 cursor-pointer border border-transparent">
                                             {[
                                                 { value: '', label: '全部' },

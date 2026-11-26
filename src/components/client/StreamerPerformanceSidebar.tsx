@@ -128,7 +128,7 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
     const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
     const isMarioLiveStyle = liveStyle === 'pixel';
     const isGundamLiveStyle = liveStyle === 'gundam';
-    const isMessiLiveStyle = liveStyle === 'pure';
+    const isMessiLiveStyle = isLiveMode && liveStyle === 'pure';
     const isRogLiveStyle = liveStyle === 'pink';
     const isLightLiveStyle = liveStyleConfig.surface === 'light';
     const liveControlBg = isPixelLiveStyle ? `${liveStyleConfig.panelBg} ${liveStyleConfig.stampBorder} shadow-[2px_2px_0_#050505]` : isLightLiveStyle ? 'bg-white/55 border-slate-950/10' : 'bg-white/[0.06] border-white/10';
@@ -229,28 +229,6 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                         const cleanKey = key.toUpperCase().replace(/[^A-Z0-9]/g, '');
                         if (modelStr.includes(cleanKey) || cleanKey.includes(modelStr) || modelOnly.includes(cleanKey) || cleanKey.includes(modelOnly)) {
                             if (canUseKey(key)) return key;
-                        }
-                    }
-                }
-
-                if (type === 'cpu') {
-                    const match = rawModel.match(/\d{4,5}[A-Z]{0,3}/);
-                    if (match) {
-                        const identifier = match[0];
-                        for (const game of Object.keys(gamesFpsData)) {
-                            const entries = Object.keys(gamesFpsData[game][type] || {});
-                            for (const key of entries) {
-                                if (key.toUpperCase().includes(identifier) && canUseKey(key)) return key;
-                            }
-                        }
-                        const numMatch = identifier.match(/\d+/);
-                        if (numMatch) {
-                            for (const game of Object.keys(gamesFpsData)) {
-                                const entries = Object.keys(gamesFpsData[game][type] || {});
-                                for (const key of entries) {
-                                    if (key.toUpperCase().includes(numMatch[0]) && canUseKey(key)) return key;
-                                }
-                            }
                         }
                     }
                 }
@@ -539,7 +517,6 @@ export function StreamerPerformanceSidebar({ buildList, pricingProps }: { buildL
                     {pricingProps && (
                         <div className={`${liveStyleConfig.panelBg} border ${liveStyleConfig.border} ${isPixelLiveStyle ? 'rounded-none border-2 shadow-[3px_3px_0_#050505]' : 'rounded-lg shadow-sm'} p-2.5 relative mt-auto shrink-0 flex flex-col gap-1.5 ${isMarioLiveStyle ? 'live-mario-pricing-panel' : ''} ${isGundamLiveStyle ? 'live-gundam-pricing-panel' : ''} ${isMessiLiveStyle ? 'live-messi-pricing-panel' : ''} ${isRogLiveStyle ? 'live-rog-pricing-panel' : ''}`}>
                             {isMarioLiveStyle && <img className="live-mario-pricing-castle" src="/assets/themes/mario-game/castle.svg" alt="" aria-hidden="true" />}
-                            {isMessiLiveStyle && <img className="live-messi-pricing-trophy" src="/assets/themes/messi-worldcup/trophy.svg" alt="" aria-hidden="true" />}
                             <div className={`flex items-center justify-between gap-2 ${isMarioLiveStyle ? 'live-mario-pricing-header' : ''}`}>
                                 <div className={`text-[12px] font-black ${liveStyleConfig.modelText} ${isMarioLiveStyle ? 'live-mario-pricing-title' : ''} ${isGundamLiveStyle ? 'live-gundam-pricing-title' : ''} ${isMessiLiveStyle ? 'live-messi-pricing-title' : ''} ${isRogLiveStyle ? 'live-rog-pricing-title' : ''}`}>
                                     {isMarioLiveStyle ? <><span>关卡结算</span><small>优惠方案</small></> : isGundamLiveStyle ? '结算' : isMessiLiveStyle ? <><span>冠军结算</span><small>优惠方案</small></> : isRogLiveStyle ? <><span>ROG FINAL BUILD</span><small>20TH ANNIVERSARY</small></> : '优惠方案'}

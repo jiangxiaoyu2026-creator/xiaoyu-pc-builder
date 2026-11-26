@@ -244,6 +244,13 @@ function StreamerWorkbench({
         try {
             posterRef.current.style.display = 'block';
             await new Promise(resolve => setTimeout(resolve, 100)); // allow DOM refresh
+            await Promise.all(Array.from(posterRef.current.querySelectorAll('img')).map((image) => {
+                if (image.complete) return Promise.resolve();
+                return new Promise<void>((resolve) => {
+                    image.addEventListener('load', () => resolve(), { once: true });
+                    image.addEventListener('error', () => resolve(), { once: true });
+                });
+            }));
             const html2canvas = (await import('html2canvas')).default;
             const canvas = await html2canvas(posterRef.current, {
                 scale: 2,
@@ -478,7 +485,7 @@ function StreamerWorkbench({
     const isPixelLiveStyle = liveStyle.startsWith('pixel') && liveStyle !== 'pixel';
     const isMarioLiveStyle = liveStyle === 'pixel';
     const isGundamLiveStyle = liveStyle === 'gundam';
-    const isMessiLiveStyle = liveStyle === 'pure';
+    const isMessiLiveStyle = isLiveMode && liveStyle === 'pure';
     const isRogLiveStyle = liveStyle === 'pink';
     const serviceItems = [
         { id: 'assembly', label: '组装', positive: true },
@@ -542,28 +549,6 @@ function StreamerWorkbench({
                 <img className="live-mario-side-pipe live-mario-side-pipe--left" src="/assets/themes/mario-game/pipe.svg" alt="" />
                 <img className="live-mario-flying-paratroopa" src="/assets/themes/mario-game/paratroopa.svg" alt="" />
             </div>
-        )}
-        {isLiveMode && isMessiLiveStyle && (
-            <>
-                <div aria-hidden="true" className="live-messi-stadium-backdrop">
-                    <img src="/assets/themes/messi-worldcup/stadium.svg" alt="" />
-                </div>
-                <div aria-hidden="true" className="live-messi-stage-decor">
-                    <span className="live-messi-stadium-light live-messi-stadium-light--left" />
-                    <span className="live-messi-stadium-light live-messi-stadium-light--right" />
-                    <img className="live-messi-flag live-messi-flag--left" src="/assets/themes/messi-worldcup/argentina-flag.svg" alt="" />
-                    <img className="live-messi-flag live-messi-flag--right" src="/assets/themes/messi-worldcup/argentina-flag.svg" alt="" />
-                    <div className="live-messi-scoreboard">
-                        <span>ARG</span><strong>3</strong><i>★ ★ ★</i><b>CAMPEONES 2022</b>
-                    </div>
-                    <img className="live-messi-player live-messi-player--dribble" src="/assets/themes/messi-worldcup/messi-dribble.png" alt="" />
-                    <div className="live-messi-goal"><span /></div>
-                    <img className="live-messi-player live-messi-player--champion" src="/assets/themes/messi-worldcup/messi-champion.png" alt="" />
-                    <div className="live-messi-confetti">
-                        {Array.from({ length: 14 }).map((_, index) => <span key={index} />)}
-                    </div>
-                </div>
-            </>
         )}
         {isLiveMode && isRogLiveStyle && (
             <div aria-hidden="true" className="live-rog-outside-art">
@@ -745,7 +730,7 @@ function StreamerWorkbench({
                                 <span className="live-rog-table-connector live-rog-table-connector--side" aria-hidden="true" />
                             </>
                         )}
-                        {isLiveMode && liveStyleConfig.frameMotion === 'none' && !isRogLiveStyle && (
+                        {isLiveMode && liveStyleConfig.frameMotion === 'none' && !isRogLiveStyle && !isMessiLiveStyle && (
                             <>
                                 <div className={`pointer-events-none absolute inset-0 z-10 ${livePanelRadius} border ${isPixelLiveStyle ? 'border-black' : isSoftFrame ? liveStyleConfig.stampBorder : 'border-black/40'}`}></div>
                                 <div className={`pointer-events-none absolute inset-[4px] z-10 ${livePanelInsetRadius} border ${liveStyleConfig.stampBorder} opacity-80`}></div>
@@ -770,11 +755,8 @@ function StreamerWorkbench({
                                             {isMarioLiveStyle && <span className="live-mario-world-mark">WORLD 1-1</span>}
                                             {isMessiLiveStyle && (
                                                 <span className="live-messi-champion-mark">
-                                                    <img src="/assets/themes/messi-worldcup/argentina-flag.svg" alt="" aria-hidden="true" />
-                                                    <span className="live-messi-stars">★ ★ ★</span>
                                                     <span>MESSI <strong>10</strong></span>
-                                                    <small>CAMPEÓN DEL MUNDO</small>
-                                                    <img src="/assets/themes/messi-worldcup/trophy.svg" alt="" aria-hidden="true" />
+                                                    <span className="live-messi-stars" aria-label="三冠">★ ★ ★</span>
                                                 </span>
                                             )}
                                         </div>

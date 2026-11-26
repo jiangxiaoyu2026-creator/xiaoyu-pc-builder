@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from ..db import get_session
 from ..models import User
 from ..utils.auth import get_password_hash, verify_password, create_access_token, decode_access_token
@@ -10,8 +10,15 @@ from ..services.sms_service import SMSService
 from ..services.email_service import EmailService
 import uuid
 import time
+import os
+from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
+
+from dotenv import load_dotenv
+
+# 以项目根目录为准加载配置，避免生产进程从其他工作目录启动时读不到 .env。
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
@@ -58,6 +65,46 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+class ProfileUpdateRequest(BaseModel):
+    nickname: Optional[str] = Field(default=None, max_length=64)
+    avatarUrl: Optional[str] = Field(default=None, max_length=500)
+
+    @field_validator("nickname")
+    @classmethod
+    def validate_nickname(cls, value: Optional[str]):
+        if value is None:
+            return value
+        value = value.strip()
+        if not value:
+            raise ValueError("昵称不能为空")
+        return value
+
+    @field_validator("avatarUrl")
+    @classmethod
+    def validate_avatar_url(cls, value: Optional[str]):
+        if value is None or value == "":
+            return None
+        if not value.startswith(("http://", "https://", "/uploads/")):
+            raise ValueError("头像地址格式无效")
+        return value
+
+def _public_user(user: User) -> dict:
+    return {
+        "id": user.id,
+        "username": user.username,
+        "nickname": user.nickname,
+        "avatarUrl": user.avatarUrl,
+        "role": user.role,
+        "mobile": user.mobile,
+        "email": user.email,
+        "wechatOpenId": user.wechatOpenId,
+        "inviteCode": user.inviteCode,
+        "vipExpireAt": user.vipExpireAt,
+        "streamerExpireAt": user.streamerExpireAt,
+        "inviteCount": user.inviteCount,
+        "inviteVipDays": user.inviteVipDays,
+    }
+
 async def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -75,6 +122,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: Session
     user = session.exec(statement).first()
     if user is None:
         raise credentials_exception
+    if user.status != "active":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="账号已被禁用")
 
     # Check streamer expiration
     current_time_ms = int(datetime.utcnow().timestamp() * 1000)
@@ -92,19 +141,25 @@ async def get_current_user_optional(
 ) -> Optional[User]:
     if not token:
         return None
+    # Public reads should remain usable when a cached session has expired.
+    # Mutating/private endpoints use get_current_user_optional_strict below.
     try:
-        payload = decode_access_token(token)
-        if payload is None:
-            return None
-        username: str = payload.get("sub")
-        if username is None:
-            return None
-        
-        statement = select(User).where(User.username == username)
-        user = session.exec(statement).first()
-        return user
-    except:
+        return await get_current_user(token=token, session=session)
+    except HTTPException:
         return None
+
+async def get_current_user_optional_strict(
+    token: Optional[str] = Depends(oauth2_scheme),
+    session: Session = Depends(get_session)
+) -> Optional[User]:
+    """Allow anonymous access only when no token was supplied.
+
+    A supplied but invalid token must fail, so saving a configuration can never
+    silently fall back to the guest account.
+    """
+    if not token:
+        return None
+    return await get_current_user(token=token, session=session)
 
 async def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != "admin":
@@ -312,24 +367,30 @@ import httpx
 @router.post("/wechat-login")
 async def wechat_login(data: dict, session: Session = Depends(get_session)):
     code = data.get("code")
-    if not code:
+    if not isinstance(code, str) or not code.strip():
         raise HTTPException(status_code=400, detail="缺少微信登录code")
-        
-    import os
+
     app_id = os.getenv("WECHAT_APP_ID", "")
     app_secret = os.getenv("WECHAT_APP_SECRET", "")
-    
+
     if not app_id or not app_secret:
-        # Mock for development if not configured
-        openid = f"mock_openid_{code}"
+        # 只有显式开启时才允许开发 mock，避免线上每次登录都创建新账号。
+        allow_mock = os.getenv("WECHAT_LOGIN_ALLOW_MOCK", "false").lower() in {"1", "true", "yes"}
+        if not allow_mock:
+            raise HTTPException(status_code=503, detail="微信登录服务未配置，请联系管理员")
+        openid = f"mock_openid_{code.strip()}"
     else:
         url = f"https://api.weixin.qq.com/sns/jscode2session?appid={app_id}&secret={app_secret}&js_code={code}&grant_type=authorization_code"
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(url)
-            result = resp.json()
-            if "openid" not in result:
-                raise HTTPException(status_code=400, detail=f"微信登录失败: {result.get('errmsg', '未知错误')}")
-            openid = result["openid"]
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(url)
+                resp.raise_for_status()
+                result = resp.json()
+        except (httpx.HTTPError, ValueError) as exc:
+            raise HTTPException(status_code=502, detail="微信登录服务暂时不可用，请稍后重试") from exc
+        if "openid" not in result:
+            raise HTTPException(status_code=400, detail=f"微信登录失败: {result.get('errmsg', '未知错误')}")
+        openid = result["openid"]
 
     user = session.exec(select(User).where(User.wechatOpenId == openid)).first()
     if not user:
@@ -348,6 +409,8 @@ async def wechat_login(data: dict, session: Session = Depends(get_session)):
         session.commit()
         session.refresh(new_user)
         user = new_user
+    if user.status != "active":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="账号已被禁用")
 
     # Update last login
     user.lastLogin = datetime.utcnow().isoformat()
@@ -358,17 +421,7 @@ async def wechat_login(data: dict, session: Session = Depends(get_session)):
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "role": user.role,
-            "wechatOpenId": user.wechatOpenId,
-            "inviteCode": user.inviteCode,
-            "vipExpireAt": user.vipExpireAt,
-            "streamerExpireAt": user.streamerExpireAt,
-            "inviteCount": user.inviteCount,
-            "inviteVipDays": user.inviteVipDays
-        }
+        "user": _public_user(user)
     }
 
 @router.post("/login")
@@ -400,6 +453,9 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    if user.status != "active":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="账号已被禁用")
+
     logger.info(f"User found - Username: {user.username}, Role: {user.role}")
 
     password_valid = verify_password(password, user.password)
@@ -427,17 +483,7 @@ async def login(
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "role": user.role,
-
-            "inviteCode": user.inviteCode,
-            "vipExpireAt": user.vipExpireAt,
-            "streamerExpireAt": user.streamerExpireAt,
-            "inviteCount": user.inviteCount,
-            "inviteVipDays": user.inviteVipDays
-        }
+        "user": _public_user(user)
     }
 
 @router.post("/login-sms")
@@ -456,6 +502,8 @@ async def login_sms(data: dict, request: Request, session: Session = Depends(get
     user = session.exec(select(User).where(User.mobile == mobile)).first()
     if not user:
         raise HTTPException(status_code=404, detail="未找到该手机号对应的账号，请先注册")
+    if user.status != "active":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="账号已被禁用")
         
     # Update last login
     user.lastLogin = datetime.utcnow().isoformat()
@@ -467,18 +515,7 @@ async def login_sms(data: dict, request: Request, session: Session = Depends(get
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "role": user.role,
-            "mobile": user.mobile,
-
-            "inviteCode": user.inviteCode,
-            "vipExpireAt": user.vipExpireAt,
-            "streamerExpireAt": user.streamerExpireAt,
-            "inviteCount": user.inviteCount,
-            "inviteVipDays": user.inviteVipDays
-        }
+        "user": _public_user(user)
     }
 
 @router.post("/login-email")
@@ -498,6 +535,8 @@ async def login_email(data: dict, request: Request, session: Session = Depends(g
     user = session.exec(select(User).where(User.email == email)).first()
     if not user:
         raise HTTPException(status_code=404, detail="未找到该邮箱对应的账号，请先注册")
+    if user.status != "active":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="账号已被禁用")
         
     # Update last login
     user.lastLogin = datetime.utcnow().isoformat()
@@ -509,22 +548,27 @@ async def login_email(data: dict, request: Request, session: Session = Depends(g
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "role": user.role,
-            "email": user.email,
-            "inviteCode": user.inviteCode,
-            "vipExpireAt": user.vipExpireAt,
-            "streamerExpireAt": user.streamerExpireAt,
-            "inviteCount": user.inviteCount,
-            "inviteVipDays": user.inviteVipDays
-        }
+        "user": _public_user(user)
     }
 
 @router.get("/me")
 async def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    return _public_user(current_user)
+
+@router.put("/me")
+async def update_users_me(
+    profile: ProfileUpdateRequest,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    if "nickname" in profile.model_fields_set:
+        current_user.nickname = profile.nickname
+    if "avatarUrl" in profile.model_fields_set:
+        current_user.avatarUrl = profile.avatarUrl
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+    return _public_user(current_user)
 
 @router.get("/users", response_model=List[User])
 async def get_users(search: Optional[str] = None, session: Session = Depends(get_session), admin: User = Depends(get_current_admin)):

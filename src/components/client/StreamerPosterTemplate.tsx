@@ -52,19 +52,36 @@ export const StreamerPosterTemplate = React.forwardRef<HTMLDivElement, {
                         )
                     })}
                 </div>
-                <div className="bg-slate-900 p-8 flex items-end justify-between relative z-10">
-                    <div className="flex flex-col gap-1 text-white/50 text-[10px] uppercase font-bold tracking-widest">
+                <div className="bg-slate-900 p-8 flex items-end justify-between gap-4 relative z-10">
+                    <div className="flex-1 flex flex-col gap-1 text-white/50 text-[10px] uppercase font-bold tracking-widest">
                         <p>Powered by</p>
                         <p className="text-white/80">小鱼装机平台智能引擎</p>
                         <p className="text-white/40 text-[9px] mt-0.5 whitespace-nowrap tracking-wider">含 {((pricingStrategy?.serviceFeeRate || 0) * 100).toFixed(0)}% 装机售后服务费</p>
                         <p className="mt-2 font-mono">{new Date().toLocaleDateString('zh-CN')} 生成</p>
                     </div>
-                    <div className="text-right">
-                        <p className="text-white/50 text-xs font-bold mb-1">整机预算预估</p>
+                    <div className="text-right shrink-0">
+                        <div className="mb-3 space-y-1 text-xs font-bold whitespace-nowrap">
+                            <p className="text-white/60">
+                                原价 <span className="font-mono">¥{Math.floor(pricing.standardPrice).toLocaleString()}</span>
+                            </p>
+                            <p className="text-emerald-300">
+                                优惠金额 <span className="font-mono">{pricing.savedAmount > 0 ? '-' : ''}¥{pricing.savedAmount.toLocaleString()}</span>
+                            </p>
+                        </div>
+                        <p className="text-white/50 text-xs font-bold mb-1">{pricing.savedAmount > 0 ? '优惠后总价' : '整机预算预估'}</p>
                         <div className="flex items-baseline gap-1 text-white">
                             <span className="text-2xl font-bold">¥</span>
                             <span className="text-5xl font-black font-mono tracking-tighter">{Math.floor(pricing.finalPrice).toLocaleString()}</span>
                         </div>
+                    </div>
+                    <div className="shrink-0 flex flex-col items-center gap-1">
+                        <img
+                            src="/assets/miniprogram-qrcode.jpg"
+                            alt="小程序二维码"
+                            crossOrigin="anonymous"
+                            className="w-24 h-24 rounded-lg bg-white p-1 object-contain"
+                        />
+                        <span className="text-[9px] text-white/70 whitespace-nowrap">扫码进入小程序</span>
                     </div>
                 </div>
             </div>

@@ -5,8 +5,8 @@ from pydantic import BaseModel
 from ..db import get_session
 from ..models import DailyStat, User, Order, Hardware, UsedItem, Config, RecycleRequest, PriceHistory, VisitEvent
 from .auth import get_current_admin, get_current_streamer_or_admin
-from ..services.price_safety import is_valid_price_history_change
-from datetime import datetime, timedelta
+from ..services.price_safety import has_valid_previous_price, is_valid_price_history_change
+from datetime import date, datetime, timedelta
 from urllib.parse import urlparse
 import hashlib
 import time
@@ -49,6 +49,39 @@ def _referrer_label(referrer: Optional[str]) -> str:
 
 def _is_valid_trend_change(change: PriceHistory) -> bool:
     return is_valid_price_history_change(change.oldPrice, change.newPrice)
+
+
+def _trend_date_range(days: int, start_date: Optional[str], end_date: Optional[str], max_days: int = 90):
+    if bool(start_date) != bool(end_date):
+        raise HTTPException(status_code=400, detail="start_date and end_date must be provided together")
+    if start_date and end_date:
+        try:
+            start, end = date.fromisoformat(start_date), date.fromisoformat(end_date)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Dates must use YYYY-MM-DD")
+        if end < start:
+            raise HTTPException(status_code=400, detail="end_date must be on or after start_date")
+        days = min((end - start).days, max_days)
+    else:
+        days = max(1, min(days, max_days))
+        end = _now_cst().date()
+    start = end - timedelta(days=days)
+    return start, end, days
+
+
+def _range_end_prices(session: Session, cutoff_end: str, category: Optional[str] = None, hardware_id: Optional[str] = None):
+    # Undo changes after a historical endpoint. Taking the last change before
+    # it misses products whose first recorded change happened afterwards.
+    query = select(PriceHistory).where(PriceHistory.changedAt > cutoff_end)
+    if category and category != "all":
+        query = query.where(PriceHistory.category == category)
+    if hardware_id:
+        query = query.where(PriceHistory.hardwareId == hardware_id)
+    prices = {}
+    for change in session.exec(query.order_by(PriceHistory.changedAt.desc(), PriceHistory.id.desc())).all():
+        if _is_valid_trend_change(change):
+            prices[change.hardwareId] = change.oldPrice
+    return prices
 
 @router.get("/")
 @router.get("")
@@ -628,20 +661,9 @@ async def get_product_price_history(
     from datetime import timedelta
     from collections import defaultdict
 
-    days = min(days, 90)  # 上限放宽到 90 天
-
-    # Use CST (UTC+8) to match other endpoints and the changedAt stored with CST
-    if start_date and end_date:
-        cutoff = f"{start_date}T00:00:00"
-        cutoff_end = f"{end_date}T23:59:59"
-        # Calculate actual days span for date range generation
-        from datetime import date as date_type
-        d_start = date_type.fromisoformat(start_date)
-        d_end = date_type.fromisoformat(end_date)
-        days = (d_end - d_start).days
-    else:
-        cutoff = (datetime.utcnow() + timedelta(hours=8) - timedelta(days=days)).isoformat()
-        cutoff_end = None
+    range_start, range_end, days = _trend_date_range(days, start_date, end_date, max_days=365 if hardware_id else 90)
+    cutoff = f"{range_start.isoformat()}T00:00:00"
+    cutoff_end = f"{range_end.isoformat()}T23:59:59.999999"
 
     # Build the query for price history records
     query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff)
@@ -653,7 +675,13 @@ async def get_product_price_history(
         query = query.where(PriceHistory.hardwareId == hardware_id)
     query = query.order_by(PriceHistory.changedAt.asc())
 
-    changes = [c for c in session.exec(query.limit(5000)).all() if _is_valid_trend_change(c)]
+    custom_range = bool(start_date and end_date)
+    # Do not truncate a category's history at an arbitrary row count.  The old
+    # 5,000-row cap could silently drop early records for busy categories and
+    # make the 30/90-day baseline depend on database ordering.
+    changes = [c for c in session.exec(query).all() if _is_valid_trend_change(c)]
+
+    range_end_prices = _range_end_prices(session, cutoff_end, category, hardware_id) if custom_range else {}
 
     # --- Build per-product DAILY price timeline ---
     # Reconstruct full daily price for each product using backward reconstruction
@@ -666,21 +694,38 @@ async def get_product_price_history(
         product_changes[c.hardwareId].append(c)
 
     # Generate date range
-    current_date_for_products = datetime.utcnow() + timedelta(hours=8)
-    all_dates = sorted([(current_date_for_products - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days + 1)])
+    all_dates = [(range_start + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days + 1)]
 
-    # Look up current prices for products that have changes (batch query to avoid N+1)
-    product_current_prices = {}
-    if product_names:
-        hw_ids = list(product_names.keys())
-        hw_rows = session.exec(
-            select(Hardware.id, Hardware.price).where(Hardware.id.in_(hw_ids))
-        ).all()
-        for row in hw_rows:
-            product_current_prices[row[0]] = row[1]
+    # Include every active product in the selected category. A product with no
+    # price change in the window still has a truthful flat line; omitting it
+    # made the list and the category average use different cohorts.
+    all_products_query = select(
+        Hardware.id, Hardware.brand, Hardware.model, Hardware.price,
+        Hardware.category, Hardware.createdAt, Hardware.specs
+    ).where(Hardware.status == "active", Hardware.price > 0)
+    if category and category != "all":
+        all_products_query = all_products_query.where(Hardware.category == category)
+    if hardware_id:
+        all_products_query = all_products_query.where(Hardware.id == hardware_id)
+    all_product_rows = session.exec(all_products_query).all()
+    end_key = range_end.isoformat()
+    all_product_rows = [row for row in all_product_rows if not row[5] or row[5][:10] <= end_key]
+    if subcategory and category in ["ram", "disk"]:
+        all_product_rows = [
+            row for row in all_product_rows
+            if subcategory in ((_parse_ram_specs(f"{row[1]} {row[2]}") if category == "ram" else _parse_disk_specs(f"{row[1]} {row[2]}")))
+        ]
+    product_meta = {row[0]: row for row in all_product_rows}
+    for row in all_product_rows:
+        product_names.setdefault(row[0], f"{row[1]} {row[2]}".strip())
+    product_current_prices = {
+        row[0]: range_end_prices.get(row[0], row[3]) if custom_range else row[3]
+        for row in all_product_rows
+    }
 
     product_trends = []
-    for hw_id, hw_changes in product_changes.items():
+    for hw_id, meta in product_meta.items():
+        hw_changes = product_changes.get(hw_id, [])
         # Sort changes newest-first for backward reconstruction
         sorted_changes = sorted(hw_changes, key=lambda x: x.changedAt, reverse=True)
         changes_by_date_product = defaultdict(list)
@@ -688,15 +733,17 @@ async def get_product_price_history(
             changes_by_date_product[c.changedAt[:10]].append(c)
 
         # Start from current price and walk backward
-        current_price = product_current_prices.get(hw_id, sorted_changes[0].newPrice)
+        current_price = product_current_prices.get(hw_id, meta[3])
         daily_points = []
+        created_key = (meta[5] or "2000-01-01")[:10]
 
         for d in reversed(all_dates):
-            daily_points.append({
-                "date": d,
-                "price": current_price,
-                "oldPrice": current_price,
-            })
+            if d >= created_key:
+                daily_points.append({
+                    "date": d,
+                    "price": current_price,
+                    "oldPrice": current_price,
+                })
             # Reverse any changes on this day to get previous day's price
             for c in changes_by_date_product.get(d, []):
                 current_price = c.oldPrice
@@ -705,6 +752,10 @@ async def get_product_price_history(
         product_trends.append({
             "hardwareId": hw_id,
             "name": product_names[hw_id],
+            "brand": meta[1],
+            "model": meta[2],
+            "category": meta[4],
+            "createdAt": meta[5],
             "points": daily_points
         })
 
@@ -737,11 +788,9 @@ async def get_product_price_history(
             # Build set of valid hardware IDs for quick lookup
             valid_hw_ids = {h[0] for h in hw_data}
             
-            # Reconstruct history working backwards from today
+            # Reconstruct history working backwards from the selected end date
             # Use CST to match stored timestamps
-            current_date = datetime.utcnow() + timedelta(hours=8)
-            dates = [(current_date - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days + 1)]
-            dates.sort()
+            dates = [(range_start + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days + 1)]
             
             # Map changes by date - only for products in our filtered set
             changes_by_date = defaultdict(list)
@@ -751,7 +800,7 @@ async def get_product_price_history(
                     continue
                 changes_by_date[c.changedAt[:10]].append(c)
             
-            temp_prices = {h[0]: h[3] for h in hw_data} # h.price is index 3
+            temp_prices = {h[0]: range_end_prices.get(h[0], h[3]) if custom_range else h[3] for h in hw_data} # h.price is index 3
             hw_created = {h[0]: h[4][:10] if h[4] else "2000-01-01" for h in hw_data} # h.createdAt is index 4
             
             for d in reversed(dates):
@@ -773,11 +822,15 @@ async def get_product_price_history(
 
     # --- Product list for this category ---
     # Exclude price=0 products (unpriced/discontinued) to avoid corrupting frontend averages
-    products_query = select(Hardware.id, Hardware.brand, Hardware.model, Hardware.price, Hardware.category)
+    products_query = select(
+        Hardware.id, Hardware.brand, Hardware.model, Hardware.price,
+        Hardware.category, Hardware.specs, Hardware.createdAt
+    )
     if category and category != "all":
         products_query = products_query.where(Hardware.category == category)
     products_query = products_query.where(Hardware.status == "active", Hardware.price > 0).order_by(Hardware.brand, Hardware.model)
     product_rows = session.exec(products_query).all()
+    product_rows = [row for row in product_rows if not row[6] or row[6][:10] <= end_key]
 
     # Apply subcategory filter to the products dropdown list so it matches the chart content
     products_list = []
@@ -793,8 +846,12 @@ async def get_product_price_history(
         products_list.append({
             "id": row[0],
             "name": hw_name,
+            "brand": row[1],
+            "model": row[2],
             "price": row[3],
             "category": row[4],
+            "specs": row[5] or {},
+            "createdAt": row[6],
         })
 
     # Available categories
@@ -857,6 +914,32 @@ async def get_product_price_history(
     historical_lows.sort(key=lambda x: x["changeAmount"]) # Most negative first
     historical_highs.sort(key=lambda x: x["changeAmount"], reverse=True) # Most positive first
 
+    historical_extremes = {}
+    if hardware_id:
+        all_changes = session.exec(
+            select(PriceHistory).where(PriceHistory.hardwareId == hardware_id)
+            .order_by(PriceHistory.changedAt.asc(), PriceHistory.id.asc())
+        ).all()
+        valid_changes = [change for change in all_changes if _is_valid_trend_change(change)]
+        prices = [price for change in valid_changes for price in (change.oldPrice, change.newPrice)]
+        current_quote = session.exec(
+            select(Hardware.price, Hardware.previousPrice)
+            .where(Hardware.id == hardware_id, Hardware.status == "active")
+        ).first()
+        if current_quote and has_valid_previous_price(*current_quote):
+            current_price = current_quote[0]
+            if valid_changes and is_valid_price_history_change(valid_changes[-1].newPrice, current_price):
+                prices.append(current_price)
+            elif not all_changes and is_valid_price_history_change(current_price, current_price):
+                # An unchanged product can have one known price and no history rows.
+                prices.append(current_price)
+        historical_extremes = {
+            "historicalExtremes": {
+                "minPrice": min(prices) if prices else None,
+                "maxPrice": max(prices) if prices else None,
+            }
+        }
+
     return {
         "productTrends": product_trends,
         "categoryAvgTrend": category_avg_trend,
@@ -865,35 +948,44 @@ async def get_product_price_history(
         "categories": sorted([c for c in categories if c]),
         "historicalLows": historical_lows,
         "historicalHighs": historical_highs,
+        # Explicit range metadata lets clients label the graph from the data
+        # instead of assuming that a request for 90 days always returned 90
+        # points (new products can legitimately shorten a cohort's series).
+        "startDate": range_start.strftime("%Y-%m-%d"),
+        "endDate": range_end.strftime("%Y-%m-%d"),
+        "asOfDate": range_end.strftime("%Y-%m-%d"),
+        "actualDays": days,
+        **historical_extremes,
     }
 
 
 @router.get("/market-overview")
 async def get_market_overview(
     days: int = 30,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
     session: Session = Depends(get_session)
 ):
     """全局市场概览：跨品类行情汇总（用于「全部品类」视图）"""
     from datetime import timedelta
     from collections import defaultdict
 
-    days = min(days, 90)
-    now_cst = datetime.utcnow() + timedelta(hours=8)
-    cutoff = (now_cst - timedelta(days=days)).isoformat()
-    if now_cst.hour < 13:
-        today = (now_cst - timedelta(days=1)).strftime("%Y-%m-%d")
-    else:
-        today = now_cst.strftime("%Y-%m-%d")
-    yesterday = (now_cst - timedelta(days=1)).strftime("%Y-%m-%d")
+    range_start, range_end, days = _trend_date_range(days, start_date, end_date)
+    cutoff = f"{range_start.isoformat()}T00:00:00"
+    cutoff_end = f"{range_end.isoformat()}T23:59:59.999999"
+    today = range_end.isoformat()
 
     # 1. Get ALL price changes in the window
-    changes = session.exec(
-        select(PriceHistory)
-        .where(PriceHistory.changedAt >= cutoff)
-        .order_by(PriceHistory.changedAt.desc())
-        .limit(5000)
-    ).all()
+    changes_query = select(PriceHistory).where(PriceHistory.changedAt >= cutoff)
+    if cutoff_end:
+        changes_query = changes_query.where(PriceHistory.changedAt <= cutoff_end)
+    # An arbitrary cap makes a busy category's baseline depend on row order.
+    # The endpoint is public but the selected window is bounded to 90 days, so
+    # reading the complete window keeps all products in the aggregate.
+    changes = session.exec(changes_query.order_by(PriceHistory.changedAt.desc())).all()
     changes = [c for c in changes if _is_valid_trend_change(c)]
+
+    range_end_prices = _range_end_prices(session, cutoff_end) if start_date and end_date else {}
 
     # 2. Today's summary
     today_changes = [c for c in changes if c.changedAt.startswith(today)]
@@ -909,23 +1001,30 @@ async def get_market_overview(
     }
 
     # 3. Per-category aggregation
-    CORE_CATEGORIES = ['cpu', 'gpu', 'ram', 'disk']
+    CORE_CATEGORIES = ['cpu', 'gpu', 'ram', 'disk', 'mainboard']
     
     # Get current avg price per category
     cat_stats = []
     for cat in CORE_CATEGORIES:
         # Current avg price
         hw_rows = session.exec(
-            select(Hardware.id, Hardware.price)
+            select(Hardware.id, Hardware.price, Hardware.createdAt)
             .where(Hardware.category == cat, Hardware.status == "active", Hardware.price > 0)
         ).all()
+
+        # A product must exist on the selected end date before it contributes
+        # to that historical cohort. This prevents newly added products from
+        # changing the 7/30/90-day baseline retroactively.
+        as_of_key = range_end.strftime("%Y-%m-%d")
+        hw_rows = [row for row in hw_rows if not row[2] or row[2][:10] <= as_of_key]
         
         if not hw_rows:
             continue
             
-        current_avg = round(sum(r[1] for r in hw_rows) / len(hw_rows), 2)
         hw_ids = {r[0] for r in hw_rows}
-        hw_current = {r[0]: r[1] for r in hw_rows}
+        hw_current = {r[0]: range_end_prices.get(r[0], r[1]) if cutoff_end else r[1] for r in hw_rows}
+        hw_created = {r[0]: (r[2] or "2000-01-01")[:10] for r in hw_rows}
+        current_avg = round(sum(hw_current.values()) / len(hw_current), 2)
         
         # Get category changes
         cat_changes = [c for c in changes if c.category == cat]
@@ -940,12 +1039,15 @@ async def get_market_overview(
         for c in cat_changes_sorted:
             changes_by_date[c.changedAt[:10]].append(c)
         
-        dates = sorted([(now_cst - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days + 1)])
+        dates = sorted([(range_end - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days + 1)])
         
         price_snapshots = {}
         temp = dict(hw_current)
         for d in reversed(dates):
-            valid = [p for p in temp.values() if p and p > 0]
+            valid = [
+                p for hid, p in temp.items()
+                if hw_created.get(hid, "9999") <= d and p and p > 0
+            ]
             if valid:
                 price_snapshots[d] = round(sum(valid) / len(valid), 2)
             for c in changes_by_date.get(d, []):
@@ -953,15 +1055,25 @@ async def get_market_overview(
                     temp[c.hardwareId] = c.oldPrice
         
         # Calculate period changes
-        today_avg = price_snapshots.get(today, current_avg)
-        d7_ago = (now_cst - timedelta(days=7)).strftime("%Y-%m-%d")
-        d30_ago = (now_cst - timedelta(days=30)).strftime("%Y-%m-%d")
+        # Percentage changes compare against the same as-of date used by the
+        # range. `today` is retained for the daily up/down event summary, which
+        # intentionally uses yesterday before the 13:00 reporting cutoff.
+        as_of_avg = price_snapshots.get(as_of_key, current_avg)
+        d7_ago = (range_end - timedelta(days=7)).strftime("%Y-%m-%d")
+        d30_ago = (range_end - timedelta(days=30)).strftime("%Y-%m-%d")
+        d90_ago = (range_end - timedelta(days=90)).strftime("%Y-%m-%d")
         avg_7d_ago = price_snapshots.get(d7_ago)
         avg_30d_ago = price_snapshots.get(d30_ago)
+        avg_90d_ago = price_snapshots.get(d90_ago)
         
-        change_7d_pct = round(((today_avg - avg_7d_ago) / avg_7d_ago) * 100, 2) if avg_7d_ago and avg_7d_ago > 0 else None
-        change_30d_pct = round(((today_avg - avg_30d_ago) / avg_30d_ago) * 100, 2) if avg_30d_ago and avg_30d_ago > 0 else None
+        change_7d_pct = round(((as_of_avg - avg_7d_ago) / avg_7d_ago) * 100, 2) if avg_7d_ago and avg_7d_ago > 0 else None
+        change_30d_pct = round(((as_of_avg - avg_30d_ago) / avg_30d_ago) * 100, 2) if avg_30d_ago and avg_30d_ago > 0 else None
+        change_90d_pct = round(((as_of_avg - avg_90d_ago) / avg_90d_ago) * 100, 2) if avg_90d_ago and avg_90d_ago > 0 else None
         
+        trend_points = [
+            {"date": date_key, "avgPrice": price_snapshots[date_key]}
+            for date_key in sorted(price_snapshots)
+        ]
         cat_stats.append({
             "category": cat,
             "productCount": len(hw_rows),
@@ -970,6 +1082,11 @@ async def get_market_overview(
             "todayDown": len([c for c in cat_today if c.changeAmount < 0]),
             "change7dPct": change_7d_pct,
             "change30dPct": change_30d_pct,
+            "change90dPct": change_90d_pct,
+            "trend": trend_points,
+            # Aliases keep older mini-program builds and the current home
+            # sparkline reader on the same real daily series.
+            "trendPoints": trend_points,
         })
 
     # 4. Recent events timeline (latest 20 changes across all categories)
@@ -999,4 +1116,9 @@ async def get_market_overview(
         "temperature": temperature,  # 0-100, >50 = bullish, <50 = bearish
         "totalUp": total_up,
         "totalDown": total_down,
+        "totalUpDown": {"up": total_up, "down": total_down},
+        "startDate": range_start.strftime("%Y-%m-%d"),
+        "endDate": range_end.strftime("%Y-%m-%d"),
+        "asOfDate": range_end.strftime("%Y-%m-%d"),
+        "actualDays": days,
     }

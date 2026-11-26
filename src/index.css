@@ -2147,267 +2147,6 @@
   }
 
   /* Theme 4 — Argentina 2022 / Messi 10. Keep the fixed sheet dimensions intact. */
-  .live-messi-stadium-backdrop,
-  .live-messi-stage-decor {
-    position: absolute;
-    inset: -20px -120px -22px;
-    overflow: visible;
-    pointer-events: none;
-  }
-
-  .live-messi-stadium-backdrop {
-    z-index: 0;
-    opacity: .38;
-    filter: saturate(.9) drop-shadow(0 14px 25px rgba(7, 80, 119, .12));
-  }
-
-  .live-messi-stadium-backdrop img {
-    position: absolute;
-    left: 50%;
-    top: -2px;
-    width: 100%;
-    height: 280px;
-    transform: translateX(-50%);
-    object-fit: cover;
-    object-position: center 40%;
-    opacity: .78;
-    mask-image: linear-gradient(#000 0 52%, transparent 96%);
-  }
-
-  .live-messi-stadium-backdrop::after {
-    content: '';
-    position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
-    height: 92px;
-    border: 2px solid rgba(255,255,255,.8);
-    border-radius: 50% 50% 9px 9px / 82% 82% 9px 9px;
-    background:
-      linear-gradient(90deg, transparent 49.8%, rgba(255,255,255,.78) 50%, transparent 50.2%),
-      radial-gradient(ellipse at center, transparent 0 13%, rgba(255,255,255,.8) 13.3% 13.8%, transparent 14.1%),
-      repeating-linear-gradient(90deg, rgba(54,161,96,.46) 0 64px, rgba(45,147,87,.5) 64px 128px);
-    box-shadow: 0 16px 30px rgba(18, 111, 66, .17);
-  }
-
-  .live-messi-stage-decor {
-    z-index: 4;
-  }
-
-  .live-messi-stage-decor::before {
-    content: '';
-    position: absolute;
-    left: 70px;
-    right: 70px;
-    top: 26px;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #69c3ef 15%, #fff 34%, #d6a84b 50%, #fff 66%, #69c3ef 85%, transparent);
-    box-shadow: 0 0 14px rgba(105,195,239,.58);
-  }
-
-  .live-messi-stage-decor::after {
-    content: 'ARGENTINA  ·  CAMPEONES DEL MUNDO';
-    position: absolute;
-    left: 50%;
-    bottom: 4px;
-    width: 470px;
-    padding: 7px 24px 6px;
-    transform: translateX(-50%);
-    border: 1px solid rgba(214,168,75,.58);
-    border-radius: 999px;
-    background: linear-gradient(90deg, rgba(8,76,112,.94), rgba(30,139,187,.92), rgba(8,76,112,.94));
-    color: #fff4c9;
-    font: 900 9px/1 Arial, sans-serif;
-    letter-spacing: .22em;
-    text-align: center;
-    box-shadow: 0 7px 18px rgba(7,72,108,.2);
-  }
-
-  .live-messi-stadium-light {
-    position: absolute;
-    top: 18px;
-    width: 210px;
-    height: 520px;
-    opacity: 0.32;
-    transform-origin: top center;
-    background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(147,220,255,.22) 45%, transparent 88%);
-    clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
-    filter: blur(1px);
-    animation: liveMessiSpotlight 8s ease-in-out infinite alternate;
-  }
-
-  .live-messi-stadium-light--left {
-    left: 38px;
-    transform: rotate(-8deg);
-  }
-
-  .live-messi-stadium-light--right {
-    right: 38px;
-    transform: rotate(8deg);
-    animation-delay: -4s;
-  }
-
-  .live-messi-service-footer::after {
-    border: 2px solid #0d2f46;
-    border-radius: 50%;
-    background:
-      radial-gradient(circle at 50% 50%, #102a43 0 17%, transparent 18%),
-      conic-gradient(from 18deg, #fff 0 13%, #102a43 14% 21%, #fff 22% 37%, #102a43 38% 45%, #fff 46% 61%, #102a43 62% 69%, #fff 70% 85%, #102a43 86% 93%, #fff 94%);
-    box-shadow: inset -3px -4px 6px rgba(15, 43, 61, 0.25), 0 5px 12px rgba(12, 63, 93, 0.18);
-  }
-
-  .live-messi-flag {
-    --messi-flag-flip: 1;
-    position: absolute;
-    width: 92px;
-    height: 64px;
-    object-fit: contain;
-    filter: drop-shadow(0 7px 10px rgba(7,73,109,.22));
-    animation: liveMessiFlagWave 3.4s ease-in-out infinite alternate;
-  }
-
-  .live-messi-flag--left {
-    left: 18px;
-    top: 60px;
-    transform-origin: left center;
-  }
-
-  .live-messi-flag--right {
-    --messi-flag-flip: -1;
-    right: 18px;
-    top: 38px;
-    transform-origin: right center;
-    animation-delay: -1.7s;
-  }
-
-  .live-messi-scoreboard {
-    position: absolute;
-    right: 4px;
-    top: 122px;
-    display: grid;
-    grid-template-columns: 42px 34px;
-    grid-template-rows: 25px 18px 20px;
-    width: 112px;
-    padding: 8px 10px;
-    border: 2px solid #d6a84b;
-    border-radius: 10px;
-    background: linear-gradient(160deg, #062f49, #0c5c83 64%, #073753);
-    color: white;
-    font: 900 12px/1 Arial, sans-serif;
-    letter-spacing: .08em;
-    box-shadow: 0 10px 25px rgba(3,46,72,.32), inset 0 0 0 2px rgba(255,255,255,.1);
-  }
-
-  .live-messi-scoreboard strong {
-    grid-row: 1 / 3;
-    grid-column: 2;
-    align-self: center;
-    color: #f8d87e;
-    font-size: 34px;
-    text-align: right;
-  }
-
-  .live-messi-scoreboard i {
-    color: #f8d87e;
-    font-size: 8px;
-    font-style: normal;
-    letter-spacing: 0;
-  }
-
-  .live-messi-scoreboard b {
-    grid-column: 1 / 3;
-    padding-top: 5px;
-    border-top: 1px solid rgba(255,255,255,.18);
-    color: #bdeaff;
-    font-size: 6px;
-    letter-spacing: .08em;
-  }
-
-  .live-messi-player {
-    position: absolute;
-    object-fit: contain;
-    filter: drop-shadow(0 14px 18px rgba(5,59,87,.26));
-    user-select: none;
-  }
-
-  .live-messi-player--dribble {
-    left: 5px;
-    bottom: 96px;
-    width: 165px;
-    height: 248px;
-    object-position: center bottom;
-    animation: none;
-  }
-
-  .live-messi-player--champion {
-    right: -34px;
-    bottom: 90px;
-    width: 205px;
-    height: 310px;
-    object-position: center bottom;
-    animation: none;
-  }
-
-  .live-messi-goal {
-    position: absolute;
-    right: 23px;
-    bottom: 110px;
-    width: 170px;
-    height: 134px;
-    border: 7px solid white;
-    border-bottom-width: 4px;
-    border-radius: 4px 4px 0 0;
-    background:
-      linear-gradient(45deg, transparent 46%, rgba(255,255,255,.82) 47% 52%, transparent 53%) 0 0 / 20px 20px,
-      linear-gradient(-45deg, transparent 46%, rgba(255,255,255,.82) 47% 52%, transparent 53%) 0 0 / 20px 20px;
-    box-shadow: 0 10px 18px rgba(9,75,49,.2), inset 0 0 26px rgba(8,75,44,.12);
-    transform: skewY(-2deg);
-  }
-
-  .live-messi-goal span {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: rgba(255,255,255,.86);
-  }
-
-  .live-messi-confetti {
-    position: absolute;
-    inset: 22px 145px auto;
-    height: 180px;
-    overflow: hidden;
-  }
-
-  .live-messi-confetti span {
-    position: absolute;
-    top: -18px;
-    left: calc(var(--messi-confetti-x, 1) * 7%);
-    width: 5px;
-    height: 11px;
-    border-radius: 2px;
-    background: var(--messi-confetti-color, #69c3ef);
-    animation: liveMessiConfetti 4.8s linear infinite;
-  }
-
-  .live-messi-confetti span:nth-child(3n + 1) { --messi-confetti-color: #d6a84b; transform: rotate(18deg); }
-  .live-messi-confetti span:nth-child(3n + 2) { --messi-confetti-color: #fff; transform: rotate(-24deg); }
-  .live-messi-confetti span:nth-child(1) { left: 4%; animation-delay: -.4s; }
-  .live-messi-confetti span:nth-child(2) { left: 12%; animation-delay: -2.2s; }
-  .live-messi-confetti span:nth-child(3) { left: 20%; animation-delay: -1.1s; }
-  .live-messi-confetti span:nth-child(4) { left: 29%; animation-delay: -3.1s; }
-  .live-messi-confetti span:nth-child(5) { left: 37%; animation-delay: -.8s; }
-  .live-messi-confetti span:nth-child(6) { left: 44%; animation-delay: -2.7s; }
-  .live-messi-confetti span:nth-child(7) { left: 52%; animation-delay: -1.8s; }
-  .live-messi-confetti span:nth-child(8) { left: 59%; animation-delay: -3.8s; }
-  .live-messi-confetti span:nth-child(9) { left: 66%; animation-delay: -.2s; }
-  .live-messi-confetti span:nth-child(10) { left: 72%; animation-delay: -2.4s; }
-  .live-messi-confetti span:nth-child(11) { left: 79%; animation-delay: -1.4s; }
-  .live-messi-confetti span:nth-child(12) { left: 85%; animation-delay: -3.4s; }
-  .live-messi-confetti span:nth-child(13) { left: 91%; animation-delay: -.9s; }
-  .live-messi-confetti span:nth-child(14) { left: 97%; animation-delay: -2.9s; }
-
   .live-messi-sheet-shell {
     border-color: rgba(76, 172, 222, 0.5) !important;
     background: #f8fcff !important;
@@ -2463,69 +2202,6 @@
   .live-messi-brand > span:first-child {
     font-size: 25px;
     text-shadow: 0 2px 0 rgba(255,255,255,.95);
-  }
-
-  .live-messi-champion-mark {
-    display: grid;
-    grid-template-columns: 26px 30px 1fr 23px;
-    grid-template-rows: 18px 12px;
-    width: 164px;
-    padding: 4px 7px;
-    border: 1px solid rgba(214,168,75,.75);
-    border-radius: 8px;
-    background: linear-gradient(135deg, #0b4c70, #147aa8);
-    color: #fff;
-    font: 900 11px/1 Arial, sans-serif;
-    letter-spacing: .03em;
-    box-shadow: 0 4px 10px rgba(12,83,119,.2), inset 0 1px rgba(255,255,255,.25);
-  }
-
-  .live-messi-champion-mark strong {
-    color: #f5d276;
-    font-size: 15px;
-  }
-
-  .live-messi-stars {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    align-self: center;
-    color: #f5d276;
-    font-size: 8px;
-    letter-spacing: 0;
-    animation: liveMessiStars 2.4s ease-in-out infinite;
-  }
-
-  .live-messi-champion-mark small {
-    grid-column: 3;
-    grid-row: 2;
-    color: #bde8fb;
-    font-size: 5.5px;
-    letter-spacing: .08em;
-    white-space: nowrap;
-  }
-
-  .live-messi-champion-mark > span:not(.live-messi-stars) {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
-  .live-messi-champion-mark img:first-child {
-    grid-column: 1;
-    grid-row: 1 / 3;
-    align-self: center;
-    width: 24px;
-    height: 20px;
-    object-fit: contain;
-  }
-
-  .live-messi-champion-mark img:last-child {
-    grid-column: 4;
-    grid-row: 1 / 3;
-    align-self: center;
-    width: 21px;
-    height: 26px;
-    object-fit: contain;
-    filter: drop-shadow(0 2px 3px rgba(255,213,104,.3));
   }
 
   .live-messi-scenario-button {
@@ -2837,24 +2513,6 @@
     pointer-events: none;
   }
 
-  .live-messi-pricing-trophy {
-    position: absolute;
-    right: 7px;
-    bottom: 8px;
-    z-index: 1;
-    width: 45px;
-    height: 57px;
-    object-fit: contain;
-    opacity: .28;
-    filter: drop-shadow(0 4px 5px rgba(177,127,25,.18));
-    animation: liveMessiTrophyGlow 3s ease-in-out infinite;
-  }
-
-  .live-messi-pricing-panel > *:not(.live-messi-pricing-trophy) {
-    position: relative;
-    z-index: 2;
-  }
-
   .live-messi-pricing-title {
     display: flex;
     flex-direction: column;
@@ -2933,37 +2591,6 @@
   .live-messi-total-zone {
     border-left: 1px solid rgba(214,168,75,.52);
     background: linear-gradient(90deg, transparent, rgba(255,246,216,.68));
-  }
-
-  @keyframes liveMessiSpotlight {
-    0% { transform: rotate(-10deg) scaleX(.9); opacity: .2; }
-    100% { transform: rotate(11deg) scaleX(1.12); opacity: .38; }
-  }
-
-  @keyframes liveMessiFlagWave {
-    0% { filter: drop-shadow(0 7px 10px rgba(7,73,109,.2)) brightness(.96); transform: scaleX(var(--messi-flag-flip)) perspective(220px) rotateY(-9deg) rotate(-2deg); }
-    100% { filter: drop-shadow(0 9px 12px rgba(7,73,109,.27)) brightness(1.06); transform: scaleX(var(--messi-flag-flip)) perspective(220px) rotateY(10deg) rotate(2deg); }
-  }
-
-  @keyframes liveMessiRowHoverBall {
-    0% { left: 86px; transform: translateY(-50%) rotate(0deg); }
-    100% { left: calc(100% - 105px); transform: translateY(-50%) rotate(720deg); }
-  }
-
-  @keyframes liveMessiConfetti {
-    0% { transform: translateY(-22px) rotate(0deg); opacity: 0; }
-    12% { opacity: .8; }
-    100% { transform: translateY(210px) rotate(420deg); opacity: 0; }
-  }
-
-  @keyframes liveMessiTrophyGlow {
-    0%, 100% { opacity: .25; transform: translateY(0) rotate(-2deg); }
-    50% { opacity: .4; transform: translateY(-3px) rotate(2deg); }
-  }
-
-  @keyframes liveMessiStars {
-    0%, 100% { filter: brightness(1); transform: translateY(0); }
-    50% { filter: brightness(1.35); transform: translateY(-1px); }
   }
 
   .live-frame-motion {
@@ -5440,12 +5067,7 @@
     .live-mario-metric-card::after,
     .live-mario-fps-panel::after,
     .live-mario-pricing-panel::after,
-    .live-messi-stadium-light,
-    .live-messi-flag,
-    .live-messi-row-hover-ball,
-    .live-messi-confetti span,
     .live-messi-stars,
-    .live-messi-pricing-trophy,
     .live-rog-circuit-layer path,
     .live-rog-circuit-layer circle,
     .live-rog-row-trace::before,
@@ -6086,4 +5708,212 @@
 [data-live-layout='gundam'] .live-gundam-service-check.is-selected {
   border-color: #0f172a;
   background: #0f172a;
+}
+
+/* Messi theme refinement: a quieter match-day palette keeps the fixed sheet easy to read. */
+[data-live-layout='pure'] {
+  color: #183b50;
+  background: #eef4f7 !important;
+  box-shadow: none !important;
+}
+
+[data-live-layout='pure'] .live-messi-sheet-shell {
+  border-color: #c7dce7 !important;
+  background: #fff !important;
+  box-shadow: 0 14px 30px rgba(37, 84, 107, .12) !important;
+}
+
+[data-live-layout='pure'] .live-messi-open-layout {
+  background: #eef4f7 !important;
+}
+
+[data-live-layout='pure'] .live-messi-main-surface {
+  background: #fff !important;
+}
+
+[data-live-layout='pure'] .live-messi-config-header {
+  min-height: 64px;
+  background: #f5f9fb !important;
+  box-shadow: inset 0 -2px #d7b66c !important;
+}
+
+[data-live-layout='pure'] .live-messi-config-header::after {
+  content: none;
+}
+
+[data-live-layout='pure'] .live-messi-brand {
+  gap: 7px;
+  color: #183b50;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -.05em;
+}
+
+[data-live-layout='pure'] .live-messi-brand > span:first-child {
+  font-size: 24px;
+  text-shadow: none;
+}
+
+[data-live-layout='pure'] .live-messi-champion-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  min-width: 114px;
+  padding: 4px 8px;
+  border: 1px solid #cda85f;
+  border-radius: 999px;
+  background: #fffaf0;
+  color: #285b75;
+  box-shadow: none;
+  font-size: 10px;
+  letter-spacing: .06em;
+}
+
+[data-live-layout='pure'] .live-messi-champion-mark strong {
+  color: #956b2b;
+  font-size: 13px;
+}
+
+[data-live-layout='pure'] .live-messi-stars {
+  color: #b78a35;
+  font-size: 8px;
+  animation: none;
+}
+
+[data-live-layout='pure'] .live-messi-scenario-button {
+  padding: 2px 3px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+[data-live-layout='pure'] .live-messi-scenario-button.is-active {
+  background: #eaf3f8;
+  box-shadow: inset 0 0 0 1px #c7dce7;
+}
+
+[data-live-layout='pure'] .live-messi-column-header {
+  background: #f5f9fb !important;
+  color: #607b8b !important;
+  box-shadow: inset 0 -2px #d7b66c;
+}
+
+[data-live-layout='pure'] .live-messi-config-rows > * {
+  background: #fff !important;
+}
+
+[data-live-layout='pure'] .live-messi-config-rows > *:nth-child(even) {
+  background: #f9fbfc !important;
+}
+
+[data-live-layout='pure'] .live-messi-hardware-row {
+  min-height: 44px;
+}
+
+[data-live-layout='pure'] .live-messi-hardware-row::before {
+  display: none;
+}
+
+[data-live-layout='pure'] .live-messi-hardware-row::after {
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  opacity: 1;
+  background: #e4edf2;
+  box-shadow: none;
+}
+
+[data-live-layout='pure'] .live-messi-category-icon {
+  border: 1px solid #c6dce7 !important;
+  border-radius: 8px !important;
+  background: #f1f8fb !important;
+  color: #2d6c91 !important;
+  box-shadow: none !important;
+}
+
+[data-live-layout='pure'] .live-messi-category-icon > svg,
+[data-live-layout='pure'] .live-messi-category-icon > img {
+  filter: none;
+}
+
+[data-live-layout='pure'] .live-messi-category-label {
+  color: #285b75;
+  text-shadow: none;
+}
+
+[data-live-layout='pure'] .live-messi-hardware-row:hover .live-messi-category-icon {
+  transform: none;
+  box-shadow: 0 0 0 2px #dbeaf1 !important;
+}
+
+[data-live-layout='pure'] .live-messi-hardware-row:hover .live-messi-category-label {
+  color: #1d5877;
+  letter-spacing: 0;
+}
+
+[data-live-layout='pure'] .live-messi-sidebar {
+  background: #f6fafc !important;
+  box-shadow: inset 1px 0 #d7e5ec !important;
+}
+
+[data-live-layout='pure'] .live-messi-sidebar::before {
+  display: none;
+}
+
+[data-live-layout='pure'] .live-messi-product-stage,
+[data-live-layout='pure'] .live-messi-metric-card,
+[data-live-layout='pure'] .live-messi-fps-panel,
+[data-live-layout='pure'] .live-messi-pricing-panel {
+  border-color: #d5e3ea !important;
+  box-shadow: 0 2px 8px rgba(37, 84, 107, .06) !important;
+}
+
+[data-live-layout='pure'] .live-messi-product-stage,
+[data-live-layout='pure'] .live-messi-metric-card,
+[data-live-layout='pure'] .live-messi-fps-panel {
+  background: #fff !important;
+}
+
+[data-live-layout='pure'] .live-messi-product-stage::before,
+[data-live-layout='pure'] .live-messi-product-stage::after,
+[data-live-layout='pure'] .live-messi-pricing-panel::after,
+[data-live-layout='pure'] .live-messi-metric-card::after {
+  opacity: .05;
+}
+
+[data-live-layout='pure'] .live-messi-fps-panel {
+  background: #fff !important;
+}
+
+[data-live-layout='pure'] .live-messi-pricing-panel {
+  background: #fffaf0 !important;
+  box-shadow: inset 3px 0 #d7b66c, 0 2px 8px rgba(37, 84, 107, .06) !important;
+}
+
+[data-live-layout='pure'] .live-messi-service-footer {
+  min-height: 47px;
+  background: #f5f9fb !important;
+  border-top-color: #d5e3ea !important;
+}
+
+[data-live-layout='pure'] .live-messi-service-footer::before {
+  display: none;
+}
+
+[data-live-layout='pure'] .live-messi-service-item {
+  padding: 2px 3px;
+}
+
+[data-live-layout='pure'] .live-messi-service-check {
+  border: 1px solid #c6dce7;
+  box-shadow: none;
+}
+
+[data-live-layout='pure'] .live-messi-total-zone {
+  border-left: 1px solid #d7b66c;
+  background: #fffaf0;
+}
+
+[data-live-layout='pure'] .live-messi-config-rows > * .live-messi-category-icon {
+  border-color: #c6dce7 !important;
+  box-shadow: none !important;
 }

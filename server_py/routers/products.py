@@ -12,6 +12,7 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
+from sqlalchemy import func
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,9 @@ router = APIRouter()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+
+def _normalize_brand(value: Optional[str]) -> str:
+    return str(value or "").strip()
 
 def _missing_local_upload(image: Optional[str]) -> bool:
     if not image or not image.startswith("/uploads/"):
@@ -32,8 +36,23 @@ def _missing_local_upload(image: Optional[str]) -> bool:
 
     return not os.path.isfile(file_path)
 
+def _normalize_specs(value):
+    if isinstance(value, dict):
+        return value
+    if not isinstance(value, str):
+        return {}
+    try:
+        parsed = json.loads(value)
+        if isinstance(parsed, str):
+            parsed = json.loads(parsed)
+        return parsed if isinstance(parsed, dict) else {}
+    except (TypeError, ValueError):
+        return {}
+
 def _dump_public_product(hw: Hardware) -> dict:
     data = hw.model_dump()
+    data["specs"] = _normalize_specs(data.get("specs"))
+    data["brand"] = _normalize_brand(data.get("brand"))
     if _missing_local_upload(data.get("image")):
         data["image"] = None
     data["previousPrice"] = sanitize_previous_price(hw.price, hw.previousPrice)
@@ -56,7 +75,7 @@ async def get_products(
     if category:
         query = query.where(Hardware.category == category)
     if brand:
-        query = query.where(Hardware.brand == brand)
+        query = query.where(func.trim(Hardware.brand) == brand.strip())
     if is_recommended is not None:
         query = query.where(Hardware.isRecommended == is_recommended)
     
@@ -66,17 +85,15 @@ async def get_products(
         for kw in keywords:
             search_term = f"%{kw}%"
             # Use coalesce to handle potential NULL values in database
-            from sqlalchemy import func
             query = query.where(or_(
                 func.coalesce(Hardware.brand, "").ilike(search_term),
                 func.coalesce(Hardware.model, "").ilike(search_term)
             ))
         
     # Count total
-    from sqlalchemy import func
     count_query = select(func.count()).select_from(Hardware).where(Hardware.status == "active", Hardware.price > 0)
     if category: count_query = count_query.where(Hardware.category == category)
-    if brand: count_query = count_query.where(Hardware.brand == brand)
+    if brand: count_query = count_query.where(func.trim(Hardware.brand) == brand.strip())
     if is_recommended is not None: count_query = count_query.where(Hardware.isRecommended == is_recommended)
     if search:
         keywords = search.strip().split()
@@ -162,7 +179,7 @@ async def get_admin_products(
         query = query.where(Hardware.category == category)
     
     if brand and brand != 'all':
-        query = query.where(Hardware.brand == brand)
+        query = query.where(func.trim(Hardware.brand) == brand.strip())
     
     if filter_ai:
         query = query.where(or_(Hardware.imageSource == 'ai_suggested', Hardware.specsSource == 'ai_suggested'))
@@ -184,7 +201,7 @@ async def get_admin_products(
     if category and category != 'all':
         count_query = count_query.where(Hardware.category == category)
     if brand and brand != 'all':
-        count_query = count_query.where(Hardware.brand == brand)
+        count_query = count_query.where(func.trim(Hardware.brand) == brand.strip())
     if filter_ai:
         count_query = count_query.where(or_(Hardware.imageSource == 'ai_suggested', Hardware.specsSource == 'ai_suggested'))
     if search:
@@ -216,7 +233,7 @@ async def get_admin_products(
     offset = (page - 1) * page_size
     results = session.exec(query.offset(offset).limit(page_size)).all()
     
-    products = [hw.model_dump() for hw in results]
+    products = [{**hw.model_dump(), "brand": _normalize_brand(hw.brand)} for hw in results]
         
     return {
         "items": products,
@@ -339,8 +356,8 @@ async def get_brands(
         query = query.where(Hardware.category == category)
         
     brands = session.exec(query).all()
-    # Filter out empty strings if any and sort
-    return sorted([b for b in brands if b])
+    # Normalize whitespace so variants such as "HYTE" and "HYTE " share one option.
+    return sorted({_normalize_brand(brand) for brand in brands if _normalize_brand(brand)})
 
 @router.get("/specs/values", response_model=List[str])
 async def get_spec_values(

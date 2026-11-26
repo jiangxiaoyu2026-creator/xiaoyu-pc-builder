@@ -7,6 +7,10 @@ export interface HardwareCompatibility {
     threads?: number;
 }
 
+export function normalizeBrand(value: string) {
+    return value.trim();
+}
+
 function unique(values: string[]) {
     return Array.from(new Set(values));
 }

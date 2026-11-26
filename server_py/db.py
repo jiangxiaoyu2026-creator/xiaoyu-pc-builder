@@ -60,6 +60,10 @@ def _migrate_extra_columns():
             cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_wechatOpenId ON users(wechatOpenId)")
         if 'streamerExpireAt' not in user_cols:
             cursor.execute("ALTER TABLE users ADD COLUMN streamerExpireAt INTEGER")
+        if 'nickname' not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN nickname TEXT")
+        if 'avatarUrl' not in user_cols:
+            cursor.execute("ALTER TABLE users ADD COLUMN avatarUrl TEXT")
             
         # 补齐 configs 表
         cursor.execute("PRAGMA table_info(configs)")
@@ -74,6 +78,8 @@ def _migrate_extra_columns():
             cursor.execute("ALTER TABLE configs ADD COLUMN showcaseMessage TEXT")
         if 'showcaseStatus' not in config_cols:
             cursor.execute("ALTER TABLE configs ADD COLUMN showcaseStatus TEXT NOT NULL DEFAULT 'none'")
+        if 'buildMeta' not in config_cols:
+            cursor.execute("ALTER TABLE configs ADD COLUMN buildMeta TEXT NOT NULL DEFAULT '{}'")
             
         # 补齐 hardware 表
         cursor.execute("PRAGMA table_info(hardware)")
