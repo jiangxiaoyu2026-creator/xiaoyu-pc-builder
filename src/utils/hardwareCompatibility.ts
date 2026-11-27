@@ -15,7 +15,7 @@ function unique(values: string[]) {
     return Array.from(new Set(values));
 }
 
-function parseSpecs(raw: unknown): Record<string, unknown> {
+export function parseSpecs(raw: unknown): Record<string, unknown> {
     let value = raw;
     for (let attempt = 0; attempt < 2 && typeof value === 'string'; attempt += 1) {
         try {

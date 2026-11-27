@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, RefreshCw, Filter, Minus, Download, Calendar, Thermometer, Activity, Clock, Search, SlidersHorizontal, ChevronRight, X, Cpu, CircuitBoard, MemoryStick, HardDrive, ArrowUpDown } from 'lucide-react';
 import { toPng } from 'html-to-image';
+import { parseSpecs } from '../../utils/hardwareCompatibility';
 
 interface PriceTrendData {
     todaySummary: {
@@ -67,6 +68,7 @@ interface ProductPriceTrendData {
         name: string;
         price: number;
         category: string;
+        specs?: unknown;
     }>;
     historicalExtremes?: { minPrice: number | null; maxPrice: number | null };
     historicalLows?: Array<{
@@ -130,6 +132,20 @@ const CATEGORY_LABELS: Record<string, string> = {
 // Only show specific core components in the category filter
 const ALLOWED_CATEGORIES = ['cpu', 'gpu', 'mainboard', 'ram', 'disk', 'all'];
 const CATEGORY_ORDER = ['cpu', 'gpu', 'mainboard', 'ram', 'disk'];
+
+function ramFrequencyBand(generation: string, frequency: string): string {
+    if (!frequency) return `${generation || '代数未标注'} 频率未标注`;
+    const speed = Number(frequency);
+    if (generation === 'DDR5') {
+        if (speed < 4800) return 'DDR5 低于 4800MHz';
+        if (speed < 6000) return 'DDR5 4800–5999MHz';
+        if (speed < 6400) return 'DDR5 6000–6399MHz';
+        if (speed <= 6800) return 'DDR5 6400–6800MHz';
+        return 'DDR5 超过 6800MHz';
+    }
+    if (generation === 'DDR4') return speed <= 3200 ? 'DDR4 3200MHz 及以下' : 'DDR4 超过 3200MHz';
+    return generation || '代数未标注';
+}
 
 const sortCategories = (categories: string[]) => {
     return categories
@@ -225,7 +241,7 @@ function AnimatedMarketPriceLine({ points = [], prices }: {
         y: previous.y + (next.y - previous.y) * fraction,
         label: `¥${previous.price.toLocaleString('zh-CN')}`
     } : null;
-    const tipLabelWidth = tip ? tip.label.length * 7 + 16 : 0;
+    const tipLabelWidth = tip ? tip.label.length * 8 + 18 : 0;
     const tipLabelX = tip ? Math.max(corners[0].x, Math.min(tip.x - tipLabelWidth / 2, last.x - tipLabelWidth)) : 0;
     let lastUpperLabelX = -Infinity;
     let lastLowerLabelX = -Infinity;
@@ -235,23 +251,23 @@ function AnimatedMarketPriceLine({ points = [], prices }: {
             strokeDasharray={last.distance || undefined} strokeDashoffset={last.distance - distance} />
         {corners.filter(corner => corner.distance <= distance).map((corner, index) => {
             const isAfter = corner.position === 'after';
-            const alignLeft = corner.position === 'before' || corner.position === 'end' || last.x - corner.x < 60;
+            const alignLeft = corner.position === 'before' || corner.position === 'end' || last.x - corner.x < 72;
             const previousLabelX = isAfter ? lastLowerLabelX : lastUpperLabelX;
-            const showLabel = prices.length <= 91 || index === 0 || corner === last || (corner.x - previousLabelX >= 70 && last.x - corner.x >= 70);
+            const showLabel = prices.length <= 91 || index === 0 || corner === last || (corner.x - previousLabelX >= 80 && last.x - corner.x >= 80);
             if (showLabel) {
                 if (isAfter) lastLowerLabelX = corner.x;
                 else lastUpperLabelX = corner.x;
             }
             return <g key={index}>
                 <circle cx={corner.x} cy={corner.y} r={3} fill="white" stroke="#4f46e5" strokeWidth={1.5} />
-                {showLabel && <text x={corner.x + (alignLeft ? -6 : 6)} y={corner.y + (isAfter ? 16 : -9)} textAnchor={alignLeft ? 'end' : 'start'} fontSize={11} fontWeight={600} fill="#4338ca" stroke="white" strokeWidth={3} paintOrder="stroke">¥{corner.price.toLocaleString('zh-CN')}</text>}
+                {showLabel && <text x={corner.x + (alignLeft ? -7 : 7)} y={corner.y + (isAfter ? 19 : -11)} textAnchor={alignLeft ? 'end' : 'start'} fontSize={13} fontWeight={600} fill="#4338ca" stroke="white" strokeWidth={3} paintOrder="stroke">¥{corner.price.toLocaleString('zh-CN')}</text>}
             </g>;
         })}
         {tip && <g>
             <circle cx={tip.x} cy={tip.y} r={8} fill="#4f46e5" opacity={0.14} />
             <circle cx={tip.x} cy={tip.y} r={4.5} fill="#4f46e5" stroke="white" strokeWidth={1.5} />
-            <rect x={tipLabelX} y={tip.y - 34} width={tipLabelWidth} height={20} rx={5} fill="#4f46e5" />
-            <text x={tipLabelX + tipLabelWidth / 2} y={tip.y - 20} textAnchor="middle" fontSize={11} fontWeight={600} fill="white">{tip.label}</text>
+            <rect x={tipLabelX} y={tip.y - 38} width={tipLabelWidth} height={24} rx={5} fill="#4f46e5" />
+            <text x={tipLabelX + tipLabelWidth / 2} y={tip.y - 21} textAnchor="middle" fontSize={13} fontWeight={600} fill="white">{tip.label}</text>
         </g>}
     </g>;
 }
@@ -262,6 +278,9 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
     const [loading, setLoading] = useState(true);
     const [category, setCategory] = useState(publicMode ? 'cpu' : 'all');
     const [ramGeneration, setRamGeneration] = useState('');
+    const [ramCapacityFilter, setRamCapacityFilter] = useState('');
+    const [ramFrequencyFilter, setRamFrequencyFilter] = useState('');
+    const [ramC28Only, setRamC28Only] = useState(false);
     const [subcategory, setSubcategory] = useState('');
     const [selectedProductId, setSelectedProductId] = useState<string>('');
     const [productSearchTerm, setProductSearchTerm] = useState('');
@@ -411,7 +430,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
 
 
 
-    useEffect(() => { setMarketVisibleCount(40); }, [category, productSearchTerm, brandFilter, actualBrandFilter, gpuChipFilter, ramGeneration, subcategory, sortConfig]);
+    useEffect(() => { setMarketVisibleCount(40); }, [category, productSearchTerm, brandFilter, actualBrandFilter, gpuChipFilter, ramGeneration, ramCapacityFilter, ramFrequencyFilter, ramC28Only, subcategory, sortConfig]);
 
     useEffect(() => {
         if (!marketCenterMode || loading || !marketScrollRequest) return;
@@ -561,6 +580,52 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
         return tags.length ? tags.join(' ') : '其他未分类规格';
     };
 
+    const marketRamSpecs = new Map((marketCenterMode && category === 'ram' ? trendData?.products || [] : []).filter(product => product.category === 'ram' && product.price > 0).map(product => {
+        const name = product.name.normalize('NFKC').toUpperCase();
+        const specs = parseSpecs(product.specs);
+        const validStickCapacities = [2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 512];
+        const parseCapacity = (value: string, allowBareNumber = false) => {
+            const normalized = value.normalize('NFKC').toUpperCase();
+            const kits = normalized.matchAll(/(?:^|[^A-Z\d])(\d+)\s*(?:GB?)?\s*[*×X]\s*(\d+)\s*(?:GB?)?(?!\d)/g);
+            for (const kit of kits) {
+                const first = Number(kit[1]), second = Number(kit[2]);
+                if (validStickCapacities.includes(first) && second >= 1 && second <= 8) return first * second;
+                if (validStickCapacities.includes(second) && first >= 1 && first <= 8) return first * second;
+            }
+            const single = normalized.match(/(?:^|\D)(\d+)\s*GB?(?![A-Z])/)?.[1] || (allowBareNumber ? normalized.match(/^\s*(\d+)\s*$/)?.[1] : undefined);
+            return single && Number(single) > 0 && Number(single) <= 4096 ? Number(single) : 0;
+        };
+        const capacity = parseCapacity(name) || parseCapacity(String(specs.capacity ?? specs.totalCapacity ?? ''), true);
+        const frequency = name.match(/(?:^|\D)(\d{4,5})\s*(?:MHZ|MT\s*\/\s*S)/)?.[1]
+            || name.match(/DDR\s*[345][\s-]+(\d{4,5})(?!\d)/)?.[1]
+            || name.match(/(?:^|\D)(2133|2400|2666|2800|2933|3000|3200|3600|4000|4800|5000|5200|5333|5400|5600|5800|5866|6000|6200|6400|6600|6800|7000|7200|7400|7600|7800|8000|8200|8400|8600|8800|9000|9600|10000)(?!\d)/)?.[1]
+            || String(specs.frequency ?? specs.speed ?? specs.memorySpeed ?? '').match(/\d{4,5}/)?.[0] || '';
+        const memoryType = String(specs.memoryType ?? specs.memory_type ?? specs.ram_type ?? specs.ramType ?? specs.type ?? '').toUpperCase();
+        const generation = (name.match(/DDR\s*([345])|\bD([345])\b/) || memoryType.match(/DDR\s*([345])|\bD([345])\b/))?.slice(1).find(Boolean);
+        const ddr = generation ? `DDR${generation}` : frequency ? Number(frequency) >= 4800 ? 'DDR5' : 'DDR4' : '';
+        const timing = name.match(/(?:^|[^A-Z]|GB?|MHZ|MT\/S)C(?:L)?\s*(\d{2})(?!\d)/)?.[1]
+            || String(specs.latency ?? specs.timing ?? specs.casLatency ?? '').trim().toUpperCase().match(/^(?:CL?\s*)?(\d{2})(?!\d)/)?.[1];
+        return [String(product.id), {
+            generation: ddr,
+            capacity: capacity ? String(capacity) : '',
+            frequency,
+            timing: timing || '',
+            c28: timing === '28',
+            label: ramFrequencyBand(ddr, frequency)
+        }] as const;
+    }));
+    const matchesMarketRamFilters = (id: string) => {
+        const spec = marketRamSpecs.get(id);
+        return !!spec && (!ramGeneration || spec.generation === ramGeneration)
+            && (!subcategory || spec.label === subcategory)
+            && (!ramCapacityFilter || spec.capacity === ramCapacityFilter)
+            && (!ramFrequencyFilter || spec.frequency === ramFrequencyFilter)
+            && (!ramC28Only || spec.c28);
+    };
+    const ramCapacityOptions = Array.from(new Set(Array.from(marketRamSpecs.values(), spec => spec.capacity))).filter(Boolean).sort((a, b) => Number(a) - Number(b));
+    const ramFrequencyOptions = Array.from(new Set(Array.from(marketRamSpecs.values()).filter(spec => !subcategory || spec.label === subcategory).map(spec => spec.frequency))).filter(Boolean).sort((a, b) => Number(a) - Number(b));
+    const ramGenerationOptions = Array.from(new Set(Array.from(marketRamSpecs.values(), spec => spec.generation))).filter(Boolean).sort((a, b) => b.localeCompare(a));
+
     const parseDiskSpecs = (name: string): string => {
         const m = name.toUpperCase().match(/(\d+)\s*(TB|T|GB|G)/);
         if (m) {
@@ -625,8 +690,9 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
             if ((category === 'gpu' || category === 'cpu') && !matchesBrand(p.name)) continue;
             if (actualBrandFilter && !matchesActualBrand(p.name)) continue;
             
-            const label = parseFn(p.name);
-            if (ramGeneration && category === 'ram' && !label.includes(ramGeneration)) continue;
+            const label = marketCenterMode && category === 'ram' ? marketRamSpecs.get(String(p.id))?.label : parseFn(p.name);
+            if (!label) continue;
+            if (category === 'ram' && (marketCenterMode ? !matchesMarketRamFilters(String(p.id)) : ramGeneration && !label.includes(ramGeneration))) continue;
             
             if (!groups.has(label)) groups.set(label, []);
             groups.get(label)!.push(p);
@@ -656,6 +722,8 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
 
         const rows: Array<{
             label: string;
+            frequencySummary?: string;
+            firstFrequency?: number;
             count: number;
             currentAvg: number;
             changes: { period: string; pct: number | null }[];
@@ -706,12 +774,21 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                 }
             }
 
-            rows.push({ label, count: products.length, currentAvg, changes, todayUp, todayDown });
+            const frequencies = marketCenterMode && category === 'ram'
+                ? Array.from(new Set(products.map(product => marketRamSpecs.get(String(product.id))?.frequency || '')))
+                    .sort((a, b) => Number(a || Infinity) - Number(b || Infinity))
+                : undefined;
+            const frequencySummary = frequencies?.filter(Boolean).map(frequency => `${frequency}MHz`).join(' / ');
+            rows.push({ label, frequencySummary, firstFrequency: Number(frequencies?.[0] || Infinity), count: products.length, currentAvg, changes, todayUp, todayDown });
         }
 
         // Sort: by DDR generation then by frequency then capacity for RAM, else alphabetically
         rows.sort((a, b) => {
             if (category === 'ram') {
+                if (marketCenterMode) {
+                    const generation = (label: string) => Number(label.match(/^DDR(\d)/)?.[1] || 0);
+                    return generation(b.label) - generation(a.label) || (a.firstFrequency ?? Infinity) - (b.firstFrequency ?? Infinity) || a.label.localeCompare(b.label);
+                }
                 const aHas5 = a.label.includes('DDR5');
                 const bHas5 = b.label.includes('DDR5');
                 if (aHas5 !== bHas5) return aHas5 ? -1 : 1;
@@ -787,8 +864,8 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
             if (actualBrandFilter && !matchesActualBrand(p.name)) return false;
             if (gpuChipFilter && category === 'gpu' && !matchesChip(p.name)) return false;
             
-            const specLabel = parseFn(p.name);
-            if (ramGeneration && category === 'ram' && !specLabel.includes(ramGeneration)) return false;
+            const specLabel = marketCenterMode && category === 'ram' ? marketRamSpecs.get(String(p.id))?.label : parseFn(p.name);
+            if (category === 'ram' && (marketCenterMode ? !matchesMarketRamFilters(String(p.id)) : ramGeneration && !specLabel?.includes(ramGeneration))) return false;
             if (subcategory && specLabel !== subcategory) return false; 
             
             return true;
@@ -866,7 +943,9 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
     };
 
     const marketCenterCategoryTabs = ['all', ...sortCategories(data?.categories || []).filter(c => c !== 'all')];
-    const marketCenterFilterCount = [brandFilter, actualBrandFilter, gpuChipFilter, ramGeneration, subcategory].filter(Boolean).length;
+    const ramSelection = [subcategory || ramGeneration, ramCapacityFilter && `${ramCapacityFilter}GB`, ramFrequencyFilter && `${ramFrequencyFilter}MHz`, ramC28Only && 'C28'].filter(Boolean);
+    const marketCenterFilters = [brandFilter, actualBrandFilter, gpuChipFilter, ...(category === 'ram' ? ramSelection : [subcategory])].filter(Boolean);
+    const marketCenterFilterCount = marketCenterFilters.length;
     const marketTrendMap = new Map(trendData?.productTrends.map(item => [String(item.hardwareId), item.points]) || []);
     const marketCenterCategoryTrend = marketCenterFilterCount > 0
         ? (trendData?.categoryTotalAvgTrend || []).map(point => ({
@@ -933,6 +1012,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
     const marketHighs = (trendData?.historicalHighs || []).filter(item => marketRowIds.has(String(item.hardwareId)));
     const clearMarketFilters = () => {
         setBrandFilter(''); setActualBrandFilter(''); setGpuChipFilter(''); setRamGeneration(''); setSubcategory('');
+        setRamCapacityFilter(''); setRamFrequencyFilter(''); setRamC28Only(false);
         setSelectedProductId('');
     };
 
@@ -943,6 +1023,9 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
         setActualBrandFilter('');
         setGpuChipFilter('');
         setRamGeneration('');
+        setRamCapacityFilter('');
+        setRamFrequencyFilter('');
+        setRamC28Only(false);
         setSelectedProductId('');
         setProductSearchTerm('');
     };
@@ -1017,11 +1100,16 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                 </div>
                 <div className="mt-4 h-[280px] rounded-xl border border-slate-200 bg-white py-3 sm:h-[320px]">
                     {selectedChartData.length > 1 ? <ResponsiveContainer width="100%" height="100%">
-                        <LineChart key={`${selectedProductId}-${productRangeLabel}`} data={selectedChartData} margin={{ top: 12, right: 18, left: 0, bottom: 0 }}>
+                        <LineChart key={`${selectedProductId}-${productRangeLabel}`} data={selectedChartData} margin={{ top: 15, right: 22, left: 0, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                            <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={(value: string) => value.slice(5)} axisLine={false} tickLine={false} />
-                            <YAxis domain={['auto', 'auto']} padding={{ top: 22, bottom: 24 }} tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={(value: number) => `¥${Math.round(value)}`} axisLine={false} tickLine={false} width={60} />
-                            <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #e2e8f0' }} />
+                            <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(value: string) => value.slice(5)} axisLine={false} tickLine={false} height={36} minTickGap={8} />
+                            <YAxis domain={['auto', 'auto']} padding={{ top: 26, bottom: 28 }} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(value: number) => `¥${Math.round(value)}`} axisLine={false} tickLine={false} width={68} />
+                            <Tooltip
+                                contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: 12, padding: '10px 14px', boxShadow: '0 6px 18px rgba(15,23,42,.22)' }}
+                                labelStyle={{ color: '#cbd5e1', fontSize: 15, fontWeight: 500, marginBottom: 4 }}
+                                itemStyle={{ color: '#f8fafc', fontSize: 17, fontWeight: 700, padding: 0 }}
+                                formatter={value => [`¥${Number(value).toLocaleString('zh-CN')}`, '价格']}
+                            />
                             <Line type="stepAfter" dataKey="price" name="价格（元）" stroke="#4f46e5" strokeWidth={2} dot={false} activeDot={{ r: 4 }} isAnimationActive={false} shape={<AnimatedMarketPriceLine prices={selectedChartData} />} />
                         </LineChart>
                     </ResponsiveContainer> : <div className="flex h-full items-center justify-center text-sm text-slate-500">{waitingForLongHistory ? marketProductHistoryStatus === 'loading' ? '正在加载历史价格…' : '历史价格加载失败，请点击时间卡片重试' : '当前范围没有调价历史可展示'}</div>}
@@ -1177,11 +1265,6 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                             ))}
                                         </div>
                                     )}
-                                    {category === 'ram' && (
-                                        <select aria-label="内存代数" value={ramGeneration} onChange={event => { setRamGeneration(event.target.value); setSubcategory(''); setSelectedProductId(''); }} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold outline-none">
-                                            <option value="">全部内存代数</option><option value="DDR4">DDR4</option><option value="DDR5">DDR5</option>
-                                        </select>
-                                    )}
                                     {category === 'gpu' && gpuChipSeries.length > 0 && (
                                         <select aria-label="芯片组" value={gpuChipFilter} onChange={event => { setGpuChipFilter(event.target.value); setSelectedProductId(''); }} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold outline-none">
                                             <option value="">全部芯片组</option>{gpuChipSeries.map(chip => <option key={chip} value={chip}>{chip}</option>)}
@@ -1192,7 +1275,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                             <option value="">全部品牌</option>{marketCenterBrands.map(brand => <option key={brand} value={brand}>{brand}</option>)}
                                         </select>
                                     )}
-                                    {category !== 'gpu' && category !== 'all' && specPriceTable && specPriceTable.length > 0 && (
+                                    {category !== 'gpu' && category !== 'ram' && category !== 'all' && specPriceTable && specPriceTable.length > 0 && (
                                         <select aria-label="规格或代数" value={subcategory} onChange={event => { setSubcategory(event.target.value); setSelectedProductId(''); }} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold outline-none">
                                             <option value="">全部{category === 'cpu' ? '代数' : '规格'}</option>{specPriceTable.map(row => <option key={row.label} value={row.label}>{row.label}</option>)}
                                         </select>
@@ -1242,22 +1325,37 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                         </section>
                     )}
 
-                    {category !== 'all' && specPriceTable && specPriceTable.length > 0 && (
+                    {category !== 'all' && specPriceTable && (specPriceTable.length > 0 || category === 'ram') && (
                         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
                             <div className="flex items-center justify-between border-b border-slate-100 p-5">
-                                <div><h3 className="text-lg font-bold text-slate-900">{CATEGORY_LABELS[category]} 规格行情对比</h3><p className="mt-1 text-xs text-slate-500">按规格聚合均价，点击一行可筛选型号列表</p></div>
+                                <div><h3 className="text-lg font-bold text-slate-900">{CATEGORY_LABELS[category]} 规格行情对比</h3><p className="mt-1 text-xs text-slate-500">{category === 'ram' ? '点击频率区间查看在售型号，可按容量和 C28 进一步筛选' : '按规格聚合均价，点击一行可筛选型号列表'}</p></div>
                                 <span className="text-xs text-slate-400">{specPriceTable.length} 组</span>
                             </div>
+                            {category === 'ram' && <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-5">
+                                {subcategory && <button type="button" aria-label="清除频率区间" onClick={() => { setSubcategory(''); setSelectedProductId(''); }} className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700">{subcategory}<X size={13} /></button>}
+                                <select aria-label="内存代数" value={ramGeneration} onChange={event => { setRamGeneration(event.target.value); setSubcategory(''); setSelectedProductId(''); }} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-500">
+                                    <option value="">全部代数</option>{ramGenerationOptions.map(value => <option key={value} value={value}>{value}</option>)}
+                                </select>
+                                <select aria-label="内存容量" value={ramCapacityFilter} onChange={event => { setRamCapacityFilter(event.target.value); setSelectedProductId(''); }} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-500">
+                                    <option value="">全部容量</option>{ramCapacityOptions.map(value => <option key={value} value={value}>{value}GB</option>)}
+                                </select>
+                                <select aria-label="内存频率" value={ramFrequencyFilter} onChange={event => { setRamFrequencyFilter(event.target.value); setSelectedProductId(''); }} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-500">
+                                    <option value="">全部频率</option>{ramFrequencyOptions.map(value => <option key={value} value={value}>{value}MHz</option>)}
+                                </select>
+                                <button type="button" aria-pressed={ramC28Only} onClick={() => { setRamC28Only(value => !value); setSelectedProductId(''); }} className={`rounded-lg border px-3 py-2 text-xs font-bold transition ${ramC28Only ? 'border-indigo-500 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-500/30' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-400 hover:text-indigo-600'}`}>C28</button>
+                                {(ramGeneration || ramCapacityFilter || ramFrequencyFilter || ramC28Only || subcategory) && <button type="button" onClick={() => { setRamGeneration(''); setRamCapacityFilter(''); setRamFrequencyFilter(''); setRamC28Only(false); setSubcategory(''); setSelectedProductId(''); }} className="px-2 py-2 text-xs font-semibold text-slate-500 hover:text-indigo-600">重置</button>}
+                            </div>}
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[720px] text-sm tabular-nums">
-                                    <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="px-5 py-3 text-left">规格 / 代数</th><th className="px-4 py-3 text-right">在售数</th><th className="px-4 py-3 text-right">当前均价</th><th className="px-4 py-3 text-right">今日涨跌</th>{['7日', '30日'].map(period => <th key={period} className="px-4 py-3 text-right">较{period}前</th>)}</tr></thead>
+                                    <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="px-5 py-3 text-left">{category === 'ram' ? '频率区间' : '规格 / 代数'}</th><th className="px-4 py-3 text-right">在售数</th><th className="px-4 py-3 text-right">当前均价</th><th className="px-4 py-3 text-right">今日涨跌</th>{['7日', '30日'].map(period => <th key={period} className="px-4 py-3 text-right">较{period}前</th>)}</tr></thead>
                                     <tbody className="divide-y divide-slate-100">
+                                        {specPriceTable.length === 0 && <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-slate-500">没有符合当前筛选条件的内存，试试调整筛选。</td></tr>}
                                         {specPriceTable.map(row => {
                                             const change7 = row.changes.find(item => item.period === '7日')?.pct;
                                             const change30 = row.changes.find(item => item.period === '30日')?.pct;
                                             const isSelected = (category === 'gpu' ? gpuChipFilter : subcategory) === row.label;
-                                            return <tr key={row.label} onClick={() => { if (category === 'gpu') setGpuChipFilter(row.label); else setSubcategory(row.label); setSelectedProductId(''); setMarketScrollRequest('table'); }} className={`cursor-pointer transition hover:bg-indigo-50/50 ${isSelected ? 'bg-indigo-50' : ''}`}>
-                                                <td className="px-5 py-3 font-semibold text-slate-700">{row.label}</td><td className="px-4 py-3 text-right text-slate-500">{row.count}</td><td className="px-4 py-3 text-right font-semibold text-slate-900">¥{row.currentAvg.toFixed(0)}</td>
+                                            return <tr key={row.label} onClick={() => { if (category === 'gpu') setGpuChipFilter(row.label); else setSubcategory(row.label); if (category === 'ram') setProductSearchTerm(''); setSelectedProductId(''); setMarketScrollRequest('table'); }} className={`cursor-pointer transition hover:bg-indigo-50/50 ${isSelected ? 'bg-indigo-50' : ''}`}>
+                                                <td className="px-5 py-3 font-semibold text-slate-700"><span>{row.label}</span>{row.frequencySummary && <span className="mt-1 block text-xs font-normal text-slate-500">{row.frequencySummary}</span>}</td><td className="px-4 py-3 text-right text-slate-500">{row.count}</td><td className="px-4 py-3 text-right font-semibold text-slate-900">¥{row.currentAvg.toFixed(0)}</td>
                                                 <td className="px-4 py-3 text-right"><span className="text-rose-600">↑{row.todayUp}</span><span className="mx-1 text-slate-300">/</span><span className="text-emerald-600">↓{row.todayDown}</span></td>
                                                 {[change7, change30].map((value, index) => <td key={index} className={`px-4 py-3 text-right font-semibold ${value === null || value === undefined ? 'text-slate-300' : value > 0 ? 'text-rose-600' : value < 0 ? 'text-emerald-600' : 'text-slate-400'}`}>{value === null || value === undefined ? '—' : `${value > 0 ? '+' : ''}${value.toFixed(2)}%`}</td>)}
                                             </tr>;
@@ -1274,7 +1372,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                 <div><div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400"><Activity size={14} className="text-indigo-500" /> 趋势观察</div><h3 className="mt-1 text-lg font-semibold text-slate-900">{category === 'all' ? '全品类调价节奏' : `${CATEGORY_LABELS[category] || category}均价走势`}</h3></div>
                                 <button disabled={!!downloading} onClick={() => handleDownloadImage(chartRef, `行情走势_${CATEGORY_LABELS[category] || '全品类'}_${new Date().toISOString().slice(0, 10)}.png`)} className="inline-flex items-center gap-1.5 self-start rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-500 hover:border-indigo-300 hover:text-indigo-600"><Download size={13} /> 导出</button>
                             </div>
-                            <p className="mt-2 text-xs text-slate-400">{category === 'all' ? '红色：涨价记录 · 绿色：降价记录' : `当前筛选：${[brandFilter, actualBrandFilter, ramGeneration, gpuChipFilter, subcategory].filter(Boolean).join(' / ') || '全部在售型号'} · ${marketCenterWindowLabel}`}</p>
+                            <p className="mt-2 text-xs text-slate-400">{category === 'all' ? '红色：涨价记录 · 绿色：降价记录' : `当前筛选：${marketCenterFilters.join(' / ') || '全部在售型号'} · ${marketCenterWindowLabel}`}</p>
                             {category !== 'all' && <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-400"><span><i className="mr-1 inline-block h-2 w-5 rounded-full bg-indigo-500 align-middle" />整体均价</span><span><i className="mr-1 inline-block h-0 w-5 border-t-2 border-dashed border-emerald-500 align-middle" />降价商品均价（{marketCenterDownRows.length} 款）</span>{marketCenterChange !== null && <span className={marketCenterChange > 0 ? 'text-rose-600' : marketCenterChange < 0 ? 'text-emerald-600' : 'text-slate-500'}>区间变化 {marketCenterChange > 0 ? '+' : ''}¥{marketCenterChange.toFixed(0)} ({marketCenterChangePct === null ? '—' : `${marketCenterChangePct > 0 ? '+' : ''}${marketCenterChangePct.toFixed(2)}%`})</span>}</div>}
                             <div className="mt-5 h-[300px] w-full">
                                 {marketCenterChartData.length > 0 ? (
@@ -1307,7 +1405,7 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                     {category !== 'all' && trendData && (
                         <section ref={tableRef} className="scroll-mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white">
                             <div className="flex flex-col gap-2 border-b border-slate-100 p-5 sm:flex-row sm:items-end sm:justify-between">
-                                <div><h3 className="text-lg font-bold">{subcategory || gpuChipFilter || CATEGORY_LABELS[category]} 在售型号</h3><p className="mt-1 text-xs text-slate-500">按涨跌金额排序 · 点击型号展开日终价格走势</p></div>
+                                <div><h3 className="text-lg font-bold">{(category === 'ram' ? ramSelection.join(' ') : subcategory || gpuChipFilter) || CATEGORY_LABELS[category]} 在售型号</h3><p className="mt-1 text-xs text-slate-500">按涨跌金额排序 · 点击型号展开日终价格走势</p></div>
                                 <span className="text-xs text-slate-500">已显示 {marketCenterProductRows.length} / {marketCenterMatchingRows.length} 款</span>
                             </div>
                             {marketCenterSelectedProduct && !marketCenterProductRows.some(row => String(row.id) === selectedProductId) && marketProductDetails}
@@ -1332,9 +1430,10 @@ export default function PriceTrendChart({ hideSummaryPanel = false, publicMode =
                                             const delta = values.length ? values[values.length - 1] - values[0] : 0;
                                             const path = values.map((value, index) => `${index / (values.length - 1) * 64},${range ? 20 - (value - min) / range * 16 : 11}`).join(' ');
                                             const isExpanded = String(row.id) === selectedProductId;
+                                            const ramSpec = category === 'ram' ? marketRamSpecs.get(String(row.id)) : undefined;
                                             return <Fragment key={row.id}>
                                                 <tr className={isExpanded ? 'bg-indigo-50' : 'hover:bg-indigo-50/40'}>
-                                                    <td className="max-w-[290px] px-5 py-3"><button aria-expanded={isExpanded} onClick={() => isExpanded ? setSelectedProductId('') : openMarketProduct(String(row.id))} className="flex items-center gap-2 text-left font-semibold text-slate-700 hover:text-indigo-600"><ChevronRight size={15} className={`shrink-0 text-indigo-500 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />{row.name}</button></td>
+                                                    <td className="max-w-[290px] px-5 py-3"><button aria-expanded={isExpanded} onClick={() => isExpanded ? setSelectedProductId('') : openMarketProduct(String(row.id))} className="flex items-center gap-2 text-left font-semibold text-slate-700 hover:text-indigo-600"><ChevronRight size={15} className={`shrink-0 text-indigo-500 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />{row.name}</button>{ramSpec && <p className="ml-[23px] mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500"><span>{ramSpec.generation || '代数未标注'}</span><span>{ramSpec.capacity ? `${ramSpec.capacity}GB` : '容量未标注'}</span><span>{ramSpec.frequency ? `${ramSpec.frequency}MHz` : '频率未标注'}</span><span className={ramSpec.c28 ? 'font-bold text-indigo-600' : ''}>{ramSpec.timing ? `C${ramSpec.timing}` : '时序未标注'}</span></p>}</td>
                                                     <td className="px-4 py-3 text-right font-semibold text-slate-900">¥{row.currentPrice.toLocaleString('zh-CN')}</td>
                                                     <td className="px-4 py-3 text-center">{values.length > 1 ? <svg width="64" height="22" viewBox="0 0 64 22" className="inline-block" aria-label="价格走势"><polyline fill="none" stroke={delta > 0 ? '#e11d48' : delta < 0 ? '#059669' : '#94a3b8'} strokeWidth="1.7" points={path} /></svg> : <span className="text-slate-400">暂无记录</span>}</td>
                                                     {(['1d', '7d', '14d', '30d'] as const).map(key => {
